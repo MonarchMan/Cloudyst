@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package gateway.middleware.session.v1;
+
+option go_package = "gateway/api/gateway/middleware/session/v1";
+
+message Session {
+  string secret = 1;
+  // session options
+  bool http_only = 2;
+  int32 max_age = 3;
+  string path = 4;
+  string same_site = 5;
+  bool secure = 6;
+  repeated string white_list = 7;
+}

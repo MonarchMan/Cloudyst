@@ -1,0 +1,100 @@
+# This is a gateway config.
+name: files
+hosts:
+  - localhost
+  - 127.0.0.1
+redis:
+  network: tcp
+  addr: simple-net.dynv6.net:6333
+  db: 9
+  password: yi290...
+middlewares:
+  - name: cors
+    options:
+      '@type': type.googleapis.com/gateway.middleware.cors.v1.Cors
+      allowCredentials: true
+      allowOrigins:
+        - '*'
+      allowMethods:
+        - OPTIONS
+        - HEAD
+#  - name: tracing
+#    options:
+#      '@type': type.googleapis.com/gateway.middleware.tracing.v1.Tracing
+#      httpEndpoint: 'localhost:4318' # default opentelemetry collector port
+#  - name: rewrite
+#    options:
+#      '@type': type.googleapis.com/gateway.middleware.rewrite.v1.Rewrite
+#      strip_prefix: "/api/v1"
+  - name: logging
+  - name: session
+    options:
+      '@type': type.googleapis.com/gateway.middleware.session.v1.Session
+      white_list:
+        - /f/
+        - /s/
+        - /wopi/
+        - /dav/
+      secret: bMvjb3Tzgm5qWhLqexkKXGiEsdfGb80kprzMwbZbLVeeLypbwaihi2riU8rIM3wt
+  - name: auth
+    options:
+      '@type': type.googleapis.com/gateway.middleware.auth.v1.Auth
+      secret: c0TTZCNvJXI3rT2bdfu6WoGluBFSoYyVuWja0I5ycvf3soQX9zyl2rCwkEro46H1azwEDbrc4zIlmq9sz9pAVzyCLfx16ZxCxZuJeM4hS3cYWjII6CHkdntN6nMhtCeI4IZJvt0wznlVIV4HLlNrKceFbrDRICHkIjQ04kmLuDR9Iqr3eL7rix2ap2lP9HlsLZsQY975miZw8DSDMbUzq8Or1S4h9KU8i9NQmS0NdPeHmJ0ZCSWdhT8TVihdXMTa
+      hash_salt: d8TGjydABM4vQWewZ06D0bUlT4litVBtqs4cVoPXFaxEpZl7OlTE7Q1G4xoGrHsB
+      white_list:
+        - /f/
+        - /s/
+        - /wopi/
+        - /dav/
+  - name: security
+    options:
+      '@type': type.googleapis.com/gateway.middleware.security.v1.Security
+      white_list:
+        - /f/
+        - /s/
+        - /wopi/
+endpoints:
+  - path: /api/v1/file/*
+    protocol: HTTP
+    backends:
+      - target: 'discovery:///cloudyst-file'
+    middlewares:
+      - name: rewrite
+        options:
+          '@type': type.googleapis.com/gateway.middleware.rewrite.v1.Rewrite
+          strip_prefix: "/api/v1/file"
+
+  - path: /api/v1/user/*
+    protocol: HTTP
+    backends:
+      - target: 'discovery:///cloudyst-user'
+    middlewares:
+      - name: rewrite
+        options:
+          '@type': type.googleapis.com/gateway.middleware.rewrite.v1.Rewrite
+          strip_prefix: "/api/v1/user"
+
+  - path: /api/v1/ai/*
+    protocol: HTTP
+    backends:
+      - target: 'discovery:///cloudyst-ai'
+    middlewares:
+      - name: rewrite
+        options:
+          '@type': type.googleapis.com/gateway.middleware.rewrite.v1.Rewrite
+          strip_prefix: "/api/v1/user"
+
+
+  - path: /files.Greeter/*
+    method: POST
+    protocol: GRPC
+    backends:
+      - target: '127.0.0.1:9000'
+    retry:
+      attempts: 3
+      perTryTimeout: 0.5s
+      conditions:
+        - byStatusCode: '502-504'
+        - byHeader:
+            name: 'Grpc-Status'
+            value: '14'

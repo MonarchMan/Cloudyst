@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package gateway.middleware.auth.v1;
+
+option go_package = "gateway/api/gateway/middleware/auth/v1";
+
+message Auth {
+  string secret = 1;
+  string hash_salt = 2;
+  repeated string white_list = 3;
+}

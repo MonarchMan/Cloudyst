@@ -1,0 +1,90 @@
+package proxy
+
+import (
+	"context"
+	"errors"
+	"net/http"
+	"time"
+
+	config "gateway/api/gateway/config/v1"
+	"gateway/proxy/condition"
+
+	"github.com/go-kratos/feature"
+)
+
+var (
+	retryFeature = feature.MustRegister("gw:Retry", true)
+)
+
+type retryStrategy struct {
+	attempts      int
+	timeout       time.Duration
+	perTryTimeout time.Duration
+	conditions    []condition.Condition
+}
+
+func calcTimeout(endpoint *config.Endpoint) time.Duration {
+	var timeout time.Duration
+	if endpoint.Timeout != nil {
+		timeout = endpoint.Timeout.AsDuration()
+	}
+	if timeout <= 0 {
+		timeout = time.Hour
+	}
+	return timeout
+}
+
+func calcAttempts(endpoint *config.Endpoint) int {
+	if endpoint.Retry == nil {
+		return 1
+	}
+	if endpoint.Retry.Attempts == 0 {
+		return 1
+	}
+	return int(endpoint.Retry.Attempts)
+}
+
+func calcPerTryTimeout(endpoint *config.Endpoint) time.Duration {
+	var perTryTimeout time.Duration
+	if endpoint.Retry != nil && endpoint.Retry.PerTryTimeout != nil {
+		perTryTimeout = endpoint.Retry.PerTryTimeout.AsDuration()
+	} else if endpoint.Timeout != nil {
+		perTryTimeout = endpoint.Timeout.AsDuration()
+	}
+	if perTryTimeout <= 0 {
+		perTryTimeout = time.Hour
+	}
+	return perTryTimeout
+}
+
+func prepareRetryStrategy(e *config.Endpoint) (*retryStrategy, error) {
+	if e.Stream && e.Retry != nil {
+		return nil, errors.New("cannot configure retry strategy for stream endpoints")
+	}
+	strategy := &retryStrategy{
+		attempts:      calcAttempts(e),
+		timeout:       calcTimeout(e),
+		perTryTimeout: calcPerTryTimeout(e),
+	}
+	conditions, err := parseRetryConditon(e)
+	if err != nil {
+		return nil, err
+	}
+	strategy.conditions = conditions
+	return strategy, nil
+}
+
+func parseRetryConditon(endpoint *config.Endpoint) ([]condition.Condition, error) {
+	if endpoint.Retry == nil {
+		return []condition.Condition{}, nil
+	}
+	return condition.ParseConditon(endpoint.Retry.Conditions...)
+}
+
+func judgeRetryRequired(conditions []condition.Condition, resp *http.Response) bool {
+	return condition.JudgeConditons(conditions, resp, false)
+}
+
+func defaultAttemptTimeoutContext(ctx context.Context, _ *http.Request, timeout time.Duration) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(ctx, timeout)
+}
