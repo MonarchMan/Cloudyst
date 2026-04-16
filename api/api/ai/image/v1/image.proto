@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package ai.image.v1;
+
+option go_package = "api/api/ai/image/v1;v1";
+option java_multiple_files = true;
+option java_package = "ai.image.v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "common/v1/common.proto";
+
+service Image {
+	rpc DrawImage (DrawImageRequest) returns (DrawImageResponse) {
+    option (google.api.http) = {
+      post: "/ai/image/draw"
+      body: "*"
+    };
+  };
+	rpc DeleteImage (SimpleImageRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/ai/image/{id}"
+    };
+  };
+	rpc GetImage (SimpleImageRequest) returns (GetImageResponse) {
+    option (google.api.http) = {
+      get: "/ai/image/{id}"
+    };
+  };
+	rpc ListImage (ListImageRequest) returns (ListImageResponse) {
+    option (google.api.http) = {
+      get: "/ai/image/page"
+    };
+  };
+  rpc ListImageByIds (ListImageByIdsRequest) returns (ListImageResponse) {
+    option (google.api.http) = {
+      get: "/ai/image/list"
+    };
+  };
+}
+
+message DrawImageRequest {
+  string model_id = 1;
+  string prompt = 2;
+  int32 width = 3;
+  int32 height = 4;
+  map<string, string> options = 5;
+}
+message DrawImageResponse {
+  int64 id = 1;
+}
+
+message SimpleImageRequest {
+  string id = 1;
+}
+
+message GetImageResponse {
+  string id = 1;
+  string user_id = 2;
+  string platform = 3;
+  string model = 4;
+  string prompt = 5;
+  int64 width = 6;
+  int64 height = 7;
+  string status = 8;
+  string pic_url = 9;
+  string error_message = 10;
+  map<string, string> options = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp finished_at = 13;
+}
+message ListImageRequest {
+  common.v1.PaginationArgs pagination = 1;
+  string user_id = 2;
+  string platform = 3;
+  string prompt = 4;
+  string status = 5;
+  bool is_public = 6;
+  google.protobuf.Timestamp start = 7;
+  google.protobuf.Timestamp end = 8;
+}
+message ListImageResponse {
+  repeated GetImageResponse images = 1;
+}
+
+message ListImageByIdsRequest {
+  repeated string ids = 1;
+}

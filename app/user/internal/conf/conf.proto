@@ -1,0 +1,93 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "callback/external/conf;conf";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/any.proto";
+
+message Bootstrap {
+  string name = 1;
+  string version = 2;
+  Server server = 3;
+  Data data = 4;
+  Ssl ssl = 5;
+  Unix unix = 6;
+  Extensions extensions = 7;
+  map<string, google.protobuf.Any> option_overwrite = 20;
+}
+
+message Server {
+  message Sys {
+    string addr = 1;
+    bool debug = 2;
+    string secret = 3;
+    string hash_salt = 4;
+    string proxy_header = 5;
+    string log_level = 6;
+    google.protobuf.Duration timeout= 7;
+  }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  Sys sys = 1;
+  GRPC grpc = 2;
+}
+
+message Data {
+  message Database {
+    string db_type = 1;
+    string username = 2;
+    string password = 3;
+    string host = 4;
+    string name = 6;
+    string table_prefix = 5;
+    string db_file = 7;
+    int32 port = 8;
+    string charset = 9;
+    bool unix_socket = 10;
+    string source = 11;
+    string ssl_mode = 12;
+  }
+  message Redis {
+    string network = 1;
+    string addr = 2;
+    string user = 3;
+    string password = 4;
+    int32 db = 5;
+    bool use_tls = 6;
+    bool tls_skip_verify = 7;
+  }
+  Database database = 1;
+  Redis redis = 2;
+}
+
+message Ssl {
+  string addr = 1;
+  string cert_path = 2;
+  string key_path = 3;
+}
+
+message Unix {
+  string addr = 1;
+  int32 perm = 2;
+}
+
+message Extensions {
+  Jaeger jaeger = 1;
+  WebAuthn webauthn = 2;
+}
+
+message Jaeger {
+  string addr = 1;
+  string service_name = 2;
+}
+
+
+message WebAuthn {
+  string rp_display_name = 1;
+  string rp_id = 2;
+  repeated string rp_origins = 3;
+}

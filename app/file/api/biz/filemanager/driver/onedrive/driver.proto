@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package biz.filemanager.driver;
+option go_package = "file/api/biz/filemanager/driver;driver";
+
+import "google/protobuf/any.proto";
+
+// RespError 接口返回错误
+message RespError {
+  APIError api_error = 1 [json_name="error"];
+}
+
+// APIError 接口返回的错误内容
+message APIError {
+  string code = 1;
+  string message = 2;
+}
+
+// UploadSessionResponse 分片上传会话
+message UploadSessionResponse {
+  string data_context = 1 [json_name="@odata.context"];
+  string expiration_date_time = 2 [json_name="expirationDateTime"];
+  repeated string next_expected_ranges = 3 [json_name="nextExpectedRanges"];
+  string upload_url = 4 [json_name="uploadUrl"];
+}
+
+message FileInfo {
+  string name = 1;
+  string size = 2;
+  ImageInfo image = 3;
+  ParentReference parent_reference = 4 [json_name="parentReference"];
+  string download_url = 5 [json_name="@microsoft.graph.downloadUrl"];
+  File file = 6;
+  Folder folder = 7;
+}
+
+message ImageInfo {
+  string height = 1;
+  string width = 2;
+}
+
+// ParentReference 父目录引用
+message ParentReference {
+  string path = 1;
+  string name = 2;
+  string id = 3;
+}
+
+message File {
+  string mime_type = 1 [json_name="mimeType"];
+}
+
+message Folder {
+  int32 child_count = 1 [json_name="childCount"];
+}
+
+// UploadResult 上传结果
+message UploadResult {
+  string id = 1;
+  string name = 2;
+  uint64 size = 3;
+}
+
+// BatchRequests 批量操作请求
+message BatchRequests {
+  repeated BatchRequest requests = 1;
+}
+
+// BatchRequest 批量操作单个请求
+message BatchRequest {
+  string id = 1;
+  string method = 2;
+  string url = 3;
+  google.protobuf.Any body = 4;
+  map<string, string> headers = 5;
+}
+
+// BatchResponses 批量操作响应
+message BatchResponses {
+  repeated BatchResponse responses = 1;
+}
+// BatchResponse 批量操作单个响应
+message BatchResponse {
+  string id = 1;
+  int32  status = 2;
+}
+
+// ThumbResponse 获取缩略图的响应
+message ThumbResponse {
+  repeated FileInfo value = 1;
+  string url = 2;
+}
+
+// ListResponse 列取子项目响应
+message ListResponse {
+  repeated FileInfo value = 1;
+  string context = 2 [json_name="@odata.context"];
+  string next_link = 3 [json_name="@odata.nextLink"];
+}
+
+// oauthEndpoint OAuth接口地址
+message OAuthError {
+  string error = 1;
+  string error_description = 2;
+  string correlation_id = 3;
+}
+
+// Site SharePoint 站点信息
+message Site {
+  string description = 1;
+  string id = 2;
+  string name = 3;
+  string display_name = 4;
+  string web_url = 5;
+}

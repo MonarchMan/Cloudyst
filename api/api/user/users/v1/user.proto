@@ -1,0 +1,295 @@
+syntax = "proto3";
+
+package user.users.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "user/common/v1/common.proto";
+import "user/common/v1/entpb.proto";
+
+option go_package = "api/api/user/users/v1;v1";
+
+service User {
+  rpc GetUserMe(google.protobuf.Empty) returns (GetUserResponse) {
+    option (google.api.http) = {
+      get: "/user/me"
+    };
+  }
+
+  rpc GetCapacity(google.protobuf.Empty) returns (CapacityResponse) {
+    option (google.api.http) = {
+      get: "/user/capacity"
+    };
+  }
+
+  rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse) {
+    option (google.api.http) = {
+      get: "/user/search"
+    };
+  }
+
+  rpc StartRegisterAuthn(google.protobuf.Empty) returns (PrepareRegisterPasskeyResponse) {
+    option (google.api.http) = {
+      put: "/user/authn"
+      body: "*"
+    };
+  }
+
+  rpc FinishRegisterAuthn(FinishPasskeyRegisterRequest) returns (GetPasskeyResponse) {
+    option (google.api.http) = {
+      post: "/user/authn"
+      body: "*"
+    };
+  }
+
+  rpc DeletePasskey(DeletePasskeyRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/user/authn/{id}"
+    };
+  }
+
+  rpc GetUserSetting(google.protobuf.Empty) returns(GetSettingResponse) {
+    option (google.api.http) = {
+      get: "/user/setting",
+    };
+  }
+
+  rpc SetUserSetting(SetUserRequest) returns(google.protobuf.Empty) {
+    option (google.api.http) = {
+      patch: "/user/setting",
+      body: "*",
+    };
+  }
+
+  rpc InitUser2FA(google.protobuf.Empty) returns(InitUser2FAResponse) {
+    option (google.api.http) = {
+      post: "/user/setting/2fa",
+      body: "*",
+    };
+  }
+
+  // rpc
+  rpc GetUserInfo(RawUserRequest) returns (user.common.v1.User);
+
+  rpc ApplyStorageDiff(ApplyStorageDiffRequest) returns (google.protobuf.Empty);
+
+  rpc GetAnonymousUser(google.protobuf.Empty) returns (user.common.v1.User);
+
+  rpc GetActiveUserByDavAccount(GetActiveUserByDavAccountRequest) returns (common.v1.User);
+
+  rpc GetUserByEmail(GetUserByEmailRequest) returns (common.v1.User);
+
+  rpc UpdateAvatar(UpdateAvatarRequest) returns(google.protobuf.Empty);
+}
+
+service UserNoAuth {
+  rpc Register(RegisterRequest) returns (GetUserResponse) {
+    option (google.api.http) = {
+      post: "/user/register"
+      body: "*"
+    };
+  }
+
+  rpc ResetPassword(ResetPasswordRequest) returns (GetUserResponse) {
+    option (google.api.http) = {
+      patch: "/user/reset/{id}"
+      body: "*"
+    };
+  }
+
+  rpc SendResetEmail(SendResetEmailRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/user/reset"
+      body: "*"
+    };
+  }
+
+  rpc Activate(SignUserRequest) returns (GetUserResponse) {
+    option (google.api.http) = {
+      get: "/user/activate/{id}"
+    };
+  }
+
+  rpc GetUser(SimpleUserRequest) returns (GetUserResponse) {
+    option (google.api.http) = {
+      get: "/user/info/{id}"
+    };
+  }
+}
+
+message FinishPasskeyRegisterRequest {
+  string name = 1;
+  string response = 2; // JSON string of WebAuthn response
+  string ua = 3;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+  Captcha captcha = 3;
+}
+
+message Captcha {
+  string captcha = 1;
+  string ticket = 2;
+  string randstr = 3;
+}
+
+
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string language = 3;
+  Captcha captcha = 4;
+}
+
+message ResetPasswordRequest {
+  string id = 1;
+  string password = 2;
+  string secret = 3;
+}
+
+message SendResetEmailRequest {
+  string email = 1;
+  string language = 2;
+  Captcha captcha = 4;
+}
+
+message GetUserAvatarRequest {
+  string id = 1;
+  bool no_cache = 2;
+}
+
+message CapacityResponse {
+  int64 total = 1;
+  int64 used = 2;
+}
+
+message SearchUsersRequest {
+  string keyword = 1;
+}
+
+message SearchUserResponse {
+  repeated string user = 1; // JSON string of User
+}
+
+message FinishSearchUsersRequest {
+  string response = 1; // JSON string of SearchUserResponse
+  string name = 2;
+  string ua = 3;
+}
+
+message GetPasskeyResponse {
+  string id = 1;
+  string name = 2;
+  google.protobuf.Timestamp used_at = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message PrepareRegisterPasskeyResponse {
+  bytes public_key = 1;  // JSON string of WebAuthn public key
+}
+
+message FinishSearchUsersResponse {
+  string passkey = 1; // JSON string of Passkey
+}
+
+message DeletePasskeyRequest {
+  string id = 1;
+}
+
+message SignUserRequest {
+  string id = 1;
+  string sign = 2;
+}
+
+message SimpleUserRequest {
+  string id = 1;
+}
+
+message RawUserRequest {
+  int32 id = 1;
+}
+
+message SearchUsersResponse {
+  repeated GetUserResponse users = 1;
+}
+
+message GetUserResponse {
+  string id = 1;
+  string email = 2;
+  string nickname = 3;
+  string status = 4;
+  string avatar = 5;
+  google.protobuf.Timestamp created_at = 6;
+  string preferred_theme = 7;
+  bool anonymous = 8;
+  GetGroupResponse group = 9;
+  repeated common.v1.PinedFile pined = 10;
+  string language = 11;
+  bool disable_view_sync = 12;
+  string share_links_in_profile = 13;
+}
+
+message GetGroupResponse {
+  string id = 1;
+  string name = 2;
+  bytes permissions = 3;
+  int32 direct_link_batch_size = 4;
+  int32 trash_retention = 5;
+}
+
+// rpc
+message ApplyStorageDiffRequest {
+  map<int32, int64> storage_diff = 1;
+}
+
+message GetActiveUserByDavAccountRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message GetUserByEmailRequest {
+  string email = 1;
+}
+
+message GetSettingResponse {
+  bool version_retention_enabled = 1;
+  repeated string version_retention_ext = 2;
+  int32 version_retention_max = 3;
+  bool password_less = 4;
+  bool two_fa_enabled = 5;
+  repeated user.users.v1.GetPasskeyResponse passkeys = 6;
+  bool diable_view_sync = 7;
+  string share_links_in_profile = 8;
+}
+
+message SetUserRequest {
+  string nick = 1;
+  string language = 2;
+  string preferred_theme = 3;
+  optional bool version_retention_enabled = 4;
+  repeated string version_retention_ext = 5;
+  optional int32 version_retention_max = 6;
+  string current_password = 7;
+  string new_password = 8;
+  optional bool two_fa_enabled = 9;
+  string two_fa_code = 10;
+  optional bool disable_view_sync = 11;
+  optional int32 share_links_in_profile = 12;
+}
+
+message InitUser2FAResponse{
+  string secret = 1;
+}
+
+message UpdateAvatarRequest {
+  AvatarType type = 1;
+}
+
+enum AvatarType {
+  GRAVATAR = 0;
+  FILE_AVATAR = 1;
+}

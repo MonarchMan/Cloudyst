@@ -1,0 +1,43 @@
+name: cloudyst-user
+version: 0.0.1
+server:
+  sys:
+    addr: 0.0.0.0:8000
+    timeout: 1800s
+    debug: true
+    secret: c0TTZCNvJXI3rT2bdfu6WoGluBFSoYyVuWja0I5ycvf3soQX9zyl2rCwkEro46H1azwEDbrc4zIlmq9sz9pAVzyCLfx16ZxCxZuJeM4hS3cYWjII6CHkdntN6nMhtCeI4IZJvt0wznlVIV4HLlNrKceFbrDRICHkIjQ04kmLuDR9Iqr3eL7rix2ap2lP9HlsLZsQY975miZw8DSDMbUzq8Or1S4h9KU8i9NQmS0NdPeHmJ0ZCSWdhT8TVihdXMTa
+#    hash_salt: d8TGjydABM4vQWewZ06D0bUlT4litVBtqs4cVoPXFaxEpZl7OlTE7Q1G4xoGrHsB
+    log_level: debug
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 60s
+  cors:
+    allowed_origins:
+      - "UNSET"
+    allowed_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "OPTIONS"
+    allowed_headers:
+      - "Cookie"
+      - "X-Cr-Policy"
+      - "Authorization"
+      - "Content-Length"
+      - "Content-Type"
+      - "X-Cr-Path"
+      - "X-Cr-FileName"
+    allowed_credential: false
+    same_site: "Default"
+    secure: false
+
+extensions:
+  jaeger:
+#    addr: simple-net.dynv6.net:4317
+    service_name: cloudyst-user
+
+  webauthn:
+    rp_display_name: cloudyst
+    rp_id: simple-net.dynv6.net
+    rp_origins:
+      - "https://simple-net.dynv6.net"

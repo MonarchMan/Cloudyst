@@ -1,0 +1,136 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "ai/external/conf;conf";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/any.proto";
+
+message Bootstrap {
+  string name = 1;
+  string version = 2;
+  Server server = 3;
+  Data data = 4;
+  Extensions extensions = 6;
+  map<string, google.protobuf.Any> option_overwrite = 8;
+}
+
+message Server {
+  Sys sys = 1;
+  GRPC grpc = 2;
+  Cors cors = 3;
+  Ssl ssl = 4;
+  Unix unix = 5;
+}
+
+message Sys {
+  string mode = 1;
+  string addr = 2;
+  bool debug = 3;
+  google.protobuf.Duration timeout = 4;
+  google.protobuf.Duration grace_period = 5;
+  string proxy_header = 7;
+  string log_level = 8;
+  string hash_salt = 9;
+
+  EmbeddingModel embedder = 10;
+  Retrieve retrieve = 11;
+}
+message GRPC {
+  string network = 1;
+  string addr = 2;
+  google.protobuf.Duration timeout = 3;
+}
+message Cors {
+  repeated string allowed_origins = 1;
+  repeated string allowed_methods = 2;
+  repeated string allowed_headers = 3;
+  bool allowed_credentials = 4;
+  repeated string expose_headers = 5;
+  string same_site = 6;
+  bool secure = 7;
+}
+message EmbeddingModel {
+  string model = 1;
+  int32 dimensions = 2;
+  string api_key = 3;
+  string base_url = 4;
+}
+
+message Data {
+  Database database = 1;
+  Redis redis = 2;
+  Milvus milvus = 3;
+}
+message Database {
+  string db_type = 1;
+  string username = 2;
+  string password = 3;
+  string host = 4;
+  string name = 6;
+  string table_prefix = 5;
+  string db_file = 7;
+  int32 port = 8;
+  string charset = 9;
+  bool unix_socket = 10;
+  string source = 11;
+  string ssl_mode = 12;
+}
+message Redis {
+  string network = 1;
+  string addr = 2;
+  string user = 3;
+  string password = 4;
+  int32 db = 5;
+  bool use_tls = 6;
+  bool tls_skip_verify = 7;
+}
+
+message Ssl {
+  string addr = 1;
+  string cert_path = 2;
+  string key_path = 3;
+}
+
+message Unix {
+  string addr = 1;
+  int32 perm = 2;
+}
+
+message Extensions {
+  Jaeger jaeger = 1;
+  Bocha bocha = 2;
+}
+
+message Milvus {
+  string addr = 1;
+  string username = 2;
+  string password = 3;
+  string collection = 4;
+  int32  top_k = 5;
+  MetricType metric_type = 6;
+  string search_mode = 7;
+}
+
+message MetricType {
+  string dense = 1;   // L2 / IP / COSINE / HAMMING / JACCARD / TANIMOTO
+  string sparse = 2;  // BM25 or IP
+}
+
+message Bocha {
+  string api_key = 1;
+  string endpoint = 2;
+  int32 count = 3;
+  string freshness = 4;
+  bool summary = 5;
+}
+
+message Retrieve {
+  int32 top_k = 1;
+  double similarity = 2;
+}
+
+message Jaeger {
+  string addr = 1;
+  string service_name = 2;
+}

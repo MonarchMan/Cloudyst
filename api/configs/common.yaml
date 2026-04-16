@@ -1,0 +1,23 @@
+data:
+  database:
+    db_type: postgres
+    username: dylan
+    password: yongheng290..
+    host: simple-net.dynv6.net
+    name: cloud_storage
+    port: 5444
+    ssl_mode: disable
+    charset: utf-8
+  redis:
+    network: tcp
+    addr: simple-net.dynv6.net:6333
+    db: 9
+    password: yi290...
+
+server:
+  sys:
+    hash_salt: d8TGjydABM4vQWewZ06D0bUlT4litVBtqs4cVoPXFaxEpZl7OlTE7Q1G4xoGrHsB
+
+extensions:
+  jaeger:
+    addr: simple-net.dynv6.net

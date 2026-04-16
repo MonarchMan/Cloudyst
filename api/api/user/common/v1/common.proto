@@ -1,0 +1,207 @@
+syntax = "proto3";
+
+package user.common.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "validate/validate.proto";
+import "file/common/v1/common.proto";
+import "errors/errors.proto";
+
+option go_package = "api/api/user/common/v1;v1";
+
+message ListRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string order_by = 3;
+  string order_direction = 4;
+  map<string, string> conditions = 5;
+  map<string, string> searches = 6;
+}
+
+message PaginationArgs {
+  int32 page = 1;
+  int32 page_size = 2;
+  bool use_cursor_pagination = 3;
+  string page_token = 4;
+  string order_by = 5;
+  string order_direction = 6;
+}
+
+message PaginationResults {
+  int32 page = 1;
+  int32 page_size = 2;
+  int32 total_items = 3;
+  string next_page_token = 4;
+  bool is_cursor = 5;
+}
+
+message PageToken {
+  google.protobuf.Timestamp time = 1;
+  int32 id = 2;
+  string id_hash = 3;
+  string string = 4;
+  int32 int = 5;
+  bool start_with_file = 6;
+}
+
+// User 用户信息
+message UserResponse {
+  string id = 1;
+  string email = 2;
+  string nickname = 3;
+  string status = 4;
+  string avatar = 5;
+  google.protobuf.Timestamp created_at = 6;
+  string preferred_theme = 7;
+  bool anonymous = 8;
+  optional GroupResponse group = 9;
+  repeated PinedFile pined = 10;
+  string language = 11;
+  bool disable_view_sync = 12;
+  ShareLinksInProfileLevel share_links_in_profile = 13;
+}
+
+// Group 用户组
+message GroupResponse {
+  string id = 1;
+  string name = 2;
+  optional bytes permission = 3;
+  int32 direct_link_batch_size = 4;
+  int32 trash_retention = 5;
+}
+
+// PinedFile 固定文件
+message PinedFile {
+  string uri = 1;
+  string name = 2;
+}
+
+// ShareLinksInProfileLevel 分享链接级别
+enum ShareLinksInProfileLevel {
+  PUBLIC_SHARE_ONLY = 0;
+  ALL_SHARE = 1;
+  HIDE_SHARE = 2;
+}
+
+// UserSetting 用户设置
+message UserSetting {
+  bool profile_off = 1;
+  string preferred_theme = 2;
+  bool version_retention = 3;
+  repeated string version_retention_ext = 4;
+  int32 version_retention_max = 5;
+  repeated PinedFile pined = 6;
+  string language = 7;  // 对应 email_language
+  bool disable_view_sync = 8;
+  map<string, file.common.v1.ExplorerView> fs_view_map = 9;
+  ShareLinksInProfileLevel share_links_in_profile = 10;
+}
+
+// GroupSetting 用户组其他配置
+message GroupSetting {
+  int64 compress_size = 1;          // 可压缩大小
+  int64 decompress_size = 2;
+  google.protobuf.Struct remote_download_options = 3;  // 离线下载用户组配置
+  int32 source_batch_size = 4;      // 对应 source_batch
+  int32 aria2_batch_size = 5;       // 对应 aria2_batch
+  int32 max_walked_files = 6;
+  int32 trash_retention = 7;
+  bool redirected_source = 8;
+}
+
+// 排序方向枚举
+enum OrderDirection {
+  ORDER_DIRECTION_UNSPECIFIED = 0;
+  ORDER_DIRECTION_ASC = 1;
+  ORDER_DIRECTION_DESC = 2;
+}
+
+// 视图类型枚举
+enum ViewType {
+  VIEW_TYPE_UNSPECIFIED = 0;
+  VIEW_TYPE_LIST = 1;
+  VIEW_TYPE_GRID = 2;
+  VIEW_TYPE_GALLERY = 3;
+}
+
+message ListViewColumn {
+  int32 type = 1 [(validate.rules).int32 = {gte: 0}];
+  int32 width = 2;
+
+}
+
+message ColumnTypeProps {
+  string metadata_key = 1 [(validate.rules).string = {max_len: 255}];
+  string custom_props_id = 2 [(validate.rules).string = {max_len: 255}];
+}
+
+message StoragePolicyInfo {
+  int32 id = 1 [(validate.rules).int32 = {gt: 0}];
+  string name = 2 [(validate.rules).string = {max_len: 255}];
+  string type = 3 [(validate.rules).string = {max_len: 255}];
+  bool is_private = 4;
+}
+
+message DavAccountProps {
+
+}
+
+// Error Definition
+enum ErrorReason {
+  option (errors.default_code) = 400;
+
+  UNSPECIFIED = 0;
+
+  UNAUTHORIZED = 401 [(errors.code) = 401];
+
+  PHONE_REQUIRED = 40010;
+
+  USER_BANNED = 40017;
+
+  USER_NOT_ACTIVATED = 40018;
+
+  CREDENTIAL_INVALID = 40020;
+
+  USER_NOT_FOUND = 40021;
+
+  CODE_2FA = 40022;
+
+  LOGIN_SESSION_NOT_EXIST = 40023;
+
+  INITIALIZE_AUTHN = 40024;
+
+  WEB_AUTHN_CREDENTIAL_INVALID = 40025;
+
+  CAPTCHA = 40026;
+
+  CAPTCHA_REFRESH_NEED = 40027;
+
+  SEND_EMAIL_FAILED = 40028;
+
+  INVALID_TEMP_LINK = 40029;
+
+  TEMP_LINK_EXPIRED = 40030;
+
+  EMAIL_PROVIDER_BANED = 40031;
+
+  EMAIL_EXISTED = 40032;
+
+  EMAIL_SENT_AGAIN = 40033;
+
+  USER_CANNOT_ACTIVATE = 40034;
+
+  INVALID_ACTION_ON_DEFAULT_USER = 40043;
+
+  INSUFFICIENT_CAPACITY = 40051;
+
+  INSUFFICIENT_CREDIT = 40062;
+
+  INVALID_PASSWORD = 40069;
+
+  OWNER_ONLY = 40082;
+
+  PURCHASE_REQUIRED = 40083;
+
+  MANAGED_ACCOUNT_MINIMUM_OPEN_ID = 40084;
+}

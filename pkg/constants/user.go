@@ -1,0 +1,24 @@
+package constants
+
+type GroupPermission int
+
+const (
+	GroupPermissionIsAdmin GroupPermission = iota
+	GroupPermissionIsAnonymous
+	GroupPermissionShare
+	GroupPermissionWebDAV
+	GroupPermissionArchiveDownload
+	GroupPermissionArchiveTask
+	GroupPermissionWebDAVProxy
+	GroupPermissionShareDownload
+	GroupPermission_CommunityPlaceholder1
+	GroupPermissionRemoteDownload
+	GroupPermission_CommunityPlaceholder2
+	GroupPermissionRedirectedSource // not used
+	GroupPermissionAdvanceDelete
+	GroupPermission_CommunityPlaceholder3
+	GroupPermission_CommunityPlaceholder4
+	GroupPermissionSetExplicitUser_placeholder
+	GroupPermissionIgnoreFileOwnership // not used
+	GroupPermissionUniqueRedirectDirectLink
+)

@@ -1,0 +1,55 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "api/external/conf;conf";
+
+message Bootstrap {
+  Data data = 1;
+  Server server = 2;
+  Extensions extensions = 3;
+}
+
+message Data {
+  message Database {
+    string db_type = 1;
+    string username = 2;
+    string password = 3;
+    string host = 4;
+    string name = 6;
+    string table_prefix = 5;
+    string db_file = 7;
+    int32 port = 8;
+    string charset = 9;
+    bool unix_socket = 10;
+    string source = 11;
+    string ssl_mode = 12;
+  }
+  message Redis {
+    string network = 1;
+    string addr = 2;
+    string user = 3;
+    string password = 4;
+    int32 db = 5;
+    bool use_tls = 6;
+    bool tls_skip_verify = 7;
+  }
+  Database database = 1;
+  Redis redis = 2;
+}
+
+message Server {
+  Sys sys = 1;
+}
+
+message Sys {
+  string hash_salt = 1;
+}
+
+message Extensions {
+  Jaeger jaeger = 1;
+}
+
+message Jaeger {
+  string addr = 1;
+  string service_name = 2;
+}

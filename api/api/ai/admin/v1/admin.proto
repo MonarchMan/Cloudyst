@@ -1,0 +1,272 @@
+syntax = "proto3";
+
+package ai.admin.v1;
+
+option go_package = "api/api/ai/admin/v1;v1";
+option java_multiple_files = true;
+option java_package = "ai.admin.v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "common/v1/common.proto";
+import "ai/common/v1/entpb.proto";
+
+service Admin {
+  // Api Key
+  rpc CreateApikey (ai.common.v1.AiApiKey) returns (ai.common.v1.AiApiKey) {
+    option (google.api.http) = {
+      post: "/admin/ai/api-key"
+      body: "*"
+    };
+  }
+  rpc UpdateApikey (ai.common.v1.AiApiKey) returns (ai.common.v1.AiApiKey) {
+    option (google.api.http) = {
+      put: "/admin/ai/api-key/{id}"
+      body: "*"
+    };
+  };
+  rpc DeleteApikey (DeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/ai/api-key/{id}"
+    };
+  };
+  rpc GetApikey (SimpleRequest) returns (ai.common.v1.AiApiKey) {
+    option (google.api.http) = {
+      get: "/admin/ai/api-key/{id}"
+    };
+  }
+  rpc ListApikey (.common.v1.ListRequest) returns (ListApikeyResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/api-key/list"
+    };
+  };
+  rpc BatchDeleteApiKey (BatchDeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/ai/api_key/batch/delete",
+      body: "*"
+    };
+  }
+
+  // Model
+  rpc CreateModel (ai.common.v1.AiModel) returns (ai.common.v1.AiModel) {
+    option (google.api.http) = {
+      post: "/admin/ai/model"
+      body: "*"
+    };
+  };
+  rpc UpdateModel (ai.common.v1.AiModel) returns (ai.common.v1.AiModel) {
+    option (google.api.http) = {
+      put: "/admin/ai/model/{id}"
+      body: "*"
+    };
+  };
+  rpc DeleteModel (DeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/ai/model/{id}"
+    };
+  };
+  rpc GetModel (SimpleRequest) returns (ai.common.v1.AiModel) {
+    option (google.api.http) = {
+      get: "/admin/ai/model/{id}"
+    };
+  };
+  rpc ListModel (.common.v1.ListRequest) returns (ListModelResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/model/list"
+    };
+  };
+  rpc BatchDeleteModel (BatchDeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/ai/model/batch/delete",
+      body: "*"
+    };
+  }
+
+  // Role
+  rpc CreateRole (ai.common.v1.AiChatRole) returns (ai.common.v1.AiChatRole) {
+    option (google.api.http) = {
+      post: "/admin/ai/role"
+      body: "*"
+    };
+  };
+  rpc GetRole (SimpleRequest) returns (ai.common.v1.AiChatRole) {
+    option (google.api.http) = {
+      get: "/admin/ai/role/{id}"
+    };
+  };
+  rpc ListRole (.common.v1.ListRequest) returns (ListRoleResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/role/list"
+    };
+  };
+  rpc BatchDeleteRole (BatchDeleteRoleRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/ai/role/batch/delete",
+      body: "*"
+    };
+  }
+
+  // Knowledge
+  rpc DeleteKnowledge (DeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/ai/knowledge/{id}"
+    };
+  };
+  rpc GetKnowledge (SimpleRequest) returns (ai.common.v1.AiKnowledge) {
+    option (google.api.http) = {
+      get: "/admin/ai/knowledge/{id}"
+    };
+  };
+  rpc ListKnowledge (.common.v1.ListRequest) returns (ListKnowledgeResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/knowledge/list"
+    };
+  };
+
+  // Knowledge Document
+  rpc DeleteKnowledgeDocument (DeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/ai/knowledge/document/{id}"
+    };
+  }
+  rpc BatchDeleteKnowledgeDocument (BatchDeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/ai/knowledge/document/delete",
+      body: "*"
+    };
+  }
+  rpc GetKnowledgeDocument (SimpleRequest) returns (ai.common.v1.AiKnowledgeDocument) {
+    option (google.api.http) = {
+      get: "/admin/ai/knowledge/document/{id}"
+    };
+  }
+  rpc ListKnowledgeDocument (.common.v1.ListRequest) returns (ListKnowledgeDocumentResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/knowledge/document/list"
+    };
+  }
+  rpc UpdateDocumentStatus (UpdateDocumentStatusRequest) returns (ai.common.v1.AiKnowledgeDocument) {
+    option (google.api.http) = {
+      put: "/admin/ai/knowledge/document/{id}/status"
+      body: "*"
+    };
+  }
+
+  // Knowledge Document Segment
+  rpc GetKnowledgeSegment (SimpleRequest) returns (ai.common.v1.AiKnowledgeSegment) {
+    option (google.api.http) = {
+      get: "/admin/ai/knowledge/segment/{id}"
+    };
+  }
+
+  rpc ListKnowledgeSegments (.common.v1.ListRequest) returns (ListKnowledgeSegmentResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/knowledge/segment/list"
+    };
+  }
+
+  // Image
+  rpc ListImage (.common.v1.ListRequest) returns (ListImageResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/image/list"
+    };
+  };
+  rpc UpdateImagePublicStatus (UpdateImageStatusRequest) returns (ai.common.v1.AiImage) {
+    option (google.api.http) = {
+      put: "/admin/ai/image/{id}/public"
+      body: "*"
+    };
+  }
+  rpc BatchDeleteImage (BatchDeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/ai/image/delete",
+      body: "*"
+    };
+  }
+}
+
+message SimpleRequest {
+  int64 id = 1;
+}
+
+message DeleteRequest {
+  int64 id = 1;
+  bool force = 2;
+}
+
+message BatchCreateResponse {
+  repeated ai.common.v1.AiKnowledgeDocument documents = 1;
+  int64 total = 2;
+}
+
+message BatchDeleteRequest {
+  repeated int64 ids = 1;
+  bool force = 2;
+}
+
+// Api Key
+message ListApikeyResponse {
+   repeated ai.common.v1.AiApiKey api_keys = 1;
+  .common.v1.PaginationResults pagination = 2;
+}
+
+// Model
+message ListModelResponse {
+  repeated ai.common.v1.AiModel models = 1;
+  .common.v1.PaginationResults pagination = 2;
+}
+
+//Role
+message ListRoleResponse {
+  repeated ai.common.v1.AiChatRole roles = 1;
+  .common.v1.PaginationResults pagination = 2;
+}
+
+message BatchDeleteRoleRequest {
+  repeated int64 ids = 1;
+  bool force = 2;
+}
+
+// Knowledge
+message ListKnowledgeResponse {
+  repeated ai.common.v1.AiKnowledge knowledges = 1;
+  .common.v1.PaginationResults pagination = 2;
+}
+
+// Knowledge Document
+message ListKnowledgeDocumentResponse {
+  repeated ai.common.v1.AiKnowledgeDocument documents = 1;
+  .common.v1.PaginationResults pagination = 2;
+}
+
+message BatchCreateKnowledgeDocumentRequest {
+  int64 knowledge_id = 1;
+  int32 segment_max_tokens = 2;
+  repeated DocumentRequest documents = 3;
+}
+message DocumentRequest {
+  string name = 1;
+  string url = 2;
+}
+
+message UpdateDocumentStatusRequest {
+  int64 id = 1;
+  string status = 2;
+}
+
+// Knowledge Document Segment
+message ListKnowledgeSegmentResponse {
+  repeated ai.common.v1.AiKnowledgeSegment segments = 1;
+  .common.v1.PaginationResults pagination = 2;
+}
+
+// Image
+message ListImageResponse {
+  repeated ai.common.v1.AiImage images = 1;
+  .common.v1.PaginationResults pagination = 2;
+}
+
+message UpdateImageStatusRequest {
+  int64 id = 1;
+  string status= 2;
+}

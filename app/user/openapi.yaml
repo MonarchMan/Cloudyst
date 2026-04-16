@@ -1,0 +1,862 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: ""
+    version: 0.0.1
+paths:
+    /v1/admin/user:
+        put:
+            tags:
+                - User
+            operationId: User_AdminCreateUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpsertUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AdminGetUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - User
+            operationId: User_AdminUpdateUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpsertUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AdminGetUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/admin/user/batch/delete:
+        post:
+            tags:
+                - User
+            operationId: User_AdminDeleteUsers
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DeleteUsersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/admin/user/info/{id}:
+        get:
+            tags:
+                - User
+            operationId: User_AdminGetUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AdminGetUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/admin/user/list:
+        get:
+            tags:
+                - User
+            description: Admin APIs
+            operationId: User_AdminListUsers
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: orderBy
+                  in: query
+                  schema:
+                    type: string
+                - name: orderDirection
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/session/prepare:
+        get:
+            tags:
+                - Session
+            operationId: Session_PrepareLogin
+            parameters:
+                - name: email
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PrepareLoginResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/session/token:
+        post:
+            tags:
+                - Session
+            operationId: Session_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/LoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BuiltinLoginResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/session/token/2fa:
+        post:
+            tags:
+                - Session
+            operationId: Session_Login2FA
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Login2FARequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BuiltinLoginResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/session/token/refresh:
+        post:
+            tags:
+                - Session
+            operationId: Session_RefreshToken
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RefreshTokenRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Token'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/session/token/signout:
+        post:
+            tags:
+                - Session
+            operationId: Session_SignOut
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RefreshTokenRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/session/token/webauthn:
+        put:
+            tags:
+                - Session
+            operationId: Session_FinishLoginAuthn
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/FinishPasskeyLoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BuiltinLoginResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user:
+        post:
+            tags:
+                - User
+            operationId: User_Register
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RegisterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user/activate/{id}:
+        post:
+            tags:
+                - User
+            operationId: User_Activate
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SimpleUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user/capacity:
+        get:
+            tags:
+                - User
+            operationId: User_GetCapacity
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CapacityResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user/info/{id}:
+        get:
+            tags:
+                - User
+            operationId: User_GetUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user/me:
+        get:
+            tags:
+                - User
+            operationId: User_GetUserMe
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user/passkey/{id}:
+        delete:
+            tags:
+                - User
+            operationId: User_DeletePasskey
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user/register/webauthn:
+        put:
+            tags:
+                - User
+            operationId: User_StartRegisterAuthn
+            requestBody:
+                content:
+                    application/json: {}
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PrepareRegisterPasskeyResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        post:
+            tags:
+                - User
+            operationId: User_FinishRegisterAuthn
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/FinishPasskeyRegisterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetPasskeyResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user/reset:
+        post:
+            tags:
+                - User
+            operationId: User_SendResetEmail
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendResetEmailRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user/reset/{id}:
+        patch:
+            tags:
+                - User
+            operationId: User_ResetPassword
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ResetPasswordRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/user/search:
+        get:
+            tags:
+                - User
+            operationId: User_SearchUsers
+            parameters:
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SearchUsersResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+components:
+    schemas:
+        AdminGetUserResponse:
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/User'
+                hashId:
+                    type: string
+                twoFaEnabled:
+                    type: boolean
+                capacity:
+                    $ref: '#/components/schemas/CapacityResponse'
+        BuiltinLoginResponse:
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/GetUserResponse'
+                token:
+                    $ref: '#/components/schemas/Token'
+        CapacityResponse:
+            type: object
+            properties:
+                total:
+                    type: string
+                used:
+                    type: string
+        DeleteUsersRequest:
+            type: object
+            properties:
+                ids:
+                    type: array
+                    items:
+                        type: integer
+                        format: int32
+        FinishPasskeyLoginRequest:
+            type: object
+            properties:
+                sessionId:
+                    type: string
+                response:
+                    type: string
+        FinishPasskeyRegisterRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                response:
+                    type: string
+                ua:
+                    type: string
+        GetGroupResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                permissions:
+                    type: string
+                    format: bytes
+                directLinkBatchSize:
+                    type: integer
+                    format: int32
+                trashRetention:
+                    type: integer
+                    format: int32
+        GetPasskeyResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                usedAt:
+                    type: string
+                    format: date-time
+                createdAt:
+                    type: string
+                    format: date-time
+        GetUserResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                email:
+                    type: string
+                nickname:
+                    type: string
+                status:
+                    type: string
+                avatar:
+                    type: string
+                createdAt:
+                    type: string
+                    format: date-time
+                preferredTheme:
+                    type: string
+                anonymous:
+                    type: boolean
+                group:
+                    $ref: '#/components/schemas/GetGroupResponse'
+                pined:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PinedFile'
+                language:
+                    type: string
+                disableViewSync:
+                    type: boolean
+                shareLinksInProfile:
+                    type: string
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        Group:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                permission:
+                    type: string
+                    format: bytes
+                directLinkBatchSize:
+                    type: integer
+                    format: int32
+                trashRetention:
+                    type: integer
+                    format: int32
+            description: Group 用户组
+        ListUserResponse:
+            type: object
+            properties:
+                users:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AdminGetUserResponse'
+                pagination:
+                    $ref: '#/components/schemas/PaginationResults'
+            description: Admin APIs
+        Login2FARequest:
+            type: object
+            properties:
+                otp:
+                    type: string
+                sessionId:
+                    type: string
+        LoginRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+        PaginationResults:
+            type: object
+            properties:
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+                totalItems:
+                    type: integer
+                    format: int32
+                nextPageToken:
+                    type: string
+                isCursor:
+                    type: boolean
+        PinedFile:
+            type: object
+            properties:
+                uri:
+                    type: string
+                name:
+                    type: string
+            description: PinedFile 固定文件
+        PrepareLoginResponse:
+            type: object
+            properties:
+                webAuthnEnabled:
+                    type: boolean
+                passwordEnabled:
+                    type: boolean
+        PreparePasskeyLoginResponse:
+            type: object
+            properties:
+                options:
+                    type: string
+                    format: bytes
+                sessionId:
+                    type: string
+        PrepareRegisterPasskeyResponse:
+            type: object
+            properties:
+                credential:
+                    type: string
+                    format: bytes
+        RefreshTokenRequest:
+            type: object
+            properties:
+                refreshToken:
+                    type: string
+        RegisterRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+                language:
+                    type: string
+        ResetPasswordRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                password:
+                    type: string
+                secret:
+                    type: string
+        SearchUsersResponse:
+            type: object
+            properties:
+                users:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GetUserResponse'
+        SendResetEmailRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                language:
+                    type: string
+        SimpleUserRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any users-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        Token:
+            type: object
+            properties:
+                accessToken:
+                    type: string
+                refreshToken:
+                    type: string
+                accessExpires:
+                    type: string
+                    format: date-time
+                refreshExpires:
+                    type: string
+                    format: date-time
+                uid:
+                    type: integer
+                    format: int32
+        UpsertUserRequest:
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/User'
+                password:
+                    type: string
+                twoFa:
+                    type: string
+        User:
+            type: object
+            properties:
+                id:
+                    type: string
+                email:
+                    type: string
+                nickname:
+                    type: string
+                status:
+                    type: string
+                avatar:
+                    type: string
+                createdAt:
+                    type: string
+                    format: date-time
+                preferredTheme:
+                    type: string
+                anonymous:
+                    type: boolean
+                group:
+                    $ref: '#/components/schemas/Group'
+                pined:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PinedFile'
+                language:
+                    type: string
+                disableViewSync:
+                    type: boolean
+                shareLinksInProfile:
+                    type: integer
+                    format: enum
+            description: User 用户信息
+tags:
+    - name: Session
+    - name: User

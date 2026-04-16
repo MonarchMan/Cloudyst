@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package file.share.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "file/common/v1/common.proto";
+
+option go_package = "api/api/file/share/v1;v1";
+
+service Share {
+  rpc CreateShare(UpsertShareRequest) returns (UpsertShareResponse) {
+    option (google.api.http) = {
+      put: "/share/create",
+      body: "*"
+    };
+  }
+
+  rpc EditShare(UpsertShareRequest) returns (UpsertShareResponse) {
+    option (google.api.http) = {
+      post: "/share/{id}",
+      body: "*"
+    };
+  }
+
+  rpc GetShare(GetShareRequest) returns (GetShareResponse) {
+    option (google.api.http) = {
+      get: "/share/info/{id}",
+    };
+  }
+
+  rpc ListShares(ListSharesRequest) returns (ListSharesResponse) {
+    option (google.api.http) = {
+      get: "/share/list",
+    };
+  }
+
+  rpc DeleteShare(DeleteShareRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/share/{id}",
+    };
+  }
+
+  rpc ListUserPublicShare(ListSharesRequest) returns (ListSharesResponse) {
+    option (google.api.http) = {
+      get: "/share/user/{id}",
+    };
+  }
+
+  rpc CountByTimeRange(TimeRangeRequest) returns (CountByTimeRangeResponse);
+}
+
+message UpsertShareRequest {
+  string id = 1;
+  string uri = 2;
+  bool is_private = 3;
+  string password = 4;
+  int32 remain_downloads = 5;
+  int32 expire = 6;
+  bool share_view = 7;
+  bool show_read_me = 8;
+}
+
+message UpsertShareResponse {
+  string uri = 1;
+}
+
+message GetShareRequest {
+  string id = 1;
+  string password = 2;
+  bool count_views = 3;
+  bool owner_extended = 4;
+}
+
+message ListSharesRequest {
+  string id = 1;
+  int32 page_size = 2;
+  string order_by = 3;
+  string order_direction = 4;
+  string next_page_token = 5;
+}
+
+message ListSharesResponse {
+  repeated GetShareResponse shares = 1;
+  file.common.v1.PaginationResults pagination = 2;
+}
+
+message DeleteShareRequest {
+  int32 id = 1;
+}
+
+message GetShareResponse {
+  string id = 1;
+  string name = 2;
+  int32 remain_downloads = 3;
+  int32 visited = 4;
+  int32 downloaded = 5;
+  google.protobuf.Timestamp expires = 6;
+  bool unlocked = 7;
+  bool password_protected = 8;
+  int32 source_type = 9;
+  int32 owner_id = 10;
+  file.common.v1.UserInfo owner_info = 11;
+  google.protobuf.Timestamp created_at = 12;
+  bool expired = 13;
+  string url = 14;
+  bool show_readme = 15;
+
+  bool is_private = 16;
+  string password = 17;
+  bool share_view = 18;
+
+  string source_uri = 19;
+}
+
+message TimeRangeRequest {
+  google.protobuf.Timestamp start = 1;
+  google.protobuf.Timestamp end = 2;
+}
+
+message CountByTimeRangeResponse {
+  int32 count = 1;
+}
+
+// router
+message RedirectShareRequest {
+  string id = 1;
+  string password = 2;
+}

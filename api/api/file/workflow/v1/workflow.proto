@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package file.workflow.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "file/common/v1/common.proto";
+import "file/workflow/v1/task.proto";
+
+option go_package = "api/api/file/workflow/v1;v1";
+
+service Workflow {
+  rpc ImportFiles(ImportWorkflowRequest) returns (TaskResponse) {
+    option (google.api.http) = {
+      post: "/workflow/import",
+      body: "*",
+    };
+  }
+
+  rpc ListTasks(ListTasksRequest) returns (ListTasksResponse) {
+    option (google.api.http) = {
+      get: "/workflow/list",
+    };
+  }
+
+  rpc GetTaskPhaseProgress(SimpleWorkflowRequest) returns (TaskPhaseProgressResponse) {
+    option (google.api.http) = {
+      get: "/workflow/progress/{id}",
+    };
+  }
+
+  rpc CreateArchive(ArchiveWorkflowRequest) returns (TaskResponse) {
+    option (google.api.http) = {
+      post: "/workflow/archive",
+      body: "*",
+    };
+  }
+
+  rpc ExtractArchive(ArchiveWorkflowRequest) returns (TaskResponse) {
+    option (google.api.http) = {
+      post: "/workflow/extract",
+      body: "*",
+    };
+  }
+
+  rpc CreateRemoteDownload(DownloadWorkflowRequest) returns (ListTasksResponse) {
+    option (google.api.http) = {
+      post: "/workflow/download",
+      body: "*",
+    };
+  }
+
+  rpc SetDownloadTaskTarget(SetDownloadFilesRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      patch: "/workflow/download/{id}",
+      body: "*",
+    };
+  }
+
+  rpc CancelDownloadTask(SimpleWorkflowRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/workflow/download/{id}",
+    };
+  }
+}
+
+message ImportWorkflowRequest {
+  string src = 1;
+  string dst = 2;
+  bool extract_media_meta = 3;
+  string user_id = 4;
+  bool recursive = 5;
+  int32 policy_id = 6;
+}
+
+message ListTasksRequest {
+  int32 page_size = 1;
+  string category = 2;
+  string next_page_token = 3;
+}
+
+message ListTasksResponse {
+  repeated TaskResponse tasks = 1;
+  file.common.v1.PaginationResults pagination = 2;
+}
+
+message TaskPhaseProgressResponse {
+  map<string, Progress> progress_map = 1;
+}
+
+message ArchiveWorkflowRequest {
+  repeated string src = 1;
+  string dst = 2;
+  string encoding = 3;
+  string password = 4;
+  repeated string file_mask = 5;
+}
+
+message DownloadWorkflowRequest {
+  repeated string src = 1;
+  string src_file = 2;
+  string dst = 3;
+}
+
+message SetDownloadFilesRequest {
+  string id = 1;
+  repeated SetFileToDownloadArgs files = 2;
+}
+
+message SetFileToDownloadArgs {
+  int32 index = 1;
+  bool download = 2;
+}
+
+message SimpleWorkflowRequest {
+  string id = 1;
+}
+
+message TaskResponse {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  string id = 3;
+  string status = 4;
+  string type = 5;
+  NodeOption node = 6;
+  Summary summary = 7;
+  string error = 8;
+  repeated string error_history = 9;
+  int64 duration = 10;
+  int64 resume_time = 11;
+  int32 retry_count = 12;
+}
+
+message NodeOption {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  optional bytes capabilities = 4;
+}

@@ -1,0 +1,662 @@
+package workflows
+
+import (
+	pb "api/api/file/common/v1"
+	explorerpb "api/api/file/workflow/v1"
+	"api/external/trans"
+	"common/hashid"
+	"common/serializer"
+	"common/util"
+	"context"
+	"encoding/json"
+	"errors"
+	"file/ent"
+	"file/ent/task"
+	"file/internal/biz/cluster"
+	"file/internal/biz/downloader"
+	"file/internal/biz/filemanager"
+	"file/internal/biz/filemanager/fs"
+	"file/internal/biz/filemanager/manager"
+	"file/internal/biz/queue"
+	"file/internal/data/types"
+	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/samber/lo"
+)
+
+type (
+	RemoteDownloadTask struct {
+		*queue.DBTask
+
+		l        *log.Helper
+		state    *RemoteDownloadTaskState
+		node     cluster.Node
+		d        downloader.Downloader
+		progress *explorerpb.TaskPhaseProgressResponse
+	}
+	RemoteDownloadTaskPhase string
+	RemoteDownloadTaskState struct {
+		SrcFileUri         string                 `json:"src_file_uri,omitempty"`
+		SrcUri             string                 `json:"src_uri,omitempty"`
+		Dst                string                 `json:"dst,omitempty"`
+		Handle             *downloader.TaskHandle `json:"handle,omitempty"`
+		Status             *downloader.TaskStatus `json:"status,omitempty"`
+		NodeState          `json:",inline"`
+		Phase              RemoteDownloadTaskPhase `json:"phase,omitempty"`
+		SlaveUploadTaskID  int                     `json:"slave__upload_task_id,omitempty"`
+		SlaveUploadState   *SlaveUploadTaskState   `json:"slave_upload_state,omitempty"`
+		GetTaskStatusTried int                     `json:"get_task_status_tried,omitempty"`
+		Transferred        map[int]interface{}     `json:"transferred,omitempty"`
+		Failed             int                     `json:"failed,omitempty"`
+	}
+)
+
+const (
+	RemoteDownloadTaskPhaseNotStarted   RemoteDownloadTaskPhase = ""
+	RemoteDownloadTaskPhaseMonitor                              = "monitor"
+	RemoteDownloadTaskPhaseTransfer                             = "transfer"
+	RemoteDownloadTaskPhaseAwaitSeeding                         = "seeding"
+
+	GetTaskStatusMaxTries = 5
+
+	SummaryKeyDownloadStatus = "download"
+	SummaryKeySrcStr         = "src_str"
+
+	ProgressTypeRelocateTransferCount = "relocate"
+	ProgressTypeUploadSinglePrefix    = "upload_single_"
+
+	SummaryKeySrcMultiple    = "src_multiple"
+	SummaryKeySrcDstPolicyID = "dst_policy_id"
+	SummaryKeyFailed         = "failed"
+)
+
+func init() {
+	queue.RegisterResumableTaskFactory(queue.RemoteDownloadTaskType, NewRemoteDownloadTaskFromModel)
+}
+
+// NewRemoteDownloadTask creates a new RemoteDownloadTask
+func NewRemoteDownloadTask(ctx context.Context, src string, srcFile, dst string) (queue.Task, error) {
+	state := &RemoteDownloadTaskState{
+		SrcUri:     src,
+		SrcFileUri: srcFile,
+		Dst:        dst,
+		NodeState:  NodeState{},
+	}
+	stateBytes, err := json.Marshal(state)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal state: %w", err)
+	}
+
+	t := &RemoteDownloadTask{
+		DBTask: &queue.DBTask{
+			Task: &ent.Task{
+				Type:         queue.RemoteDownloadTaskType,
+				TraceID:      util.TraceID(ctx),
+				PrivateState: string(stateBytes),
+				PublicState:  &pb.TaskPublicState{},
+			},
+			DirectOwner: trans.FromContext(ctx),
+		},
+	}
+	return t, nil
+}
+
+func NewRemoteDownloadTaskFromModel(task *ent.Task) queue.Task {
+	return &RemoteDownloadTask{
+		DBTask: &queue.DBTask{
+			Task: task,
+		},
+	}
+}
+
+func (m *RemoteDownloadTask) Do(ctx context.Context) (task.Status, error) {
+	dep := filemanager.ManagerDepFromContext(ctx)
+	dbfsDep := filemanager.DBFSDepFromContext(ctx)
+	np := filemanager.NodePoolFromContext(ctx)
+	m.l = dep.Logger()
+
+	// unmarshal state
+	state := &RemoteDownloadTaskState{}
+	if err := json.Unmarshal([]byte(m.State()), state); err != nil {
+		return task.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
+	}
+	m.state = state
+
+	// select node
+	node, err := allocateNode(ctx, np, &m.state.NodeState, types.NodeCapabilityRemoteDownload)
+	if err != nil {
+		return task.StatusError, fmt.Errorf("failed to allocate node: %w", err)
+	}
+	m.node = node
+
+	// create downloader instance
+	if m.d == nil {
+		d, err := node.CreateDownloader(ctx, dep.RequestClient(), dep.SettingProvider())
+		if err != nil {
+			return task.StatusError, fmt.Errorf("failed to create downloader: %w", err)
+		}
+
+		m.d = d
+	}
+
+	next := task.StatusCompleted
+	switch m.state.Phase {
+	case RemoteDownloadTaskPhaseNotStarted:
+		next, err = m.createDownloadTask(ctx, dep, dbfsDep)
+	case RemoteDownloadTaskPhaseMonitor, RemoteDownloadTaskPhaseAwaitSeeding:
+		next, err = m.monitor(ctx, dep, dbfsDep)
+	case RemoteDownloadTaskPhaseTransfer:
+		if m.node.IsMaster() {
+			next, err = m.masterTransfer(ctx, dep, dbfsDep)
+		} else {
+			next, err = m.slaveTransfer(ctx, dep)
+		}
+	}
+
+	newStateStr, marshalErr := json.Marshal(m.state)
+	if marshalErr != nil {
+		return task.StatusError, fmt.Errorf("failed to marshal state: %w", marshalErr)
+	}
+
+	m.Lock()
+	m.Task.PrivateState = string(newStateStr)
+	m.Unlock()
+	return next, err
+}
+
+func (m *RemoteDownloadTask) createDownloadTask(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (task.Status, error) {
+	if m.state.Handle != nil {
+		m.state.Phase = RemoteDownloadTaskPhaseMonitor
+		return task.StatusSuspending, nil
+	}
+
+	user := trans.FromContext(ctx)
+	torrentUrl := m.state.SrcUri
+	if m.state.SrcFileUri != "" {
+		// Target is a torrent files
+		uri, err := fs.NewUriFromString(m.state.SrcFileUri)
+		if err != nil {
+			return task.StatusError, fmt.Errorf("failed to parse src files uri: %s (%w)", err, queue.CriticalErr)
+		}
+
+		fm := manager.NewFileManager(dep, dbfsDep, user)
+		expire := time.Now().Add(dep.SettingProvider().EntityUrlValidDuration(ctx))
+		torrentUrls, _, err := fm.GetEntityUrls(ctx, []manager.GetEntityUrlArgs{
+			{URI: uri},
+		}, fs.WithUrlExpire(&expire))
+		if err != nil {
+			return task.StatusError, fmt.Errorf("failed to get torrent entity urls: %w", err)
+		}
+
+		if len(torrentUrls) == 0 {
+			return task.StatusError, fmt.Errorf("no torrent urls found")
+		}
+
+		torrentUrl = torrentUrls[0].Url
+	}
+
+	// Create download task
+	handle, err := m.d.CreateTask(ctx, torrentUrl, nil)
+	if err != nil {
+		return task.StatusError, fmt.Errorf("failed to create download task: %w", err)
+	}
+
+	m.state.Handle = handle
+	m.state.Phase = RemoteDownloadTaskPhaseMonitor
+	return task.StatusSuspending, nil
+}
+
+func (m *RemoteDownloadTask) monitor(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (task.Status, error) {
+	resumeAfter := time.Duration(m.node.Settings(ctx).Interval) * time.Second
+
+	// Update task status
+	status, err := m.d.Info(ctx, m.state.Handle)
+	if err != nil {
+		if errors.Is(err, downloader.ErrTaskNotFount) && m.state.Status != nil {
+			// If task is not found, but it previously existed, consider it as canceled
+			m.l.WithContext(ctx).Warnf("task not found, consider it as canceled")
+			return task.StatusCanceled, nil
+		}
+
+		m.state.GetTaskStatusTried++
+		if m.state.GetTaskStatusTried >= GetTaskStatusMaxTries {
+			return task.StatusError, fmt.Errorf("failed to get task status after %d retry: %w", m.state.GetTaskStatusTried, err)
+		}
+
+		m.l.WithContext(ctx).Warnf("failed to get task info: %s, will retry.", err)
+		m.ResumeAfter(resumeAfter)
+		return task.StatusSuspending, nil
+	}
+
+	// Follow to new handle if needed
+	if status.FollowedBy != nil {
+		m.l.WithContext(ctx).Infof("Task handle updated to %v", status.FollowedBy)
+		m.state.Handle = status.FollowedBy
+		m.ResumeAfter(0)
+		return task.StatusSuspending, nil
+	}
+
+	if m.state.Status == nil || m.state.Status.Total != status.Total {
+		m.l.WithContext(ctx).Info("download size changed, re-validate files.")
+		// First time to get status / total size changed, check users capacity
+		if err := m.validateFiles(ctx, dep, dbfsDep, status); err != nil {
+			m.state.Status = status
+			return task.StatusError, fmt.Errorf("failed to validate files: %s (%w)", err, queue.CriticalErr)
+		}
+	}
+
+	m.state.Status = status
+	m.state.GetTaskStatusTried = 0
+
+	m.l.WithContext(ctx).Debugf("Monitor %q task state: %s", status.Name, status.State)
+	switch status.State {
+	case downloader.StatusSeeding:
+		m.l.WithContext(ctx).Info("Download task seeding")
+		if m.state.Phase == RemoteDownloadTaskPhaseMonitor {
+			// Not transferred
+			m.state.Phase = RemoteDownloadTaskPhaseTransfer
+			return task.StatusSuspending, nil
+		} else if !m.node.Settings(ctx).WaitForSeeding {
+			// Skip seeding
+			m.l.WithContext(ctx).Info("Download task seeding skipped.")
+			return task.StatusCompleted, nil
+		} else {
+			// Still seeding
+			m.ResumeAfter(resumeAfter)
+			return task.StatusSuspending, nil
+		}
+	case downloader.StatusCompleted:
+		m.l.WithContext(ctx).Info("Download task completed")
+		if m.state.Phase == RemoteDownloadTaskPhaseMonitor {
+			// Not transferred
+			m.state.Phase = RemoteDownloadTaskPhaseTransfer
+			return task.StatusSuspending, nil
+		}
+		// Seeding complete
+		m.l.WithContext(ctx).Info("Download task seeding completed")
+		return task.StatusCompleted, nil
+	case downloader.StatusDownloading:
+		m.ResumeAfter(resumeAfter)
+		return task.StatusSuspending, nil
+	case downloader.StatusUnknown, downloader.StatusError:
+		return task.StatusError, fmt.Errorf("download task failed with state %q (%w), errorMsg: %s", status.State, queue.CriticalErr, status.ErrorMessage)
+	}
+
+	m.ResumeAfter(resumeAfter)
+	return task.StatusSuspending, nil
+}
+
+func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.ManagerDep) (task.Status, error) {
+	user := trans.FromContext(ctx)
+	if m.state.Transferred == nil {
+		m.state.Transferred = make(map[int]interface{})
+	}
+
+	if m.state.SlaveUploadTaskID == 0 {
+		dstUri, err := fs.NewUriFromString(m.state.Dst)
+		if err != nil {
+			return task.StatusError, fmt.Errorf("failed to parse dst uri %q: %s (%w)", m.state.Dst, err, queue.CriticalErr)
+		}
+
+		// Create slave upload task
+		payload := &SlaveUploadTaskState{
+			Files:       []SlaveUploadEntity{},
+			MaxParallel: dep.SettingProvider().MaxParallelTransfer(ctx),
+			UserID:      int(user.Id),
+		}
+
+		// Construct files to be transferred
+		for _, f := range m.state.Status.Files {
+			if !f.Selected {
+				continue
+			}
+
+			// Skip already transferred
+			if _, ok := m.state.Transferred[f.Index]; ok {
+				continue
+			}
+
+			dst := dstUri.JoinRaw(sanitizeFileName(f.Name))
+			src := path.Join(m.state.Status.SavePath, f.Name)
+			payload.Files = append(payload.Files, SlaveUploadEntity{
+				Src:   src,
+				Uri:   dst,
+				Size:  f.Size,
+				Index: f.Index,
+			})
+		}
+
+		payloadStr, err := json.Marshal(payload)
+		if err != nil {
+			return task.StatusError, fmt.Errorf("failed to marshal payload: %w", err)
+		}
+
+		taskId, err := m.node.CreateTask(ctx, queue.SlaveUploadTaskType, string(payloadStr))
+		if err != nil {
+			return task.StatusError, fmt.Errorf("failed to create slave task: %w", err)
+		}
+
+		m.state.NodeState.progress = nil
+		m.state.SlaveUploadTaskID = taskId
+		m.ResumeAfter(0)
+		return task.StatusSuspending, nil
+	}
+
+	m.l.WithContext(ctx).Infof("Checking slave upload task %d...", m.state.SlaveUploadTaskID)
+	t, err := m.node.GetTask(ctx, m.state.SlaveUploadTaskID, true)
+	if err != nil {
+		return task.StatusError, fmt.Errorf("failed to get slave task: %w", err)
+	}
+
+	m.Lock()
+	m.state.NodeState.progress = t.Progress
+	m.Unlock()
+
+	m.state.SlaveUploadState = &SlaveUploadTaskState{}
+	if err := json.Unmarshal([]byte(t.PrivateState), m.state.SlaveUploadState); err != nil {
+		return task.StatusError, fmt.Errorf("failed to unmarshal slave compress state: %s (%w)", err, queue.CriticalErr)
+	}
+
+	if t.Status == task.StatusError || t.Status == task.StatusCompleted {
+		if len(m.state.SlaveUploadState.Transferred) < len(m.state.SlaveUploadState.Files) {
+			// Not all files transferred, retry
+			slaveTaskId := m.state.SlaveUploadTaskID
+			m.state.SlaveUploadTaskID = 0
+			for i, _ := range m.state.SlaveUploadState.Transferred {
+				m.state.Transferred[m.state.SlaveUploadState.Files[i].Index] = struct{}{}
+			}
+
+			m.l.WithContext(ctx).Warnf("Slave task %d failed to transfer %d files, retrying...", slaveTaskId, len(m.state.SlaveUploadState.Files)-len(m.state.SlaveUploadState.Transferred))
+			return task.StatusError, fmt.Errorf(
+				"slave task failed to transfer %d files, first 5 errors: %s",
+				len(m.state.SlaveUploadState.Files)-len(m.state.SlaveUploadState.Transferred),
+				m.state.SlaveUploadState.First5TransferErrors,
+			)
+		} else {
+			m.state.Phase = RemoteDownloadTaskPhaseAwaitSeeding
+			m.ResumeAfter(0)
+			return task.StatusSuspending, nil
+		}
+	}
+
+	if t.Status == task.StatusCanceled {
+		return task.StatusError, fmt.Errorf("slave task canceled (%w)", queue.CriticalErr)
+	}
+
+	m.l.WithContext(ctx).Infof("Slave task %d is still uploading, resume after 30s.", m.state.SlaveUploadTaskID)
+	m.ResumeAfter(time.Second * 30)
+	return task.StatusSuspending, nil
+}
+
+func (m *RemoteDownloadTask) masterTransfer(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (task.Status, error) {
+	if m.state.Transferred == nil {
+		m.state.Transferred = make(map[int]interface{})
+	}
+
+	maxParallel := dep.SettingProvider().MaxParallelTransfer(ctx)
+	wg := sync.WaitGroup{}
+	worker := make(chan int, maxParallel)
+	for i := 0; i < maxParallel; i++ {
+		worker <- i
+	}
+
+	// Sum up total count and select files
+	totalCount := 0
+	totalSize := int64(0)
+	allFiles := make([]downloader.TaskFile, 0, len(m.state.Status.Files))
+	for _, f := range m.state.Status.Files {
+		if f.Selected {
+			allFiles = append(allFiles, f)
+			totalSize += f.Size
+			totalCount++
+		}
+	}
+
+	m.Lock()
+	m.progress = &explorerpb.TaskPhaseProgressResponse{
+		ProgressMap: make(map[string]*explorerpb.Progress),
+	}
+	m.progress.ProgressMap[ProgressTypeUploadCount] = &explorerpb.Progress{Total: int64(totalCount)}
+	m.progress.ProgressMap[ProgressTypeUpload] = &explorerpb.Progress{Total: totalSize}
+	m.Unlock()
+
+	dstUri, err := fs.NewUriFromString(m.state.Dst)
+	if err != nil {
+		return task.StatusError, fmt.Errorf("failed to parse dst uri: %s (%w)", err, queue.CriticalErr)
+	}
+
+	user := trans.FromContext(ctx)
+	fm := manager.NewFileManager(dep, dbfsDep, user)
+	failed := int64(0)
+	ae := serializer.NewAggregateError()
+
+	transferFunc := func(workerId int, file downloader.TaskFile) {
+		sanitizedName := sanitizeFileName(file.Name)
+		dst := dstUri.JoinRaw(sanitizedName)
+		src := filepath.FromSlash(path.Join(m.state.Status.SavePath, file.Name))
+		m.l.WithContext(ctx).Infof("Uploading files %s to %s...", src, sanitizedName, dst)
+
+		progressKey := fmt.Sprintf("%s%d", ProgressTypeUploadSinglePrefix, workerId)
+		m.Lock()
+		m.progress.ProgressMap[progressKey] = &explorerpb.Progress{Identifier: dst.String(), Total: file.Size}
+		fileProgress := m.progress.ProgressMap[progressKey]
+		uploadProgress := m.progress.ProgressMap[ProgressTypeUpload]
+		uploadCountProgress := m.progress.ProgressMap[ProgressTypeUploadCount]
+		m.Unlock()
+
+		defer func() {
+			atomic.AddInt64(&uploadCountProgress.Current, 1)
+			worker <- workerId
+			wg.Done()
+		}()
+
+		fileStream, err := os.Open(src)
+		if err != nil {
+			m.l.WithContext(ctx).Warnf("Failed to open files %s: %s", src, err.Error())
+			atomic.AddInt64(&uploadProgress.Current, file.Size)
+			atomic.AddInt64(&failed, 1)
+			ae.Add(file.Name, fmt.Errorf("failed to open files: %w", err))
+			return
+		}
+
+		defer fileStream.Close()
+
+		fileData := &fs.UploadRequest{
+			Props: &fs.UploadProps{
+				Uri:  dst,
+				Size: file.Size,
+			},
+			ProgressFunc: func(current, diff int64, total int64) {
+				atomic.AddInt64(&fileProgress.Current, diff)
+				atomic.AddInt64(&uploadProgress.Current, diff)
+			},
+			File: fileStream,
+		}
+
+		_, err = fm.Update(ctx, fileData, fs.WithNoEntityType())
+		if err != nil {
+			m.l.WithContext(ctx).Warnf("Failed to upload files %s: %s", src, err.Error())
+			atomic.AddInt64(&failed, 1)
+			atomic.AddInt64(&uploadProgress.Current, file.Size)
+			ae.Add(file.Name, fmt.Errorf("failed to upload files: %w", err))
+			return
+		}
+
+		m.Lock()
+		m.state.Transferred[file.Index] = nil
+		m.Unlock()
+	}
+
+	// Start upload files
+	for _, file := range allFiles {
+		// Check if files is already transferred
+		if _, ok := m.state.Transferred[file.Index]; ok {
+			m.l.WithContext(ctx).Infof("File %s already transferred, skipping...", file.Name)
+			m.Lock()
+			atomic.AddInt64(&m.progress.ProgressMap[ProgressTypeUpload].Current, file.Size)
+			atomic.AddInt64(&m.progress.ProgressMap[ProgressTypeUploadCount].Current, 1)
+			m.Unlock()
+			continue
+		}
+
+		select {
+		case <-ctx.Done():
+			return task.StatusError, ctx.Err()
+		case workerId := <-worker:
+			wg.Add(1)
+
+			go transferFunc(workerId, file)
+		}
+	}
+
+	wg.Wait()
+	if failed > 0 {
+		m.state.Failed = int(failed)
+		m.l.WithContext(ctx).Errorf("Failed to transfer %d files(s).", failed)
+		return task.StatusError, fmt.Errorf("failed to transfer %d files(s), first 5 errors: %s", failed, ae.FormatFirstN(5))
+	}
+
+	m.l.WithContext(ctx).Info("All files transferred.")
+	m.state.Phase = RemoteDownloadTaskPhaseAwaitSeeding
+	return task.StatusSuspending, nil
+}
+
+func (m *RemoteDownloadTask) awaitSeeding(ctx context.Context) (task.Status, error) {
+	return task.StatusSuspending, nil
+}
+
+func (m *RemoteDownloadTask) validateFiles(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep,
+	status *downloader.TaskStatus) error {
+	// Validate files
+	user := trans.FromContext(ctx)
+	fm := manager.NewFileManager(dep, dbfsDep, user)
+
+	dstUri, err := fs.NewUriFromString(m.state.Dst)
+	if err != nil {
+		return fmt.Errorf("failed to parse dst uri: %w", err)
+	}
+
+	selectedFiles := lo.Filter(status.Files, func(f downloader.TaskFile, _ int) bool {
+		return f.Selected
+	})
+	if len(selectedFiles) == 0 {
+		return fmt.Errorf("no selected files found in download task")
+	}
+
+	validateArgs := lo.Map(selectedFiles, func(f downloader.TaskFile, _ int) fs.PreValidateFile {
+		return fs.PreValidateFile{
+			Name:     sanitizeFileName(f.Name),
+			Size:     f.Size,
+			OmitName: f.Name == "",
+		}
+	})
+
+	if err := fm.PreValidateUpload(ctx, dstUri, validateArgs...); err != nil {
+		return fmt.Errorf("failed to pre-validate files: %w", err)
+	}
+
+	return nil
+}
+
+func (m *RemoteDownloadTask) Cleanup(ctx context.Context) error {
+	if m.state.Handle != nil {
+		if err := m.d.Cancel(ctx, m.state.Handle); err != nil {
+			m.l.WithContext(ctx).Warnf("failed to cancel download task: %s", err)
+		}
+	}
+
+	if m.state.Status != nil && m.node.IsMaster() && m.state.Status.SavePath != "" {
+		if err := os.RemoveAll(m.state.Status.SavePath); err != nil {
+			m.l.WithContext(ctx).Warnf("failed to remove download temp folder: %s", err)
+		}
+	}
+
+	return nil
+}
+
+// SetDownloadTarget sets the files to download for the task
+func (m *RemoteDownloadTask) SetDownloadTarget(ctx context.Context, args ...*explorerpb.SetFileToDownloadArgs) error {
+	if m.state.Handle == nil {
+		return fmt.Errorf("download task not created")
+	}
+
+	return m.d.SetFilesToDownload(ctx, m.state.Handle, args...)
+}
+
+// CancelDownload cancels the download task
+func (m *RemoteDownloadTask) CancelDownload(ctx context.Context) error {
+	if m.state.Handle == nil {
+		return nil
+	}
+
+	return m.d.Cancel(ctx, m.state.Handle)
+}
+
+func (m *RemoteDownloadTask) Summarize(hasher hashid.Encoder) *explorerpb.Summary {
+	// unmarshal state
+	if m.state == nil {
+		if err := json.Unmarshal([]byte(m.State()), &m.state); err != nil {
+			return nil
+		}
+	}
+
+	var status *downloader.TaskStatus
+	if m.state.Status != nil {
+		status = &*m.state.Status
+
+		// Redact save path
+		status.SavePath = ""
+	}
+
+	failed := m.state.Failed
+	if m.state.SlaveUploadState != nil && m.state.Phase != RemoteDownloadTaskPhaseTransfer {
+		failed = len(m.state.SlaveUploadState.Files) - len(m.state.SlaveUploadState.Transferred)
+	}
+
+	statusBytes, _ := json.Marshal(status)
+	return &explorerpb.Summary{
+		Phase:  string(m.state.Phase),
+		NodeId: int32(m.state.NodeID),
+		Props: map[string]string{
+			SummaryKeySrcStr:         m.state.SrcUri,
+			SummaryKeySrc:            m.state.SrcFileUri,
+			SummaryKeyDst:            m.state.Dst,
+			SummaryKeyFailed:         strconv.Itoa(failed),
+			SummaryKeyDownloadStatus: string(statusBytes),
+		},
+	}
+}
+
+func (m *RemoteDownloadTask) Progress(ctx context.Context) *explorerpb.TaskPhaseProgressResponse {
+	m.Lock()
+	defer m.Unlock()
+
+	merged := make(map[string]*explorerpb.Progress)
+	for k, v := range m.progress.ProgressMap {
+		merged[k] = v
+	}
+
+	if m.state.NodeState.progress != nil {
+		for k, v := range m.state.NodeState.progress.ProgressMap {
+			merged[k] = v
+		}
+	}
+
+	return &explorerpb.TaskPhaseProgressResponse{
+		ProgressMap: merged,
+	}
+}
+
+func sanitizeFileName(name string) string {
+	r := strings.NewReplacer("\\", "_", ":", "_", "*", "_", "?", "_", "\"", "_", "<", "_", ">", "_", "|", "_")
+	return r.Replace(name)
+}

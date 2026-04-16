@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package common.v1;
+
+option go_package = "api/api/common/v1;v1";
+
+import "errors/errors.proto";
+
+// 列取参数
+message ListRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string order_by = 3;
+  string order_direction = 4;
+  map<string, string> conditions = 5;
+  map<string, string> searches = 6;
+}
+
+message PaginationArgs {
+  int32 page = 1;
+  int32 page_size = 2;
+  string order_by = 5;
+  string order_direction = 6;
+}
+
+message PaginationResults {
+  int32 page = 1;
+  int32 page_size = 2;
+  int32 total_items = 3;
+}
+
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+
+  STATUS_ACTIVE = 1;
+
+  STATUS_INACTIVE = 2;
+}
+
+enum ErrorReason {
+  option (errors.default_code) = 500;
+
+  UNSPECIFIED = 0 [(errors.code) = 400];
+
+  NOT_FULLY_SUCCESS = 203 [(errors.code) = 500];
+
+  REDIRECT = 302 [(errors.code) = 302];
+
+  FORBIDDEN = 403 [(errors.code) = 403];
+
+  NOT_FOUND = 404 [(errors.code) = 404];
+
+  CONFLICT = 409 [(errors.code) = 409];
+
+  PARAM_INVALID = 40001 [(errors.code) = 400];
+
+  FEATURE_NOT_ENABLED = 40019;
+
+  VERSION_MISMATCH = 40061 [(errors.code) = 400];
+
+  INVALID_SIGN = 40071 [(errors.code) = 400];
+
+  SIGN_EXPIRED = 40072 [(errors.code) = 400];
+
+  LOCK_CONFLICT = 40073 [(errors.code) = 409];
+
+  LOCK_EXPIRED = 40074 [(errors.code) = 409];
+
+  BATCH_OPERATION_NOT_FULLY_COMPLETED = 40081;
+
+  ANONYMOUS_ACCESS_DENIED = 40088;
+
+  DB = 50001;
+
+  ENCRYPT = 50002;
+
+  RPC_FAILED = 50003;
+
+  IO_FAILED = 50004;
+
+  INTERNAL_SETTING = 50005;
+
+  CACHE_OPERATION = 50006;
+
+  CALLBACK = 50007;
+}

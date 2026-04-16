@@ -1,0 +1,209 @@
+syntax = "proto3";
+
+package ai.chat.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+option go_package = "api/api/ai/chat/v1;v1";
+
+service Chat {
+  // Conversation 相关接口
+  rpc CreateChatConversation(CreateChatConversationRequest) returns (GetChatConversationResponse) {
+    option (google.api.http) = {
+      post: "/ai/chat/conversation"
+      body: "*"
+    };
+  }
+
+  rpc UpdateChatConversation(UpdateChatConversationRequest) returns (GetChatConversationResponse) {
+    option (google.api.http) = {
+      put: "/ai/chat/conversation/{id}"
+      body: "*"
+    };
+  }
+
+  rpc ListChatConversationMe(google.protobuf.Empty) returns (ListConversationResponse) {
+    option (google.api.http) = {
+      get: "/ai/chat/conversation/list/me"
+    };
+  }
+
+  rpc GetChatConversation(SimpleChatConversationRequest) returns (GetChatConversationResponse) {
+    option (google.api.http) = {
+      get: "/ai/chat/conversation/{id}"
+    };
+  }
+
+  rpc DeleteChatConversation(SimpleChatConversationRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/ai/chat/conversation/{id}"
+    };
+  }
+
+  rpc DeleteUnpinnedChatConversations(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/ai/chat/conversation/unpinned"
+    };
+  }
+
+  rpc PageChatConversations(PageConversationRequest) returns (PageConversationResponse) {
+    option (google.api.http) = {
+      get: "/ai/chat/conversation/list"
+    };
+  }
+
+  // Message 相关接口
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse) {
+    option (google.api.http) = {
+      post: "/ai/chat/message/send"
+      body: "*"
+    };
+  }
+
+  rpc SendMessageStream(SendMessageRequest) returns (stream SendMessageResponse);
+
+  rpc PageConversationMessages(PageConversationMessagesRequest) returns (PageConversationMessagesResponse) {
+    option (google.api.http) = {
+      get: "/ai/chat/message/conversation/page/{conversation_id}"
+    };
+  }
+
+  rpc DeleteMessage(SimpleMessageRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/ai/chat/message/{id}"
+    };
+  }
+
+  rpc DeleteConversationMessages(SimpleMessageRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/ai/chat/message/conversation/{id}"
+    };
+  }
+
+  rpc ListConversationMessage(ListConversationMessagesRequest) returns (ListConversationMessagesResponse) {
+    option (google.api.http) = {
+      get: "/ai/chat/message/list"
+    };
+  }
+}
+
+message CreateChatConversationRequest {
+  string role_id = 1;
+  string knowledge_id = 2;
+  string model_id = 3;
+}
+
+message GetChatConversationResponse {
+  string id = 1;
+  string title = 2;
+  bool pinned = 3;
+  string system_message = 4;
+  string model = 5;
+  double temperature = 6;
+  int64 max_tokens = 7;
+  int64 max_contexts = 8;
+  google.protobuf.Timestamp created_at = 9;
+
+  // 关联role信息
+  string role_avatar = 10;
+  string role_name = 11;
+
+  int32 message_count = 12;
+}
+
+message UpdateChatConversationRequest {
+  string id = 1;
+  string title = 2;
+  bool pinned = 3;
+  string system_message = 4;
+  string model_id = 5;
+  double temperature = 6;
+  int64 max_tokens = 7;
+  int64 max_contexts = 8;
+}
+
+message ListConversationResponse {
+  repeated GetChatConversationResponse conversations = 1;
+}
+
+message PageConversationRequest {
+  common.v1.PaginationArgs pagination = 1;
+  string title = 2;
+  google.protobuf.Timestamp start = 3;
+  google.protobuf.Timestamp end = 4;
+}
+message PageConversationResponse {
+  repeated GetChatConversationResponse conversations = 1;
+  common.v1.PaginationResults pagination = 2;
+}
+
+message SimpleChatConversationRequest {
+  string id = 1;
+}
+
+message SendMessageRequest {
+  string conversation_id = 1;
+  string content = 2;
+  bool use_context = 3;
+  bool use_search = 4;
+  repeated string attachment_urls = 5;
+  string model_id = 6;
+}
+
+message SendMessageResponse {
+  MessageRecord send = 1;
+  MessageRecord receive = 2;
+}
+
+message MessageRecord {
+  string id = 1;
+  string type = 2;
+  string content = 3;
+  string reason_content = 4;
+  repeated KnowledgeSegment segments = 5;
+  repeated WebPage web_pages = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message KnowledgeSegment {
+  string id = 1;
+  string content = 2;
+  string document_id = 3;
+  string document_name = 4;
+}
+
+message WebPage {
+  string name = 1;
+  string icon = 2;
+  string title = 3;
+  string url = 4;
+  string snippet = 5;
+  string summary = 6;
+}
+
+message PageConversationMessagesRequest {
+  common.v1.PaginationArgs pagination = 1;
+  string conversation_id = 2;
+}
+
+message PageConversationMessagesResponse {
+  repeated MessageRecord messages = 1;
+  common.v1.PaginationResults pagination = 2;
+}
+
+message SimpleMessageRequest {
+  string id = 1;
+}
+
+message ListConversationMessagesRequest {
+  common.v1.PaginationArgs pagination = 1;
+  string conversation_id = 2;
+}
+
+message ListConversationMessagesResponse {
+  repeated MessageRecord messages = 1;
+  common.v1.PaginationResults pagination = 2;
+}

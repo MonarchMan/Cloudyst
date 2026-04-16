@@ -1,0 +1,8 @@
+# 所有文本文件使用 LF
+* text=auto eol=lf
+
+# 二进制文件保持原样（避免被 Git 转换）
+*.png binary
+*.jpg binary
+*.zip binary
+*.exe binary

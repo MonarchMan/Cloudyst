@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package file.sys.v1;
+
+option go_package = "api/api/file/sys/v1;v1";
+
+service Sys {
+  rpc ReloadDependency(ReloadDependencyRequest) returns (ReloadDependencyResponse);
+}
+
+message ReloadDependencyRequest {
+  repeated string keys = 1;
+}
+
+message ReloadDependencyResponse {
+  repeated bool success_list = 1;
+}

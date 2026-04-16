@@ -1,0 +1,495 @@
+syntax = "proto3";
+
+package file.admin.v1;
+
+option go_package = "api/api/file/admin/v1;v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "file/common/v1/common.proto";
+import "file/common/v1/entpb.proto";
+import "file/workflow/v1/task.proto";
+
+service Admin {
+  rpc ListEntities(file.common.v1.ListRequest) returns (ListEntitiesResponse) {
+    option (google.api.http) = {
+      post: "/admin/entity",
+      body: "*"
+    };
+  }
+
+  rpc GetEntity(SimpleEntityRequest) returns (GetEntityResponse) {
+    option (google.api.http) = {
+      get: "/admin/entity/{id}",
+    };
+  }
+
+  rpc BatchDeleteEntities(BatchEntitiesRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/entity/batch/delete",
+      body: "*"
+    };
+  }
+
+  rpc GetEntityUrl(SimpleEntityRequest) returns (GetUrlResponse) {
+    option (google.api.http) = {
+      get: "/admin/entity/url/{id}",
+    };
+  }
+  
+  rpc ListFiles(file.common.v1.ListRequest) returns (ListFileResponse) {
+    option (google.api.http) = {
+      post: "/admin/file",
+      body: "*",
+    };
+  }
+
+  rpc GetFile(SimpleFileRequest) returns (GetFileResponse) {
+    option (google.api.http) = {
+      get: "/admin/file/{id}",
+    };
+  }
+
+  rpc UpdateFile(UpsertFileRequest) returns (GetFileResponse) {
+    option (google.api.http) = {
+      put: "/admin/file",
+      body: "*",
+    };
+  }
+
+  rpc GetFileUrl(SimpleFileRequest) returns (GetFileUrlResponse) {
+    option (google.api.http) = {
+      get: "/admin/file/url/{id}",
+    };
+  }
+
+  rpc BatchDeleteFiles(BatchFileRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/file/batch/delete",
+      body: "*",
+    };
+  }
+  
+  // explorer APIs
+  rpc FetchWopi(FetchWopiDiscoveryRequest) returns (common.v1.ViewerGroup) {
+    option (google.api.http) = {
+      get: "/admin/tool/wopi",
+    };
+  }
+
+  rpc TestThumbGenerator(TestThumbGeneratorRequest) returns (TestThumbGeneratorResponse) {
+    option (google.api.http) = {
+      post: "/admin/tool/thumbExecutable",
+      body: "*",
+    };
+  }
+
+  rpc SendTestMail(TestMailRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/tool/testMail",
+      body: "*",
+    };
+  }
+
+  rpc ClearEntityUrlCache(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/tool/entityUrlCache",
+    };
+  }
+
+  rpc GetQueueMetrics(google.protobuf.Empty) returns (QueueMetricsResponse) {
+    option (google.api.http) = {
+      get: "/admin/queue/metrics",
+    };
+  }
+
+  rpc ListTasks(file.common.v1.ListRequest) returns (ListTaskResponse) {
+    option (google.api.http) = {
+      post: "/admin/queue",
+      body: "*",
+    };
+  }
+
+  rpc GetTask(SimpleTaskRequest) returns (GetTaskResponse) {
+    option (google.api.http) = {
+      get: "/admin/queue/{id}",
+    };
+  }
+
+  rpc BatchDeleteTasks(BatchDeleteTasksRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/queue/batch/delete",
+      body: "*"
+    };
+  }
+
+  rpc CleanupTask(CleanupTaskRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/queue/cleanup",
+      body: "*",
+    };
+  }
+  
+  // node APIs
+  rpc ListNodes(file.common.v1.ListRequest) returns (ListNodesResponse) {
+    option (google.api.http) = {
+      post: "/admin/node",
+      body: "*",
+    };
+  }
+
+  rpc GetNode(SimpleNodeRequest) returns (GetNodeResponse) {
+    option (google.api.http) = {
+      get: "/admin/node/{id}",
+    };
+  }
+
+  rpc TestSlave(OpNodeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/node/test",
+      body: "*",
+    };
+  }
+
+  rpc TestDownloader(OpNodeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/node/test/downloader",
+      body: "*",
+    };
+  }
+
+  rpc CreateNode(OpNodeRequest) returns (GetNodeResponse) {
+    option (google.api.http) = {
+      post: "/admin/node",
+      body: "*",
+    };
+  }
+
+  rpc UpdateNode(OpNodeRequest) returns (GetNodeResponse) {
+    option (google.api.http) = {
+      put: "/admin/node",
+      body: "*",
+    };
+  }
+
+  rpc DeleteNode(SimpleNodeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/node/{id}",
+    };
+  }
+  
+  // Policy APIs
+  rpc ListPolicies(file.common.v1.ListRequest) returns (ListStoragePoliciesResponse) {
+    option (google.api.http) = {
+      post: "/admin/policy",
+      body: "*"
+    };
+  }
+
+  rpc GetPolicy(GetStoragePolicyRequest) returns (GetStoragePolicyResponse) {
+    option (google.api.http) = {
+      get: "/admin/policy/{id}",
+    };
+  }
+
+  rpc CreatePolicy(CreateStoragePolicyRequest) returns (GetStoragePolicyResponse) {
+    option (google.api.http) = {
+      put: "/admin/policy",
+      body: "*"
+    };
+  }
+
+  rpc UpdatePolicy(UpdateStoragePolicyRequest) returns (GetStoragePolicyResponse) {
+    option (google.api.http) = {
+      put: "/admin/policy/{id}",
+      body: "*"
+    };
+  }
+
+  rpc DeletePolicy(SimpleStoragePolicyRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/policy/{id}",
+    };
+  }
+
+  rpc CreateStoragePolicyCors(CreateStoragePolicyCorsRequest) returns (GetStoragePolicyResponse) {
+    option (google.api.http) = {
+      post: "/admin/policy/cors",
+      body: "*"
+    };
+  }
+
+  rpc OdOauthUrl(GetOauthUrlRequest) returns (GetUrlResponse) {
+    option (google.api.http) = {
+      get: "/admin/policy/oauth/signin",
+    };
+  }
+
+  rpc GetPolicyOAuthCallbackUrl(google.protobuf.Empty) returns (GetUrlResponse) {
+    option (google.api.http) = {
+      get: "/admin/policy/oauth/redirect",
+    };
+  }
+
+  rpc GetStoragePolicyStatus(SimpleStoragePolicyRequest) returns (GetStoragePolicyStatusResponse) {
+    option (google.api.http) = {
+      get: "/admin/policy/status/{id}",
+    };
+  }
+
+  rpc FinishOAuthCallback(FinishOAuthCallbackRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/policy/oauth/callback",
+      body: "*"
+    };
+  }
+
+  rpc GetSharePointDriverRoot(GetShareDriverRootRequest) returns (GetUrlResponse) {
+    option (google.api.http) = {
+      get: "/admin/policy/oauth/root/{id}",
+    };
+  }
+  
+  // Share APIs
+  rpc ListShares(file.common.v1.ListRequest) returns (ListSharesResponse) {
+    option (google.api.http) = {
+      post: "/admin/share",
+      body: "*"
+    };
+  }
+
+  rpc GetShare(SimpleShareRequest) returns (GetShareResponse) {
+    option (google.api.http) = {
+      get: "/admin/share/info/{id}",
+    };
+  }
+
+  rpc BatchDeleteShares(BatchSharesRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/share/batch/delete",
+      body: "*"
+    };
+  }
+
+  // rpc DeleteTaskByUserIds deletes all tasks by a given user IDs
+  rpc DeleteTaskByUserIds(DeleteTaskByUserIdsRequest) returns (google.protobuf.Empty);
+}
+
+message ListEntitiesResponse {
+  file.common.v1.PaginationResults pagination = 1;
+  repeated GetEntityResponse entities = 2;
+}
+
+message GetEntityResponse {
+  file.common.v1.Entity entity = 1;
+  string user_hash_id = 2;
+  map<int32, string> user_hash_id_map = 3;
+}
+
+message SimpleEntityRequest {
+  int32 id = 1;
+}
+
+message BatchEntitiesRequest {
+  repeated int32 ids = 1;
+  bool force = 2;
+}
+
+message GetUrlResponse {
+  string url = 1;
+}
+
+//  APIs
+message SimpleFileRequest {
+  int32 id = 1;
+}
+
+message ListFileResponse {
+  repeated GetFileResponse files = 1;
+  file.common.v1.PaginationResults pagination = 2;
+}
+
+message UpsertFileRequest {
+  file.common.v1.File file = 1;
+}
+
+message GetFileResponse {
+  file.common.v1.File file = 1;
+  string user_hash_id = 2;
+  string file_hash_id = 3;
+  map<int32, string> direct_link_map = 4;
+}
+
+message GetFileUrlResponse {
+  string url = 1;
+}
+
+message BatchFileRequest {
+  repeated int32 ids = 1;
+}
+
+message FetchWopiDiscoveryRequest {
+  string endpoint = 1;
+}
+
+message TestThumbGeneratorRequest {
+  string name = 1;
+  string executable = 2;
+}
+
+message TestThumbGeneratorResponse {
+  string version = 1;
+}
+
+message TestMailRequest {
+  map<string, string> settings = 1;
+  string to = 2;
+}
+
+message QueueMetricsResponse {
+  repeated QueueMetric metrics = 1;
+}
+
+message QueueMetric {
+  string name = 1;
+  int32 busy_workers = 2;
+  int32 success_tasks = 3;
+  int32 failed_tasks = 4;
+  int32 submitted_tasks = 5;
+  int32 suspending_tasks = 6;
+}
+
+message ListTaskResponse {
+  repeated GetTaskResponse tasks = 1;
+  file.common.v1.PaginationResults pagination = 2;
+}
+
+message SimpleTaskRequest {
+  int32 id = 1;
+}
+
+message BatchDeleteTasksRequest {
+  repeated int32 ids = 1;
+}
+
+message CleanupTaskRequest {
+  google.protobuf.Timestamp no_after = 1;
+  repeated string types = 2;
+  repeated string status = 3;
+}
+
+message GetTaskResponse {
+  file.common.v1.Task task = 1;
+  string user_hash_id = 2;
+  string task_hash_id = 3;
+  file.workflow.v1.Summary summary = 4;
+  file.common.v1.Node node = 5;
+}
+
+message DeleteTaskByUserIdsRequest {
+  repeated int32 ids = 1;
+}
+
+// NODE definitions
+message ListNodesResponse {
+  repeated file.common.v1.Node nodes = 1;
+  file.common.v1.PaginationResults pagination = 2;
+}
+
+message SimpleNodeRequest {
+  int32 id = 1;
+}
+
+message GetNodeResponse {
+  file.common.v1.Node node = 1;
+}
+
+message OpNodeRequest {
+  file.common.v1.Node node = 1;
+}
+
+message TestDownloaderResponse {
+  string version = 1;
+}
+
+// Policy definitions
+message ListStoragePoliciesResponse {
+  common.v1.PaginationResults pagination = 1;
+  repeated file.common.v1.StoragePolicy policies = 2;
+}
+
+message SimpleStoragePolicyRequest {
+  int32 id = 1;
+}
+
+// Get
+message GetStoragePolicyRequest {
+  int32 id = 1;
+  bool countEntity = 2;
+}
+
+message GetStoragePolicyResponse {
+  file.common.v1.StoragePolicy storage_policy = 1;
+  int32 entities_count = 2;
+  int64 entities_size = 3;
+}
+
+// Create
+message CreateStoragePolicyRequest {
+  file.common.v1.StoragePolicy policy = 1;
+}
+
+// Update
+message UpdateStoragePolicyRequest {
+  string id = 1;
+  file.common.v1.StoragePolicy policy = 2;
+}
+
+// Cors
+message CreateStoragePolicyCorsRequest {
+  file.common.v1.StoragePolicy policy = 1;
+}
+
+// OneDrive OAuth
+message GetOauthUrlRequest {
+  int32 id = 1;
+  string secret = 2;
+  string app_id = 3;
+}
+
+message GetStoragePolicyStatusResponse {
+  bool valid = 1;
+  google.protobuf.Timestamp last_refresh_time = 2;
+}
+
+message FinishOAuthCallbackRequest {
+  string code = 1;
+  string state = 2;
+}
+
+// SharePoint OAuth
+message GetShareDriverRootRequest {
+  int32 id = 1;
+  string url = 2;
+}
+
+// Share definitions
+message ListSharesResponse {
+  file.common.v1.PaginationResults pagination = 1;
+  repeated GetShareResponse shares = 2;
+}
+
+message GetShareResponse {
+  file.common.v1.Share share = 1;
+  string user_hash_id = 2;
+  string share_link = 3;
+}
+
+message SimpleShareRequest {
+  int32 id = 1;
+}
+
+message BatchSharesRequest {
+  repeated int32 ids = 1;
+}

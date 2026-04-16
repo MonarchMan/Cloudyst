@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package user.site.v1;
+
+option go_package = "api/api/user/site/v1;v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "user/users/v1/user.proto";
+import "file/common/v1/common.proto";
+
+service Site {
+  rpc Ping(google.protobuf.Empty) returns(PingResponse) {
+    option (google.api.http) = {
+      get: "/site/ping"
+    };
+  }
+
+  rpc GetCaptcha(google.protobuf.Empty) returns(CaptchaResponse) {
+    option (google.api.http) = {
+      get: "/site/captcha"
+    };
+  }
+  rpc GetSiteConfig(GetSiteConfigRequest) returns(GetSiteConfigResponse) {
+    option (google.api.http) = {
+      get: "/site/config/{section}"
+    };
+  }
+  rpc GetSiteBasicInfo(google.protobuf.Empty) returns(SettingResponse) {
+    option (google.api.http) = {
+      get: "/site/basic"
+    };
+  }
+
+}
+
+message PingResponse {
+  string message = 1;
+}
+
+message CaptchaResponse {
+  string image = 1;
+  string ticket = 2;
+}
+
+message GetSiteConfigRequest {
+  string section = 1;
+}
+
+message GetSiteConfigResponse {
+  // Basic Section
+  string instance_id = 1;
+  string site_name = 2;
+  string themes = 3;
+  string default_theme = 4;
+  user.users.v1.GetUserResponse user = 5;
+  string logo = 6;
+  string logo_light = 7;
+  repeated CustomNavItem custom_nav_items = 8;
+  CustomHTML custom_html = 9;
+
+  // Login Section
+  bool login_captcha = 10;
+  bool reg_captcha = 11;
+  bool forget_captcha = 12;
+  bool authn = 13;
+  string re_captcha_key = 14;
+  string captcha_type = 15;
+  string turnstile_site_id = 16;
+  string cap_instance_url = 17;
+  string cap_site_key = 18;
+  string cap_asset_server = 19;
+  bool register_enabled = 20;
+  string tos_url = 21;
+  string privacy_policy_url = 22;
+
+  // Explorer section
+  string icons = 23;
+  string emoji_preset = 24;
+  string map_provider = 25;
+  string google_map_tile_type = 26;
+  string mapbox_ak = 27;
+  repeated file.common.v1.ViewerGroup file_viewers = 28;
+  int32 max_batch_size = 29;
+  int32 thumbnail_width = 30;
+  int32 thumbnail_height = 31;
+  repeated CustomProps custom_props = 32;
+
+  // Thumbnail section
+  repeated string thumb_exts = 33;
+
+  // App settings
+  bool app_promotion = 34;
+}
+
+message CustomNavItem {
+  string icon = 1;
+  string name = 2;
+  string url = 3;
+}
+
+message CustomHTML {
+  string headless_footer = 1;
+  string headless_body = 2;
+  string sidebar_bottom = 3;
+}
+
+message CustomProps {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  int32 max = 4;
+  int32 min = 5;
+  string default = 6;
+  repeated string options = 7;
+  string icon = 8;
+}
+
+message SettingResponse {
+  map<string, string> settings = 1;
+}
+

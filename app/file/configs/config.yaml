@@ -1,0 +1,43 @@
+name: cloudyst-file
+version: 0.0.1
+server:
+  sys:
+    mode: master
+    addr: 0.0.0.0:8001
+    timeout: 1800s
+    debug: true
+    log_level: debug
+  grpc:
+    addr: 0.0.0.0:9001
+    timeout: 60s
+  cors:
+    allowed_origins:
+      - "UNSET"
+    allowed_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "OPTIONS"
+    allowed_headers:
+      - "Cookie"
+      - "X-Cr-Policy"
+      - "Authorization"
+      - "Content-Length"
+      - "Content-Type"
+      - "X-Cr-Path"
+      - "X-Cr-FileName"
+    allowed_credential: false
+    same_site: "Default"
+    secure: false
+
+slave:
+  callback_timeout: 20
+  signature_ttl: 600
+
+ssl:
+  addr: 0.0.0.0:443
+
+extensions:
+  jaeger:
+#    addr: simple-net.dynv6.net:4317
+    service_name: cloudyst-file

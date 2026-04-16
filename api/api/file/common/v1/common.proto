@@ -1,0 +1,446 @@
+syntax = "proto3";
+
+package file.common.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/duration.proto";
+import "errors/errors.proto";
+import "validate/validate.proto";
+
+option go_package = "api/api/file/common/v1;v1";
+
+message PaginationArgs {
+  int32 page = 1;
+  int32 page_size = 2;
+  bool use_cursor_pagination = 3;
+  string page_token = 4;
+  string order_by = 5;
+  string order_direction = 6;
+}
+
+message PaginationResults {
+  int32 page = 1;
+  int32 page_size = 2;
+  int32 total_items = 3;
+  string next_page_token = 4;
+  bool is_cursor = 5;
+}
+
+message PageToken {
+  google.protobuf.Timestamp time = 1;
+  int32 id = 2;
+  string id_hash = 3;
+  string string = 4;
+  int32 int = 5;
+  bool start_with_file = 6;
+}
+
+message ListRequest {
+  int32 page = 1 [(validate.rules).int32 = {gt: 0}];
+  int32 page_size = 2 [(validate.rules).int32 = {gt: 0}];
+  string order_by = 3;
+  string order_direction = 4;
+  map<string, string> conditions = 5;
+  map<string, string> searches = 6;
+}
+
+message UserInfo {
+  string id = 1;
+  string nickname = 3;
+  string status = 4;
+  string avatar = 5;
+}
+
+
+// Additional
+message EntityProps {
+  bool unlink_only = 1;
+  EncryptMetadata encrypt_metadata = 2;
+}
+
+message EncryptMetadata {
+  string algorithm = 1;
+  bytes key = 2;
+  bytes key_plain_text = 3;
+  bytes iv = 4;
+}
+
+message FileProps {
+  ExplorerView view = 1;
+}
+
+message ExplorerView {
+  // page_size: 最小值 50
+  int32 page_size = 1 [(validate.rules).int32 = {gte: 50}];
+
+  // order: 最大长度 255
+  string order = 2 [(validate.rules).string = {max_len: 255}];
+
+  // order_direction: 只能是 asc 或 desc
+  OrderDirection order_direction = 3;
+
+  // view: 只能是 list, grid 或 gallery
+  ViewType view = 4;
+
+  // thumbnail: 布尔值，无需验证
+  bool thumbnail = 5;
+
+  // gallery_width: 范围 50-500
+  int32 gallery_width = 6 [(validate.rules).int32 = {gte: 50, lte: 500}];
+
+  // columns: 最多 1000 个元素
+  repeated ListViewColumn columns = 7 [(validate.rules).repeated = {max_items: 1000}];
+}
+
+// 排序方向枚举
+enum OrderDirection {
+  ORDER_DIRECTION_UNSPECIFIED = 0;
+  ORDER_DIRECTION_ASC = 1;
+  ORDER_DIRECTION_DESC = 2;
+}
+
+// 视图类型枚举
+enum ViewType {
+  VIEW_TYPE_UNSPECIFIED = 0;
+  VIEW_TYPE_LIST = 1;
+  VIEW_TYPE_GRID = 2;
+  VIEW_TYPE_GALLERY = 3;
+}
+
+message ListViewColumn {
+  int32 type = 1 [(validate.rules).int32 = {gte: 0}];
+  int32 width = 2;
+
+}
+
+message ColumnTypeProps {
+  string metadata_key = 1 [(validate.rules).string = {max_len: 255}];
+  string custom_props_id = 2 [(validate.rules).string = {max_len: 255}];
+}
+
+message ShareProps {
+  bool share_view = 1;
+  bool show_read_me = 2;
+}
+
+message FileTypeIconSetting {
+  repeated string exts = 1;
+  string icon = 2;
+  string color = 3;
+  string color_dark = 4;
+  string img = 5;
+}
+
+// PolicySetting 非公有的存储策略属性
+message PolicySetting {
+  // Upyun访问Token
+  string token = 1;
+
+  // 允许的文件扩展名
+  repeated string file_type = 2 [(validate.rules).repeated.max_items = 1000];
+
+  // IsFileTypeDenyList Whether above list is a deny list
+  bool is_file_type_deny_list = 3;
+
+  // FileRegexp 文件扩展名正则表达式
+  string name_regexp = 4 [(validate.rules).string.max_len = 500];
+
+  // IsNameRegexp Whether above regexp is a deny list
+  bool is_name_regexp_deny_list = 5;
+
+  // OauthRedirect Oauth 重定向地址
+  string oauth_redirect = 6 [(validate.rules).string = {uri: true, ignore_empty: true}];
+
+  // CustomProxy whether to use custom-proxy to get file content
+  bool custom_proxy = 7;
+
+  // ProxyServer 反代地址
+  string proxy_server = 8 [(validate.rules).string = {uri: true, ignore_empty: true}];
+
+  // InternalProxy whether to use Cloudreve internal proxy to get file content
+  bool internal_proxy = 9;
+
+  // OdDriver OneDrive 驱动器定位符
+  string od_driver = 10;
+
+  // Region 区域代码
+  string region = 11 [(validate.rules).string.max_len = 100];
+
+  // ServerSideEndpoint 服务端请求使用的 Endpoint，为空时使用 Policy.Server 字段
+  string server_side_endpoint = 12 [(validate.rules).string = {uri: true, ignore_empty: true}];
+
+  // 分片上传的分片大小
+  int64 chunk_size = 13 [(validate.rules).int64.gte = 0];
+
+  // 每秒对存储端的 API 请求上限
+  double tps_limit = 14 [(validate.rules).double.gte = 0];
+
+  // 每秒 API 请求爆发上限
+  int32 tps_limit_burst = 15 [(validate.rules).int32.gte = 0];
+
+  // Set this to `true` to force the request to use path-style addressing
+  bool s3_force_path_style = 16;
+
+  // File extensions that support thumbnail generation using native policy API
+  repeated string thumb_exts = 17 [(validate.rules).repeated.max_items = 1000];
+
+  // Whether to support all file extensions for thumbnail generation
+  bool thumb_support_all_exts = 18;
+
+  // ThumbMaxSize indicates the maximum allowed size of a thumbnail. 0 indicates that no limit is set
+  int64 thumb_max_size = 19 [(validate.rules).int64.gte = 0];
+
+  // Whether to upload file through server's relay
+  bool relay = 20;
+
+  // Whether to pre allocate space for file before upload in physical disk
+  bool pre_allocate = 21;
+
+  // MediaMetaExts file extensions that support media meta generation using native policy API
+  repeated string media_meta_exts = 22 [(validate.rules).repeated.max_items = 1000];
+
+  // MediaMetaGeneratorProxy whether to use local proxy to generate media meta
+  bool media_meta_generator_proxy = 23;
+
+  // ThumbGeneratorProxy whether to use local proxy to generate thumbnail
+  bool thumb_generator_proxy = 24;
+
+  // NativeMediaProcessing whether to use native media processing API from storage provider
+  bool native_media_processing = 25;
+
+  // S3DeleteBatchSize the number of objects to delete in each batch
+  int32 s3_delete_batch_size = 26;
+
+  // StreamSaver whether to use stream saver to download file in Web
+  bool stream_saver = 27;
+
+  // UseCname whether to use CNAME for endpoint (OSS)
+  bool use_cname = 28;
+
+  // CDN domain does not need to be signed
+  bool source_auth = 29;
+
+  // QiniuUploadCdn whether to use CDN for Qiniu upload
+  bool qiniu_upload_cdn = 30;
+
+  // ChunkConcurrency the number of chunks to upload concurrently
+  int32 chunk_concurrency = 31;
+}
+
+// NodeSetting 节点设置
+message NodeSetting {
+  // 下载器提供商
+  DownloaderProvider provider = 1;
+
+  // qBittorrent 配置
+  QBittorrentSetting qbittorrent = 2;
+
+  // Aria2 配置
+  Aria2Setting aria2 = 3;
+
+  // 下载监控间隔（秒）
+  int32 interval = 4;
+
+  // 是否等待做种
+  bool wait_for_seeding = 5;
+}
+
+// DownloaderProvider 下载器提供商
+enum DownloaderProvider {
+  DOWNLOADER_PROVIDER_UNSPECIFIED = 0;
+  DOWNLOADER_PROVIDER_ARIA2 = 1;
+  DOWNLOADER_PROVIDER_QBITTORRENT = 2;
+}
+
+// QBittorrentSetting qBittorrent 配置
+message QBittorrentSetting {
+  // 服务器地址
+  string server = 1 [(validate.rules).string = {
+    min_len: 1,
+    max_len: 500,
+    uri: true
+  }];
+
+  // 用户名
+  string user = 2 [(validate.rules).string.max_len = 255];
+
+  // 密码
+  string password = 3 [(validate.rules).string.max_len = 255];
+
+  // 选项配置 (key-value pairs)
+  google.protobuf.Struct options = 4;
+
+  // 临时路径
+  string temp_path = 5 [(validate.rules).string.max_len = 1000];
+}
+
+// Aria2Setting Aria2 配置
+message Aria2Setting {
+  // 服务器地址
+  string server = 1 [(validate.rules).string = {
+    min_len: 1,
+    max_len: 500,
+    uri: true
+  }];
+
+  // Token
+  string token = 2 [(validate.rules).string.max_len = 255];
+
+  // 选项配置 (key-value pairs)
+  google.protobuf.Struct options = 3;
+
+  // 临时路径
+  string temp_path = 4 [(validate.rules).string.max_len = 1000];
+}
+
+// TaskPublicState 任务公共状态
+message TaskPublicState {
+  // 错误信息
+  string error = 1;
+
+  // 错误历史
+  repeated string error_history = 2 [(validate.rules).repeated.max_items = 100];
+
+  // 已执行时长
+  google.protobuf.Duration executed_duration = 3;
+
+  // 重试次数
+  int32 retry_count = 4 [(validate.rules).int32 = {gte: 0, lte: 100}];
+
+  // 恢复时间（Unix timestamp）
+  int64 resume_time = 5 [(validate.rules).int64.gte = 0];
+
+  // 从节点任务属性
+  SlaveTaskProps slave_task_props = 6;
+}
+
+// SlaveTaskProps 从节点任务属性
+message SlaveTaskProps {
+  // 节点 ID
+  int32 node_id = 1 [(validate.rules).int32.gte = 0];
+
+  // 主站点 URL
+  string master_site_url = 2 [(validate.rules).string = {uri: true, ignore_empty: true}];
+
+  // 主站点 ID
+  string master_site_id = 3 [(validate.rules).string.max_len = 255];
+
+  // 主站点版本
+  string master_site_version = 4 [(validate.rules).string.max_len = 50];
+}
+
+// ViewerGroup 消息定义
+message ViewerGroup {
+  repeated Viewer viewers = 1;
+}
+
+// Viewer 消息定义
+message Viewer {
+  string id = 1;
+  string type = 2;  // ViewerType (string)
+  string display_name = 3;
+  repeated string exts = 4;
+  string url = 5;
+  string icon = 6;
+  map<string, WopiActionMap> wopi_actions = 7;  // 嵌套map需要额外的message
+  map<string, string> props = 8;
+  int64 max_size = 9;
+  bool disabled = 10;
+  repeated NewFileTemplate templates = 11;
+  string platform = 12;
+  repeated int32 required_group_permission = 13;  // GroupPermission (int)
+}
+
+// 辅助消息，用于支持嵌套map: map[string]map[ViewerAction]string
+message WopiActionMap {
+  map<string, string> actions = 1;  // key是ViewerAction(string), value是string
+}
+
+// NewFileTemplate 消息定义
+message NewFileTemplate {
+  string ext = 1;
+  string display_name = 2;
+}
+
+enum ErrorReason {
+  option (errors.default_code) = 400;
+
+  UNSPECIFIED = 0;
+
+  UPLOAD_FAILED = 40002;
+
+  CREATE_FOLDER_FAILED = 40003;
+
+  OBJECT_EXIST = 40004;
+
+  POLICY_NOT_ALLOWED = 40006;
+
+  MASTER_NOT_FOUND = 40009;
+
+  UPLOAD_SESSION_EXPIRED = 40011;
+
+  INVALID_CHUNK_INDEX = 40012;
+
+  INVALID_CONTENT_LENGTH = 40013;
+
+  BATCH_SOURCE_SIZE_EXCEEDED = 40014;
+
+  BATCH_ARIA2_SIZE_EXCEEDED = 40015;
+
+  PARENT_NOT_EXIST = 40016;
+
+  POLICY_NOT_EXIST = 40035;
+
+  DELETE_DEFAULT_POLICY = 40036;
+
+  POLICY_USED_BY_GROUPS = 40037;
+
+  FILE_NOT_FOUND = 40044;
+
+  LIST_FILES = 40045;
+
+  INVALID_ACTION_ON_SYSTEM_NODE = 40046;
+
+  CREATE_FS = 40047;
+
+  CREATE_TASK = 40048;
+
+  FILE_TOO_LARGE = 40049;
+
+  FILE_TYPE_NOT_ALLOWED = 40050;
+
+  ILLEGAL_OBJECT_NAME = 40052;
+
+  ROOT_PROTECTED = 40053;
+
+  CONFLICT_UPLOAD_ONGOING = 40054 [(errors.code) = 409];
+
+  META_MISMATCH = 40055 [(errors.code) = 409];
+
+  UNSUPPORTED_ARCHIVE_TYPE = 40056;
+
+  POLICY_CHANGED = 40057;
+
+  SHARE_LINK_NOT_FOUND = 40058 [(errors.code) = 404];
+
+  SAVE_OWN_SHARE = 40059;
+
+  SLAVE_PING_MASTER = 40060;
+
+  SHARE_PREVIEW_DISABLED = 40070;
+
+  TOO_MANY_URIS = 40074;
+
+  STALE_VERSION = 40076;
+
+  ENTITY_NOT_EXIST = 40077;
+
+  FILE_DELETED = 40078;
+
+  FILE_COUNT_LIMIT_REACHED = 40079;
+
+  NODE_USED_BY_STORE_POLICY = 40086;
+
+  NODE_OFFLINE = 50010;
+}

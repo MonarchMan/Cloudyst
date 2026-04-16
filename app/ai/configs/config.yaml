@@ -1,0 +1,35 @@
+name: cloudyst-ai
+version: 0.0.1
+server:
+  sys:
+    addr: 0.0.0.0:8002
+    timeout: 1800s
+    debug: true
+    log_level: debug
+  grpc:
+    addr: 9002
+    timeout: 60s
+  embedder:
+    model: qwen3-embedding:8b
+    dimensions: 1024
+  retrieve:
+    top_k: 5
+    similarity: 0.6
+
+data:
+  milvus:
+    addr: http://simple-net.dynv6.net:19530
+    username:
+    password:
+    collection: rag
+    metric_type:
+      dense: COSINE
+      sparse: BM25
+
+
+extensions:
+  jaeger:
+    service_name: cloudyst-ai
+  bocha:
+    api_key: sk-814230a8315b46c5b020a05bbdb759d1
+    summary: true

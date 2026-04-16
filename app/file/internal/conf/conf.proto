@@ -1,0 +1,103 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "file/external/conf;conf";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/any.proto";
+
+message Bootstrap {
+  string name = 1;
+  string version = 2;
+  Server server = 3;
+  Data data = 4;
+  Slave slave = 5;
+  Extensions extensions = 6;
+  map<string, google.protobuf.Any> option_overwrite = 8;
+}
+
+message Server {
+  message Sys {
+    string mode = 1;
+    string addr = 2;
+    bool debug = 3;
+    google.protobuf.Duration timeout = 4;
+    google.protobuf.Duration grace_period = 5;
+    string hash_salt = 6;
+    string proxy_header = 7;
+    string log_level = 8;
+  }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  message Cors {
+    repeated string allowed_origins = 1;
+    repeated string allowed_methods = 2;
+    repeated string allowed_headers = 3;
+    bool allowed_credentials = 4;
+    repeated string expose_headers = 5;
+    string same_site = 6;
+    bool secure = 7;
+  }
+  Sys sys = 1;
+  GRPC grpc = 2;
+  Cors cors = 3;
+  Ssl ssl = 4;
+  Unix unix = 5;
+}
+
+message Data {
+  message Database {
+    string db_type = 1;
+    string username = 2;
+    string password = 3;
+    string host = 4;
+    string name = 6;
+    string table_prefix = 5;
+    string db_file = 7;
+    int32 port = 8;
+    string charset = 9;
+    bool unix_socket = 10;
+    string source = 11;
+    string ssl_mode = 12;
+  }
+  message Redis {
+    string network = 1;
+    string addr = 2;
+    string user = 3;
+    string password = 4;
+    int32 db = 5;
+    bool use_tls = 6;
+    bool tls_skip_verify = 7;
+  }
+  Database database = 1;
+  Redis redis = 2;
+}
+
+message Slave {
+  string secret = 1;
+  int32 callback_timeout = 2;
+  int32 signature_ttl = 3;
+}
+
+message Ssl {
+  string addr = 1;
+  string cert_path = 2;
+  string key_path = 3;
+}
+
+message Unix {
+  string addr = 1;
+  int32 perm = 2;
+}
+
+message Extensions {
+  Jaeger jaeger = 1;
+}
+
+message Jaeger {
+  string addr = 1;
+  string service_name = 2;
+}

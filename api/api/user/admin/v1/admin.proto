@@ -1,0 +1,218 @@
+syntax = "proto3";
+
+package user.admin.v1;
+
+option go_package = "api/api/user/admin/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.user.admin.v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "user/common/v1/common.proto";
+import "user/common/v1/entpb.proto";
+import "user/users/v1/user.proto";
+import "errors/errors.proto";
+
+service Admin {
+  // Admin APIs
+  rpc AdminListUsers(common.v1.ListRequest) returns (ListUserResponse) {
+    option (google.api.http) = {
+      post: "/admin/user"
+      body: "*"
+    };
+  }
+
+  rpc AdminGetUser(SimpleUserRequest) returns (AdminGetUserResponse) {
+    option (google.api.http) = {
+      get: "/admin/user/info/{id}"
+    };
+  }
+
+  rpc AdminCreateUser(UpsertUserRequest) returns (AdminGetUserResponse) {
+    option (google.api.http) = {
+      post: "/admin/user"
+      body: "*"
+    };
+  }
+
+  rpc AdminUpdateUser(UpsertUserRequest) returns (AdminGetUserResponse) {
+    option (google.api.http) = {
+      put: "/admin/user"
+      body: "*"
+    };
+  }
+
+  rpc AdminDeleteUsers(DeleteUsersRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/admin/user/batch/delete"
+      body: "*"
+    };
+  }
+
+  rpc GetSummary(GetSummaryRequest) returns(GetSummaryResponse) {
+    option (google.api.http) = {
+      get: "/admin/site/summary"
+    };
+  }
+
+  rpc GetSettings(AdminGetSettingRequest) returns (AdminSettingResponse) {
+    option (google.api.http) = {
+      post: "/admin/settings",
+      body: "*",
+    };
+  }
+
+  rpc SetSettings(AdminSetSettingRequest) returns (AdminSettingResponse) {
+    option (google.api.http) = {
+      patch: "/admin/settings",
+      body: "*",
+    };
+  }
+
+  rpc AdminListGroups(common.v1.ListRequest) returns (AdminListGroupResponse) {
+    option (google.api.http) = {
+      post: "/admin/group",
+      body: "*",
+    };
+  }
+
+  rpc AdminGetGroup(GetGroupRequest) returns (AdminGetGroupResponse) {
+    option (google.api.http) = {
+      get: "/admin/group/{id}",
+    };
+  }
+
+  rpc AdminCreateGroup(UpsertGroupRequest) returns (AdminGetGroupResponse) {
+    option (google.api.http) = {
+      post: "/admin/group",
+      body: "*",
+    };
+  }
+
+  rpc AdminUpdateGroup(UpsertGroupRequest) returns (AdminGetGroupResponse) {
+    option (google.api.http) = {
+      put: "/admin/group",
+      body: "*",
+    };
+  }
+
+  rpc DeleteGroup(SimpleGroupRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/group/{id}",
+    };
+  }
+}
+
+// Admin APIs
+message ListUserResponse {
+  repeated AdminGetUserResponse users = 1;
+  common.v1.PaginationResults pagination = 2;
+}
+
+message SimpleUserRequest {
+  int32 id = 1;
+}
+
+message AdminGetUserResponse {
+  user.common.v1.User user = 1;  // JSON string of User
+  string hash_id = 2;
+  bool two_fa_enabled = 3;
+  user.users.v1.CapacityResponse capacity = 4;
+}
+
+message UpsertUserRequest {
+  user.common.v1.User user = 1; // JSON string of User
+  string password = 2;
+  string two_fa = 3;
+}
+
+message DeleteUsersRequest {
+  repeated int32 ids = 1;
+}
+message GetSummaryRequest {
+  bool generate = 1;
+}
+
+message GetSummaryResponse {
+  MetricsSummary metrics_summary = 1;
+  repeated string site_urls = 2;
+  Version version = 3;
+}
+
+message MetricsSummary {
+  repeated google.protobuf.Timestamp dates = 1;
+  repeated int32 files = 2;
+  repeated int32 users = 3;
+  repeated int32 shares = 4;
+  int32 file_total = 5;
+  int32 user_total = 6;
+  int32 share_total = 7;
+  int32 entities_total = 8;
+  google.protobuf.Timestamp generated_at = 9;
+}
+
+message Version {
+  string version = 1;
+  string commit = 2;
+}
+message AdminGetSettingRequest {
+  repeated string keys = 1;
+}
+
+message AdminSettingResponse {
+  map<string, string> settings = 1;
+}
+
+message AdminSetSettingRequest {
+  map<string, string> settings = 1;
+}
+
+message AdminListGroupResponse {
+  repeated user.common.v1.Group groups = 1;
+  user.common.v1.PaginationResults pagination = 2;
+}
+
+message GetGroupRequest {
+  int32 id = 1;
+  bool count_user = 2;
+}
+
+message SimpleGroupRequest {
+  int32 id = 1;
+}
+
+message AdminGetGroupResponse {
+  user.common.v1.Group group = 1;
+  int32 total_users = 2;
+}
+
+message UpsertGroupRequest {
+  user.common.v1.Group group = 1;
+}
+
+enum ErrorReason {
+  option (errors.default_code) = 400;
+
+  UNSPECIFIED = 0;
+
+  GROUP_NOT_ALLOWED = 40007;
+
+  GROUP_ADMIN_REQUIRED = 40008;
+
+  GROUP_NOT_FOUND = 40039;
+
+  INVALID_ACTION_ON_SYSTEM_GROUP = 40040;
+
+  GROUP_USED_BY_USER = 40041;
+
+  CHANGE_GROUP_FOR_DEFAULT_USER = 40042;
+
+  GROUP_CONFLICT = 40063;
+
+  GROUP_INVALID = 40064;
+
+  FULFILL_ADMIN_GROUP = 40005;
+
+  UPDATE_SETTING = 50008;
+}

@@ -1,0 +1,121 @@
+package data
+
+import (
+	pbuser "api/api/user/users/v1"
+	"context"
+	"file/ent"
+	"file/internal/data/rpc"
+	"file/internal/data/types"
+	"fmt"
+
+	"github.com/go-kratos/kratos/v2/log"
+)
+
+type TxOperator interface {
+	SetClient(newClient *ent.Client) TxOperator
+	GetClient() *ent.Client
+}
+
+type (
+	Tx struct {
+		tx          *ent.Tx
+		parent      *Tx
+		inherited   bool
+		finished    bool
+		storageDiff types.StorageDiff
+	}
+
+	// TxCtx is the context key for inherited transaction
+	TxCtx struct{}
+)
+
+// AppendStorageDiff appends the given storage diff to the transaction.
+func (t *Tx) AppendStorageDiff(diff types.StorageDiff) {
+	root := t
+	for root.inherited {
+		root = root.parent
+	}
+
+	if root.storageDiff == nil {
+		root.storageDiff = diff
+	} else {
+		root.storageDiff.Merge(diff)
+	}
+}
+
+// WithTx wraps the given inventory client with a transaction.
+func WithTx[T TxOperator](ctx context.Context, c T) (T, *Tx, context.Context, error) {
+	var txClient *ent.Client
+	var txWrapper *Tx
+
+	if txInherited, ok := ctx.Value(TxCtx{}).(*Tx); ok && !txInherited.finished {
+		txWrapper = &Tx{inherited: true, tx: txInherited.tx, parent: txInherited}
+	} else {
+		tx, err := c.GetClient().Tx(ctx)
+		if err != nil {
+			return c, nil, ctx, fmt.Errorf("failed to create transaction: %w", err)
+		}
+
+		txWrapper = &Tx{inherited: false, tx: tx}
+		ctx = context.WithValue(ctx, TxCtx{}, txWrapper)
+	}
+
+	txClient = txWrapper.tx.Client()
+	return c.SetClient(txClient).(T), txWrapper, ctx, nil
+}
+
+// InheritTx wraps the given inventory client with a transaction.
+// If the transaction is already in the context, it will be inherited.
+// Otherwise, original client will be returned.
+func InheritTx[T TxOperator](ctx context.Context, c T) (T, *Tx) {
+	var txClient *ent.Client
+	var txWrapper *Tx
+
+	if txInherited, ok := ctx.Value(TxCtx{}).(*Tx); ok && !txInherited.finished {
+		txWrapper = &Tx{inherited: true, tx: txInherited.tx, parent: txInherited}
+		txClient = txWrapper.tx.Client()
+		return c.SetClient(txClient).(T), txWrapper
+	}
+
+	return c, nil
+}
+
+func Rollback(tx *Tx) error {
+	if !tx.inherited {
+		tx.finished = true
+		return tx.tx.Rollback()
+	}
+
+	return nil
+}
+
+func commit(tx *Tx) (bool, error) {
+	if !tx.inherited {
+		tx.finished = true
+		return true, tx.tx.Commit()
+	}
+	return false, nil
+}
+
+func Commit(tx *Tx) error {
+	_, err := commit(tx)
+	return err
+}
+
+// CommitWithStorageDiff commits the transaction and applies the storage diff, only if the transaction is not inherited.
+func CommitWithStorageDiff(ctx context.Context, tx *Tx, l *log.Helper, userClient pbuser.UserClient) error {
+	commited, err := commit(tx)
+	if err != nil {
+		return err
+	}
+
+	if !commited {
+		return nil
+	}
+
+	if err = rpc.ApplyStorageDiff(ctx, tx.storageDiff, userClient); err != nil {
+		l.WithContext(ctx).Errorf("Failed to apply storage diff", "error", err)
+	}
+
+	return nil
+}

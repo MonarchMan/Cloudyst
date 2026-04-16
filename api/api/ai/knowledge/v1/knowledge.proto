@@ -1,0 +1,228 @@
+syntax = "proto3";
+
+package ai.knowledge.v1;
+
+option go_package = "api/api/ai/knowledge/v1;v1";
+option java_multiple_files = true;
+option java_package = "ai.knowledge.v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+service Knowledge {
+  rpc CreateKnowledge (UpsertKnowledgeRequest) returns (GetKnowledgeResponse) {
+    option (google.api.http) = {
+      post: "/ai/knowledge"
+      body: "*"
+    };
+  }
+  rpc UpdateKnowledge (UpsertKnowledgeRequest) returns (GetKnowledgeResponse) {
+    option (google.api.http) = {
+      put: "/ai/knowledge/{id}"
+      body: "*"
+    };
+  }
+  rpc GetKnowledge (SimpleRequest) returns (GetKnowledgeResponse) {
+    option (google.api.http) = {
+      get: "/ai/knowledge/{id}"
+    };
+  }
+  rpc DeleteKnowledge (SimpleRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/ai/knowledge/{id}"
+    };
+  }
+  rpc ListKnowledge (ListKnowledgeRequest) returns (ListKnowledgeResponse) {
+    option (google.api.http) = {
+      get: "/ai/knowledge/list"
+    };
+  }
+  rpc CreateDocument (UpsertDocumentRequest) returns (GetDocumentResponse) {
+    option (google.api.http) = {
+      post: "/ai/knowledge/document"
+      body: "*"
+    };
+  }
+  rpc BatchCreateDocuments (BatchCreateDocumentRequest) returns (BatchCreateDocumentResponse) {
+    option (google.api.http) = {
+      post: "/ai/knowledge/document/create"
+      body: "*"
+    };
+  }
+  rpc UpdateDocument (UpsertDocumentRequest) returns (GetDocumentResponse) {
+    option (google.api.http) = {
+      put: "/ai/knowledge/document/{id}"
+      body: "*"
+    };
+  }
+  rpc GetDocument (SimpleRequest) returns (GetDocumentResponse) {
+    option (google.api.http) = {
+      get: "/ai/knowledge/document/{id}"
+    };
+  }
+  rpc DeleteDocument (SimpleRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/ai/knowledge/document/{id}"
+    };
+  }
+  rpc BatchDeleteDocuments (BatchDeleteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/ai/knowledge/document/delete",
+      body: "*"
+    };
+  }
+  rpc ListDocuments (ListDocumentsRequest) returns (ListDocumentsResponse) {
+    option (google.api.http) = {
+      get: "/ai/knowledge/document/list"
+    };
+  }
+  // full text search
+  rpc Search (SearchRequest) returns (SearchResponse);
+  // copy document
+  rpc CopyDocument (CopyDocumentRequest) returns (GetDocumentResponse);
+  // create user's master knowledge
+  rpc CreateMasterKnowledge(CreateMasterKnowledgeRequest) returns (GetKnowledgeResponse);
+  // get user's master knowledge
+  rpc GetMasterKnowledge(GetMasterKnowledgeRequest) returns (GetKnowledgeResponse);
+  // change document owner
+  rpc ChangeDocumentOwner(ChangeDocumentOwnerRequest) returns (GetDocumentResponse);
+  // get supported text parse
+  rpc GetSupportTextParse(google.protobuf.Empty) returns (GetSupportTextParseResponse);
+}
+
+message SimpleRequest {
+  string id = 1;
+}
+
+message BatchDeleteRequest {
+  repeated string ids = 1;
+}
+
+// Knowledge
+message UpsertKnowledgeRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  bool is_public = 4;
+  .common.v1.Status status = 5;
+}
+
+message GetKnowledgeResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string embedding_model = 4;
+  int32 top_k = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message ListKnowledgeRequest {
+  .common.v1.PaginationArgs pagination = 1;
+  string name = 2;
+  .common.v1.Status status = 3;
+  bool is_master = 4;
+  bool is_public = 5;
+}
+
+message ListKnowledgeResponse {
+  .common.v1.PaginationResults pagination = 1;
+  repeated GetKnowledgeResponse knowledge = 2;
+}
+
+// Knowledge Document
+message UpsertDocumentRequest {
+  string id = 1;
+  string knowledge_id = 2;
+  string name = 3;
+  string url = 4;
+  string version = 5;
+  double segment_max_tokens = 6;
+  .common.v1.Status status = 7;
+}
+
+message BatchCreateDocumentRequest {
+  repeated UpsertDocumentRequest documents = 1;
+}
+
+message BatchCreateDocumentResponse {
+  repeated GetDocumentResponse documents = 1;
+  int64 total = 2;
+}
+
+message GetDocumentResponse {
+  string id = 1;
+  string knowledge_id = 2;
+  string name = 3;
+  string url = 4;
+  int64 size = 5;
+  int64 tokens = 6;
+  int64 segment_max_tokens = 7;
+//  int64 retrieval_count = 8;
+  .common.v1.Status status = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message ListDocumentsRequest {
+  .common.v1.PaginationArgs pagination = 1;
+  string knowledge_id = 2;
+  string name = 3;
+  .common.v1.Status status = 4;
+}
+
+message ListDocumentsResponse {
+  .common.v1.PaginationResults pagination = 1;
+  repeated GetDocumentResponse documents = 2;
+}
+
+// rpc
+message SearchRequest {
+  string query = 1;
+  int32 offset = 2;
+}
+
+message SearchResponse {
+  repeated SearchResult results = 1;
+  int64 total = 2;
+}
+
+message SearchResult {
+  string doc_id = 1;
+  string knowledge_id = 2;
+  string content = 3;
+  int64 size = 4;
+  double score = 5;
+  string doc_uri = 6;
+  string doc_version = 7;
+}
+
+message CopyDocumentRequest {
+  string doc_id = 1;
+  string version = 2;
+}
+
+message CreateMasterKnowledgeRequest {
+  int64 user_id = 1;
+  string name = 2;
+  string description = 3;
+  bool is_public = 4;
+}
+
+message GetMasterKnowledgeRequest {
+  int64 user_id = 1;
+}
+
+message ChangeDocumentOwnerRequest {
+  string doc_id = 1;
+  string old_knowledge_id = 2;
+  string new_knowledge_id = 3;
+}
+
+// get supported file type for text parsing
+message GetSupportTextParseResponse {
+  repeated string types = 1;
+  int64 max_file_size = 2;
+}

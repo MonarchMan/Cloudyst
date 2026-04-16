@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package file.callback.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "api/api/file/callback/v1;v1";
+
+service Callback {
+	rpc RemoteCallback (CallbackRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      post: "/callback/remote/{session_id}/{key}",
+      body: "*",
+    };
+  };
+
+}
+
+message CallbackRequest {
+  string session_id = 1;
+  string key = 2;
+}
+
+message OssCallbackRequest {
+  string session_id = 1;
+  string key = 2;
+  UploadCallbackBody upload = 3;
+}
+
+// OOS/七牛云存储上传回调请求服务
+message UploadCallbackBody {
+  string name = 1;
+  string source_name = 2;
+  string pic_info = 3;
+  int64 size = 4;
+}
+
+message UpyunCallbackBody {
+  int32 code = 1;
+  string message = 2;
+  string url = 3;
+  string width = 4 [json_name = "image-width"];
+  string height = 5 [json_name = "image-height"];
+  uint64 size = 6 [json_name = "file_size"];
+}

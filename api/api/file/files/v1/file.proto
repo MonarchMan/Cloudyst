@@ -1,0 +1,537 @@
+syntax = "proto3";
+
+package file.files.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+import "file/common/v1/common.proto";
+import "file/share/v1/share.proto";
+
+option go_package = "api/api/file/files/v1;v1";
+
+service File {
+	rpc ListDirectory (ListFileRequest) returns (ListFileResponse){
+    option (google.api.http) = {
+      get: "/file",
+    };
+  }
+
+  rpc ListArchiveFiles(ListArchiveFilesRequest) returns (ListArchiveFilesResponse) {
+    option (google.api.http) = {
+      get: "/file/archive",
+    };
+  }
+
+  rpc CreateFile(CreateFileRequest) returns (FileResponse) {
+    option (google.api.http) = {
+      post: "/file",
+      body: "*",
+    };
+  }
+
+  rpc RenameFile(RenameFileRequest) returns (FileResponse) {
+    option (google.api.http) = {
+      post: "/file/rename",
+      body: "*",
+    };
+  }
+
+  rpc MoveOrCopyFile(MoveOrCopyFileRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/file/move",
+      body: "*",
+    };
+  }
+
+  rpc FileUrl(FileUrlRequest) returns (FileUrlResponse) {
+    option (google.api.http) = {
+      post: "/file/url",
+      body: "*",
+    };
+  }
+
+  rpc PutContent(FileUpdateRequest) returns (FileResponse) {
+    option (google.api.http) = {
+      put: "/file/content",
+      body: "*",
+    };
+  }
+
+  rpc PutContentStream(stream StreamFileUpdateRequest) returns (FileResponse);
+
+  rpc GetThumb(FileThumbRequest) returns (FileThumbResponse) {
+    option (google.api.http) = {
+      get: "/file/thumb"
+    };
+  }
+
+  rpc DeleteFile(DeleteFileRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/file",
+    };
+  }
+
+  rpc UnlockFile(UnlockFileRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/file/lock",
+    };
+  }
+
+  rpc RestoreFile(DeleteFileRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/file/restore",
+      body: "*",
+    };
+  }
+
+  rpc PatchMetadata(PatchMetadataRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      patch: "/file/metadata",
+      body: "*",
+    };
+  }
+
+  rpc CreateUploadSession(CreateUploadSessionRequest) returns (UploadSessionResponse) {
+    option (google.api.http) = {
+      put: "/file/upload",
+      body: "*",
+    };
+  }
+
+  rpc UploadFile(UploadFileRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/file/upload/{session_id}/{index}",
+      body: "*",
+    };
+  }
+
+  rpc DeleteUploadSession(DeleteUploadSessionRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/file/upload",
+    };
+  }
+
+  rpc GetFileInfo(GetFileInfoRequest) returns (FileResponse) {
+    option (google.api.http) = {
+      get: "/file/info",
+    };
+  }
+
+  rpc SetCurrentVersion(SetCurrentVersionRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/file/version/current",
+      body: "*",
+    };
+  }
+
+  rpc DeleteVersion(DeleteVersionRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/file/version",
+    };
+  }
+
+  rpc CreateViewerSession(CreateViewerSessionRequest) returns (ViewerSessionResponse) {
+    option (google.api.http) = {
+      put: "/file/viewerSession",
+      body: "*",
+    };
+  }
+
+  rpc GetSource(GetSourceRequest) returns (GetSourceResponse) {
+    option (google.api.http) = {
+      put: "/file/source",
+      body: "*",
+    };
+  }
+
+  rpc DeleteDirectLink(DeleteDirectLinkRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/file/source/{id}",
+    };
+  }
+
+  rpc PatchView(PatchViewRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      patch: "/file/view",
+      body: "*",
+    };
+  }
+
+
+  // Redirect file source link
+  rpc AnonymousPermLink(AnonymousPermLinkRequest) returns (RedirectResponse) {
+    option (google.api.http) = {
+      get: "/f/{id}/{name}",
+    };
+  }
+
+  rpc AnonymousPermLinkD(AnonymousPermLinkRequest) returns (RedirectResponse) {
+    option (google.api.http) = {
+      get: "/f/d/{id}/{name}",
+    };
+  }
+
+  rpc DeleteFilesByUserId(SimpleUserRequest) returns (google.protobuf.Empty);
+
+  rpc CountByTimeRange(TimeRangeRequest) returns (CountByTimeRangeResponse);
+}
+
+message ListFileRequest {
+  string uri = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+  string order_by = 4;
+  file.common.v1.OrderDirection order_direction = 5;
+  string next_page_token = 6;
+}
+
+message ListFileResponse {
+  repeated FileResponse files = 1;
+  FileResponse parent = 2;
+  file.common.v1.PaginationResults pagination = 3;
+  NavigatorProps props = 4;
+  string context_hint = 5;
+  bool recursion_limit_reached = 6;
+  bool mixed_type = 7;
+  bool single_file_view = 8;
+  StoragePolicy storage_policy = 9;
+  file.common.v1.ExplorerView view = 10;
+}
+
+message FileResponse {
+  int32  type = 1;
+  string id = 2;
+  string name = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  int64 size = 6;
+  map<string, string> metadata = 7;
+  string path = 8;
+  bool shared = 9;
+  optional bytes capability = 10;
+  bool owned = 11;
+  string primary_entity = 12;
+
+  FolderSummary folder_summary = 13;
+  ExtendedInfo extended_info = 14;
+}
+
+message FolderSummary {
+  int64 size = 1;
+  int32  files = 2;
+  int32 folders = 3;
+  bool completed = 4;
+  google.protobuf.Timestamp calculated_at = 5;
+}
+
+message ExtendedInfo {
+  StoragePolicy storage_policy = 1;
+  int64 storage_used = 2;
+  repeated file.share.v1.GetShareResponse shares = 3;
+  repeated EntityResponse entities = 4;
+  file.common.v1.ExplorerView view = 5;
+  repeated DirectLink direct_links = 6;
+}
+
+message EntityResponse {
+  string id = 1;
+  int64 size = 2;
+  int32 type = 3;
+  google.protobuf.Timestamp created_at = 4;
+  StoragePolicy storage_policy = 5;
+  int32 create_by = 6;
+}
+
+message ListViewColumn {
+  int32 type = 1;
+  optional int32 width = 2;
+  ColumnTypeProps props = 3;
+}
+
+message ColumnTypeProps {
+  string metadata_key = 1;
+  string custom_props_id = 2;
+}
+
+message NavigatorProps {
+  optional bytes capability = 1;
+  int32 max_page_size = 2;
+  repeated string order_by_options = 3;
+  repeated string order_direction_options = 4;
+}
+
+// Get archive files
+message ListArchiveFilesRequest {
+  string uri = 1;
+  string entity = 2;
+  string text_encoding = 3;
+}
+
+message ListArchiveFilesResponse {
+  repeated ArchivedFile files = 1;
+}
+
+message ArchivedFile {
+  string name = 1;
+  int64 size = 2;
+  google.protobuf.Timestamp updated_at = 3;
+  bool is_directory = 4;
+}
+
+// Create file
+message CreateFileRequest {
+  string uri = 1;
+  string type = 2;
+  map<string, string> metadata = 3;
+  bool err_on_conflict = 4;
+}
+
+// Rename file
+message RenameFileRequest {
+  string uri = 1;
+  string new_name = 2;
+}
+
+// Move or copy file
+message MoveOrCopyFileRequest {
+  repeated string uris = 1;
+  string dst = 2;
+  bool copy = 3;
+}
+
+// Get file url
+message FileUrlRequest {
+  repeated string uris = 1;
+  bool download = 2;
+  bool redirect = 3;
+  string entity = 4;
+  bool use_primary_site_url = 5;
+  bool skip_error = 6;
+  bool archive = 7;
+  bool no_cache = 8;
+}
+
+message FileUrlResponse {
+  repeated EntityUrl urls = 1;
+  google.protobuf.Timestamp expires = 2;
+  bool is_redirect = 3;
+}
+
+// Update file content
+message FileUpdateRequest {
+  string uri = 1;
+  string previous = 2;
+}
+
+message StreamFileUpdateRequest {
+  oneof payload {
+    UpdateFileInfo file_info = 1;
+    bytes chunk_data = 2;
+  }
+}
+
+message UpdateFileInfo {
+  string uri = 1;
+  string previous = 2;
+  int64 size = 3;
+}
+
+// Get entity content
+message GetEntityRequest {
+  string id = 1;
+  int64 speed = 2;
+  string name = 3;
+  string sign = 4;
+}
+
+// Get thumbnail of file
+message FileThumbRequest {
+  string uri = 1;
+}
+
+message FileThumbResponse {
+  string url = 1;
+  google.protobuf.Timestamp expires = 2;
+}
+
+// Delete file
+message DeleteFileRequest {
+  repeated string uris = 1;
+  bool unlink_only = 2;
+  bool skip_soft_delete = 3;
+}
+
+// Unlock file
+message UnlockFileRequest {
+   repeated string tokens = 1;
+}
+
+// Update file metadata
+message PatchMetadataRequest {
+  repeated string uris = 1;
+  repeated MetadataPatch patches = 2;
+}
+
+message MetadataPatch {
+  string key = 1;
+  string value = 2;
+  bool private = 3;
+  bool remove = 4;
+  bool update_modified_at = 5;
+}
+
+// Upload file
+message CreateUploadSessionRequest {
+  string uri = 1;
+  int64 size = 2;
+  int64 last_modified = 3;
+  string mime_type = 4;
+  string policy_id = 5;
+  map<string, string> metadata = 6;
+  string entity_type = 7;
+}
+
+message UploadSessionResponse {
+  string session_id = 1;
+  string upload_id = 2;
+  int64 chunk_size = 3;
+  int64 expires = 4;
+  repeated string upload_urls = 5;
+  string credential = 6;
+  string access_key = 7;
+  string key_time = 8;
+  string complete_url = 9;
+  StoragePolicy storage_policy = 10;
+  string uri = 11;
+  string callback_secret = 12;
+  string mime_type = 13;
+  string upload_policy = 14;
+}
+
+message UploadFileRequest {
+  string session_id = 1;
+  int32 index = 2;
+}
+
+message DeleteUploadSessionRequest {
+  string id = 1;
+  string uri = 2;
+}
+
+// Get file info
+message GetFileInfoRequest {
+  string uri = 1;
+  string id = 2;
+  bool extended_info = 3;
+  bool folder_summary = 4;
+}
+
+// Version Management
+message SetCurrentVersionRequest {
+  string uri = 1;
+  string version = 2;
+}
+
+message DeleteVersionRequest {
+  string uri = 1;
+  string version = 2;
+}
+
+// Create viewer session
+message CreateViewerSessionRequest {
+  string uri = 1;
+  string version = 2;
+  string viewer_id = 3;
+  string prefer_action = 4;
+}
+
+message ViewerSessionResponse {
+  ViewerSession session = 1;
+  string wopi_src = 2;
+}
+
+message ViewerSession {
+  string id = 1;
+  string access_token = 2;
+  int64 expires = 3;
+}
+
+// File source
+message GetSourceRequest {
+  repeated string uris = 1;
+}
+
+message GetSourceResponse {
+  repeated DirectLinkResponse sources = 1;
+}
+
+message DeleteDirectLinkRequest {
+  string id = 1;
+}
+
+message EntityUrl {
+  string url = 1;
+  string browser_download_display_name = 2;
+}
+
+// Patch file View
+message PatchViewRequest {
+  string uri = 1;
+  file.common.v1.ExplorerView view = 2;
+}
+
+// Download archive
+message DownloadArchiveRequest {
+  string session_id = 1;
+}
+
+message DirectLink {
+  string id = 1;
+  string url = 2;
+  int32 downloaded = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message DirectLinkResponse {
+  string link = 1;
+  string file_url = 2;
+}
+
+message StoragePolicy {
+  string id = 1;
+  string name = 2;
+  repeated string allowed_suffix = 3;
+  repeated string denied_suffix = 4;
+  string allowedNameRegexp = 5;
+  string deniedNameRegexp = 6;
+  string type = 7;
+  int64 max_size = 8;
+  bool relay = 9;
+  int32 chunk_concurrency = 10;
+}
+
+// Redirect file source link
+message AnonymousPermLinkRequest {
+  string id = 1;
+  string name = 2;
+}
+
+message RedirectResponse {
+  string url = 1;
+  int32 expire = 2;
+}
+// rpc
+message SimpleUserRequest {
+  repeated int32 ids = 1;
+}
+
+message TimeRangeRequest {
+  google.protobuf.Timestamp start = 1;
+  google.protobuf.Timestamp end = 2;
+}
+
+message CountByTimeRangeResponse {
+  int32 count = 1;
+}

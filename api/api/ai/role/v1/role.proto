@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package ai.role.v1;
+
+option go_package = "api/api/ai/role/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.role.v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "common/v1/common.proto";
+
+service Role {
+  rpc CreateRole (UpsertRoleRequest) returns (GetRoleResponse) {
+    option (google.api.http) = {
+      post: "/admin/ai/role"
+      body: "*"
+    };
+  };
+  rpc UpdateRole (UpsertRoleRequest) returns (GetRoleResponse) {
+    option (google.api.http) = {
+      put: "/admin/ai/role/{id}"
+      body: "*"
+    };
+  };
+  rpc DeleteRole (SimpleRoleRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/admin/ai/role/{id}"
+    };
+  };
+  rpc GetRole (SimpleRoleRequest) returns (GetRoleResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/role/{id}"
+    };
+  };
+  rpc ListRole (google.protobuf.Empty) returns (ListRoleResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/role/list/me"
+    };
+  };
+  rpc PageRole (PageRoleRequest) returns (PageRoleResponse) {
+    option (google.api.http) = {
+      get: "/admin/ai/role/page/list"
+    };
+  };
+}
+
+message SimpleModelRequest {
+  string id = 1;
+}
+message GetModelResponse {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  string platform = 4;
+  int32 sort = 5;
+  string status = 6;
+  float temperature = 7;
+  int32 max_tokens = 8;
+  int32 max_contexts = 9;
+  string key_id = 10;
+  google.protobuf.Timestamp created_at = 11;
+}
+
+// Role
+message UpsertRoleRequest {
+  string id = 1;
+  string name = 2;
+  string avatar = 3;
+  string description = 4;
+  int32 sort = 5;
+  bool is_public = 6;
+  string category = 7;
+  string system_message = 8;
+  repeated string knowledge_ids = 9;
+  repeated string tool_ids = 10;
+  repeated string mcp_client_names = 11;
+}
+
+message SimpleRoleRequest {
+  string id = 1;
+}
+
+message GetRoleResponse {
+  string id = 1;
+  string name = 2;
+  string avatar = 3;
+  string description = 4;
+  int32 sort = 5;
+  bool is_public = 6;
+  string category = 7;
+  string system_message = 8;
+  repeated string knowledge_ids = 9;
+  repeated string tool_ids = 10;
+  repeated string mcp_client_names = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+message ListRoleResponse {
+  repeated GetRoleResponse roles = 1;
+}
+
+message PageRoleRequest {
+  common.v1.PaginationArgs pagination = 1;
+  string name = 2;
+  string category = 3;
+  bool is_public = 4;
+}
+
+message PageRoleResponse {
+  repeated GetRoleResponse roles = 1;
+  common.v1.PaginationResults pagination = 2;
+}
+

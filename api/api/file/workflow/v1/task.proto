@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package file.workflow.v1;
+
+option go_package = "api/api/file/workflow/v1;v1";
+
+message Summary {
+  int32 node_id = 1 [json_name = "-"];
+  string phase = 2;
+  map<string, string> props = 3;
+}
+
+message Progress {
+  int64 total = 1;
+  int64 current = 2;
+  string identifier = 3;
+}

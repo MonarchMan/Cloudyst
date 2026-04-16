@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package file.workflow.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "api/api/file/workflow/v1;v1";
+
+service Wopi {
+  rpc CheckFileInfo(SimpleFileRequest) returns (WopiFileInfo) {
+    option (google.api.http) = {
+      get: "/file/wopi/{id}",
+    };
+  }
+
+  rpc PutFile(SimpleFileRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/file/wopi/{id}/contents",
+      body: "*"
+    };
+  }
+
+  rpc ModifyFile(SimpleFileRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/file/wopi/{id}",
+      body: "*"
+    };
+  }
+}
+
+message SimpleFileRequest {
+  string id = 1;
+}
+
+message WopiFileInfo {
+  // Required
+  string base_file_name = 1;
+  string version = 2;
+  int64 size = 3;
+
+  // Breadcrumb
+  string breadcrumb_brand_name = 4;
+  string breadcrumb_brand_url = 5;
+  string breadcrumb_folder_name = 6;
+  string breadcrumb_folder_url = 7;
+
+  // Post Message
+  bool file_sharing_post_message = 8;
+  bool file_version_post_message = 9;
+  bool close_post_message = 10;
+  string post_message_origin = 11;
+
+  // Other miscellaneous properties
+  int32 file_name_max_length = 12;
+  string last_modified_time = 13;
+
+  // User metadata
+  bool is_anonymous_user = 14;
+  string user_friendly_name = 15;
+  string user_id = 16;
+  string owner_id = 17;
+
+  // Permission
+  bool read_only = 18;
+  bool user_can_rename = 19;
+  bool user_can_review = 20;
+  bool user_can_write = 21;
+  bool user_can_not_write_relative = 22;
+
+  bool supports_rename = 23;
+  bool supports_reviewing = 24;
+  bool supports_update = 25;
+  bool supports_locks = 26;
+
+  bool enable_share = 27;
+}

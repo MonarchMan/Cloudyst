@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package user.session.v1;
+
+option go_package = "api/api/user/session/v1;v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "user/users/v1/user.proto";
+
+service Session {
+  rpc Login(LoginRequest) returns (BuiltinLoginResponse) {
+    option (google.api.http) = {
+      post: "/session/token"
+      body: "*"
+    };
+  }
+
+  rpc Login2FA(Login2FARequest) returns (BuiltinLoginResponse) {
+    option (google.api.http) = {
+      post: "/session/token/2fa"
+      body: "*"
+    };
+  }
+
+  rpc RefreshToken(RefreshTokenRequest) returns (Token) {
+    option (google.api.http) = {
+      post: "/session/token/refresh"
+      body: "*"
+    };
+  }
+
+  rpc SignOut(RefreshTokenRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/session/token"
+    };
+  }
+
+  rpc PrepareLogin(PrepareLoginRequest) returns (PrepareLoginResponse) {
+    option (google.api.http) = {
+      get: "/session/prepare"
+    };
+  }
+
+  rpc StartLoginAuthn(google.protobuf.Empty) returns (PreparePasskeyLoginResponse) {
+    option (google.api.http) = {
+      put: "/session/authn"
+      body: "*"
+    };
+  }
+
+  rpc FinishLoginAuthn(FinishPasskeyLoginRequest) returns (BuiltinLoginResponse) {
+    option (google.api.http) = {
+      post: "/session/authn"
+      body: "*"
+    };
+  }
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+  user.users.v1.Captcha captcha = 3;
+}
+
+message BuiltinLoginResponse {
+  users.v1.GetUserResponse user = 1;
+  Token token = 2;
+}
+
+message Login2FARequest {
+  string otp = 1;
+  string session_id = 2;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message PrepareLoginRequest {
+  string email = 1;
+}
+
+message PrepareLoginResponse {
+  bool web_authn_enabled = 1;
+  bool password_enabled = 2;
+}
+
+message PreparePasskeyLoginResponse {
+  bytes options = 1; // JSON string of WebAuthn options
+  string session_id = 2;
+}
+
+message FinishPasskeyLoginRequest {
+  string session_id = 1;
+  string response = 2; // JSON string of WebAuthn response
+}
+
+message Token {
+  string access_token = 1;
+  string refresh_token = 2;
+  google.protobuf.Timestamp access_expires = 3;
+  google.protobuf.Timestamp refresh_expires = 4;
+  int32 uid = 5 [json_name = "-"];
+}
