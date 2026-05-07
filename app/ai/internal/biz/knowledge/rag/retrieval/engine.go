@@ -76,8 +76,8 @@ func (e *RetrieveEngine) Retrieve(ctx context.Context, args *types.SegmentSearch
 	if args == nil {
 		return nil, fmt.Errorf("segment search args is nil")
 	}
-	if args.UseRAGGraph {
-		return e.RetrieveWithRAGGraph(ctx, args, nil)
+	if args.UseGraphRAG {
+		return e.RetrieveWithGraphRAG(ctx, args, nil)
 	}
 	return e.retrieveLegacy(ctx, args)
 }
@@ -164,18 +164,18 @@ func (e *RetrieveEngine) retrieveLegacy(ctx context.Context, args *types.Segment
 	return segsResp, nil
 }
 
-func (e *RetrieveEngine) RetrieveWithRAGGraph(ctx context.Context, args *types.SegmentSearchArgs, cfg *RAGGraphBuilderConfig) ([]*types.KnowledgeSegment, error) {
+func (e *RetrieveEngine) RetrieveWithGraphRAG(ctx context.Context, args *types.SegmentSearchArgs, cfg *GraphRAGBuilderConfig) ([]*types.KnowledgeSegment, error) {
 	if args == nil {
 		return nil, fmt.Errorf("segment search args is nil")
 	}
 	if e.embedder == nil {
-		return nil, fmt.Errorf("raggraph embedder is nil")
+		return nil, fmt.Errorf("graphrag embedder is nil")
 	}
 	if e.vectorStore == nil {
-		return nil, fmt.Errorf("raggraph vector store is nil")
+		return nil, fmt.Errorf("graphrag vector store is nil")
 	}
 
-	graphCfg := cloneRAGGraphBuilderConfig(cfg)
+	graphCfg := cloneGraphRAGBuilderConfig(cfg)
 	if graphCfg.TopK <= 0 {
 		graphCfg.TopK = args.TopK
 	}
@@ -187,11 +187,11 @@ func (e *RetrieveEngine) RetrieveWithRAGGraph(ctx context.Context, args *types.S
 	}
 	graphCfg.IncludeOriginal = !args.ExcludeOriginal
 
-	graph, err := e.BuildRAGGraphWithVectorStore(ctx, e.embedder, e.vectorStore, graphCfg)
+	graph, err := e.BuildGraphRAGWithVectorStore(ctx, e.embedder, e.vectorStore, graphCfg)
 	if err != nil {
 		return nil, err
 	}
-	req, err := e.NewRAGGraphRequest(ctx, args)
+	req, err := e.NewGraphRAGRequest(ctx, args)
 	if err != nil {
 		return nil, err
 	}
@@ -199,10 +199,10 @@ func (e *RetrieveEngine) RetrieveWithRAGGraph(ctx context.Context, args *types.S
 	if err != nil {
 		return nil, err
 	}
-	return e.ragGraphDocumentsToKnowledgeSegments(ctx, result.Documents)
+	return e.graphRAGDocumentsToKnowledgeSegments(ctx, result.Documents)
 }
 
-func (e *RetrieveEngine) ragGraphDocumentsToKnowledgeSegments(ctx context.Context, docs []*schema.Document) ([]*types.KnowledgeSegment, error) {
+func (e *RetrieveEngine) graphRAGDocumentsToKnowledgeSegments(ctx context.Context, docs []*schema.Document) ([]*types.KnowledgeSegment, error) {
 	vectorIDs := make([]string, 0, len(docs))
 	docByVectorID := make(map[string]*schema.Document, len(docs))
 	for _, doc := range docs {

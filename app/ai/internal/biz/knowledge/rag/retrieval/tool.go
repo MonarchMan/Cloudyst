@@ -14,10 +14,10 @@ import (
 const (
 	defaultToolName           = "kb_retrieval"
 	defaultToolDesc           = "当问题涉及公司内部文档、产品手册等私有知识时使用"
-	defaultRAGGraphToolName   = "kb_raggraph_retrieval"
-	defaultRAGGraphToolDesc   = "Use the experimental RAGGraph retrieval path with neighbor chunk expansion."
+	defaultGraphRAGToolName   = "kb_graphrag_retrieval"
+	defaultGraphRAGToolDesc   = "Use the experimental GraphRAG retrieval path with neighbor chunk expansion."
 	RetrievalToolName         = "knowledge_retrieval"
-	RAGGraphRetrievalToolName = "knowledge_raggraph_retrieval"
+	GraphRAGRetrievalToolName = "knowledge_graphrag_retrieval"
 )
 
 type Config struct {
@@ -27,7 +27,7 @@ type Config struct {
 
 func (e *RetrieveEngine) registerTools() {
 	e.tr.Register(RetrievalToolName, e.retrieveTool)
-	e.tr.Register(RAGGraphRetrievalToolName, e.ragGraphRetrieveTool)
+	e.tr.Register(GraphRAGRetrievalToolName, e.graphRAGRetrieveTool)
 }
 
 func (e *RetrieveEngine) retrieveTool(conf *factory.ToolConfig) (tool.InvokableTool, error) {
@@ -53,35 +53,35 @@ func (e *RetrieveEngine) retrieveTool(conf *factory.ToolConfig) (tool.InvokableT
 	return tl, nil
 }
 
-func (e *RetrieveEngine) ragGraphRetrieveTool(conf *factory.ToolConfig) (tool.InvokableTool, error) {
+func (e *RetrieveEngine) graphRAGRetrieveTool(conf *factory.ToolConfig) (tool.InvokableTool, error) {
 	if conf == nil {
 		conf = &factory.ToolConfig{}
 	}
 
 	if conf.Name == "" {
-		conf.Name = defaultRAGGraphToolName
+		conf.Name = defaultGraphRAGToolName
 	}
 	if conf.Desc == "" {
-		conf.Desc = defaultRAGGraphToolDesc
+		conf.Desc = defaultGraphRAGToolDesc
 	}
 	tl, err := utils.InferTool(
 		conf.Name,
 		conf.Desc,
-		e.RetrieveRAGGraph,
+		e.RetrieveGraphRAG,
 		utils.WithMarshalOutput(e.marshalOutput),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to infer raggraph retrieval tool: %w", err)
+		return nil, fmt.Errorf("failed to infer graphrag retrieval tool: %w", err)
 	}
 	return tl, nil
 }
 
-func (e *RetrieveEngine) RetrieveRAGGraph(ctx context.Context, args *types.SegmentSearchArgs) ([]*types.KnowledgeSegment, error) {
+func (e *RetrieveEngine) RetrieveGraphRAG(ctx context.Context, args *types.SegmentSearchArgs) ([]*types.KnowledgeSegment, error) {
 	if args == nil {
 		return nil, fmt.Errorf("segment search args is nil")
 	}
 	next := *args
-	next.UseRAGGraph = true
+	next.UseGraphRAG = true
 	return e.Retrieve(ctx, &next)
 }
 

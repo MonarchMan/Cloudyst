@@ -14,7 +14,7 @@ import (
 	"github.com/cloudwego/eino/components/retriever"
 )
 
-type RAGGraphBuilderConfig struct {
+type GraphRAGBuilderConfig struct {
 	QueryRewriter     graphrag.QueryRewriter
 	QueryExpander     graphrag.QueryExpander
 	NeighborExpander  graphrag.NeighborExpander
@@ -33,13 +33,13 @@ type RAGGraphBuilderConfig struct {
 	GenerateAnswer    bool
 }
 
-func (e *RetrieveEngine) BuildRAGGraph(ctx context.Context, emb embedding.Embedder, cfg *RAGGraphBuilderConfig) (*graphrag.Graph, error) {
+func (e *RetrieveEngine) BuildGraphRAG(ctx context.Context, emb embedding.Embedder, cfg *GraphRAGBuilderConfig) (*graphrag.Graph, error) {
 	if cfg == nil {
-		cfg = &RAGGraphBuilderConfig{}
+		cfg = &GraphRAGBuilderConfig{}
 	}
 	r, err := NewMilvusRetriever(e.conf.Data.Milvus, emb)
 	if err != nil {
-		return nil, fmt.Errorf("build raggraph retriever: %w", err)
+		return nil, fmt.Errorf("build graphrag retriever: %w", err)
 	}
 	reranker, err := e.buildScoreReranker(cfg)
 	if err != nil {
@@ -68,18 +68,18 @@ func (e *RetrieveEngine) BuildRAGGraph(ctx context.Context, emb embedding.Embedd
 	})
 }
 
-func (e *RetrieveEngine) BuildRAGGraphWithVectorStore(ctx context.Context, emb embedding.Embedder, vs vector.VectorStore, cfg *RAGGraphBuilderConfig) (*graphrag.Graph, error) {
+func (e *RetrieveEngine) BuildGraphRAGWithVectorStore(ctx context.Context, emb embedding.Embedder, vs vector.VectorStore, cfg *GraphRAGBuilderConfig) (*graphrag.Graph, error) {
 	if vs == nil {
-		return nil, fmt.Errorf("raggraph vector store is nil")
+		return nil, fmt.Errorf("graphrag vector store is nil")
 	}
-	next := cloneRAGGraphBuilderConfig(cfg)
+	next := cloneGraphRAGBuilderConfig(cfg)
 	if next.NeighborExpander == nil && next.ContentResolver == nil {
 		next.ContentResolver = vs
 	}
-	return e.BuildRAGGraph(ctx, emb, next)
+	return e.BuildGraphRAG(ctx, emb, next)
 }
 
-func (e *RetrieveEngine) buildNeighborExpander(cfg *RAGGraphBuilderConfig) (graphrag.NeighborExpander, error) {
+func (e *RetrieveEngine) buildNeighborExpander(cfg *GraphRAGBuilderConfig) (graphrag.NeighborExpander, error) {
 	if cfg.NeighborExpander != nil {
 		return cfg.NeighborExpander, nil
 	}
@@ -98,15 +98,15 @@ func (e *RetrieveEngine) buildNeighborExpander(cfg *RAGGraphBuilderConfig) (grap
 	})
 }
 
-func cloneRAGGraphBuilderConfig(cfg *RAGGraphBuilderConfig) *RAGGraphBuilderConfig {
+func cloneGraphRAGBuilderConfig(cfg *GraphRAGBuilderConfig) *GraphRAGBuilderConfig {
 	if cfg == nil {
-		return &RAGGraphBuilderConfig{}
+		return &GraphRAGBuilderConfig{}
 	}
 	next := *cfg
 	return &next
 }
 
-func (e *RetrieveEngine) NewRAGGraphRequest(ctx context.Context, args *types.SegmentSearchArgs) (*graphrag.Request, error) {
+func (e *RetrieveEngine) NewGraphRAGRequest(ctx context.Context, args *types.SegmentSearchArgs) (*graphrag.Request, error) {
 	if args == nil {
 		return nil, fmt.Errorf("segment search args is nil")
 	}
@@ -125,7 +125,7 @@ func (e *RetrieveEngine) NewRAGGraphRequest(ctx context.Context, args *types.Seg
 	}, nil
 }
 
-func (e *RetrieveEngine) buildScoreReranker(cfg *RAGGraphBuilderConfig) (document.Transformer, error) {
+func (e *RetrieveEngine) buildScoreReranker(cfg *GraphRAGBuilderConfig) (document.Transformer, error) {
 	topK := cfg.TopK
 	if topK <= 0 {
 		topK = 5

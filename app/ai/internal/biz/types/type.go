@@ -217,7 +217,7 @@ type SegmentSearchArgs struct {
 	TopK            int     `json:"top_k"         jsonschema:"description=Number of most similar segments to return,minimum=1,maximum=100,required"`
 	Similarity      float64 `json:"similarity"    jsonschema:"description=Similarity threshold between 0 and 1; results below this value will be filtered out,minimum=0,maximum=1"`
 	KnowledgeIDs    []int   `json:"knowledge_ids" jsonschema:"description=List of knowledge base IDs to search; searches all if empty"`
-	UseRAGGraph     bool    `json:"use_rag_graph" jsonschema:"description=Enable the experimental RAGGraph retrieval path for gray validation"`
+	UseGraphRAG     bool    `json:"use_graph_rag" jsonschema:"description=Enable the experimental RAGGraph retrieval path for gray validation"`
 	NeighborWindow  int     `json:"neighbor_window" jsonschema:"description=Neighbor chunk window for RAGGraph expansion,minimum=0,maximum=10"`
 	ExcludeOriginal bool    `json:"exclude_original" jsonschema:"description=Exclude original vector hits from RAGGraph neighbor expansion"`
 }
