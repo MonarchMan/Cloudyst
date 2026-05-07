@@ -2,8 +2,8 @@ package manager
 
 import (
 	commonpb "api/api/common/v1"
-	pb "api/api/file/common/v1"
 	pbfile "api/api/file/files/v1"
+	"api/external/data/filedata"
 	"common/util"
 	"context"
 	"encoding/gob"
@@ -246,7 +246,7 @@ func (m *manager) CreateOrUpdateShare(ctx context.Context, path *fs.URI, args *C
 	}
 
 	// Only files owner can share files
-	if file.OwnerID() != int(m.user.Id) {
+	if file.OwnerID() != m.user.ID {
 		return nil, commonpb.ErrorParamInvalid("permission denied")
 	}
 
@@ -276,7 +276,7 @@ func (m *manager) CreateOrUpdateShare(ctx context.Context, path *fs.URI, args *C
 		}
 	}
 
-	props := &pb.ShareProps{
+	props := &types.ShareProps{
 		ShareView:  args.ShareView,
 		ShowReadMe: args.ShowReadMe,
 	}
@@ -301,14 +301,14 @@ func (m *manager) TraverseFile(ctx context.Context, fileID int) (fs.File, error)
 	return m.fs.TraverseFile(ctx, fileID)
 }
 
-func (m *manager) PatchView(ctx context.Context, uri *fs.URI, view *types.ExplorerView) error {
+func (m *manager) PatchView(ctx context.Context, uri *fs.URI, view *filedata.ExplorerView) error {
 
 	patch := &types.FileProps{
 		View: view,
 	}
 	isDelete := view == nil
 	if isDelete {
-		patch.View = &types.ExplorerView{}
+		patch.View = &filedata.ExplorerView{}
 	}
 	if err := m.fs.PatchProps(ctx, uri, patch, isDelete); err != nil {
 		return err

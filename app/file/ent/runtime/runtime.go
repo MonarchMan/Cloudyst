@@ -4,6 +4,7 @@ package runtime
 
 import (
 	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"file/ent/directlink"
 	"file/ent/entity"
 	"file/ent/file"
@@ -15,6 +16,7 @@ import (
 	"file/ent/share"
 	"file/ent/storagepolicy"
 	"file/ent/task"
+	"file/internal/data/types"
 	"time"
 )
 
@@ -79,7 +81,7 @@ func init() {
 	// fileDescOwnerInfo is the schema descriptor for owner_info field.
 	fileDescOwnerInfo := fileFields[5].Descriptor()
 	// file.DefaultOwnerInfo holds the default value on creation for the owner_info field.
-	file.DefaultOwnerInfo = fileDescOwnerInfo.Default.(*v1.UserInfo)
+	file.DefaultOwnerInfo = fileDescOwnerInfo.Default.(*userdata.UserInfo)
 	// fileDescSize is the schema descriptor for size field.
 	fileDescSize := fileFields[6].Descriptor()
 	// file.DefaultSize holds the default value on creation for the size field.
@@ -206,7 +208,7 @@ func init() {
 	// shareDescOwnerInfo is the schema descriptor for owner_info field.
 	shareDescOwnerInfo := shareFields[7].Descriptor()
 	// share.DefaultOwnerInfo holds the default value on creation for the owner_info field.
-	share.DefaultOwnerInfo = shareDescOwnerInfo.Default.(*v1.UserInfo)
+	share.DefaultOwnerInfo = shareDescOwnerInfo.Default.(*userdata.UserInfo)
 	storagepolicyMixin := schema.StoragePolicy{}.Mixin()
 	storagepolicyMixinHooks0 := storagepolicyMixin[0].Hooks()
 	storagepolicy.Hooks[0] = storagepolicyMixinHooks0[0]
@@ -229,7 +231,7 @@ func init() {
 	// storagepolicyDescSettings is the schema descriptor for settings field.
 	storagepolicyDescSettings := storagepolicyFields[10].Descriptor()
 	// storagepolicy.DefaultSettings holds the default value on creation for the settings field.
-	storagepolicy.DefaultSettings = storagepolicyDescSettings.Default.(*v1.PolicySetting)
+	storagepolicy.DefaultSettings = storagepolicyDescSettings.Default.(*types.PolicySetting)
 	taskMixin := schema.Task{}.Mixin()
 	taskMixinHooks0 := taskMixin[0].Hooks()
 	task.Hooks[0] = taskMixinHooks0[0]

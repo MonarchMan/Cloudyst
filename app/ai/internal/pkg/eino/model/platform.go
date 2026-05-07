@@ -12,3 +12,8 @@ const (
 	PlatformGemini   Platform = "gemini"
 	PlatformClaude   Platform = "claude"
 )
+
+const (
+	deepseekV4Flash = "deepseek-v4-flash"
+	deepseekV4Pro   = "deepseek-v4-pro"
+)

@@ -1,8 +1,6 @@
 package schema
 
 import (
-	mschema "entmodule/ent/schema"
-
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
@@ -43,7 +41,7 @@ func (DirectLink) Edges() []ent.Edge {
 
 func (DirectLink) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
+		CommonMixin{},
 	}
 }
 

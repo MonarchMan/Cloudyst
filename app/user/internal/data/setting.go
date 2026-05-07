@@ -1,7 +1,7 @@
 package data
 
 import (
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
 	"common/cache"
 	"common/util"
 	"context"

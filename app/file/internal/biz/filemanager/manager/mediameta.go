@@ -1,23 +1,23 @@
 package manager
 
 import (
-	pb "api/api/file/common/v1"
 	pbfile "api/api/file/files/v1"
 	pbslave "api/api/file/slave/v1"
-	userpb "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"common/util"
 	"context"
 	"encoding/json"
 	"file/ent"
-	"file/ent/task"
 	"file/internal/biz/filemanager"
 	"file/internal/biz/filemanager/driver"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/filemanager/fs/dbfs"
 	"file/internal/biz/queue"
+	"file/internal/data"
 	"file/internal/data/types"
 	"fmt"
+	mqueue "queue"
 
 	"github.com/samber/lo"
 )
@@ -34,11 +34,11 @@ type (
 )
 
 func init() {
-	queue.RegisterResumableTaskFactory(queue.MediaMetaTaskType, NewMediaMetaTaskFromModel)
+	mqueue.RegisterResumableTaskFactory(queue.MediaMetaTaskType, NewMediaMetaTaskFromModel)
 }
 
 // NewMediaMetaTask creates a new MediaMetaTask to
-func NewMediaMetaTask(ctx context.Context, uri *fs.URI, entityID int, creator *userpb.User) (*MediaMetaTask, error) {
+func NewMediaMetaTask(ctx context.Context, uri *fs.URI, entityID int, creator *userdata.User) (*MediaMetaTask, error) {
 	state := &MediaMetaTaskState{
 		Uri:      uri,
 		EntityID: entityID,
@@ -55,21 +55,25 @@ func NewMediaMetaTask(ctx context.Context, uri *fs.URI, entityID int, creator *u
 				Type:         queue.MediaMetaTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState:  &pb.TaskPublicState{},
+				PublicState:  &mqueue.TaskPublicState{},
 			},
 		},
 	}, nil
 }
 
-func NewMediaMetaTaskFromModel(task *ent.Task) queue.Task {
+func NewMediaMetaTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := task.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &MediaMetaTask{
 		DBTask: &queue.DBTask{
-			Task: task,
+			Task: wrapped.Task,
 		},
 	}
 }
 
-func (m *MediaMetaTask) Do(ctx context.Context) (task.Status, error) {
+func (m *MediaMetaTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	user := trans.FromContext(ctx)
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
@@ -78,15 +82,15 @@ func (m *MediaMetaTask) Do(ctx context.Context) (task.Status, error) {
 	// unmarshal state
 	var state MediaMetaTaskState
 	if err := json.Unmarshal([]byte(m.State()), &state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
 	}
 
 	err := fm.ExtractAndSaveMediaMeta(ctx, state.Uri, state.EntityID)
 	if err != nil {
-		return task.StatusError, err
+		return mqueue.StatusError, err
 	}
 
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
 func (m *manager) ExtractAndSaveMediaMeta(ctx context.Context, uri *fs.URI, entityID int) error {

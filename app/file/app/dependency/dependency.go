@@ -149,7 +149,7 @@ type dependency struct {
 	entityRecycleQueue  queue.Queue
 	slaveQueue          queue.Queue
 	remoteDownloadQueue queue.Queue
-	ioIntenseQueueTask  queue.Task
+	ioIntenseQueueTask  mqueue.Task
 	mediaMeta           mediameta.Extractor
 	thumbPipeline       thumb.Generator
 	mimeDetector        mime.MimeDetector

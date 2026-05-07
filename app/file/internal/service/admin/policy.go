@@ -21,7 +21,6 @@ import (
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 const (
@@ -75,7 +74,7 @@ func (s *AdminService) CreatePolicy(ctx context.Context, req *pb.CreateStoragePo
 	storagePolicyClient := s.pc
 
 	if req.Policy.Type != types.PolicyTypeLocal {
-		req.Policy.DirNameRule = &wrapperspb.StringValue{Value: util.DataPath("uploads/{uid}/{path}")}
+		req.Policy.DirNameRule = util.DataPath("uploads/{uid}/{path}")
 	}
 
 	req.Policy.Id = 0
@@ -148,7 +147,7 @@ func (s *AdminService) CreateStoragePolicyCors(ctx context.Context, req *pb.Crea
 	storagePolicyClient := s.pc
 
 	if req.Policy.Type == types.PolicyTypeLocal {
-		req.Policy.DirNameRule = &wrapperspb.StringValue{Value: util.DataPath("uploads/{uid}/{path}")}
+		req.Policy.DirNameRule = util.DataPath("uploads/{uid}/{path}")
 	}
 
 	req.Policy.Id = 0

@@ -69,58 +69,6 @@ func (x *SimpleRequest) GetId() int64 {
 	return 0
 }
 
-type DeleteRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Force         bool                   `protobuf:"varint,2,opt,name=force,proto3" json:"force,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteRequest) Reset() {
-	*x = DeleteRequest{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteRequest) ProtoMessage() {}
-
-func (x *DeleteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteRequest.ProtoReflect.Descriptor instead.
-func (*DeleteRequest) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *DeleteRequest) GetId() int64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *DeleteRequest) GetForce() bool {
-	if x != nil {
-		return x.Force
-	}
-	return false
-}
-
 type BatchCreateResponse struct {
 	state         protoimpl.MessageState    `protogen:"open.v1"`
 	Documents     []*v1.AiKnowledgeDocument `protobuf:"bytes,1,rep,name=documents,proto3" json:"documents,omitempty"`
@@ -131,7 +79,7 @@ type BatchCreateResponse struct {
 
 func (x *BatchCreateResponse) Reset() {
 	*x = BatchCreateResponse{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[2]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -143,7 +91,7 @@ func (x *BatchCreateResponse) String() string {
 func (*BatchCreateResponse) ProtoMessage() {}
 
 func (x *BatchCreateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[2]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -156,7 +104,7 @@ func (x *BatchCreateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateResponse.ProtoReflect.Descriptor instead.
 func (*BatchCreateResponse) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{2}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *BatchCreateResponse) GetDocuments() []*v1.AiKnowledgeDocument {
@@ -183,7 +131,7 @@ type BatchDeleteRequest struct {
 
 func (x *BatchDeleteRequest) Reset() {
 	*x = BatchDeleteRequest{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[3]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -195,7 +143,7 @@ func (x *BatchDeleteRequest) String() string {
 func (*BatchDeleteRequest) ProtoMessage() {}
 
 func (x *BatchDeleteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[3]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -208,7 +156,7 @@ func (x *BatchDeleteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchDeleteRequest.ProtoReflect.Descriptor instead.
 func (*BatchDeleteRequest) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{3}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *BatchDeleteRequest) GetIds() []int64 {
@@ -236,7 +184,7 @@ type ListApikeyResponse struct {
 
 func (x *ListApikeyResponse) Reset() {
 	*x = ListApikeyResponse{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[4]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -248,7 +196,7 @@ func (x *ListApikeyResponse) String() string {
 func (*ListApikeyResponse) ProtoMessage() {}
 
 func (x *ListApikeyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[4]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -261,7 +209,7 @@ func (x *ListApikeyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListApikeyResponse.ProtoReflect.Descriptor instead.
 func (*ListApikeyResponse) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{4}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListApikeyResponse) GetApiKeys() []*v1.AiApiKey {
@@ -289,7 +237,7 @@ type ListModelResponse struct {
 
 func (x *ListModelResponse) Reset() {
 	*x = ListModelResponse{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[5]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -301,7 +249,7 @@ func (x *ListModelResponse) String() string {
 func (*ListModelResponse) ProtoMessage() {}
 
 func (x *ListModelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[5]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -314,7 +262,7 @@ func (x *ListModelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListModelResponse.ProtoReflect.Descriptor instead.
 func (*ListModelResponse) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{5}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ListModelResponse) GetModels() []*v1.AiModel {
@@ -332,9 +280,61 @@ func (x *ListModelResponse) GetPagination() *v11.PaginationResults {
 }
 
 // Role
+type Role struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Role          *v1.AiChatRole         `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	OwnerInfo     *v11.UserInfo          `protobuf:"bytes,2,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Role) Reset() {
+	*x = Role{}
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Role) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Role) ProtoMessage() {}
+
+func (x *Role) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Role.ProtoReflect.Descriptor instead.
+func (*Role) Descriptor() ([]byte, []int) {
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *Role) GetRole() *v1.AiChatRole {
+	if x != nil {
+		return x.Role
+	}
+	return nil
+}
+
+func (x *Role) GetOwnerInfo() *v11.UserInfo {
+	if x != nil {
+		return x.OwnerInfo
+	}
+	return nil
+}
+
 type ListRoleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Roles         []*v1.AiChatRole       `protobuf:"bytes,1,rep,name=roles,proto3" json:"roles,omitempty"`
+	Roles         []*Role                `protobuf:"bytes,1,rep,name=roles,proto3" json:"roles,omitempty"`
 	Pagination    *v11.PaginationResults `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -370,7 +370,7 @@ func (*ListRoleResponse) Descriptor() ([]byte, []int) {
 	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *ListRoleResponse) GetRoles() []*v1.AiChatRole {
+func (x *ListRoleResponse) GetRoles() []*Role {
 	if x != nil {
 		return x.Roles
 	}
@@ -439,7 +439,7 @@ func (x *BatchDeleteRoleRequest) GetForce() bool {
 // Knowledge
 type ListKnowledgeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Knowledges    []*v1.AiKnowledge      `protobuf:"bytes,1,rep,name=knowledges,proto3" json:"knowledges,omitempty"`
+	Knowledges    []*Knowledge           `protobuf:"bytes,1,rep,name=knowledges,proto3" json:"knowledges,omitempty"`
 	Pagination    *v11.PaginationResults `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -475,7 +475,7 @@ func (*ListKnowledgeResponse) Descriptor() ([]byte, []int) {
 	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *ListKnowledgeResponse) GetKnowledges() []*v1.AiKnowledge {
+func (x *ListKnowledgeResponse) GetKnowledges() []*Knowledge {
 	if x != nil {
 		return x.Knowledges
 	}
@@ -485,6 +485,58 @@ func (x *ListKnowledgeResponse) GetKnowledges() []*v1.AiKnowledge {
 func (x *ListKnowledgeResponse) GetPagination() *v11.PaginationResults {
 	if x != nil {
 		return x.Pagination
+	}
+	return nil
+}
+
+type Knowledge struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Knowledge     *v1.AiKnowledge        `protobuf:"bytes,1,opt,name=knowledge,proto3" json:"knowledge,omitempty"`
+	OwnerInfo     *v11.UserInfo          `protobuf:"bytes,2,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Knowledge) Reset() {
+	*x = Knowledge{}
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Knowledge) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Knowledge) ProtoMessage() {}
+
+func (x *Knowledge) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Knowledge.ProtoReflect.Descriptor instead.
+func (*Knowledge) Descriptor() ([]byte, []int) {
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *Knowledge) GetKnowledge() *v1.AiKnowledge {
+	if x != nil {
+		return x.Knowledge
+	}
+	return nil
+}
+
+func (x *Knowledge) GetOwnerInfo() *v11.UserInfo {
+	if x != nil {
+		return x.OwnerInfo
 	}
 	return nil
 }
@@ -500,7 +552,7 @@ type ListKnowledgeDocumentResponse struct {
 
 func (x *ListKnowledgeDocumentResponse) Reset() {
 	*x = ListKnowledgeDocumentResponse{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[9]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -512,7 +564,7 @@ func (x *ListKnowledgeDocumentResponse) String() string {
 func (*ListKnowledgeDocumentResponse) ProtoMessage() {}
 
 func (x *ListKnowledgeDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[9]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -525,7 +577,7 @@ func (x *ListKnowledgeDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListKnowledgeDocumentResponse.ProtoReflect.Descriptor instead.
 func (*ListKnowledgeDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{9}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListKnowledgeDocumentResponse) GetDocuments() []*v1.AiKnowledgeDocument {
@@ -553,7 +605,7 @@ type BatchCreateKnowledgeDocumentRequest struct {
 
 func (x *BatchCreateKnowledgeDocumentRequest) Reset() {
 	*x = BatchCreateKnowledgeDocumentRequest{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[10]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -565,7 +617,7 @@ func (x *BatchCreateKnowledgeDocumentRequest) String() string {
 func (*BatchCreateKnowledgeDocumentRequest) ProtoMessage() {}
 
 func (x *BatchCreateKnowledgeDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[10]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -578,7 +630,7 @@ func (x *BatchCreateKnowledgeDocumentRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use BatchCreateKnowledgeDocumentRequest.ProtoReflect.Descriptor instead.
 func (*BatchCreateKnowledgeDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{10}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *BatchCreateKnowledgeDocumentRequest) GetKnowledgeId() int64 {
@@ -612,7 +664,7 @@ type DocumentRequest struct {
 
 func (x *DocumentRequest) Reset() {
 	*x = DocumentRequest{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[11]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -624,7 +676,7 @@ func (x *DocumentRequest) String() string {
 func (*DocumentRequest) ProtoMessage() {}
 
 func (x *DocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[11]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -637,7 +689,7 @@ func (x *DocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentRequest.ProtoReflect.Descriptor instead.
 func (*DocumentRequest) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{11}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DocumentRequest) GetName() string {
@@ -664,7 +716,7 @@ type UpdateDocumentStatusRequest struct {
 
 func (x *UpdateDocumentStatusRequest) Reset() {
 	*x = UpdateDocumentStatusRequest{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[12]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -676,7 +728,7 @@ func (x *UpdateDocumentStatusRequest) String() string {
 func (*UpdateDocumentStatusRequest) ProtoMessage() {}
 
 func (x *UpdateDocumentStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[12]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -689,7 +741,7 @@ func (x *UpdateDocumentStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDocumentStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDocumentStatusRequest) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{12}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *UpdateDocumentStatusRequest) GetId() int64 {
@@ -706,6 +758,58 @@ func (x *UpdateDocumentStatusRequest) GetStatus() string {
 	return ""
 }
 
+type UpsertDocumentResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Document      *v1.AiKnowledgeDocument `protobuf:"bytes,1,opt,name=document,proto3" json:"document,omitempty"`
+	TaskId        int64                   `protobuf:"varint,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpsertDocumentResponse) Reset() {
+	*x = UpsertDocumentResponse{}
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertDocumentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertDocumentResponse) ProtoMessage() {}
+
+func (x *UpsertDocumentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertDocumentResponse.ProtoReflect.Descriptor instead.
+func (*UpsertDocumentResponse) Descriptor() ([]byte, []int) {
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *UpsertDocumentResponse) GetDocument() *v1.AiKnowledgeDocument {
+	if x != nil {
+		return x.Document
+	}
+	return nil
+}
+
+func (x *UpsertDocumentResponse) GetTaskId() int64 {
+	if x != nil {
+		return x.TaskId
+	}
+	return 0
+}
+
 // Knowledge Document Segment
 type ListKnowledgeSegmentResponse struct {
 	state         protoimpl.MessageState   `protogen:"open.v1"`
@@ -717,7 +821,7 @@ type ListKnowledgeSegmentResponse struct {
 
 func (x *ListKnowledgeSegmentResponse) Reset() {
 	*x = ListKnowledgeSegmentResponse{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[13]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -729,7 +833,7 @@ func (x *ListKnowledgeSegmentResponse) String() string {
 func (*ListKnowledgeSegmentResponse) ProtoMessage() {}
 
 func (x *ListKnowledgeSegmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[13]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -742,7 +846,7 @@ func (x *ListKnowledgeSegmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListKnowledgeSegmentResponse.ProtoReflect.Descriptor instead.
 func (*ListKnowledgeSegmentResponse) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{13}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListKnowledgeSegmentResponse) GetSegments() []*v1.AiKnowledgeSegment {
@@ -760,9 +864,61 @@ func (x *ListKnowledgeSegmentResponse) GetPagination() *v11.PaginationResults {
 }
 
 // Image
+type Image struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Image         *v1.AiImage            `protobuf:"bytes,1,opt,name=image,proto3" json:"image,omitempty"`
+	OwnerInfo     *v11.UserInfo          `protobuf:"bytes,2,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Image) Reset() {
+	*x = Image{}
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Image) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Image) ProtoMessage() {}
+
+func (x *Image) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Image.ProtoReflect.Descriptor instead.
+func (*Image) Descriptor() ([]byte, []int) {
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *Image) GetImage() *v1.AiImage {
+	if x != nil {
+		return x.Image
+	}
+	return nil
+}
+
+func (x *Image) GetOwnerInfo() *v11.UserInfo {
+	if x != nil {
+		return x.OwnerInfo
+	}
+	return nil
+}
+
 type ListImageResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Images        []*v1.AiImage          `protobuf:"bytes,1,rep,name=images,proto3" json:"images,omitempty"`
+	Images        []*Image               `protobuf:"bytes,1,rep,name=images,proto3" json:"images,omitempty"`
 	Pagination    *v11.PaginationResults `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -770,7 +926,7 @@ type ListImageResponse struct {
 
 func (x *ListImageResponse) Reset() {
 	*x = ListImageResponse{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[14]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -782,7 +938,7 @@ func (x *ListImageResponse) String() string {
 func (*ListImageResponse) ProtoMessage() {}
 
 func (x *ListImageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[14]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -795,10 +951,10 @@ func (x *ListImageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListImageResponse.ProtoReflect.Descriptor instead.
 func (*ListImageResponse) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{14}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{17}
 }
 
-func (x *ListImageResponse) GetImages() []*v1.AiImage {
+func (x *ListImageResponse) GetImages() []*Image {
 	if x != nil {
 		return x.Images
 	}
@@ -822,7 +978,7 @@ type UpdateImageStatusRequest struct {
 
 func (x *UpdateImageStatusRequest) Reset() {
 	*x = UpdateImageStatusRequest{}
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[15]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -834,7 +990,7 @@ func (x *UpdateImageStatusRequest) String() string {
 func (*UpdateImageStatusRequest) ProtoMessage() {}
 
 func (x *UpdateImageStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_admin_v1_admin_proto_msgTypes[15]
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -847,7 +1003,7 @@ func (x *UpdateImageStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateImageStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateImageStatusRequest) Descriptor() ([]byte, []int) {
-	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{15}
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *UpdateImageStatusRequest) GetId() int64 {
@@ -864,16 +1020,276 @@ func (x *UpdateImageStatusRequest) GetStatus() string {
 	return ""
 }
 
+// Conversation
+type ChatConversation struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Conversation  *v1.AiChatConversation `protobuf:"bytes,1,opt,name=conversation,proto3" json:"conversation,omitempty"`
+	OwnerInfo     *v11.UserInfo          `protobuf:"bytes,2,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChatConversation) Reset() {
+	*x = ChatConversation{}
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChatConversation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChatConversation) ProtoMessage() {}
+
+func (x *ChatConversation) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChatConversation.ProtoReflect.Descriptor instead.
+func (*ChatConversation) Descriptor() ([]byte, []int) {
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ChatConversation) GetConversation() *v1.AiChatConversation {
+	if x != nil {
+		return x.Conversation
+	}
+	return nil
+}
+
+func (x *ChatConversation) GetOwnerInfo() *v11.UserInfo {
+	if x != nil {
+		return x.OwnerInfo
+	}
+	return nil
+}
+
+type ListChatConversationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Conversations []*ChatConversation    `protobuf:"bytes,1,rep,name=conversations,proto3" json:"conversations,omitempty"`
+	Pagination    *v11.PaginationResults `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListChatConversationResponse) Reset() {
+	*x = ListChatConversationResponse{}
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListChatConversationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListChatConversationResponse) ProtoMessage() {}
+
+func (x *ListChatConversationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListChatConversationResponse.ProtoReflect.Descriptor instead.
+func (*ListChatConversationResponse) Descriptor() ([]byte, []int) {
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ListChatConversationResponse) GetConversations() []*ChatConversation {
+	if x != nil {
+		return x.Conversations
+	}
+	return nil
+}
+
+func (x *ListChatConversationResponse) GetPagination() *v11.PaginationResults {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+// Chat Message
+type ChatMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Message       *v1.AiChatMessage      `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	OwnerInfo     *v11.UserInfo          `protobuf:"bytes,2,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChatMessage) Reset() {
+	*x = ChatMessage{}
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChatMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChatMessage) ProtoMessage() {}
+
+func (x *ChatMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChatMessage.ProtoReflect.Descriptor instead.
+func (*ChatMessage) Descriptor() ([]byte, []int) {
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ChatMessage) GetMessage() *v1.AiChatMessage {
+	if x != nil {
+		return x.Message
+	}
+	return nil
+}
+
+func (x *ChatMessage) GetOwnerInfo() *v11.UserInfo {
+	if x != nil {
+		return x.OwnerInfo
+	}
+	return nil
+}
+
+type ListChatMessageResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Messages      []*ChatMessage         `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
+	Pagination    *v11.PaginationResults `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListChatMessageResponse) Reset() {
+	*x = ListChatMessageResponse{}
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListChatMessageResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListChatMessageResponse) ProtoMessage() {}
+
+func (x *ListChatMessageResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListChatMessageResponse.ProtoReflect.Descriptor instead.
+func (*ListChatMessageResponse) Descriptor() ([]byte, []int) {
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *ListChatMessageResponse) GetMessages() []*ChatMessage {
+	if x != nil {
+		return x.Messages
+	}
+	return nil
+}
+
+func (x *ListChatMessageResponse) GetPagination() *v11.PaginationResults {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+// Tool
+type ListToolResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tools         []*v1.AiTool           `protobuf:"bytes,1,rep,name=tools,proto3" json:"tools,omitempty"`
+	Pagination    *v11.PaginationResults `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListToolResponse) Reset() {
+	*x = ListToolResponse{}
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListToolResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListToolResponse) ProtoMessage() {}
+
+func (x *ListToolResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_admin_v1_admin_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListToolResponse.ProtoReflect.Descriptor instead.
+func (*ListToolResponse) Descriptor() ([]byte, []int) {
+	return file_ai_admin_v1_admin_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ListToolResponse) GetTools() []*v1.AiTool {
+	if x != nil {
+		return x.Tools
+	}
+	return nil
+}
+
+func (x *ListToolResponse) GetPagination() *v11.PaginationResults {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
 var File_ai_admin_v1_admin_proto protoreflect.FileDescriptor
 
 const file_ai_admin_v1_admin_proto_rawDesc = "" +
 	"\n" +
 	"\x17ai/admin/v1/admin.proto\x12\vai.admin.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x16common/v1/common.proto\x1a\x18ai/common/v1/entpb.proto\"\x1f\n" +
 	"\rSimpleRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"5\n" +
-	"\rDeleteRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
-	"\x05force\x18\x02 \x01(\bR\x05force\"l\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"l\n" +
 	"\x13BatchCreateResponse\x12?\n" +
 	"\tdocuments\x18\x01 \x03(\v2!.ai.common.v1.AiKnowledgeDocumentR\tdocuments\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\"<\n" +
@@ -889,22 +1305,30 @@ const file_ai_admin_v1_admin_proto_rawDesc = "" +
 	"\x06models\x18\x01 \x03(\v2\x15.ai.common.v1.AiModelR\x06models\x12<\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
-	"pagination\"\x80\x01\n" +
-	"\x10ListRoleResponse\x12.\n" +
-	"\x05roles\x18\x01 \x03(\v2\x18.ai.common.v1.AiChatRoleR\x05roles\x12<\n" +
+	"pagination\"h\n" +
+	"\x04Role\x12,\n" +
+	"\x04role\x18\x01 \x01(\v2\x18.ai.common.v1.AiChatRoleR\x04role\x122\n" +
+	"\n" +
+	"owner_info\x18\x02 \x01(\v2\x13.common.v1.UserInfoR\townerInfo\"y\n" +
+	"\x10ListRoleResponse\x12'\n" +
+	"\x05roles\x18\x01 \x03(\v2\x11.ai.admin.v1.RoleR\x05roles\x12<\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
 	"pagination\"@\n" +
 	"\x16BatchDeleteRoleRequest\x12\x10\n" +
 	"\x03ids\x18\x01 \x03(\x03R\x03ids\x12\x14\n" +
-	"\x05force\x18\x02 \x01(\bR\x05force\"\x90\x01\n" +
-	"\x15ListKnowledgeResponse\x129\n" +
+	"\x05force\x18\x02 \x01(\bR\x05force\"\x8d\x01\n" +
+	"\x15ListKnowledgeResponse\x126\n" +
 	"\n" +
-	"knowledges\x18\x01 \x03(\v2\x19.ai.common.v1.AiKnowledgeR\n" +
+	"knowledges\x18\x01 \x03(\v2\x16.ai.admin.v1.KnowledgeR\n" +
 	"knowledges\x12<\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
-	"pagination\"\x9e\x01\n" +
+	"pagination\"x\n" +
+	"\tKnowledge\x127\n" +
+	"\tknowledge\x18\x01 \x01(\v2\x19.ai.common.v1.AiKnowledgeR\tknowledge\x122\n" +
+	"\n" +
+	"owner_info\x18\x02 \x01(\v2\x13.common.v1.UserInfoR\townerInfo\"\x9e\x01\n" +
 	"\x1dListKnowledgeDocumentResponse\x12?\n" +
 	"\tdocuments\x18\x01 \x03(\v2!.ai.common.v1.AiKnowledgeDocumentR\tdocuments\x12<\n" +
 	"\n" +
@@ -919,52 +1343,107 @@ const file_ai_admin_v1_admin_proto_rawDesc = "" +
 	"\x03url\x18\x02 \x01(\tR\x03url\"E\n" +
 	"\x1bUpdateDocumentStatusRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\"\x9a\x01\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"p\n" +
+	"\x16UpsertDocumentResponse\x12=\n" +
+	"\bdocument\x18\x01 \x01(\v2!.ai.common.v1.AiKnowledgeDocumentR\bdocument\x12\x17\n" +
+	"\atask_id\x18\x02 \x01(\x03R\x06taskId\"\x9a\x01\n" +
 	"\x1cListKnowledgeSegmentResponse\x12<\n" +
 	"\bsegments\x18\x01 \x03(\v2 .ai.common.v1.AiKnowledgeSegmentR\bsegments\x12<\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
-	"pagination\"\x80\x01\n" +
-	"\x11ListImageResponse\x12-\n" +
-	"\x06images\x18\x01 \x03(\v2\x15.ai.common.v1.AiImageR\x06images\x12<\n" +
+	"pagination\"h\n" +
+	"\x05Image\x12+\n" +
+	"\x05image\x18\x01 \x01(\v2\x15.ai.common.v1.AiImageR\x05image\x122\n" +
+	"\n" +
+	"owner_info\x18\x02 \x01(\v2\x13.common.v1.UserInfoR\townerInfo\"}\n" +
+	"\x11ListImageResponse\x12*\n" +
+	"\x06images\x18\x01 \x03(\v2\x12.ai.admin.v1.ImageR\x06images\x12<\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
 	"pagination\"B\n" +
 	"\x18UpdateImageStatusRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status2\x9a\x19\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"\x8c\x01\n" +
+	"\x10ChatConversation\x12D\n" +
+	"\fconversation\x18\x01 \x01(\v2 .ai.common.v1.AiChatConversationR\fconversation\x122\n" +
+	"\n" +
+	"owner_info\x18\x02 \x01(\v2\x13.common.v1.UserInfoR\townerInfo\"\xa1\x01\n" +
+	"\x1cListChatConversationResponse\x12C\n" +
+	"\rconversations\x18\x01 \x03(\v2\x1d.ai.admin.v1.ChatConversationR\rconversations\x12<\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
+	"pagination\"x\n" +
+	"\vChatMessage\x125\n" +
+	"\amessage\x18\x01 \x01(\v2\x1b.ai.common.v1.AiChatMessageR\amessage\x122\n" +
+	"\n" +
+	"owner_info\x18\x02 \x01(\v2\x13.common.v1.UserInfoR\townerInfo\"\x8d\x01\n" +
+	"\x17ListChatMessageResponse\x124\n" +
+	"\bmessages\x18\x01 \x03(\v2\x18.ai.admin.v1.ChatMessageR\bmessages\x12<\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
+	"pagination\"|\n" +
+	"\x10ListToolResponse\x12*\n" +
+	"\x05tools\x18\x01 \x03(\v2\x14.ai.common.v1.AiToolR\x05tools\x12<\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
+	"pagination2\xcb*\n" +
 	"\x05Admin\x12\\\n" +
 	"\fCreateApikey\x12\x16.ai.common.v1.AiApiKey\x1a\x16.ai.common.v1.AiApiKey\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/admin/ai/api-key\x12a\n" +
 	"\fUpdateApikey\x12\x16.ai.common.v1.AiApiKey\x1a\x16.ai.common.v1.AiApiKey\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\x1a\x16/admin/ai/api-key/{id}\x12b\n" +
-	"\fDeleteApikey\x12\x1a.ai.admin.v1.DeleteRequest\x1a\x16.google.protobuf.Empty\"\x1e\x82\xd3\xe4\x93\x02\x18*\x16/admin/ai/api-key/{id}\x12_\n" +
-	"\tGetApikey\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.ai.common.v1.AiApiKey\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/admin/ai/api-key/{id}\x12e\n" +
+	"\fDeleteApikey\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1e\x82\xd3\xe4\x93\x02\x18*\x16/admin/ai/api-key/{id}\x12_\n" +
+	"\tGetApikey\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.ai.common.v1.AiApiKey\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/admin/ai/api-key/{id}\x12h\n" +
 	"\n" +
-	"ListApikey\x12\x16.common.v1.ListRequest\x1a\x1f.ai.admin.v1.ListApikeyResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/admin/ai/api-key/list\x12}\n" +
-	"\x11BatchDeleteApiKey\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"/\x82\xd3\xe4\x93\x02):\x01*\"$/admin/admin/ai/api_key/batch/delete\x12W\n" +
+	"ListApikey\x12\x16.common.v1.ListRequest\x1a\x1f.ai.admin.v1.ListApikeyResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/admin/ai/api-key/list\x12w\n" +
+	"\x11BatchDeleteApiKey\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\")\x82\xd3\xe4\x93\x02#:\x01*\"\x1e/admin/ai/api-key/batch/delete\x12W\n" +
 	"\vCreateModel\x12\x15.ai.common.v1.AiModel\x1a\x15.ai.common.v1.AiModel\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/admin/ai/model\x12\\\n" +
 	"\vUpdateModel\x12\x15.ai.common.v1.AiModel\x1a\x15.ai.common.v1.AiModel\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\x1a\x14/admin/ai/model/{id}\x12_\n" +
-	"\vDeleteModel\x12\x1a.ai.admin.v1.DeleteRequest\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16*\x14/admin/ai/model/{id}\x12[\n" +
-	"\bGetModel\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x15.ai.common.v1.AiModel\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/model/{id}\x12a\n" +
-	"\tListModel\x12\x16.common.v1.ListRequest\x1a\x1e.ai.admin.v1.ListModelResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/model/list\x12t\n" +
-	"\x10BatchDeleteModel\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/admin/ai/model/batch/delete\x12[\n" +
+	"\vDeleteModel\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16*\x14/admin/ai/model/{id}\x12[\n" +
+	"\bGetModel\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x15.ai.common.v1.AiModel\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/model/{id}\x12d\n" +
+	"\tListModel\x12\x16.common.v1.ListRequest\x1a\x1e.ai.admin.v1.ListModelResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/admin/ai/model/list\x12t\n" +
+	"\x10BatchDeleteModel\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/admin/ai/model/batch/delete\x12U\n" +
+	"\aGetRole\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x11.ai.admin.v1.Role\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/admin/ai/role/{id}\x12a\n" +
+	"\bListRole\x12\x16.common.v1.ListRequest\x1a\x1d.ai.admin.v1.ListRoleResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/admin/ai/role/list\x12p\n" +
+	"\x0fBatchDeleteRole\x12#.ai.admin.v1.BatchDeleteRoleRequest\x1a\x16.google.protobuf.Empty\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/admin/ai/role/delete\x12Y\n" +
 	"\n" +
-	"CreateRole\x12\x18.ai.common.v1.AiChatRole\x1a\x18.ai.common.v1.AiChatRole\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/admin/ai/role\x12\\\n" +
-	"\aGetRole\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x18.ai.common.v1.AiChatRole\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/admin/ai/role/{id}\x12^\n" +
-	"\bListRole\x12\x16.common.v1.ListRequest\x1a\x1d.ai.admin.v1.ListRoleResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/admin/ai/role/list\x12v\n" +
-	"\x0fBatchDeleteRole\x12#.ai.admin.v1.BatchDeleteRoleRequest\x1a\x16.google.protobuf.Empty\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/admin/ai/role/batch/delete\x12g\n" +
-	"\x0fDeleteKnowledge\x12\x1a.ai.admin.v1.DeleteRequest\x1a\x16.google.protobuf.Empty\" \x82\xd3\xe4\x93\x02\x1a*\x18/admin/ai/knowledge/{id}\x12g\n" +
-	"\fGetKnowledge\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x19.ai.common.v1.AiKnowledge\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/admin/ai/knowledge/{id}\x12m\n" +
-	"\rListKnowledge\x12\x16.common.v1.ListRequest\x1a\".ai.admin.v1.ListKnowledgeResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/admin/ai/knowledge/list\x12x\n" +
-	"\x17DeleteKnowledgeDocument\x12\x1a.ai.admin.v1.DeleteRequest\x1a\x16.google.protobuf.Empty\")\x82\xd3\xe4\x93\x02#*!/admin/ai/knowledge/document/{id}\x12\x87\x01\n" +
+	"UpdateRole\x12\x18.ai.common.v1.AiChatRole\x1a\x11.ai.admin.v1.Role\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\x1a\x13/admin/ai/role/{id}\x12T\n" +
+	"\n" +
+	"CreateRole\x12\x18.ai.common.v1.AiChatRole\x1a\x11.ai.admin.v1.Role\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/admin/ai/role\x12d\n" +
+	"\fGetKnowledge\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.ai.admin.v1.Knowledge\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/admin/ai/knowledge/{id}\x12p\n" +
+	"\rListKnowledge\x12\x16.common.v1.ListRequest\x1a\".ai.admin.v1.ListKnowledgeResponse\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\"\x18/admin/ai/knowledge/list\x12v\n" +
+	"\x14BatchDeleteKnowledge\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\"\x1a/admin/ai/knowledge/delete\x12i\n" +
+	"\x0fUpdateKnowledge\x12\x19.ai.common.v1.AiKnowledge\x1a\x16.ai.admin.v1.Knowledge\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\x1a\x18/admin/ai/knowledge/{id}\x12d\n" +
+	"\x0fCreateKnowledge\x12\x19.ai.common.v1.AiKnowledge\x1a\x16.ai.admin.v1.Knowledge\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/admin/ai/knowledge\x12\x87\x01\n" +
 	"\x1cBatchDeleteKnowledgeDocument\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\".\x82\xd3\xe4\x93\x02(:\x01*\"#/admin/ai/knowledge/document/delete\x12\x80\x01\n" +
-	"\x14GetKnowledgeDocument\x12\x1a.ai.admin.v1.SimpleRequest\x1a!.ai.common.v1.AiKnowledgeDocument\")\x82\xd3\xe4\x93\x02#\x12!/admin/ai/knowledge/document/{id}\x12\x86\x01\n" +
-	"\x15ListKnowledgeDocument\x12\x16.common.v1.ListRequest\x1a*.ai.admin.v1.ListKnowledgeDocumentResponse\")\x82\xd3\xe4\x93\x02#\x12!/admin/ai/knowledge/document/list\x12\x98\x01\n" +
-	"\x14UpdateDocumentStatus\x12(.ai.admin.v1.UpdateDocumentStatusRequest\x1a!.ai.common.v1.AiKnowledgeDocument\"3\x82\xd3\xe4\x93\x02-:\x01*\x1a(/admin/ai/knowledge/document/{id}/status\x12}\n" +
-	"\x13GetKnowledgeSegment\x12\x1a.ai.admin.v1.SimpleRequest\x1a .ai.common.v1.AiKnowledgeSegment\"(\x82\xd3\xe4\x93\x02\"\x12 /admin/ai/knowledge/segment/{id}\x12\x84\x01\n" +
-	"\x15ListKnowledgeSegments\x12\x16.common.v1.ListRequest\x1a).ai.admin.v1.ListKnowledgeSegmentResponse\"(\x82\xd3\xe4\x93\x02\"\x12 /admin/ai/knowledge/segment/list\x12a\n" +
-	"\tListImage\x12\x16.common.v1.ListRequest\x1a\x1e.ai.admin.v1.ListImageResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/image/list\x12\x7f\n" +
-	"\x17UpdateImagePublicStatus\x12%.ai.admin.v1.UpdateImageStatusRequest\x1a\x15.ai.common.v1.AiImage\"&\x82\xd3\xe4\x93\x02 :\x01*\x1a\x1b/admin/ai/image/{id}/public\x12n\n" +
-	"\x10BatchDeleteImage\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/admin/ai/image/deleteB'\n" +
+	"\x14GetKnowledgeDocument\x12\x1a.ai.admin.v1.SimpleRequest\x1a!.ai.common.v1.AiKnowledgeDocument\")\x82\xd3\xe4\x93\x02#\x12!/admin/ai/knowledge/document/{id}\x12\x89\x01\n" +
+	"\x15ListKnowledgeDocument\x12\x16.common.v1.ListRequest\x1a*.ai.admin.v1.ListKnowledgeDocumentResponse\",\x82\xd3\xe4\x93\x02&:\x01*\"!/admin/ai/knowledge/document/list\x12\x98\x01\n" +
+	"\x14UpdateDocumentStatus\x12(.ai.admin.v1.UpdateDocumentStatusRequest\x1a!.ai.common.v1.AiKnowledgeDocument\"3\x82\xd3\xe4\x93\x02-:\x01*\x1a(/admin/ai/knowledge/document/{id}/status\x12\x8f\x01\n" +
+	"\x17UpdateKnowledgeDocument\x12!.ai.common.v1.AiKnowledgeDocument\x1a#.ai.admin.v1.UpsertDocumentResponse\",\x82\xd3\xe4\x93\x02&:\x01*\x1a!/admin/ai/knowledge/document/{id}\x12}\n" +
+	"\x13GetKnowledgeSegment\x12\x1a.ai.admin.v1.SimpleRequest\x1a .ai.common.v1.AiKnowledgeSegment\"(\x82\xd3\xe4\x93\x02\"\x12 /admin/ai/knowledge/segment/{id}\x12\x87\x01\n" +
+	"\x15ListKnowledgeSegments\x12\x16.common.v1.ListRequest\x1a).ai.admin.v1.ListKnowledgeSegmentResponse\"+\x82\xd3\xe4\x93\x02%:\x01*\" /admin/ai/knowledge/segment/list\x12a\n" +
+	"\tListImage\x12\x16.common.v1.ListRequest\x1a\x1e.ai.admin.v1.ListImageResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/image/list\x12Y\n" +
+	"\vUpdateImage\x12\x15.ai.common.v1.AiImage\x1a\x12.ai.admin.v1.Image\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\x1a\x14/admin/ai/image/{id}\x12n\n" +
+	"\x10BatchDeleteImage\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/admin/ai/image/delete\x12X\n" +
+	"\bGetImage\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x12.ai.admin.v1.Image\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/image/{id}\x12z\n" +
+	"\x13GetChatConversation\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x1d.ai.admin.v1.ChatConversation\"(\x82\xd3\xe4\x93\x02\"\x12 /admin/ai/chat/conversation/{id}\x12\x86\x01\n" +
+	"\x14ListChatConversation\x12\x16.common.v1.ListRequest\x1a).ai.admin.v1.ListChatConversationResponse\"+\x82\xd3\xe4\x93\x02%:\x01*\" /admin/ai/chat/conversation/list\x12\x85\x01\n" +
+	"\x1bBatchDeleteChatConversation\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/admin/ai/chat/conversation/delete\x12k\n" +
+	"\x0eGetChatMessage\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x18.ai.admin.v1.ChatMessage\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/admin/ai/chat/message/{id}\x12w\n" +
+	"\x0fListChatMessage\x12\x16.common.v1.ListRequest\x1a$.ai.admin.v1.ListChatMessageResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/admin/ai/chat/message/list\x12{\n" +
+	"\x16BatchDeleteChatMessage\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/admin/ai/chat/message/delete\x12X\n" +
+	"\aGetTool\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x14.ai.common.v1.AiTool\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/admin/ai/tool/{id}\x12a\n" +
+	"\bListTool\x12\x16.common.v1.ListRequest\x1a\x1d.ai.admin.v1.ListToolResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/admin/ai/tool/list\x12]\n" +
+	"\n" +
+	"DeleteTool\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1b\x82\xd3\xe4\x93\x02\x15*\x13/admin/ai/tool/{id}\x12l\n" +
+	"\x0fBatchDeleteTool\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/admin/ai/tool/delete\x12S\n" +
+	"\n" +
+	"CreateTool\x12\x14.ai.common.v1.AiTool\x1a\x14.ai.common.v1.AiTool\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/admin/ai/tool\x12X\n" +
+	"\n" +
+	"UpdateTool\x12\x14.ai.common.v1.AiTool\x1a\x14.ai.common.v1.AiTool\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\x1a\x13/ai/admin/tool/{id}\x12k\n" +
+	"\x0fGetQueueMetrics\x12\x16.google.protobuf.Empty\x1a\x1f.common.v1.QueueMetricsResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/admin/ai/queue/metrics\x12\\\n" +
+	"\tListTasks\x12\x16.common.v1.ListRequest\x1a\x1b.common.v1.ListTaskResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/admin/ai/queue\x12_\n" +
+	"\aGetTask\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x1a.common.v1.GetTaskResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/queue/{id}\x12t\n" +
+	"\x10BatchDeleteTasks\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/admin/ai/queue/batch/delete\x12h\n" +
+	"\vCleanupTask\x12\x1d.common.v1.CleanupTaskRequest\x1a\x16.google.protobuf.Empty\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/admin/ai/queue/cleanupB'\n" +
 	"\vai.admin.v1P\x01Z\x16api/api/ai/admin/v1;v1b\x06proto3"
 
 var (
@@ -979,115 +1458,190 @@ func file_ai_admin_v1_admin_proto_rawDescGZIP() []byte {
 	return file_ai_admin_v1_admin_proto_rawDescData
 }
 
-var file_ai_admin_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_ai_admin_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_ai_admin_v1_admin_proto_goTypes = []any{
 	(*SimpleRequest)(nil),                       // 0: ai.admin.v1.SimpleRequest
-	(*DeleteRequest)(nil),                       // 1: ai.admin.v1.DeleteRequest
-	(*BatchCreateResponse)(nil),                 // 2: ai.admin.v1.BatchCreateResponse
-	(*BatchDeleteRequest)(nil),                  // 3: ai.admin.v1.BatchDeleteRequest
-	(*ListApikeyResponse)(nil),                  // 4: ai.admin.v1.ListApikeyResponse
-	(*ListModelResponse)(nil),                   // 5: ai.admin.v1.ListModelResponse
+	(*BatchCreateResponse)(nil),                 // 1: ai.admin.v1.BatchCreateResponse
+	(*BatchDeleteRequest)(nil),                  // 2: ai.admin.v1.BatchDeleteRequest
+	(*ListApikeyResponse)(nil),                  // 3: ai.admin.v1.ListApikeyResponse
+	(*ListModelResponse)(nil),                   // 4: ai.admin.v1.ListModelResponse
+	(*Role)(nil),                                // 5: ai.admin.v1.Role
 	(*ListRoleResponse)(nil),                    // 6: ai.admin.v1.ListRoleResponse
 	(*BatchDeleteRoleRequest)(nil),              // 7: ai.admin.v1.BatchDeleteRoleRequest
 	(*ListKnowledgeResponse)(nil),               // 8: ai.admin.v1.ListKnowledgeResponse
-	(*ListKnowledgeDocumentResponse)(nil),       // 9: ai.admin.v1.ListKnowledgeDocumentResponse
-	(*BatchCreateKnowledgeDocumentRequest)(nil), // 10: ai.admin.v1.BatchCreateKnowledgeDocumentRequest
-	(*DocumentRequest)(nil),                     // 11: ai.admin.v1.DocumentRequest
-	(*UpdateDocumentStatusRequest)(nil),         // 12: ai.admin.v1.UpdateDocumentStatusRequest
-	(*ListKnowledgeSegmentResponse)(nil),        // 13: ai.admin.v1.ListKnowledgeSegmentResponse
-	(*ListImageResponse)(nil),                   // 14: ai.admin.v1.ListImageResponse
-	(*UpdateImageStatusRequest)(nil),            // 15: ai.admin.v1.UpdateImageStatusRequest
-	(*v1.AiKnowledgeDocument)(nil),              // 16: ai.common.v1.AiKnowledgeDocument
-	(*v1.AiApiKey)(nil),                         // 17: ai.common.v1.AiApiKey
-	(*v11.PaginationResults)(nil),               // 18: common.v1.PaginationResults
-	(*v1.AiModel)(nil),                          // 19: ai.common.v1.AiModel
-	(*v1.AiChatRole)(nil),                       // 20: ai.common.v1.AiChatRole
-	(*v1.AiKnowledge)(nil),                      // 21: ai.common.v1.AiKnowledge
-	(*v1.AiKnowledgeSegment)(nil),               // 22: ai.common.v1.AiKnowledgeSegment
-	(*v1.AiImage)(nil),                          // 23: ai.common.v1.AiImage
-	(*v11.ListRequest)(nil),                     // 24: common.v1.ListRequest
-	(*emptypb.Empty)(nil),                       // 25: google.protobuf.Empty
+	(*Knowledge)(nil),                           // 9: ai.admin.v1.Knowledge
+	(*ListKnowledgeDocumentResponse)(nil),       // 10: ai.admin.v1.ListKnowledgeDocumentResponse
+	(*BatchCreateKnowledgeDocumentRequest)(nil), // 11: ai.admin.v1.BatchCreateKnowledgeDocumentRequest
+	(*DocumentRequest)(nil),                     // 12: ai.admin.v1.DocumentRequest
+	(*UpdateDocumentStatusRequest)(nil),         // 13: ai.admin.v1.UpdateDocumentStatusRequest
+	(*UpsertDocumentResponse)(nil),              // 14: ai.admin.v1.UpsertDocumentResponse
+	(*ListKnowledgeSegmentResponse)(nil),        // 15: ai.admin.v1.ListKnowledgeSegmentResponse
+	(*Image)(nil),                               // 16: ai.admin.v1.Image
+	(*ListImageResponse)(nil),                   // 17: ai.admin.v1.ListImageResponse
+	(*UpdateImageStatusRequest)(nil),            // 18: ai.admin.v1.UpdateImageStatusRequest
+	(*ChatConversation)(nil),                    // 19: ai.admin.v1.ChatConversation
+	(*ListChatConversationResponse)(nil),        // 20: ai.admin.v1.ListChatConversationResponse
+	(*ChatMessage)(nil),                         // 21: ai.admin.v1.ChatMessage
+	(*ListChatMessageResponse)(nil),             // 22: ai.admin.v1.ListChatMessageResponse
+	(*ListToolResponse)(nil),                    // 23: ai.admin.v1.ListToolResponse
+	(*v1.AiKnowledgeDocument)(nil),              // 24: ai.common.v1.AiKnowledgeDocument
+	(*v1.AiApiKey)(nil),                         // 25: ai.common.v1.AiApiKey
+	(*v11.PaginationResults)(nil),               // 26: common.v1.PaginationResults
+	(*v1.AiModel)(nil),                          // 27: ai.common.v1.AiModel
+	(*v1.AiChatRole)(nil),                       // 28: ai.common.v1.AiChatRole
+	(*v11.UserInfo)(nil),                        // 29: common.v1.UserInfo
+	(*v1.AiKnowledge)(nil),                      // 30: ai.common.v1.AiKnowledge
+	(*v1.AiKnowledgeSegment)(nil),               // 31: ai.common.v1.AiKnowledgeSegment
+	(*v1.AiImage)(nil),                          // 32: ai.common.v1.AiImage
+	(*v1.AiChatConversation)(nil),               // 33: ai.common.v1.AiChatConversation
+	(*v1.AiChatMessage)(nil),                    // 34: ai.common.v1.AiChatMessage
+	(*v1.AiTool)(nil),                           // 35: ai.common.v1.AiTool
+	(*v11.ListRequest)(nil),                     // 36: common.v1.ListRequest
+	(*emptypb.Empty)(nil),                       // 37: google.protobuf.Empty
+	(*v11.CleanupTaskRequest)(nil),              // 38: common.v1.CleanupTaskRequest
+	(*v11.QueueMetricsResponse)(nil),            // 39: common.v1.QueueMetricsResponse
+	(*v11.ListTaskResponse)(nil),                // 40: common.v1.ListTaskResponse
+	(*v11.GetTaskResponse)(nil),                 // 41: common.v1.GetTaskResponse
 }
 var file_ai_admin_v1_admin_proto_depIdxs = []int32{
-	16, // 0: ai.admin.v1.BatchCreateResponse.documents:type_name -> ai.common.v1.AiKnowledgeDocument
-	17, // 1: ai.admin.v1.ListApikeyResponse.api_keys:type_name -> ai.common.v1.AiApiKey
-	18, // 2: ai.admin.v1.ListApikeyResponse.pagination:type_name -> common.v1.PaginationResults
-	19, // 3: ai.admin.v1.ListModelResponse.models:type_name -> ai.common.v1.AiModel
-	18, // 4: ai.admin.v1.ListModelResponse.pagination:type_name -> common.v1.PaginationResults
-	20, // 5: ai.admin.v1.ListRoleResponse.roles:type_name -> ai.common.v1.AiChatRole
-	18, // 6: ai.admin.v1.ListRoleResponse.pagination:type_name -> common.v1.PaginationResults
-	21, // 7: ai.admin.v1.ListKnowledgeResponse.knowledges:type_name -> ai.common.v1.AiKnowledge
-	18, // 8: ai.admin.v1.ListKnowledgeResponse.pagination:type_name -> common.v1.PaginationResults
-	16, // 9: ai.admin.v1.ListKnowledgeDocumentResponse.documents:type_name -> ai.common.v1.AiKnowledgeDocument
-	18, // 10: ai.admin.v1.ListKnowledgeDocumentResponse.pagination:type_name -> common.v1.PaginationResults
-	11, // 11: ai.admin.v1.BatchCreateKnowledgeDocumentRequest.documents:type_name -> ai.admin.v1.DocumentRequest
-	22, // 12: ai.admin.v1.ListKnowledgeSegmentResponse.segments:type_name -> ai.common.v1.AiKnowledgeSegment
-	18, // 13: ai.admin.v1.ListKnowledgeSegmentResponse.pagination:type_name -> common.v1.PaginationResults
-	23, // 14: ai.admin.v1.ListImageResponse.images:type_name -> ai.common.v1.AiImage
-	18, // 15: ai.admin.v1.ListImageResponse.pagination:type_name -> common.v1.PaginationResults
-	17, // 16: ai.admin.v1.Admin.CreateApikey:input_type -> ai.common.v1.AiApiKey
-	17, // 17: ai.admin.v1.Admin.UpdateApikey:input_type -> ai.common.v1.AiApiKey
-	1,  // 18: ai.admin.v1.Admin.DeleteApikey:input_type -> ai.admin.v1.DeleteRequest
-	0,  // 19: ai.admin.v1.Admin.GetApikey:input_type -> ai.admin.v1.SimpleRequest
-	24, // 20: ai.admin.v1.Admin.ListApikey:input_type -> common.v1.ListRequest
-	3,  // 21: ai.admin.v1.Admin.BatchDeleteApiKey:input_type -> ai.admin.v1.BatchDeleteRequest
-	19, // 22: ai.admin.v1.Admin.CreateModel:input_type -> ai.common.v1.AiModel
-	19, // 23: ai.admin.v1.Admin.UpdateModel:input_type -> ai.common.v1.AiModel
-	1,  // 24: ai.admin.v1.Admin.DeleteModel:input_type -> ai.admin.v1.DeleteRequest
-	0,  // 25: ai.admin.v1.Admin.GetModel:input_type -> ai.admin.v1.SimpleRequest
-	24, // 26: ai.admin.v1.Admin.ListModel:input_type -> common.v1.ListRequest
-	3,  // 27: ai.admin.v1.Admin.BatchDeleteModel:input_type -> ai.admin.v1.BatchDeleteRequest
-	20, // 28: ai.admin.v1.Admin.CreateRole:input_type -> ai.common.v1.AiChatRole
-	0,  // 29: ai.admin.v1.Admin.GetRole:input_type -> ai.admin.v1.SimpleRequest
-	24, // 30: ai.admin.v1.Admin.ListRole:input_type -> common.v1.ListRequest
-	7,  // 31: ai.admin.v1.Admin.BatchDeleteRole:input_type -> ai.admin.v1.BatchDeleteRoleRequest
-	1,  // 32: ai.admin.v1.Admin.DeleteKnowledge:input_type -> ai.admin.v1.DeleteRequest
-	0,  // 33: ai.admin.v1.Admin.GetKnowledge:input_type -> ai.admin.v1.SimpleRequest
-	24, // 34: ai.admin.v1.Admin.ListKnowledge:input_type -> common.v1.ListRequest
-	1,  // 35: ai.admin.v1.Admin.DeleteKnowledgeDocument:input_type -> ai.admin.v1.DeleteRequest
-	3,  // 36: ai.admin.v1.Admin.BatchDeleteKnowledgeDocument:input_type -> ai.admin.v1.BatchDeleteRequest
-	0,  // 37: ai.admin.v1.Admin.GetKnowledgeDocument:input_type -> ai.admin.v1.SimpleRequest
-	24, // 38: ai.admin.v1.Admin.ListKnowledgeDocument:input_type -> common.v1.ListRequest
-	12, // 39: ai.admin.v1.Admin.UpdateDocumentStatus:input_type -> ai.admin.v1.UpdateDocumentStatusRequest
-	0,  // 40: ai.admin.v1.Admin.GetKnowledgeSegment:input_type -> ai.admin.v1.SimpleRequest
-	24, // 41: ai.admin.v1.Admin.ListKnowledgeSegments:input_type -> common.v1.ListRequest
-	24, // 42: ai.admin.v1.Admin.ListImage:input_type -> common.v1.ListRequest
-	15, // 43: ai.admin.v1.Admin.UpdateImagePublicStatus:input_type -> ai.admin.v1.UpdateImageStatusRequest
-	3,  // 44: ai.admin.v1.Admin.BatchDeleteImage:input_type -> ai.admin.v1.BatchDeleteRequest
-	17, // 45: ai.admin.v1.Admin.CreateApikey:output_type -> ai.common.v1.AiApiKey
-	17, // 46: ai.admin.v1.Admin.UpdateApikey:output_type -> ai.common.v1.AiApiKey
-	25, // 47: ai.admin.v1.Admin.DeleteApikey:output_type -> google.protobuf.Empty
-	17, // 48: ai.admin.v1.Admin.GetApikey:output_type -> ai.common.v1.AiApiKey
-	4,  // 49: ai.admin.v1.Admin.ListApikey:output_type -> ai.admin.v1.ListApikeyResponse
-	25, // 50: ai.admin.v1.Admin.BatchDeleteApiKey:output_type -> google.protobuf.Empty
-	19, // 51: ai.admin.v1.Admin.CreateModel:output_type -> ai.common.v1.AiModel
-	19, // 52: ai.admin.v1.Admin.UpdateModel:output_type -> ai.common.v1.AiModel
-	25, // 53: ai.admin.v1.Admin.DeleteModel:output_type -> google.protobuf.Empty
-	19, // 54: ai.admin.v1.Admin.GetModel:output_type -> ai.common.v1.AiModel
-	5,  // 55: ai.admin.v1.Admin.ListModel:output_type -> ai.admin.v1.ListModelResponse
-	25, // 56: ai.admin.v1.Admin.BatchDeleteModel:output_type -> google.protobuf.Empty
-	20, // 57: ai.admin.v1.Admin.CreateRole:output_type -> ai.common.v1.AiChatRole
-	20, // 58: ai.admin.v1.Admin.GetRole:output_type -> ai.common.v1.AiChatRole
-	6,  // 59: ai.admin.v1.Admin.ListRole:output_type -> ai.admin.v1.ListRoleResponse
-	25, // 60: ai.admin.v1.Admin.BatchDeleteRole:output_type -> google.protobuf.Empty
-	25, // 61: ai.admin.v1.Admin.DeleteKnowledge:output_type -> google.protobuf.Empty
-	21, // 62: ai.admin.v1.Admin.GetKnowledge:output_type -> ai.common.v1.AiKnowledge
-	8,  // 63: ai.admin.v1.Admin.ListKnowledge:output_type -> ai.admin.v1.ListKnowledgeResponse
-	25, // 64: ai.admin.v1.Admin.DeleteKnowledgeDocument:output_type -> google.protobuf.Empty
-	25, // 65: ai.admin.v1.Admin.BatchDeleteKnowledgeDocument:output_type -> google.protobuf.Empty
-	16, // 66: ai.admin.v1.Admin.GetKnowledgeDocument:output_type -> ai.common.v1.AiKnowledgeDocument
-	9,  // 67: ai.admin.v1.Admin.ListKnowledgeDocument:output_type -> ai.admin.v1.ListKnowledgeDocumentResponse
-	16, // 68: ai.admin.v1.Admin.UpdateDocumentStatus:output_type -> ai.common.v1.AiKnowledgeDocument
-	22, // 69: ai.admin.v1.Admin.GetKnowledgeSegment:output_type -> ai.common.v1.AiKnowledgeSegment
-	13, // 70: ai.admin.v1.Admin.ListKnowledgeSegments:output_type -> ai.admin.v1.ListKnowledgeSegmentResponse
-	14, // 71: ai.admin.v1.Admin.ListImage:output_type -> ai.admin.v1.ListImageResponse
-	23, // 72: ai.admin.v1.Admin.UpdateImagePublicStatus:output_type -> ai.common.v1.AiImage
-	25, // 73: ai.admin.v1.Admin.BatchDeleteImage:output_type -> google.protobuf.Empty
-	45, // [45:74] is the sub-list for method output_type
-	16, // [16:45] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	24, // 0: ai.admin.v1.BatchCreateResponse.documents:type_name -> ai.common.v1.AiKnowledgeDocument
+	25, // 1: ai.admin.v1.ListApikeyResponse.api_keys:type_name -> ai.common.v1.AiApiKey
+	26, // 2: ai.admin.v1.ListApikeyResponse.pagination:type_name -> common.v1.PaginationResults
+	27, // 3: ai.admin.v1.ListModelResponse.models:type_name -> ai.common.v1.AiModel
+	26, // 4: ai.admin.v1.ListModelResponse.pagination:type_name -> common.v1.PaginationResults
+	28, // 5: ai.admin.v1.Role.role:type_name -> ai.common.v1.AiChatRole
+	29, // 6: ai.admin.v1.Role.owner_info:type_name -> common.v1.UserInfo
+	5,  // 7: ai.admin.v1.ListRoleResponse.roles:type_name -> ai.admin.v1.Role
+	26, // 8: ai.admin.v1.ListRoleResponse.pagination:type_name -> common.v1.PaginationResults
+	9,  // 9: ai.admin.v1.ListKnowledgeResponse.knowledges:type_name -> ai.admin.v1.Knowledge
+	26, // 10: ai.admin.v1.ListKnowledgeResponse.pagination:type_name -> common.v1.PaginationResults
+	30, // 11: ai.admin.v1.Knowledge.knowledge:type_name -> ai.common.v1.AiKnowledge
+	29, // 12: ai.admin.v1.Knowledge.owner_info:type_name -> common.v1.UserInfo
+	24, // 13: ai.admin.v1.ListKnowledgeDocumentResponse.documents:type_name -> ai.common.v1.AiKnowledgeDocument
+	26, // 14: ai.admin.v1.ListKnowledgeDocumentResponse.pagination:type_name -> common.v1.PaginationResults
+	12, // 15: ai.admin.v1.BatchCreateKnowledgeDocumentRequest.documents:type_name -> ai.admin.v1.DocumentRequest
+	24, // 16: ai.admin.v1.UpsertDocumentResponse.document:type_name -> ai.common.v1.AiKnowledgeDocument
+	31, // 17: ai.admin.v1.ListKnowledgeSegmentResponse.segments:type_name -> ai.common.v1.AiKnowledgeSegment
+	26, // 18: ai.admin.v1.ListKnowledgeSegmentResponse.pagination:type_name -> common.v1.PaginationResults
+	32, // 19: ai.admin.v1.Image.image:type_name -> ai.common.v1.AiImage
+	29, // 20: ai.admin.v1.Image.owner_info:type_name -> common.v1.UserInfo
+	16, // 21: ai.admin.v1.ListImageResponse.images:type_name -> ai.admin.v1.Image
+	26, // 22: ai.admin.v1.ListImageResponse.pagination:type_name -> common.v1.PaginationResults
+	33, // 23: ai.admin.v1.ChatConversation.conversation:type_name -> ai.common.v1.AiChatConversation
+	29, // 24: ai.admin.v1.ChatConversation.owner_info:type_name -> common.v1.UserInfo
+	19, // 25: ai.admin.v1.ListChatConversationResponse.conversations:type_name -> ai.admin.v1.ChatConversation
+	26, // 26: ai.admin.v1.ListChatConversationResponse.pagination:type_name -> common.v1.PaginationResults
+	34, // 27: ai.admin.v1.ChatMessage.message:type_name -> ai.common.v1.AiChatMessage
+	29, // 28: ai.admin.v1.ChatMessage.owner_info:type_name -> common.v1.UserInfo
+	21, // 29: ai.admin.v1.ListChatMessageResponse.messages:type_name -> ai.admin.v1.ChatMessage
+	26, // 30: ai.admin.v1.ListChatMessageResponse.pagination:type_name -> common.v1.PaginationResults
+	35, // 31: ai.admin.v1.ListToolResponse.tools:type_name -> ai.common.v1.AiTool
+	26, // 32: ai.admin.v1.ListToolResponse.pagination:type_name -> common.v1.PaginationResults
+	25, // 33: ai.admin.v1.Admin.CreateApikey:input_type -> ai.common.v1.AiApiKey
+	25, // 34: ai.admin.v1.Admin.UpdateApikey:input_type -> ai.common.v1.AiApiKey
+	0,  // 35: ai.admin.v1.Admin.DeleteApikey:input_type -> ai.admin.v1.SimpleRequest
+	0,  // 36: ai.admin.v1.Admin.GetApikey:input_type -> ai.admin.v1.SimpleRequest
+	36, // 37: ai.admin.v1.Admin.ListApikey:input_type -> common.v1.ListRequest
+	2,  // 38: ai.admin.v1.Admin.BatchDeleteApiKey:input_type -> ai.admin.v1.BatchDeleteRequest
+	27, // 39: ai.admin.v1.Admin.CreateModel:input_type -> ai.common.v1.AiModel
+	27, // 40: ai.admin.v1.Admin.UpdateModel:input_type -> ai.common.v1.AiModel
+	0,  // 41: ai.admin.v1.Admin.DeleteModel:input_type -> ai.admin.v1.SimpleRequest
+	0,  // 42: ai.admin.v1.Admin.GetModel:input_type -> ai.admin.v1.SimpleRequest
+	36, // 43: ai.admin.v1.Admin.ListModel:input_type -> common.v1.ListRequest
+	2,  // 44: ai.admin.v1.Admin.BatchDeleteModel:input_type -> ai.admin.v1.BatchDeleteRequest
+	0,  // 45: ai.admin.v1.Admin.GetRole:input_type -> ai.admin.v1.SimpleRequest
+	36, // 46: ai.admin.v1.Admin.ListRole:input_type -> common.v1.ListRequest
+	7,  // 47: ai.admin.v1.Admin.BatchDeleteRole:input_type -> ai.admin.v1.BatchDeleteRoleRequest
+	28, // 48: ai.admin.v1.Admin.UpdateRole:input_type -> ai.common.v1.AiChatRole
+	28, // 49: ai.admin.v1.Admin.CreateRole:input_type -> ai.common.v1.AiChatRole
+	0,  // 50: ai.admin.v1.Admin.GetKnowledge:input_type -> ai.admin.v1.SimpleRequest
+	36, // 51: ai.admin.v1.Admin.ListKnowledge:input_type -> common.v1.ListRequest
+	2,  // 52: ai.admin.v1.Admin.BatchDeleteKnowledge:input_type -> ai.admin.v1.BatchDeleteRequest
+	30, // 53: ai.admin.v1.Admin.UpdateKnowledge:input_type -> ai.common.v1.AiKnowledge
+	30, // 54: ai.admin.v1.Admin.CreateKnowledge:input_type -> ai.common.v1.AiKnowledge
+	2,  // 55: ai.admin.v1.Admin.BatchDeleteKnowledgeDocument:input_type -> ai.admin.v1.BatchDeleteRequest
+	0,  // 56: ai.admin.v1.Admin.GetKnowledgeDocument:input_type -> ai.admin.v1.SimpleRequest
+	36, // 57: ai.admin.v1.Admin.ListKnowledgeDocument:input_type -> common.v1.ListRequest
+	13, // 58: ai.admin.v1.Admin.UpdateDocumentStatus:input_type -> ai.admin.v1.UpdateDocumentStatusRequest
+	24, // 59: ai.admin.v1.Admin.UpdateKnowledgeDocument:input_type -> ai.common.v1.AiKnowledgeDocument
+	0,  // 60: ai.admin.v1.Admin.GetKnowledgeSegment:input_type -> ai.admin.v1.SimpleRequest
+	36, // 61: ai.admin.v1.Admin.ListKnowledgeSegments:input_type -> common.v1.ListRequest
+	36, // 62: ai.admin.v1.Admin.ListImage:input_type -> common.v1.ListRequest
+	32, // 63: ai.admin.v1.Admin.UpdateImage:input_type -> ai.common.v1.AiImage
+	2,  // 64: ai.admin.v1.Admin.BatchDeleteImage:input_type -> ai.admin.v1.BatchDeleteRequest
+	0,  // 65: ai.admin.v1.Admin.GetImage:input_type -> ai.admin.v1.SimpleRequest
+	0,  // 66: ai.admin.v1.Admin.GetChatConversation:input_type -> ai.admin.v1.SimpleRequest
+	36, // 67: ai.admin.v1.Admin.ListChatConversation:input_type -> common.v1.ListRequest
+	2,  // 68: ai.admin.v1.Admin.BatchDeleteChatConversation:input_type -> ai.admin.v1.BatchDeleteRequest
+	0,  // 69: ai.admin.v1.Admin.GetChatMessage:input_type -> ai.admin.v1.SimpleRequest
+	36, // 70: ai.admin.v1.Admin.ListChatMessage:input_type -> common.v1.ListRequest
+	2,  // 71: ai.admin.v1.Admin.BatchDeleteChatMessage:input_type -> ai.admin.v1.BatchDeleteRequest
+	0,  // 72: ai.admin.v1.Admin.GetTool:input_type -> ai.admin.v1.SimpleRequest
+	36, // 73: ai.admin.v1.Admin.ListTool:input_type -> common.v1.ListRequest
+	0,  // 74: ai.admin.v1.Admin.DeleteTool:input_type -> ai.admin.v1.SimpleRequest
+	2,  // 75: ai.admin.v1.Admin.BatchDeleteTool:input_type -> ai.admin.v1.BatchDeleteRequest
+	35, // 76: ai.admin.v1.Admin.CreateTool:input_type -> ai.common.v1.AiTool
+	35, // 77: ai.admin.v1.Admin.UpdateTool:input_type -> ai.common.v1.AiTool
+	37, // 78: ai.admin.v1.Admin.GetQueueMetrics:input_type -> google.protobuf.Empty
+	36, // 79: ai.admin.v1.Admin.ListTasks:input_type -> common.v1.ListRequest
+	0,  // 80: ai.admin.v1.Admin.GetTask:input_type -> ai.admin.v1.SimpleRequest
+	2,  // 81: ai.admin.v1.Admin.BatchDeleteTasks:input_type -> ai.admin.v1.BatchDeleteRequest
+	38, // 82: ai.admin.v1.Admin.CleanupTask:input_type -> common.v1.CleanupTaskRequest
+	25, // 83: ai.admin.v1.Admin.CreateApikey:output_type -> ai.common.v1.AiApiKey
+	25, // 84: ai.admin.v1.Admin.UpdateApikey:output_type -> ai.common.v1.AiApiKey
+	37, // 85: ai.admin.v1.Admin.DeleteApikey:output_type -> google.protobuf.Empty
+	25, // 86: ai.admin.v1.Admin.GetApikey:output_type -> ai.common.v1.AiApiKey
+	3,  // 87: ai.admin.v1.Admin.ListApikey:output_type -> ai.admin.v1.ListApikeyResponse
+	37, // 88: ai.admin.v1.Admin.BatchDeleteApiKey:output_type -> google.protobuf.Empty
+	27, // 89: ai.admin.v1.Admin.CreateModel:output_type -> ai.common.v1.AiModel
+	27, // 90: ai.admin.v1.Admin.UpdateModel:output_type -> ai.common.v1.AiModel
+	37, // 91: ai.admin.v1.Admin.DeleteModel:output_type -> google.protobuf.Empty
+	27, // 92: ai.admin.v1.Admin.GetModel:output_type -> ai.common.v1.AiModel
+	4,  // 93: ai.admin.v1.Admin.ListModel:output_type -> ai.admin.v1.ListModelResponse
+	37, // 94: ai.admin.v1.Admin.BatchDeleteModel:output_type -> google.protobuf.Empty
+	5,  // 95: ai.admin.v1.Admin.GetRole:output_type -> ai.admin.v1.Role
+	6,  // 96: ai.admin.v1.Admin.ListRole:output_type -> ai.admin.v1.ListRoleResponse
+	37, // 97: ai.admin.v1.Admin.BatchDeleteRole:output_type -> google.protobuf.Empty
+	5,  // 98: ai.admin.v1.Admin.UpdateRole:output_type -> ai.admin.v1.Role
+	5,  // 99: ai.admin.v1.Admin.CreateRole:output_type -> ai.admin.v1.Role
+	9,  // 100: ai.admin.v1.Admin.GetKnowledge:output_type -> ai.admin.v1.Knowledge
+	8,  // 101: ai.admin.v1.Admin.ListKnowledge:output_type -> ai.admin.v1.ListKnowledgeResponse
+	37, // 102: ai.admin.v1.Admin.BatchDeleteKnowledge:output_type -> google.protobuf.Empty
+	9,  // 103: ai.admin.v1.Admin.UpdateKnowledge:output_type -> ai.admin.v1.Knowledge
+	9,  // 104: ai.admin.v1.Admin.CreateKnowledge:output_type -> ai.admin.v1.Knowledge
+	37, // 105: ai.admin.v1.Admin.BatchDeleteKnowledgeDocument:output_type -> google.protobuf.Empty
+	24, // 106: ai.admin.v1.Admin.GetKnowledgeDocument:output_type -> ai.common.v1.AiKnowledgeDocument
+	10, // 107: ai.admin.v1.Admin.ListKnowledgeDocument:output_type -> ai.admin.v1.ListKnowledgeDocumentResponse
+	24, // 108: ai.admin.v1.Admin.UpdateDocumentStatus:output_type -> ai.common.v1.AiKnowledgeDocument
+	14, // 109: ai.admin.v1.Admin.UpdateKnowledgeDocument:output_type -> ai.admin.v1.UpsertDocumentResponse
+	31, // 110: ai.admin.v1.Admin.GetKnowledgeSegment:output_type -> ai.common.v1.AiKnowledgeSegment
+	15, // 111: ai.admin.v1.Admin.ListKnowledgeSegments:output_type -> ai.admin.v1.ListKnowledgeSegmentResponse
+	17, // 112: ai.admin.v1.Admin.ListImage:output_type -> ai.admin.v1.ListImageResponse
+	16, // 113: ai.admin.v1.Admin.UpdateImage:output_type -> ai.admin.v1.Image
+	37, // 114: ai.admin.v1.Admin.BatchDeleteImage:output_type -> google.protobuf.Empty
+	16, // 115: ai.admin.v1.Admin.GetImage:output_type -> ai.admin.v1.Image
+	19, // 116: ai.admin.v1.Admin.GetChatConversation:output_type -> ai.admin.v1.ChatConversation
+	20, // 117: ai.admin.v1.Admin.ListChatConversation:output_type -> ai.admin.v1.ListChatConversationResponse
+	37, // 118: ai.admin.v1.Admin.BatchDeleteChatConversation:output_type -> google.protobuf.Empty
+	21, // 119: ai.admin.v1.Admin.GetChatMessage:output_type -> ai.admin.v1.ChatMessage
+	22, // 120: ai.admin.v1.Admin.ListChatMessage:output_type -> ai.admin.v1.ListChatMessageResponse
+	37, // 121: ai.admin.v1.Admin.BatchDeleteChatMessage:output_type -> google.protobuf.Empty
+	35, // 122: ai.admin.v1.Admin.GetTool:output_type -> ai.common.v1.AiTool
+	23, // 123: ai.admin.v1.Admin.ListTool:output_type -> ai.admin.v1.ListToolResponse
+	37, // 124: ai.admin.v1.Admin.DeleteTool:output_type -> google.protobuf.Empty
+	37, // 125: ai.admin.v1.Admin.BatchDeleteTool:output_type -> google.protobuf.Empty
+	35, // 126: ai.admin.v1.Admin.CreateTool:output_type -> ai.common.v1.AiTool
+	35, // 127: ai.admin.v1.Admin.UpdateTool:output_type -> ai.common.v1.AiTool
+	39, // 128: ai.admin.v1.Admin.GetQueueMetrics:output_type -> common.v1.QueueMetricsResponse
+	40, // 129: ai.admin.v1.Admin.ListTasks:output_type -> common.v1.ListTaskResponse
+	41, // 130: ai.admin.v1.Admin.GetTask:output_type -> common.v1.GetTaskResponse
+	37, // 131: ai.admin.v1.Admin.BatchDeleteTasks:output_type -> google.protobuf.Empty
+	37, // 132: ai.admin.v1.Admin.CleanupTask:output_type -> google.protobuf.Empty
+	83, // [83:133] is the sub-list for method output_type
+	33, // [33:83] is the sub-list for method input_type
+	33, // [33:33] is the sub-list for extension type_name
+	33, // [33:33] is the sub-list for extension extendee
+	0,  // [0:33] is the sub-list for field type_name
 }
 
 func init() { file_ai_admin_v1_admin_proto_init() }
@@ -1101,7 +1655,7 @@ func file_ai_admin_v1_admin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_admin_v1_admin_proto_rawDesc), len(file_ai_admin_v1_admin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

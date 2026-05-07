@@ -2,7 +2,6 @@ package cluster
 
 import (
 	pb "api/api/file/common/v1"
-	pbexplorer "api/api/file/workflow/v1"
 	"bytes"
 	"common/auth"
 	"common/constants"
@@ -13,7 +12,6 @@ import (
 	"errors"
 	"file/ent"
 	"file/ent/node"
-	"file/ent/task"
 	"file/internal/biz/cluster/routes"
 	"file/internal/biz/downloader"
 	"file/internal/biz/downloader/aria2"
@@ -23,6 +21,7 @@ import (
 	"file/internal/biz/setting"
 	"file/internal/conf"
 	"fmt"
+	"queue"
 	"strconv"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -60,10 +59,10 @@ type (
 	}
 
 	SlaveTaskSummary struct {
-		Status       task.Status                           `json:"status"`
-		Error        string                                `json:"error"`
-		PrivateState string                                `json:"private_state"`
-		Progress     *pbexplorer.TaskPhaseProgressResponse `json:"progress,omitempty"`
+		Status       queue.TaskStatus `json:"status"`
+		Error        string           `json:"error"`
+		PrivateState string           `json:"private_state"`
+		Progress     queue.Progresses `json:"progress,omitempty"`
 	}
 
 	MasterSiteUrlCtx     struct{}

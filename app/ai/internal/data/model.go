@@ -4,8 +4,7 @@ import (
 	"ai/ent"
 	"ai/ent/aiapikey"
 	"ai/ent/aimodel"
-	pb "api/api/common/v1"
-	"common/db"
+	"api/external/data/common"
 	"context"
 	"entmodule"
 	"fmt"
@@ -38,32 +37,32 @@ type (
 	}
 
 	ListAiModelArgs struct {
-		*pb.PaginationArgs
+		*common.PaginationArgs
 		Name     string
 		Platform string
 		Status   entmodule.Status
 	}
 
 	ListAiModelResult struct {
-		*pb.PaginationResults
+		*common.PaginationResults
 		Models []*ent.AiModel
 	}
 
 	ListApiKeyArgs struct {
-		*pb.PaginationArgs
+		*common.PaginationArgs
 		Name     string
 		Platform string
 		Status   entmodule.Status
 	}
 
 	ListApiKeyResult struct {
-		*pb.PaginationResults
+		*common.PaginationResults
 		ApiKeys []*ent.AiApiKey
 	}
 )
 
-func NewAIModelClient(client *ent.Client, dbType db.DBType) ModelClient {
-	return &modelClient{maxSQLParam: db.SqlParamLimit(dbType), client: client}
+func NewAIModelClient(client *ent.Client, dbType common.DBType) ModelClient {
+	return &modelClient{maxSQLParam: common.SqlParamLimit(dbType), client: client}
 }
 
 func (c *modelClient) SetClient(newClient *ent.Client) TxOperator {
@@ -102,7 +101,7 @@ func (c *modelClient) GetDefaultModel(ctx context.Context, modelType string) (*e
 }
 
 func (c *modelClient) ListModels(ctx context.Context, args *ListAiModelArgs) (*ListAiModelResult, error) {
-	pageSize := db.CapPageSize(c.maxSQLParam, int(args.PageSize), 10)
+	pageSize := common.CapPageSize(c.maxSQLParam, int(args.PageSize), 10)
 	q := c.client.AiModel.Query()
 	if args.Name != "" {
 		q.Where(aimodel.NameContainsFold(args.Name))
@@ -128,10 +127,10 @@ func (c *modelClient) ListModels(ctx context.Context, args *ListAiModelArgs) (*L
 	}
 
 	return &ListAiModelResult{
-		PaginationResults: &pb.PaginationResults{
-			TotalItems: int32(total),
+		PaginationResults: &common.PaginationResults{
+			TotalItems: total,
 			Page:       args.Page,
-			PageSize:   int32(pageSize),
+			PageSize:   pageSize,
 		},
 		Models: ms,
 	}, nil
@@ -186,7 +185,7 @@ func (c *modelClient) DeleteModels(ctx context.Context, ids []int) (int, error) 
 }
 
 func getModelOrderOption(args *ListAiModelArgs) []aimodel.OrderOption {
-	orderTerm := db.GetOrderTerm(db.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(args.OrderDir)
 	switch args.OrderBy {
 	case aimodel.FieldUpdatedAt:
 		return []aimodel.OrderOption{aimodel.ByUpdatedAt(orderTerm), aimodel.ByID(orderTerm)}
@@ -238,10 +237,10 @@ func (c *modelClient) ListApiKeys(ctx context.Context, args *ListApiKeyArgs) (*L
 	}
 
 	return &ListApiKeyResult{
-		PaginationResults: &pb.PaginationResults{
+		PaginationResults: &common.PaginationResults{
 			Page:       args.Page,
 			PageSize:   args.PageSize,
-			TotalItems: int32(total),
+			TotalItems: total,
 		},
 		ApiKeys: apiKeys,
 	}, nil
@@ -288,7 +287,7 @@ func (c *modelClient) DeleteApiKeys(ctx context.Context, ids []int) (int, error)
 }
 
 func getApiKeyOrderOption(args *ListApiKeyArgs) []aiapikey.OrderOption {
-	orderTerm := db.GetOrderTerm(db.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(args.OrderDir)
 	switch args.OrderBy {
 	case aiapikey.FieldUpdatedAt:
 		return []aiapikey.OrderOption{aiapikey.ByUpdatedAt(orderTerm), aiapikey.ByID(orderTerm)}

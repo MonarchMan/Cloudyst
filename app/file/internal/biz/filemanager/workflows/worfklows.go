@@ -1,16 +1,14 @@
 package workflows
 
 import (
-	pb "api/api/file/common/v1"
-	pbexplorer "api/api/file/workflow/v1"
 	"common/util"
 	"context"
 	"file/internal/biz/cluster"
 	"file/internal/biz/filemanager"
-	"file/internal/biz/queue"
 	"file/internal/data/types"
 	"fmt"
 	"path"
+	mqueue "queue"
 	"strconv"
 	"time"
 )
@@ -23,7 +21,7 @@ const (
 type NodeState struct {
 	NodeID int `json:"node_id"`
 
-	progress *pbexplorer.TaskPhaseProgressResponse
+	progress mqueue.Progresses
 }
 
 // allocateNode allocates a node for the task.
@@ -42,15 +40,15 @@ func allocateNode(ctx context.Context, np cluster.NodePool, state *NodeState, ca
 }
 
 // prepareSlaveTaskCtx prepares the context for the slave task.
-func prepareSlaveTaskCtx(ctx context.Context, props *pb.SlaveTaskProps) context.Context {
-	ctx = context.WithValue(ctx, cluster.SlaveNodeIDCtx{}, strconv.Itoa(int(props.NodeId)))
-	ctx = context.WithValue(ctx, cluster.MasterSiteUrlCtx{}, props.MasterSiteUrl)
+func prepareSlaveTaskCtx(ctx context.Context, props *types.SlaveTaskProps) context.Context {
+	ctx = context.WithValue(ctx, cluster.SlaveNodeIDCtx{}, strconv.Itoa(props.NodeID))
+	ctx = context.WithValue(ctx, cluster.MasterSiteUrlCtx{}, props.MasterSiteURl)
 	ctx = context.WithValue(ctx, cluster.MasterSiteVersionCtx{}, props.MasterSiteVersion)
-	ctx = context.WithValue(ctx, cluster.MasterSiteIDCtx{}, props.MasterSiteId)
+	ctx = context.WithValue(ctx, cluster.MasterSiteIDCtx{}, props.MasterSiteID)
 	return ctx
 }
 
-func prepareTempFolder(ctx context.Context, dep filemanager.ManagerDep, t queue.Task) (string, error) {
+func prepareTempFolder(ctx context.Context, dep filemanager.ManagerDep, t mqueue.Task) (string, error) {
 	settings := dep.SettingProvider()
 	tempPath := util.DataPath(path.Join(settings.TempPath(ctx), TaskTempPath, strconv.Itoa(t.ID())))
 	if err := util.CreateNestedFolder(tempPath); err != nil {

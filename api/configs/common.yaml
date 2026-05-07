@@ -20,4 +20,4 @@ server:
 
 extensions:
   jaeger:
-    addr: simple-net.dynv6.net
+    addr: simple-net.dynv6.net:4317

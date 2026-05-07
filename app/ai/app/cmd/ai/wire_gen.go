@@ -7,18 +7,23 @@
 package main
 
 import (
+	"ai/app"
+	"ai/internal/biz/chat"
 	"ai/internal/biz/image"
 	"ai/internal/biz/knowledge"
 	"ai/internal/biz/knowledge/rag/ingestion"
 	"ai/internal/biz/knowledge/rag/retrieval"
 	model2 "ai/internal/biz/model"
+	"ai/internal/biz/queue"
 	"ai/internal/conf"
 	"ai/internal/data"
 	"ai/internal/data/rpc"
 	"ai/internal/data/vector"
 	"ai/internal/pkg"
+	"ai/internal/pkg/eino/interrupt"
 	"ai/internal/pkg/eino/model"
 	"ai/internal/pkg/eino/tool/factory"
+	"ai/internal/pkg/mcp"
 	"ai/internal/server"
 	"ai/internal/service"
 	"github.com/go-kratos/kratos/v2"
@@ -34,16 +39,12 @@ import (
 // wireApp init kratos application.
 func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func(), error) {
 	logger := pkg.LoggerWrapper(bootstrap)
-	userClient, err := rpc.RawUserClient(client)
-	if err != nil {
-		return nil, nil, err
-	}
-	rpcUserClient, err := rpc.NewUserClient(client, userClient)
+	settingClient, err := rpc.NewSettingClient(client)
 	if err != nil {
 		return nil, nil, err
 	}
 	driver := data.KVWrapper(bootstrap, logger)
-	entClient, cleanup, err := data.NewDBClient(logger, rpcUserClient, driver, bootstrap)
+	entClient, cleanup, err := data.NewDBClient(logger, settingClient, driver, bootstrap)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -56,39 +57,46 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 		cleanup()
 		return nil, nil, err
 	}
-	embedder, err := pkg.OllamaEmbedder(bootstrap)
+	vectorStore, cleanup2, err := vector.NewMilvusClient(bootstrap)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	indexer, err := ingestion.NewMilvusIndexer(knowledgeSegmentClient, logger, embedder, bootstrap)
+	embedder, err := pkg.OllamaEmbedder(bootstrap)
 	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	indexer, err := ingestion.NewMilvusIndexer(knowledgeSegmentClient, vectorStore, logger, embedder, bootstrap)
+	if err != nil {
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
 	parser, err := pkg.ExtParser()
 	if err != nil {
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	ingestEngine, err := ingestion.NewIngestEngine(knowledgeDocumentClient, knowledgeSegmentClient, knowledgeClient, embedder, parser, indexer, bootstrap, logger)
+	checkPointStore := interrupt.NewCheckPointStore(driver)
+	ingestEngine, err := ingestion.NewIngestEngine(knowledgeDocumentClient, knowledgeSegmentClient, knowledgeClient, embedder, parser, indexer, fileClient, checkPointStore, bootstrap, logger)
 	if err != nil {
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
 	toolRegistry := factory.NewToolRegistry()
-	retrieveEngine, err := retrieval.NewRetrieveEngine(knowledgeClient, knowledgeDocumentClient, knowledgeSegmentClient, toolRegistry, embedder, bootstrap, logger)
+	retrieveEngine, err := retrieval.NewRetrieveEngine(knowledgeClient, knowledgeDocumentClient, knowledgeSegmentClient, toolRegistry, embedder, vectorStore, bootstrap, logger)
 	if err != nil {
-		cleanup()
-		return nil, nil, err
-	}
-	vectorStore, err := vector.NewMilvusClient(bootstrap)
-	if err != nil {
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
 	knowledgeBiz, err := knowledge.NewKnowledgeBiz(knowledgeClient, knowledgeDocumentClient, knowledgeSegmentClient, fileClient, logger, bootstrap, indexer, ingestEngine, retrieveEngine, embedder, vectorStore)
 	if err != nil {
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
@@ -97,18 +105,38 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 	modelClient := data.NewAIModelClient(entClient, dbType)
 	encoder, err := pkg.HasherWrapper(bootstrap)
 	if err != nil {
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
 	aiModelManager := model.NewAiModelManager()
 	modelBiz := model2.NewModelBiz(modelClient, encoder, aiModelManager)
+	chatConversationClient := data.NewChatConversationClient(entClient, dbType)
 	roleClient := data.NewChatRoleClient(entClient, dbType)
-	adminService := service.NewAdminService(knowledgeBiz, imageBiz, modelBiz, roleClient)
+	chatMessageClient := data.NewChatMessageClient(entClient, dbType)
+	webPageClient := data.NewWebPageClient(entClient, dbType)
+	toolClient := data.NewToolClient(entClient, dbType)
+	loader, err := pkg.URLLoader(parser)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	mcpClientManager := mcp.NewMCPClientManager()
+	chatBiz := chat.NewChatBiz(chatConversationClient, roleClient, knowledgeClient, modelClient, chatMessageClient, webPageClient, toolClient, loader, mcpClientManager, vectorStore, bootstrap, toolRegistry, logger)
+	userClient, err := rpc.NewUserClient(client)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	adminService := service.NewAdminService(knowledgeBiz, imageBiz, modelBiz, chatBiz, roleClient, userClient, encoder)
 	chatService := service.NewChatService()
 	knowledgeService := service.NewKnowledgeService()
 	imageService := service.NewImageService()
 	tracerProvider, err := pkg.TracerProvider(bootstrap)
 	if err != nil {
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
@@ -117,15 +145,25 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 	grpcServer := server.NewGRPCServer(bootstrap, adminService, chatService, knowledgeService, imageService, tracerProvider, textMapPropagator, roleService)
 	httpServer, err := server.NewHTTPServer(adminService, chatService, knowledgeService, userClient, imageService, roleService, bootstrap, tracerProvider, textMapPropagator, logger)
 	if err != nil {
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	app, err := newApp(grpcServer, httpServer, bootstrap, client, logger)
+	taskClient := data.NewTaskClient(entClient, dbType, encoder)
+	queueManager, cleanup3 := queue.NewQueueManager(taskClient, logger, settingClient)
+	appServer, cleanup4 := app.NewServer(logger, bootstrap, driver, queueManager)
+	kratosApp, err := newApp(grpcServer, httpServer, bootstrap, client, logger, appServer)
 	if err != nil {
+		cleanup4()
+		cleanup3()
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	return app, func() {
+	return kratosApp, func() {
+		cleanup4()
+		cleanup3()
+		cleanup2()
 		cleanup()
 	}, nil
 }

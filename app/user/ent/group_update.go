@@ -3,7 +3,8 @@
 package ent
 
 import (
-	v1 "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"context"
 	"errors"
@@ -132,7 +133,7 @@ func (_u *GroupUpdate) SetPermissions(v *boolset.BooleanSet) *GroupUpdate {
 }
 
 // SetSettings sets the "settings" field.
-func (_u *GroupUpdate) SetSettings(v *v1.GroupSetting) *GroupUpdate {
+func (_u *GroupUpdate) SetSettings(v *userdata.GroupSetting) *GroupUpdate {
 	_u.mutation.SetSettings(v)
 	return _u
 }
@@ -171,7 +172,7 @@ func (_u *GroupUpdate) ClearStoragePolicyID() *GroupUpdate {
 }
 
 // SetStoragePolicyInfo sets the "storage_policy_info" field.
-func (_u *GroupUpdate) SetStoragePolicyInfo(v *v1.StoragePolicyInfo) *GroupUpdate {
+func (_u *GroupUpdate) SetStoragePolicyInfo(v *filedata.StoragePolicyInfo) *GroupUpdate {
 	_u.mutation.SetStoragePolicyInfo(v)
 	return _u
 }
@@ -494,7 +495,7 @@ func (_u *GroupUpdateOne) SetPermissions(v *boolset.BooleanSet) *GroupUpdateOne 
 }
 
 // SetSettings sets the "settings" field.
-func (_u *GroupUpdateOne) SetSettings(v *v1.GroupSetting) *GroupUpdateOne {
+func (_u *GroupUpdateOne) SetSettings(v *userdata.GroupSetting) *GroupUpdateOne {
 	_u.mutation.SetSettings(v)
 	return _u
 }
@@ -533,7 +534,7 @@ func (_u *GroupUpdateOne) ClearStoragePolicyID() *GroupUpdateOne {
 }
 
 // SetStoragePolicyInfo sets the "storage_policy_info" field.
-func (_u *GroupUpdateOne) SetStoragePolicyInfo(v *v1.StoragePolicyInfo) *GroupUpdateOne {
+func (_u *GroupUpdateOne) SetStoragePolicyInfo(v *filedata.StoragePolicyInfo) *GroupUpdateOne {
 	_u.mutation.SetStoragePolicyInfo(v)
 	return _u
 }

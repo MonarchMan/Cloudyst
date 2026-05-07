@@ -15,7 +15,7 @@ import (
 	"file/internal/biz/filemanager/fs/mime"
 	"file/internal/biz/filemanager/lock"
 	"file/internal/biz/mediameta"
-	"file/internal/biz/queue"
+	queue2 "file/internal/biz/queue"
 	"file/internal/biz/thumb"
 	"file/internal/conf"
 	"file/internal/data"
@@ -27,6 +27,7 @@ import (
 	"file/internal/service/webdav"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/hashicorp/consul/api"
+	"queue"
 )
 
 import (
@@ -68,7 +69,7 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 	credManager := biz.CredManagerWrapper(bootstrap, driver, storagePolicyClient, logger)
 	extractorStateManager := mediameta.NewExtractorManager(provider, logger, bootstrap)
 	taskRegistry := queue.NewTaskRegistry()
-	queueManager, cleanup2 := queue.NewQueueManager(taskClient, taskRegistry, logger, provider)
+	queueManager, cleanup2 := queue2.NewQueueManager(taskClient, taskRegistry, logger, provider)
 	generator := thumb.NewPipeline(provider, logger)
 	masterEncryptKeyVault := biz.MasterEncryptKeyVaultWrapper(provider)
 	cryptorFactory := encrypt.NewCryptorFactory(masterEncryptKeyVault)
@@ -77,14 +78,7 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 	managerDep := filemanager.NewManagerDependency(logger, provider, driver, auth, bootstrap, encoder, storagePolicyClient, userClient, fileClient, shareClient, taskClient, mimeManager, credManager, extractorStateManager, queueManager, generator, cryptorFactory, eventHub)
 	lockSystem := lock.NewMemLS(encoder, logger)
 	directLinkClient := data.NewDirectLinkClient(entClient, dbType, encoder)
-	adminClient, err := rpc.NewUserAdminClient(client)
-	if err != nil {
-		cleanup3()
-		cleanup2()
-		cleanup()
-		return nil, nil, err
-	}
-	dbfsDep := filemanager.NewDBFSDependency(lockSystem, directLinkClient, adminClient, cryptorFactory, eventHub, logger)
+	dbfsDep := filemanager.NewDBFSDependency(lockSystem, directLinkClient, logger)
 	fileService := service.NewFileService(userClient, managerDep, dbfsDep, fileClient, storagePolicyClient, encoder, provider, driver, auth, logger, bootstrap, mimeManager, eventHub)
 	shareService := service.NewShareService(shareClient, userClient, encoder, managerDep, dbfsDep)
 	sysService := service.NewSysService(queueManager, mimeManager, extractorStateManager)
@@ -109,7 +103,7 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 	grpcServer := server.NewGRPCServer(bootstrap, fileService, shareService, sysService, adminService, slaveService, tracerProvider, textMapPropagator)
 	callbackService := service.NewCallbackService(managerDep, dbfsDep, logger)
 	wopiService := service.NewWopiService(fileService, encoder, provider, managerDep, dbfsDep, driver, userClient)
-	workflowService := service.NewWorkflowService(managerDep, dbfsDep, encoder, queueManager, taskClient, nodeClient, adminClient, taskRegistry)
+	workflowService := service.NewWorkflowService(managerDep, dbfsDep, encoder, queueManager, taskClient, nodeClient, userClient, taskRegistry)
 	webDAVService := webdav.NewWebDAVService(managerDep, dbfsDep, userClient, logger, provider, encoder, mimeManager)
 	httpServer, err := server.NewHTTPServer(bootstrap, callbackService, fileService, shareService, wopiService, workflowService, webDAVService, adminService, encoder, driver, userClient, provider, auth, tracerProvider, textMapPropagator, logger)
 	if err != nil {

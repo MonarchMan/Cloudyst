@@ -3,7 +3,7 @@
 package share
 
 import (
-	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"time"
 
 	"entgo.io/ent"
@@ -107,7 +107,7 @@ var (
 	// DefaultDownloads holds the default value on creation for the "downloads" field.
 	DefaultDownloads int
 	// DefaultOwnerInfo holds the default value on creation for the "owner_info" field.
-	DefaultOwnerInfo *v1.UserInfo
+	DefaultOwnerInfo *userdata.UserInfo
 )
 
 // OrderOption defines the ordering options for the Share queries.

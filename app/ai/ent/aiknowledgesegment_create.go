@@ -90,6 +90,68 @@ func (_c *AiKnowledgeSegmentCreate) SetTokens(v int) *AiKnowledgeSegmentCreate {
 	return _c
 }
 
+// SetChunkIndex sets the "chunk_index" field.
+func (_c *AiKnowledgeSegmentCreate) SetChunkIndex(v int) *AiKnowledgeSegmentCreate {
+	_c.mutation.SetChunkIndex(v)
+	return _c
+}
+
+// SetNillableChunkIndex sets the "chunk_index" field if the given value is not nil.
+func (_c *AiKnowledgeSegmentCreate) SetNillableChunkIndex(v *int) *AiKnowledgeSegmentCreate {
+	if v != nil {
+		_c.SetChunkIndex(*v)
+	}
+	return _c
+}
+
+// SetSectionPath sets the "section_path" field.
+func (_c *AiKnowledgeSegmentCreate) SetSectionPath(v string) *AiKnowledgeSegmentCreate {
+	_c.mutation.SetSectionPath(v)
+	return _c
+}
+
+// SetNillableSectionPath sets the "section_path" field if the given value is not nil.
+func (_c *AiKnowledgeSegmentCreate) SetNillableSectionPath(v *string) *AiKnowledgeSegmentCreate {
+	if v != nil {
+		_c.SetSectionPath(*v)
+	}
+	return _c
+}
+
+// SetStartOffset sets the "start_offset" field.
+func (_c *AiKnowledgeSegmentCreate) SetStartOffset(v int) *AiKnowledgeSegmentCreate {
+	_c.mutation.SetStartOffset(v)
+	return _c
+}
+
+// SetNillableStartOffset sets the "start_offset" field if the given value is not nil.
+func (_c *AiKnowledgeSegmentCreate) SetNillableStartOffset(v *int) *AiKnowledgeSegmentCreate {
+	if v != nil {
+		_c.SetStartOffset(*v)
+	}
+	return _c
+}
+
+// SetEndOffset sets the "end_offset" field.
+func (_c *AiKnowledgeSegmentCreate) SetEndOffset(v int) *AiKnowledgeSegmentCreate {
+	_c.mutation.SetEndOffset(v)
+	return _c
+}
+
+// SetNillableEndOffset sets the "end_offset" field if the given value is not nil.
+func (_c *AiKnowledgeSegmentCreate) SetNillableEndOffset(v *int) *AiKnowledgeSegmentCreate {
+	if v != nil {
+		_c.SetEndOffset(*v)
+	}
+	return _c
+}
+
+// SetMetadata sets the "metadata" field.
+func (_c *AiKnowledgeSegmentCreate) SetMetadata(v map[string]interface{}) *AiKnowledgeSegmentCreate {
+	_c.mutation.SetMetadata(v)
+	return _c
+}
+
 // SetVectorID sets the "vector_id" field.
 func (_c *AiKnowledgeSegmentCreate) SetVectorID(v string) *AiKnowledgeSegmentCreate {
 	_c.mutation.SetVectorID(v)
@@ -178,6 +240,22 @@ func (_c *AiKnowledgeSegmentCreate) defaults() error {
 		v := aiknowledgesegment.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.ChunkIndex(); !ok {
+		v := aiknowledgesegment.DefaultChunkIndex
+		_c.mutation.SetChunkIndex(v)
+	}
+	if _, ok := _c.mutation.SectionPath(); !ok {
+		v := aiknowledgesegment.DefaultSectionPath
+		_c.mutation.SetSectionPath(v)
+	}
+	if _, ok := _c.mutation.StartOffset(); !ok {
+		v := aiknowledgesegment.DefaultStartOffset
+		_c.mutation.SetStartOffset(v)
+	}
+	if _, ok := _c.mutation.EndOffset(); !ok {
+		v := aiknowledgesegment.DefaultEndOffset
+		_c.mutation.SetEndOffset(v)
+	}
 	if _, ok := _c.mutation.VectorID(); !ok {
 		v := aiknowledgesegment.DefaultVectorID
 		_c.mutation.SetVectorID(v)
@@ -204,6 +282,15 @@ func (_c *AiKnowledgeSegmentCreate) check() error {
 	}
 	if _, ok := _c.mutation.Tokens(); !ok {
 		return &ValidationError{Name: "tokens", err: errors.New(`ent: missing required field "AiKnowledgeSegment.tokens"`)}
+	}
+	if _, ok := _c.mutation.ChunkIndex(); !ok {
+		return &ValidationError{Name: "chunk_index", err: errors.New(`ent: missing required field "AiKnowledgeSegment.chunk_index"`)}
+	}
+	if _, ok := _c.mutation.StartOffset(); !ok {
+		return &ValidationError{Name: "start_offset", err: errors.New(`ent: missing required field "AiKnowledgeSegment.start_offset"`)}
+	}
+	if _, ok := _c.mutation.EndOffset(); !ok {
+		return &ValidationError{Name: "end_offset", err: errors.New(`ent: missing required field "AiKnowledgeSegment.end_offset"`)}
 	}
 	if _, ok := _c.mutation.VectorID(); !ok {
 		return &ValidationError{Name: "vector_id", err: errors.New(`ent: missing required field "AiKnowledgeSegment.vector_id"`)}
@@ -284,6 +371,26 @@ func (_c *AiKnowledgeSegmentCreate) createSpec() (*AiKnowledgeSegment, *sqlgraph
 	if value, ok := _c.mutation.Tokens(); ok {
 		_spec.SetField(aiknowledgesegment.FieldTokens, field.TypeInt, value)
 		_node.Tokens = value
+	}
+	if value, ok := _c.mutation.ChunkIndex(); ok {
+		_spec.SetField(aiknowledgesegment.FieldChunkIndex, field.TypeInt, value)
+		_node.ChunkIndex = value
+	}
+	if value, ok := _c.mutation.SectionPath(); ok {
+		_spec.SetField(aiknowledgesegment.FieldSectionPath, field.TypeString, value)
+		_node.SectionPath = value
+	}
+	if value, ok := _c.mutation.StartOffset(); ok {
+		_spec.SetField(aiknowledgesegment.FieldStartOffset, field.TypeInt, value)
+		_node.StartOffset = value
+	}
+	if value, ok := _c.mutation.EndOffset(); ok {
+		_spec.SetField(aiknowledgesegment.FieldEndOffset, field.TypeInt, value)
+		_node.EndOffset = value
+	}
+	if value, ok := _c.mutation.Metadata(); ok {
+		_spec.SetField(aiknowledgesegment.FieldMetadata, field.TypeJSON, value)
+		_node.Metadata = value
 	}
 	if value, ok := _c.mutation.VectorID(); ok {
 		_spec.SetField(aiknowledgesegment.FieldVectorID, field.TypeString, value)
@@ -459,6 +566,96 @@ func (u *AiKnowledgeSegmentUpsert) UpdateTokens() *AiKnowledgeSegmentUpsert {
 // AddTokens adds v to the "tokens" field.
 func (u *AiKnowledgeSegmentUpsert) AddTokens(v int) *AiKnowledgeSegmentUpsert {
 	u.Add(aiknowledgesegment.FieldTokens, v)
+	return u
+}
+
+// SetChunkIndex sets the "chunk_index" field.
+func (u *AiKnowledgeSegmentUpsert) SetChunkIndex(v int) *AiKnowledgeSegmentUpsert {
+	u.Set(aiknowledgesegment.FieldChunkIndex, v)
+	return u
+}
+
+// UpdateChunkIndex sets the "chunk_index" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsert) UpdateChunkIndex() *AiKnowledgeSegmentUpsert {
+	u.SetExcluded(aiknowledgesegment.FieldChunkIndex)
+	return u
+}
+
+// AddChunkIndex adds v to the "chunk_index" field.
+func (u *AiKnowledgeSegmentUpsert) AddChunkIndex(v int) *AiKnowledgeSegmentUpsert {
+	u.Add(aiknowledgesegment.FieldChunkIndex, v)
+	return u
+}
+
+// SetSectionPath sets the "section_path" field.
+func (u *AiKnowledgeSegmentUpsert) SetSectionPath(v string) *AiKnowledgeSegmentUpsert {
+	u.Set(aiknowledgesegment.FieldSectionPath, v)
+	return u
+}
+
+// UpdateSectionPath sets the "section_path" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsert) UpdateSectionPath() *AiKnowledgeSegmentUpsert {
+	u.SetExcluded(aiknowledgesegment.FieldSectionPath)
+	return u
+}
+
+// ClearSectionPath clears the value of the "section_path" field.
+func (u *AiKnowledgeSegmentUpsert) ClearSectionPath() *AiKnowledgeSegmentUpsert {
+	u.SetNull(aiknowledgesegment.FieldSectionPath)
+	return u
+}
+
+// SetStartOffset sets the "start_offset" field.
+func (u *AiKnowledgeSegmentUpsert) SetStartOffset(v int) *AiKnowledgeSegmentUpsert {
+	u.Set(aiknowledgesegment.FieldStartOffset, v)
+	return u
+}
+
+// UpdateStartOffset sets the "start_offset" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsert) UpdateStartOffset() *AiKnowledgeSegmentUpsert {
+	u.SetExcluded(aiknowledgesegment.FieldStartOffset)
+	return u
+}
+
+// AddStartOffset adds v to the "start_offset" field.
+func (u *AiKnowledgeSegmentUpsert) AddStartOffset(v int) *AiKnowledgeSegmentUpsert {
+	u.Add(aiknowledgesegment.FieldStartOffset, v)
+	return u
+}
+
+// SetEndOffset sets the "end_offset" field.
+func (u *AiKnowledgeSegmentUpsert) SetEndOffset(v int) *AiKnowledgeSegmentUpsert {
+	u.Set(aiknowledgesegment.FieldEndOffset, v)
+	return u
+}
+
+// UpdateEndOffset sets the "end_offset" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsert) UpdateEndOffset() *AiKnowledgeSegmentUpsert {
+	u.SetExcluded(aiknowledgesegment.FieldEndOffset)
+	return u
+}
+
+// AddEndOffset adds v to the "end_offset" field.
+func (u *AiKnowledgeSegmentUpsert) AddEndOffset(v int) *AiKnowledgeSegmentUpsert {
+	u.Add(aiknowledgesegment.FieldEndOffset, v)
+	return u
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *AiKnowledgeSegmentUpsert) SetMetadata(v map[string]interface{}) *AiKnowledgeSegmentUpsert {
+	u.Set(aiknowledgesegment.FieldMetadata, v)
+	return u
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsert) UpdateMetadata() *AiKnowledgeSegmentUpsert {
+	u.SetExcluded(aiknowledgesegment.FieldMetadata)
+	return u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AiKnowledgeSegmentUpsert) ClearMetadata() *AiKnowledgeSegmentUpsert {
+	u.SetNull(aiknowledgesegment.FieldMetadata)
 	return u
 }
 
@@ -658,6 +855,111 @@ func (u *AiKnowledgeSegmentUpsertOne) AddTokens(v int) *AiKnowledgeSegmentUpsert
 func (u *AiKnowledgeSegmentUpsertOne) UpdateTokens() *AiKnowledgeSegmentUpsertOne {
 	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
 		s.UpdateTokens()
+	})
+}
+
+// SetChunkIndex sets the "chunk_index" field.
+func (u *AiKnowledgeSegmentUpsertOne) SetChunkIndex(v int) *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetChunkIndex(v)
+	})
+}
+
+// AddChunkIndex adds v to the "chunk_index" field.
+func (u *AiKnowledgeSegmentUpsertOne) AddChunkIndex(v int) *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.AddChunkIndex(v)
+	})
+}
+
+// UpdateChunkIndex sets the "chunk_index" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertOne) UpdateChunkIndex() *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateChunkIndex()
+	})
+}
+
+// SetSectionPath sets the "section_path" field.
+func (u *AiKnowledgeSegmentUpsertOne) SetSectionPath(v string) *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetSectionPath(v)
+	})
+}
+
+// UpdateSectionPath sets the "section_path" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertOne) UpdateSectionPath() *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateSectionPath()
+	})
+}
+
+// ClearSectionPath clears the value of the "section_path" field.
+func (u *AiKnowledgeSegmentUpsertOne) ClearSectionPath() *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.ClearSectionPath()
+	})
+}
+
+// SetStartOffset sets the "start_offset" field.
+func (u *AiKnowledgeSegmentUpsertOne) SetStartOffset(v int) *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetStartOffset(v)
+	})
+}
+
+// AddStartOffset adds v to the "start_offset" field.
+func (u *AiKnowledgeSegmentUpsertOne) AddStartOffset(v int) *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.AddStartOffset(v)
+	})
+}
+
+// UpdateStartOffset sets the "start_offset" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertOne) UpdateStartOffset() *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateStartOffset()
+	})
+}
+
+// SetEndOffset sets the "end_offset" field.
+func (u *AiKnowledgeSegmentUpsertOne) SetEndOffset(v int) *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetEndOffset(v)
+	})
+}
+
+// AddEndOffset adds v to the "end_offset" field.
+func (u *AiKnowledgeSegmentUpsertOne) AddEndOffset(v int) *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.AddEndOffset(v)
+	})
+}
+
+// UpdateEndOffset sets the "end_offset" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertOne) UpdateEndOffset() *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateEndOffset()
+	})
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *AiKnowledgeSegmentUpsertOne) SetMetadata(v map[string]interface{}) *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertOne) UpdateMetadata() *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AiKnowledgeSegmentUpsertOne) ClearMetadata() *AiKnowledgeSegmentUpsertOne {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.ClearMetadata()
 	})
 }
 
@@ -1035,6 +1337,111 @@ func (u *AiKnowledgeSegmentUpsertBulk) AddTokens(v int) *AiKnowledgeSegmentUpser
 func (u *AiKnowledgeSegmentUpsertBulk) UpdateTokens() *AiKnowledgeSegmentUpsertBulk {
 	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
 		s.UpdateTokens()
+	})
+}
+
+// SetChunkIndex sets the "chunk_index" field.
+func (u *AiKnowledgeSegmentUpsertBulk) SetChunkIndex(v int) *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetChunkIndex(v)
+	})
+}
+
+// AddChunkIndex adds v to the "chunk_index" field.
+func (u *AiKnowledgeSegmentUpsertBulk) AddChunkIndex(v int) *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.AddChunkIndex(v)
+	})
+}
+
+// UpdateChunkIndex sets the "chunk_index" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertBulk) UpdateChunkIndex() *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateChunkIndex()
+	})
+}
+
+// SetSectionPath sets the "section_path" field.
+func (u *AiKnowledgeSegmentUpsertBulk) SetSectionPath(v string) *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetSectionPath(v)
+	})
+}
+
+// UpdateSectionPath sets the "section_path" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertBulk) UpdateSectionPath() *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateSectionPath()
+	})
+}
+
+// ClearSectionPath clears the value of the "section_path" field.
+func (u *AiKnowledgeSegmentUpsertBulk) ClearSectionPath() *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.ClearSectionPath()
+	})
+}
+
+// SetStartOffset sets the "start_offset" field.
+func (u *AiKnowledgeSegmentUpsertBulk) SetStartOffset(v int) *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetStartOffset(v)
+	})
+}
+
+// AddStartOffset adds v to the "start_offset" field.
+func (u *AiKnowledgeSegmentUpsertBulk) AddStartOffset(v int) *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.AddStartOffset(v)
+	})
+}
+
+// UpdateStartOffset sets the "start_offset" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertBulk) UpdateStartOffset() *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateStartOffset()
+	})
+}
+
+// SetEndOffset sets the "end_offset" field.
+func (u *AiKnowledgeSegmentUpsertBulk) SetEndOffset(v int) *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetEndOffset(v)
+	})
+}
+
+// AddEndOffset adds v to the "end_offset" field.
+func (u *AiKnowledgeSegmentUpsertBulk) AddEndOffset(v int) *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.AddEndOffset(v)
+	})
+}
+
+// UpdateEndOffset sets the "end_offset" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertBulk) UpdateEndOffset() *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateEndOffset()
+	})
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *AiKnowledgeSegmentUpsertBulk) SetMetadata(v map[string]interface{}) *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AiKnowledgeSegmentUpsertBulk) UpdateMetadata() *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AiKnowledgeSegmentUpsertBulk) ClearMetadata() *AiKnowledgeSegmentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeSegmentUpsert) {
+		s.ClearMetadata()
 	})
 }
 

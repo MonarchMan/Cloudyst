@@ -110,39 +110,16 @@ message GroupSetting {
   bool redirected_source = 8;
 }
 
-// 排序方向枚举
-enum OrderDirection {
-  ORDER_DIRECTION_UNSPECIFIED = 0;
-  ORDER_DIRECTION_ASC = 1;
-  ORDER_DIRECTION_DESC = 2;
-}
-
-// 视图类型枚举
-enum ViewType {
-  VIEW_TYPE_UNSPECIFIED = 0;
-  VIEW_TYPE_LIST = 1;
-  VIEW_TYPE_GRID = 2;
-  VIEW_TYPE_GALLERY = 3;
-}
 
 message ListViewColumn {
   int32 type = 1 [(validate.rules).int32 = {gte: 0}];
   int32 width = 2;
-
 }
 
 message ColumnTypeProps {
   string metadata_key = 1 [(validate.rules).string = {max_len: 255}];
   string custom_props_id = 2 [(validate.rules).string = {max_len: 255}];
 }
-
-message StoragePolicyInfo {
-  int32 id = 1 [(validate.rules).int32 = {gt: 0}];
-  string name = 2 [(validate.rules).string = {max_len: 255}];
-  string type = 3 [(validate.rules).string = {max_len: 255}];
-  bool is_private = 4;
-}
-
 message DavAccountProps {
 
 }

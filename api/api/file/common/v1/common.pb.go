@@ -7,6 +7,7 @@
 package v1
 
 import (
+	v1 "api/api/common/v1"
 	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "github.com/go-kratos/kratos/v2/errors"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -25,56 +26,6 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
-
-// 排序方向枚举
-type OrderDirection int32
-
-const (
-	OrderDirection_ORDER_DIRECTION_UNSPECIFIED OrderDirection = 0
-	OrderDirection_ORDER_DIRECTION_ASC         OrderDirection = 1
-	OrderDirection_ORDER_DIRECTION_DESC        OrderDirection = 2
-)
-
-// Enum value maps for OrderDirection.
-var (
-	OrderDirection_name = map[int32]string{
-		0: "ORDER_DIRECTION_UNSPECIFIED",
-		1: "ORDER_DIRECTION_ASC",
-		2: "ORDER_DIRECTION_DESC",
-	}
-	OrderDirection_value = map[string]int32{
-		"ORDER_DIRECTION_UNSPECIFIED": 0,
-		"ORDER_DIRECTION_ASC":         1,
-		"ORDER_DIRECTION_DESC":        2,
-	}
-)
-
-func (x OrderDirection) Enum() *OrderDirection {
-	p := new(OrderDirection)
-	*p = x
-	return p
-}
-
-func (x OrderDirection) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (OrderDirection) Descriptor() protoreflect.EnumDescriptor {
-	return file_file_common_v1_common_proto_enumTypes[0].Descriptor()
-}
-
-func (OrderDirection) Type() protoreflect.EnumType {
-	return &file_file_common_v1_common_proto_enumTypes[0]
-}
-
-func (x OrderDirection) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use OrderDirection.Descriptor instead.
-func (OrderDirection) EnumDescriptor() ([]byte, []int) {
-	return file_file_common_v1_common_proto_rawDescGZIP(), []int{0}
-}
 
 // 视图类型枚举
 type ViewType int32
@@ -113,11 +64,11 @@ func (x ViewType) String() string {
 }
 
 func (ViewType) Descriptor() protoreflect.EnumDescriptor {
-	return file_file_common_v1_common_proto_enumTypes[1].Descriptor()
+	return file_file_common_v1_common_proto_enumTypes[0].Descriptor()
 }
 
 func (ViewType) Type() protoreflect.EnumType {
-	return &file_file_common_v1_common_proto_enumTypes[1]
+	return &file_file_common_v1_common_proto_enumTypes[0]
 }
 
 func (x ViewType) Number() protoreflect.EnumNumber {
@@ -126,7 +77,7 @@ func (x ViewType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ViewType.Descriptor instead.
 func (ViewType) EnumDescriptor() ([]byte, []int) {
-	return file_file_common_v1_common_proto_rawDescGZIP(), []int{1}
+	return file_file_common_v1_common_proto_rawDescGZIP(), []int{0}
 }
 
 // DownloaderProvider 下载器提供商
@@ -163,11 +114,11 @@ func (x DownloaderProvider) String() string {
 }
 
 func (DownloaderProvider) Descriptor() protoreflect.EnumDescriptor {
-	return file_file_common_v1_common_proto_enumTypes[2].Descriptor()
+	return file_file_common_v1_common_proto_enumTypes[1].Descriptor()
 }
 
 func (DownloaderProvider) Type() protoreflect.EnumType {
-	return &file_file_common_v1_common_proto_enumTypes[2]
+	return &file_file_common_v1_common_proto_enumTypes[1]
 }
 
 func (x DownloaderProvider) Number() protoreflect.EnumNumber {
@@ -176,7 +127,7 @@ func (x DownloaderProvider) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DownloaderProvider.Descriptor instead.
 func (DownloaderProvider) EnumDescriptor() ([]byte, []int) {
-	return file_file_common_v1_common_proto_rawDescGZIP(), []int{2}
+	return file_file_common_v1_common_proto_rawDescGZIP(), []int{1}
 }
 
 type ErrorReason int32
@@ -320,11 +271,11 @@ func (x ErrorReason) String() string {
 }
 
 func (ErrorReason) Descriptor() protoreflect.EnumDescriptor {
-	return file_file_common_v1_common_proto_enumTypes[3].Descriptor()
+	return file_file_common_v1_common_proto_enumTypes[2].Descriptor()
 }
 
 func (ErrorReason) Type() protoreflect.EnumType {
-	return &file_file_common_v1_common_proto_enumTypes[3]
+	return &file_file_common_v1_common_proto_enumTypes[2]
 }
 
 func (x ErrorReason) Number() protoreflect.EnumNumber {
@@ -333,7 +284,7 @@ func (x ErrorReason) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ErrorReason.Descriptor instead.
 func (ErrorReason) EnumDescriptor() ([]byte, []int) {
-	return file_file_common_v1_common_proto_rawDescGZIP(), []int{3}
+	return file_file_common_v1_common_proto_rawDescGZIP(), []int{2}
 }
 
 type PaginationArgs struct {
@@ -904,7 +855,7 @@ type ExplorerView struct {
 	// order: 最大长度 255
 	Order string `protobuf:"bytes,2,opt,name=order,proto3" json:"order,omitempty"`
 	// order_direction: 只能是 asc 或 desc
-	OrderDirection OrderDirection `protobuf:"varint,3,opt,name=order_direction,json=orderDirection,proto3,enum=file.common.v1.OrderDirection" json:"order_direction,omitempty"`
+	OrderDirection v1.OrderDirection `protobuf:"varint,3,opt,name=order_direction,json=orderDirection,proto3,enum=common.v1.OrderDirection" json:"order_direction,omitempty"`
 	// view: 只能是 list, grid 或 gallery
 	View ViewType `protobuf:"varint,4,opt,name=view,proto3,enum=file.common.v1.ViewType" json:"view,omitempty"`
 	// thumbnail: 布尔值，无需验证
@@ -961,11 +912,11 @@ func (x *ExplorerView) GetOrder() string {
 	return ""
 }
 
-func (x *ExplorerView) GetOrderDirection() OrderDirection {
+func (x *ExplorerView) GetOrderDirection() v1.OrderDirection {
 	if x != nil {
 		return x.OrderDirection
 	}
-	return OrderDirection_ORDER_DIRECTION_UNSPECIFIED
+	return v1.OrderDirection(0)
 }
 
 func (x *ExplorerView) GetView() ViewType {
@@ -999,7 +950,8 @@ func (x *ExplorerView) GetColumns() []*ListViewColumn {
 type ListViewColumn struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Type          int32                  `protobuf:"varint,1,opt,name=type,proto3" json:"type,omitempty"`
-	Width         int32                  `protobuf:"varint,2,opt,name=width,proto3" json:"width,omitempty"`
+	Width         *int32                 `protobuf:"varint,2,opt,name=width,proto3,oneof" json:"width,omitempty"`
+	Props         *ColumnTypeProps       `protobuf:"bytes,3,opt,name=props,proto3" json:"props,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1042,10 +994,17 @@ func (x *ListViewColumn) GetType() int32 {
 }
 
 func (x *ListViewColumn) GetWidth() int32 {
-	if x != nil {
-		return x.Width
+	if x != nil && x.Width != nil {
+		return *x.Width
 	}
 	return 0
+}
+
+func (x *ListViewColumn) GetProps() *ColumnTypeProps {
+	if x != nil {
+		return x.Props
+	}
+	return nil
 }
 
 type ColumnTypeProps struct {
@@ -2233,7 +2192,7 @@ var File_file_common_v1_common_proto protoreflect.FileDescriptor
 
 const file_file_common_v1_common_proto_rawDesc = "" +
 	"\n" +
-	"\x1bfile/common/v1/common.proto\x12\x0efile.common.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x13errors/errors.proto\x1a\x17validate/validate.proto\"\xd8\x01\n" +
+	"\x1bfile/common/v1/common.proto\x12\x0efile.common.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x13errors/errors.proto\x1a\x17validate/validate.proto\x1a\x16common/v1/common.proto\"\xd8\x01\n" +
 	"\x0ePaginationArgs\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x122\n" +
@@ -2286,19 +2245,21 @@ const file_file_common_v1_common_proto_rawDesc = "" +
 	"\x0ekey_plain_text\x18\x03 \x01(\fR\fkeyPlainText\x12\x0e\n" +
 	"\x02iv\x18\x04 \x01(\fR\x02iv\"=\n" +
 	"\tFileProps\x120\n" +
-	"\x04view\x18\x01 \x01(\v2\x1c.file.common.v1.ExplorerViewR\x04view\"\xdf\x02\n" +
+	"\x04view\x18\x01 \x01(\v2\x1c.file.common.v1.ExplorerViewR\x04view\"\xda\x02\n" +
 	"\fExplorerView\x12$\n" +
 	"\tpage_size\x18\x01 \x01(\x05B\a\xfaB\x04\x1a\x02(2R\bpageSize\x12\x1e\n" +
-	"\x05order\x18\x02 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\x05order\x12G\n" +
-	"\x0forder_direction\x18\x03 \x01(\x0e2\x1e.file.common.v1.OrderDirectionR\x0eorderDirection\x12,\n" +
+	"\x05order\x18\x02 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\x05order\x12B\n" +
+	"\x0forder_direction\x18\x03 \x01(\x0e2\x19.common.v1.OrderDirectionR\x0eorderDirection\x12,\n" +
 	"\x04view\x18\x04 \x01(\x0e2\x18.file.common.v1.ViewTypeR\x04view\x12\x1c\n" +
 	"\tthumbnail\x18\x05 \x01(\bR\tthumbnail\x12/\n" +
 	"\rgallery_width\x18\x06 \x01(\x05B\n" +
 	"\xfaB\a\x1a\x05\x18\xf4\x03(2R\fgalleryWidth\x12C\n" +
-	"\acolumns\x18\a \x03(\v2\x1e.file.common.v1.ListViewColumnB\t\xfaB\x06\x92\x01\x03\x10\xe8\aR\acolumns\"C\n" +
+	"\acolumns\x18\a \x03(\v2\x1e.file.common.v1.ListViewColumnB\t\xfaB\x06\x92\x01\x03\x10\xe8\aR\acolumns\"\x89\x01\n" +
 	"\x0eListViewColumn\x12\x1b\n" +
-	"\x04type\x18\x01 \x01(\x05B\a\xfaB\x04\x1a\x02(\x00R\x04type\x12\x14\n" +
-	"\x05width\x18\x02 \x01(\x05R\x05width\"p\n" +
+	"\x04type\x18\x01 \x01(\x05B\a\xfaB\x04\x1a\x02(\x00R\x04type\x12\x19\n" +
+	"\x05width\x18\x02 \x01(\x05H\x00R\x05width\x88\x01\x01\x125\n" +
+	"\x05props\x18\x03 \x01(\v2\x1f.file.common.v1.ColumnTypePropsR\x05propsB\b\n" +
+	"\x06_width\"p\n" +
 	"\x0fColumnTypeProps\x12+\n" +
 	"\fmetadata_key\x18\x01 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\vmetadataKey\x120\n" +
 	"\x0fcustom_props_id\x18\x02 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\rcustomPropsId\"M\n" +
@@ -2418,10 +2379,6 @@ const file_file_common_v1_common_proto_rawDesc = "" +
 	"\x0fNewFileTemplate\x12\x10\n" +
 	"\x03ext\x18\x01 \x01(\tR\x03ext\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName*d\n" +
-	"\x0eOrderDirection\x12\x1f\n" +
-	"\x1bORDER_DIRECTION_UNSPECIFIED\x10\x00\x12\x17\n" +
-	"\x13ORDER_DIRECTION_ASC\x10\x01\x12\x18\n" +
-	"\x14ORDER_DIRECTION_DESC\x10\x02*d\n" +
 	"\bViewType\x12\x19\n" +
 	"\x15VIEW_TYPE_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eVIEW_TYPE_LIST\x10\x01\x12\x12\n" +
@@ -2485,72 +2442,73 @@ func file_file_common_v1_common_proto_rawDescGZIP() []byte {
 	return file_file_common_v1_common_proto_rawDescData
 }
 
-var file_file_common_v1_common_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_file_common_v1_common_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_file_common_v1_common_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_file_common_v1_common_proto_goTypes = []any{
-	(OrderDirection)(0),           // 0: file.common.v1.OrderDirection
-	(ViewType)(0),                 // 1: file.common.v1.ViewType
-	(DownloaderProvider)(0),       // 2: file.common.v1.DownloaderProvider
-	(ErrorReason)(0),              // 3: file.common.v1.ErrorReason
-	(*PaginationArgs)(nil),        // 4: file.common.v1.PaginationArgs
-	(*PaginationResults)(nil),     // 5: file.common.v1.PaginationResults
-	(*PageToken)(nil),             // 6: file.common.v1.PageToken
-	(*ListRequest)(nil),           // 7: file.common.v1.ListRequest
-	(*UserInfo)(nil),              // 8: file.common.v1.UserInfo
-	(*EntityProps)(nil),           // 9: file.common.v1.EntityProps
-	(*EncryptMetadata)(nil),       // 10: file.common.v1.EncryptMetadata
-	(*FileProps)(nil),             // 11: file.common.v1.FileProps
-	(*ExplorerView)(nil),          // 12: file.common.v1.ExplorerView
-	(*ListViewColumn)(nil),        // 13: file.common.v1.ListViewColumn
-	(*ColumnTypeProps)(nil),       // 14: file.common.v1.ColumnTypeProps
-	(*ShareProps)(nil),            // 15: file.common.v1.ShareProps
-	(*FileTypeIconSetting)(nil),   // 16: file.common.v1.FileTypeIconSetting
-	(*PolicySetting)(nil),         // 17: file.common.v1.PolicySetting
-	(*NodeSetting)(nil),           // 18: file.common.v1.NodeSetting
-	(*QBittorrentSetting)(nil),    // 19: file.common.v1.QBittorrentSetting
-	(*Aria2Setting)(nil),          // 20: file.common.v1.Aria2Setting
-	(*TaskPublicState)(nil),       // 21: file.common.v1.TaskPublicState
-	(*SlaveTaskProps)(nil),        // 22: file.common.v1.SlaveTaskProps
-	(*ViewerGroup)(nil),           // 23: file.common.v1.ViewerGroup
-	(*Viewer)(nil),                // 24: file.common.v1.Viewer
-	(*WopiActionMap)(nil),         // 25: file.common.v1.WopiActionMap
-	(*NewFileTemplate)(nil),       // 26: file.common.v1.NewFileTemplate
-	nil,                           // 27: file.common.v1.ListRequest.ConditionsEntry
-	nil,                           // 28: file.common.v1.ListRequest.SearchesEntry
-	nil,                           // 29: file.common.v1.Viewer.WopiActionsEntry
-	nil,                           // 30: file.common.v1.Viewer.PropsEntry
-	nil,                           // 31: file.common.v1.WopiActionMap.ActionsEntry
-	(*timestamppb.Timestamp)(nil), // 32: google.protobuf.Timestamp
+	(ViewType)(0),                 // 0: file.common.v1.ViewType
+	(DownloaderProvider)(0),       // 1: file.common.v1.DownloaderProvider
+	(ErrorReason)(0),              // 2: file.common.v1.ErrorReason
+	(*PaginationArgs)(nil),        // 3: file.common.v1.PaginationArgs
+	(*PaginationResults)(nil),     // 4: file.common.v1.PaginationResults
+	(*PageToken)(nil),             // 5: file.common.v1.PageToken
+	(*ListRequest)(nil),           // 6: file.common.v1.ListRequest
+	(*UserInfo)(nil),              // 7: file.common.v1.UserInfo
+	(*EntityProps)(nil),           // 8: file.common.v1.EntityProps
+	(*EncryptMetadata)(nil),       // 9: file.common.v1.EncryptMetadata
+	(*FileProps)(nil),             // 10: file.common.v1.FileProps
+	(*ExplorerView)(nil),          // 11: file.common.v1.ExplorerView
+	(*ListViewColumn)(nil),        // 12: file.common.v1.ListViewColumn
+	(*ColumnTypeProps)(nil),       // 13: file.common.v1.ColumnTypeProps
+	(*ShareProps)(nil),            // 14: file.common.v1.ShareProps
+	(*FileTypeIconSetting)(nil),   // 15: file.common.v1.FileTypeIconSetting
+	(*PolicySetting)(nil),         // 16: file.common.v1.PolicySetting
+	(*NodeSetting)(nil),           // 17: file.common.v1.NodeSetting
+	(*QBittorrentSetting)(nil),    // 18: file.common.v1.QBittorrentSetting
+	(*Aria2Setting)(nil),          // 19: file.common.v1.Aria2Setting
+	(*TaskPublicState)(nil),       // 20: file.common.v1.TaskPublicState
+	(*SlaveTaskProps)(nil),        // 21: file.common.v1.SlaveTaskProps
+	(*ViewerGroup)(nil),           // 22: file.common.v1.ViewerGroup
+	(*Viewer)(nil),                // 23: file.common.v1.Viewer
+	(*WopiActionMap)(nil),         // 24: file.common.v1.WopiActionMap
+	(*NewFileTemplate)(nil),       // 25: file.common.v1.NewFileTemplate
+	nil,                           // 26: file.common.v1.ListRequest.ConditionsEntry
+	nil,                           // 27: file.common.v1.ListRequest.SearchesEntry
+	nil,                           // 28: file.common.v1.Viewer.WopiActionsEntry
+	nil,                           // 29: file.common.v1.Viewer.PropsEntry
+	nil,                           // 30: file.common.v1.WopiActionMap.ActionsEntry
+	(*timestamppb.Timestamp)(nil), // 31: google.protobuf.Timestamp
+	(v1.OrderDirection)(0),        // 32: common.v1.OrderDirection
 	(*structpb.Struct)(nil),       // 33: google.protobuf.Struct
 	(*durationpb.Duration)(nil),   // 34: google.protobuf.Duration
 }
 var file_file_common_v1_common_proto_depIdxs = []int32{
-	32, // 0: file.common.v1.PageToken.time:type_name -> google.protobuf.Timestamp
-	27, // 1: file.common.v1.ListRequest.conditions:type_name -> file.common.v1.ListRequest.ConditionsEntry
-	28, // 2: file.common.v1.ListRequest.searches:type_name -> file.common.v1.ListRequest.SearchesEntry
-	10, // 3: file.common.v1.EntityProps.encrypt_metadata:type_name -> file.common.v1.EncryptMetadata
-	12, // 4: file.common.v1.FileProps.view:type_name -> file.common.v1.ExplorerView
-	0,  // 5: file.common.v1.ExplorerView.order_direction:type_name -> file.common.v1.OrderDirection
-	1,  // 6: file.common.v1.ExplorerView.view:type_name -> file.common.v1.ViewType
-	13, // 7: file.common.v1.ExplorerView.columns:type_name -> file.common.v1.ListViewColumn
-	2,  // 8: file.common.v1.NodeSetting.provider:type_name -> file.common.v1.DownloaderProvider
-	19, // 9: file.common.v1.NodeSetting.qbittorrent:type_name -> file.common.v1.QBittorrentSetting
-	20, // 10: file.common.v1.NodeSetting.aria2:type_name -> file.common.v1.Aria2Setting
-	33, // 11: file.common.v1.QBittorrentSetting.options:type_name -> google.protobuf.Struct
-	33, // 12: file.common.v1.Aria2Setting.options:type_name -> google.protobuf.Struct
-	34, // 13: file.common.v1.TaskPublicState.executed_duration:type_name -> google.protobuf.Duration
-	22, // 14: file.common.v1.TaskPublicState.slave_task_props:type_name -> file.common.v1.SlaveTaskProps
-	24, // 15: file.common.v1.ViewerGroup.viewers:type_name -> file.common.v1.Viewer
-	29, // 16: file.common.v1.Viewer.wopi_actions:type_name -> file.common.v1.Viewer.WopiActionsEntry
-	30, // 17: file.common.v1.Viewer.props:type_name -> file.common.v1.Viewer.PropsEntry
-	26, // 18: file.common.v1.Viewer.templates:type_name -> file.common.v1.NewFileTemplate
-	31, // 19: file.common.v1.WopiActionMap.actions:type_name -> file.common.v1.WopiActionMap.ActionsEntry
-	25, // 20: file.common.v1.Viewer.WopiActionsEntry.value:type_name -> file.common.v1.WopiActionMap
-	21, // [21:21] is the sub-list for method output_type
-	21, // [21:21] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	31, // 0: file.common.v1.PageToken.time:type_name -> google.protobuf.Timestamp
+	26, // 1: file.common.v1.ListRequest.conditions:type_name -> file.common.v1.ListRequest.ConditionsEntry
+	27, // 2: file.common.v1.ListRequest.searches:type_name -> file.common.v1.ListRequest.SearchesEntry
+	9,  // 3: file.common.v1.EntityProps.encrypt_metadata:type_name -> file.common.v1.EncryptMetadata
+	11, // 4: file.common.v1.FileProps.view:type_name -> file.common.v1.ExplorerView
+	32, // 5: file.common.v1.ExplorerView.order_direction:type_name -> common.v1.OrderDirection
+	0,  // 6: file.common.v1.ExplorerView.view:type_name -> file.common.v1.ViewType
+	12, // 7: file.common.v1.ExplorerView.columns:type_name -> file.common.v1.ListViewColumn
+	13, // 8: file.common.v1.ListViewColumn.props:type_name -> file.common.v1.ColumnTypeProps
+	1,  // 9: file.common.v1.NodeSetting.provider:type_name -> file.common.v1.DownloaderProvider
+	18, // 10: file.common.v1.NodeSetting.qbittorrent:type_name -> file.common.v1.QBittorrentSetting
+	19, // 11: file.common.v1.NodeSetting.aria2:type_name -> file.common.v1.Aria2Setting
+	33, // 12: file.common.v1.QBittorrentSetting.options:type_name -> google.protobuf.Struct
+	33, // 13: file.common.v1.Aria2Setting.options:type_name -> google.protobuf.Struct
+	34, // 14: file.common.v1.TaskPublicState.executed_duration:type_name -> google.protobuf.Duration
+	21, // 15: file.common.v1.TaskPublicState.slave_task_props:type_name -> file.common.v1.SlaveTaskProps
+	23, // 16: file.common.v1.ViewerGroup.viewers:type_name -> file.common.v1.Viewer
+	28, // 17: file.common.v1.Viewer.wopi_actions:type_name -> file.common.v1.Viewer.WopiActionsEntry
+	29, // 18: file.common.v1.Viewer.props:type_name -> file.common.v1.Viewer.PropsEntry
+	25, // 19: file.common.v1.Viewer.templates:type_name -> file.common.v1.NewFileTemplate
+	30, // 20: file.common.v1.WopiActionMap.actions:type_name -> file.common.v1.WopiActionMap.ActionsEntry
+	24, // 21: file.common.v1.Viewer.WopiActionsEntry.value:type_name -> file.common.v1.WopiActionMap
+	22, // [22:22] is the sub-list for method output_type
+	22, // [22:22] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_file_common_v1_common_proto_init() }
@@ -2558,12 +2516,13 @@ func file_file_common_v1_common_proto_init() {
 	if File_file_common_v1_common_proto != nil {
 		return
 	}
+	file_file_common_v1_common_proto_msgTypes[9].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_file_common_v1_common_proto_rawDesc), len(file_file_common_v1_common_proto_rawDesc)),
-			NumEnums:      4,
+			NumEnums:      3,
 			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   0,

@@ -3,7 +3,6 @@ package schema
 import (
 	pb "api/api/file/common/v1"
 	"common/boolset"
-	mschema "entmodule/ent/schema"
 
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
@@ -64,7 +63,7 @@ func (Node) Edges() []ent.Edge {
 
 func (Node) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
+		CommonMixin{},
 	}
 }
 

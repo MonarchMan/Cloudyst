@@ -1,8 +1,6 @@
 package schema
 
 import (
-	mschema "entmodule/ent/schema"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"github.com/gofrs/uuid"
@@ -29,6 +27,6 @@ func (FsEvent) Edges() []ent.Edge {
 
 func (FsEvent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
+		CommonMixin{},
 	}
 }

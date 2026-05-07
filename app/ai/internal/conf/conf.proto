@@ -21,6 +21,9 @@ message Server {
   Cors cors = 3;
   Ssl ssl = 4;
   Unix unix = 5;
+
+  EmbeddingModel embedder = 6;
+  Retrieve retrieve = 7;
 }
 
 message Sys {
@@ -32,9 +35,6 @@ message Sys {
   string proxy_header = 7;
   string log_level = 8;
   string hash_salt = 9;
-
-  EmbeddingModel embedder = 10;
-  Retrieve retrieve = 11;
 }
 message GRPC {
   string network = 1;

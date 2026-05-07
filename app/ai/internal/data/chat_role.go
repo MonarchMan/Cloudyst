@@ -4,7 +4,7 @@ import (
 	"ai/ent"
 	"ai/ent/aichatrole"
 	pb "api/api/common/v1"
-	"common/db"
+	"api/external/data/common"
 	"context"
 	"entmodule"
 	"fmt"
@@ -43,8 +43,8 @@ type (
 	}
 )
 
-func NewChatRoleClient(client *ent.Client, dbType db.DBType) RoleClient {
-	return &roleClient{maxSQLParam: db.SqlParamLimit(dbType), client: client}
+func NewChatRoleClient(client *ent.Client, dbType common.DBType) RoleClient {
+	return &roleClient{maxSQLParam: common.SqlParamLimit(dbType), client: client}
 }
 
 func (c *roleClient) SetClient(newClient *ent.Client) TxOperator {
@@ -173,7 +173,7 @@ func (c *roleClient) DeleteByUserID(ctx context.Context, id int) (int, error) {
 }
 
 func getChatRoleOrderOption(args *ListChatRoleArgs) []aichatrole.OrderOption {
-	orderTerm := db.GetOrderTerm(db.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
 	switch args.OrderBy {
 	case aichatrole.FieldCreatedAt:
 		return []aichatrole.OrderOption{aichatrole.ByCreatedAt(orderTerm), aichatrole.ByID(orderTerm)}

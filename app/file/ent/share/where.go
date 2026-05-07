@@ -535,6 +535,16 @@ func OwnerIDLTE(v int) predicate.Share {
 	return predicate.Share(sql.FieldLTE(FieldOwnerID, v))
 }
 
+// OwnerIDIsNil applies the IsNil predicate on the "owner_id" field.
+func OwnerIDIsNil() predicate.Share {
+	return predicate.Share(sql.FieldIsNull(FieldOwnerID))
+}
+
+// OwnerIDNotNil applies the NotNil predicate on the "owner_id" field.
+func OwnerIDNotNil() predicate.Share {
+	return predicate.Share(sql.FieldNotNull(FieldOwnerID))
+}
+
 // OwnerInfoIsNil applies the IsNil predicate on the "owner_info" field.
 func OwnerInfoIsNil() predicate.Share {
 	return predicate.Share(sql.FieldIsNull(FieldOwnerInfo))

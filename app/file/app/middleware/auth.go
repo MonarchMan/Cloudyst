@@ -4,7 +4,6 @@ import (
 	commonpb "api/api/common/v1"
 	filepb "api/api/file/common/v1"
 	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
 	"api/external/trans"
 	"common/auth"
 	"common/boolset"
@@ -35,7 +34,7 @@ import (
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 )
 
-func UseUploadSessionMid(policyType string, kv cache.Driver, client pbuser.UserClient) middleware.Middleware {
+func UseUploadSessionMid(policyType string, kv cache.Driver, client rpc.UserClient) middleware.Middleware {
 	return func(next middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req any) (any, error) {
 			r, err := utils.RequestFromContext(ctx)
@@ -50,7 +49,7 @@ func UseUploadSessionMid(policyType string, kv cache.Driver, client pbuser.UserC
 	}
 }
 
-func UseUploadSession(policyType string, kv cache.Driver, client pbuser.UserClient) khttp.FilterFunc {
+func UseUploadSession(policyType string, kv cache.Driver, client rpc.UserClient) khttp.FilterFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			if err := uploacCallbackCheck(req, policyType, kv, client); err != nil {
@@ -62,7 +61,7 @@ func UseUploadSession(policyType string, kv cache.Driver, client pbuser.UserClie
 	}
 }
 
-func uploacCallbackCheck(req *http.Request, policyType string, kv cache.Driver, client pbuser.UserClient) error {
+func uploacCallbackCheck(req *http.Request, policyType string, kv cache.Driver, client rpc.UserClient) error {
 	path := strings.TrimPrefix(req.URL.Path, "/")
 	parts := strings.Split(path, "/")
 	// 验证 Callback Key
@@ -161,7 +160,7 @@ func QiniuCallbackAuth() khttp.FilterFunc {
 	}
 }
 
-func WebDavAuth(client pbuser.UserClient) khttp.FilterFunc {
+func WebDavAuth(client rpc.UserClient) khttp.FilterFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			username, password, ok := req.BasicAuth()
@@ -174,16 +173,11 @@ func WebDavAuth(client pbuser.UserClient) khttp.FilterFunc {
 				return
 			}
 			ctx := req.Context()
-			expectedUser, err := client.GetActiveUserByDavAccount(ctx, &pbuser.GetActiveUserByDavAccountRequest{
-				Username: username,
-				Password: password,
-			})
+			expectedUser, err := client.GetActiveUserByDavAccount(ctx, username, password)
 			if err != nil {
-				if username == "" {
-					if u, err := client.GetUserByEmail(ctx, &pbuser.GetUserByEmailRequest{
-						Email: username,
-					}); err == nil {
-						req = req.WithContext(context.WithValue(ctx, trans.UserCtx{}, u))
+				if username != "" {
+					if u, err := client.GetUserByEmail(ctx, username); err == nil {
+						req = req.WithContext(trans.WithProtoValue(ctx, u))
 					}
 				}
 				log.Debugf("WebDAVAuth: failed to get user %q with provided credential: %s", username, err)
@@ -224,7 +218,7 @@ func WebDavAuth(client pbuser.UserClient) khttp.FilterFunc {
 				}
 			}
 
-			req = req.WithContext(context.WithValue(ctx, trans.UserCtx{}, expectedUser))
+			req = req.WithContext(trans.WithProtoValue(ctx, expectedUser))
 			next.ServeHTTP(w, req)
 		})
 	}
@@ -250,7 +244,7 @@ func SignRequired(instance auth.Auth) khttp.FilterFunc {
 	}
 }
 
-func CurrentUser(client pbuser.UserClient) middleware.Middleware {
+func CurrentUser(client rpc.UserClient) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			uid := 0
@@ -281,12 +275,12 @@ func LoginRequired() middleware.Middleware {
 	}
 }
 
-func SetUserCtx(ctx context.Context, uid int, client pbuser.UserClient) (context.Context, error) {
-	user, err := rpc.GetUserInfo(ctx, uid, client)
+func SetUserCtx(ctx context.Context, uid int, client rpc.UserClient) (context.Context, error) {
+	user, err := client.GetUserInfo(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
-	ctx = context.WithValue(ctx, trans.UserCtx{}, user)
+	ctx = trans.WithValue(ctx, user)
 	return ctx, nil
 }
 
@@ -294,8 +288,7 @@ func CheckAdminPermission() middleware.Middleware {
 	return func(next middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req any) (any, error) {
 			u := trans.FromContext(ctx)
-			permission := boolset.BooleanSet(u.Group.Permissions)
-			if !(&permission).Enabled(types.GroupPermissionIsAdmin) {
+			if !u.Group.Permissions.Enabled(types.GroupPermissionIsAdmin) {
 				return nil, errors.Forbidden("admin permission required", "admin permission required")
 			}
 			return next(ctx, req)

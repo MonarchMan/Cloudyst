@@ -4,6 +4,8 @@ import (
 	commonpb "api/api/common/v1"
 	pb "api/api/file/common/v1"
 	userpb "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"common/cache"
 	"common/constants"
@@ -31,7 +33,7 @@ const (
 var shareNavigatorCapability = &boolset.BooleanSet{}
 
 // NewShareNavigator creates a navigator for userId's "shared" files system.
-func NewShareNavigator(u *userpb.User, fileClient data.FileClient, shareClient data.ShareClient,
+func NewShareNavigator(u *userdata.User, fileClient data.FileClient, shareClient data.ShareClient,
 	l log.Logger, config *setting.DBFS, hasher hashid.Encoder) Navigator {
 	n := &shareNavigator{
 		user:        u,
@@ -40,14 +42,14 @@ func NewShareNavigator(u *userpb.User, fileClient data.FileClient, shareClient d
 		shareClient: shareClient,
 		config:      config,
 	}
-	n.baseNavigator = newBaseNavigator(fileClient, defaultFilter, u.Id, hasher, config)
+	n.baseNavigator = newBaseNavigator(fileClient, defaultFilter, u.ID, hasher, config)
 	return n
 }
 
 type (
 	shareNavigator struct {
 		l           *log.Helper
-		user        *userpb.User
+		user        *userdata.User
 		fileClient  data.FileClient
 		shareClient data.ShareClient
 		config      *setting.DBFS
@@ -57,7 +59,7 @@ type (
 		singleFileShare bool
 		ownerRoot       *File
 		share           *ent.Share
-		ownerId         int64
+		ownerId         int
 		disableRecycle  bool
 		persist         func()
 	}
@@ -67,7 +69,7 @@ type (
 		OwnerRoot       *File
 		SingleFileShare bool
 		Share           *ent.Share
-		Owner           int64
+		Owner           int
 	}
 )
 
@@ -115,7 +117,7 @@ func (n *shareNavigator) Recycle() {
 
 func (n *shareNavigator) Root(ctx context.Context, path *fs.URI) (*File, error) {
 	ctx = context.WithValue(ctx, data.LoadShareFile{}, true)
-	share, err := n.shareClient.GetByHashID(ctx, path.ID(hashid.EncodeUserID(n.hasher, int(n.user.Id))))
+	share, err := n.shareClient.GetByHashID(ctx, path.ID(hashid.EncodeUserID(n.hasher, int(n.user.ID))))
 	if err != nil {
 		return nil, ErrShareNotFound.WithCause(err)
 	}
@@ -124,7 +126,7 @@ func (n *shareNavigator) Root(ctx context.Context, path *fs.URI) (*File, error) 
 		return nil, ErrShareNotFound.WithCause(err)
 	}
 
-	n.ownerId = int64(share.OwnerID)
+	n.ownerId = share.OwnerID
 
 	// Check password
 	if share.Password != "" && share.Password != path.Password() {
@@ -148,7 +150,7 @@ func (n *shareNavigator) Root(ctx context.Context, path *fs.URI) (*File, error) 
 	n.shareRoot.Path[pathIndexUser] = path.Root()
 	//n.shareRoot.OwnerModel = n.ownerId
 	n.shareRoot.IsUserRoot = true
-	n.shareRoot.disableView = (share.Props == nil || !share.Props.ShareView) && n.user.Id != n.ownerId
+	n.shareRoot.disableView = (share.Props == nil || !share.Props.ShareView) && n.user.ID != n.ownerId
 	n.shareRoot.CapabilitiesBs = n.Capabilities(false).Capability
 
 	// Check if any ancestors is deleted
@@ -156,8 +158,7 @@ func (n *shareNavigator) Root(ctx context.Context, path *fs.URI) (*File, error) 
 		return nil, ErrShareNotFound
 	}
 
-	permissions := boolset.BooleanSet(n.user.Group.Permissions)
-	if n.user.Id != n.ownerId && !(&permissions).Enabled(int(types.GroupPermissionShareDownload)) {
+	if n.user.ID != n.ownerId && !n.user.Group.Permissions.Enabled(int(types.GroupPermissionShareDownload)) {
 		if data.IsAnonymousUser(n.user) {
 			n.l.Debugf("Anonymous user does not have permission to access share links: %s", err)
 			return nil, commonpb.ErrorAnonymousAccessDenied("You don't have permission to access share links")
@@ -313,6 +314,6 @@ func (n *shareNavigator) Walk(ctx context.Context, levelFiles []*File, limit, de
 	return n.baseNavigator.walk(ctx, levelFiles, limit, depth, f)
 }
 
-func (n *shareNavigator) GetView(ctx context.Context, file *File) *types.ExplorerView {
+func (n *shareNavigator) GetView(ctx context.Context, file *File) *filedata.ExplorerView {
 	return file.View()
 }

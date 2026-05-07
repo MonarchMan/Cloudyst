@@ -4,6 +4,7 @@ package task
 
 import (
 	"file/ent/predicate"
+	"queue"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -285,23 +286,33 @@ func TypeContainsFold(v string) predicate.Task {
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v Status) predicate.Task {
-	return predicate.Task(sql.FieldEQ(FieldStatus, v))
+func StatusEQ(v queue.TaskStatus) predicate.Task {
+	vc := v
+	return predicate.Task(sql.FieldEQ(FieldStatus, vc))
 }
 
 // StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v Status) predicate.Task {
-	return predicate.Task(sql.FieldNEQ(FieldStatus, v))
+func StatusNEQ(v queue.TaskStatus) predicate.Task {
+	vc := v
+	return predicate.Task(sql.FieldNEQ(FieldStatus, vc))
 }
 
 // StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...Status) predicate.Task {
-	return predicate.Task(sql.FieldIn(FieldStatus, vs...))
+func StatusIn(vs ...queue.TaskStatus) predicate.Task {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Task(sql.FieldIn(FieldStatus, v...))
 }
 
 // StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...Status) predicate.Task {
-	return predicate.Task(sql.FieldNotIn(FieldStatus, vs...))
+func StatusNotIn(vs ...queue.TaskStatus) predicate.Task {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Task(sql.FieldNotIn(FieldStatus, v...))
 }
 
 // PrivateStateEQ applies the EQ predicate on the "private_state" field.

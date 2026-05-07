@@ -318,16 +318,129 @@ func (x *UpdateChatConversationRequest) GetMaxContexts() int64 {
 	return 0
 }
 
-type ListConversationResponse struct {
+type GetMultiConversationsResponse struct {
 	state         protoimpl.MessageState         `protogen:"open.v1"`
 	Conversations []*GetChatConversationResponse `protobuf:"bytes,1,rep,name=conversations,proto3" json:"conversations,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
+func (x *GetMultiConversationsResponse) Reset() {
+	*x = GetMultiConversationsResponse{}
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMultiConversationsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMultiConversationsResponse) ProtoMessage() {}
+
+func (x *GetMultiConversationsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMultiConversationsResponse.ProtoReflect.Descriptor instead.
+func (*GetMultiConversationsResponse) Descriptor() ([]byte, []int) {
+	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetMultiConversationsResponse) GetConversations() []*GetChatConversationResponse {
+	if x != nil {
+		return x.Conversations
+	}
+	return nil
+}
+
+type ListConversationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Pagination    *v1.PaginationArgs     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Start         *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=start,proto3" json:"start,omitempty"`
+	End           *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=end,proto3" json:"end,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListConversationRequest) Reset() {
+	*x = ListConversationRequest{}
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListConversationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListConversationRequest) ProtoMessage() {}
+
+func (x *ListConversationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListConversationRequest.ProtoReflect.Descriptor instead.
+func (*ListConversationRequest) Descriptor() ([]byte, []int) {
+	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ListConversationRequest) GetPagination() *v1.PaginationArgs {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+func (x *ListConversationRequest) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *ListConversationRequest) GetStart() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Start
+	}
+	return nil
+}
+
+func (x *ListConversationRequest) GetEnd() *timestamppb.Timestamp {
+	if x != nil {
+		return x.End
+	}
+	return nil
+}
+
+type ListConversationResponse struct {
+	state         protoimpl.MessageState         `protogen:"open.v1"`
+	Conversations []*GetChatConversationResponse `protobuf:"bytes,1,rep,name=conversations,proto3" json:"conversations,omitempty"`
+	Pagination    *v1.PaginationResults          `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
 func (x *ListConversationResponse) Reset() {
 	*x = ListConversationResponse{}
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[3]
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -339,7 +452,7 @@ func (x *ListConversationResponse) String() string {
 func (*ListConversationResponse) ProtoMessage() {}
 
 func (x *ListConversationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[3]
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -352,7 +465,7 @@ func (x *ListConversationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListConversationResponse.ProtoReflect.Descriptor instead.
 func (*ListConversationResponse) Descriptor() ([]byte, []int) {
-	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{3}
+	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ListConversationResponse) GetConversations() []*GetChatConversationResponse {
@@ -362,120 +475,7 @@ func (x *ListConversationResponse) GetConversations() []*GetChatConversationResp
 	return nil
 }
 
-type PageConversationRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pagination    *v1.PaginationArgs     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	Start         *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=start,proto3" json:"start,omitempty"`
-	End           *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=end,proto3" json:"end,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PageConversationRequest) Reset() {
-	*x = PageConversationRequest{}
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PageConversationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PageConversationRequest) ProtoMessage() {}
-
-func (x *PageConversationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PageConversationRequest.ProtoReflect.Descriptor instead.
-func (*PageConversationRequest) Descriptor() ([]byte, []int) {
-	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *PageConversationRequest) GetPagination() *v1.PaginationArgs {
-	if x != nil {
-		return x.Pagination
-	}
-	return nil
-}
-
-func (x *PageConversationRequest) GetTitle() string {
-	if x != nil {
-		return x.Title
-	}
-	return ""
-}
-
-func (x *PageConversationRequest) GetStart() *timestamppb.Timestamp {
-	if x != nil {
-		return x.Start
-	}
-	return nil
-}
-
-func (x *PageConversationRequest) GetEnd() *timestamppb.Timestamp {
-	if x != nil {
-		return x.End
-	}
-	return nil
-}
-
-type PageConversationResponse struct {
-	state         protoimpl.MessageState         `protogen:"open.v1"`
-	Conversations []*GetChatConversationResponse `protobuf:"bytes,1,rep,name=conversations,proto3" json:"conversations,omitempty"`
-	Pagination    *v1.PaginationResults          `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PageConversationResponse) Reset() {
-	*x = PageConversationResponse{}
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PageConversationResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PageConversationResponse) ProtoMessage() {}
-
-func (x *PageConversationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PageConversationResponse.ProtoReflect.Descriptor instead.
-func (*PageConversationResponse) Descriptor() ([]byte, []int) {
-	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *PageConversationResponse) GetConversations() []*GetChatConversationResponse {
-	if x != nil {
-		return x.Conversations
-	}
-	return nil
-}
-
-func (x *PageConversationResponse) GetPagination() *v1.PaginationResults {
+func (x *ListConversationResponse) GetPagination() *v1.PaginationResults {
 	if x != nil {
 		return x.Pagination
 	}
@@ -614,6 +614,7 @@ type SendMessageResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Send          *MessageRecord         `protobuf:"bytes,1,opt,name=send,proto3" json:"send,omitempty"`
 	Receive       *MessageRecord         `protobuf:"bytes,2,opt,name=receive,proto3" json:"receive,omitempty"`
+	Done          bool                   `protobuf:"varint,3,opt,name=done,proto3" json:"done,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -662,17 +663,25 @@ func (x *SendMessageResponse) GetReceive() *MessageRecord {
 	return nil
 }
 
+func (x *SendMessageResponse) GetDone() bool {
+	if x != nil {
+		return x.Done
+	}
+	return false
+}
+
 type MessageRecord struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
-	ReasonContent string                 `protobuf:"bytes,4,opt,name=reason_content,json=reasonContent,proto3" json:"reason_content,omitempty"`
-	Segments      []*KnowledgeSegment    `protobuf:"bytes,5,rep,name=segments,proto3" json:"segments,omitempty"`
-	WebPages      []*WebPage             `protobuf:"bytes,6,rep,name=web_pages,json=webPages,proto3" json:"web_pages,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Type           string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Content        string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	ReasonContent  string                 `protobuf:"bytes,4,opt,name=reason_content,json=reasonContent,proto3" json:"reason_content,omitempty"`
+	Segments       []*KnowledgeSegment    `protobuf:"bytes,5,rep,name=segments,proto3" json:"segments,omitempty"`
+	WebPages       []*WebPage             `protobuf:"bytes,6,rep,name=web_pages,json=webPages,proto3" json:"web_pages,omitempty"`
+	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ConversationId string                 `protobuf:"bytes,8,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *MessageRecord) Reset() {
@@ -752,6 +761,13 @@ func (x *MessageRecord) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *MessageRecord) GetConversationId() string {
+	if x != nil {
+		return x.ConversationId
+	}
+	return ""
 }
 
 type KnowledgeSegment struct {
@@ -906,28 +922,28 @@ func (x *WebPage) GetSummary() string {
 	return ""
 }
 
-type PageConversationMessagesRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Pagination     *v1.PaginationArgs     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	ConversationId string                 `protobuf:"bytes,2,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+type DeleteMessageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Cascade       bool                   `protobuf:"varint,2,opt,name=cascade,proto3" json:"cascade,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *PageConversationMessagesRequest) Reset() {
-	*x = PageConversationMessagesRequest{}
+func (x *DeleteMessageRequest) Reset() {
+	*x = DeleteMessageRequest{}
 	mi := &file_ai_chat_v1_chat_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *PageConversationMessagesRequest) String() string {
+func (x *DeleteMessageRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*PageConversationMessagesRequest) ProtoMessage() {}
+func (*DeleteMessageRequest) ProtoMessage() {}
 
-func (x *PageConversationMessagesRequest) ProtoReflect() protoreflect.Message {
+func (x *DeleteMessageRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_ai_chat_v1_chat_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -939,119 +955,23 @@ func (x *PageConversationMessagesRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use PageConversationMessagesRequest.ProtoReflect.Descriptor instead.
-func (*PageConversationMessagesRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use DeleteMessageRequest.ProtoReflect.Descriptor instead.
+func (*DeleteMessageRequest) Descriptor() ([]byte, []int) {
 	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *PageConversationMessagesRequest) GetPagination() *v1.PaginationArgs {
-	if x != nil {
-		return x.Pagination
-	}
-	return nil
-}
-
-func (x *PageConversationMessagesRequest) GetConversationId() string {
-	if x != nil {
-		return x.ConversationId
-	}
-	return ""
-}
-
-type PageConversationMessagesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Messages      []*MessageRecord       `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
-	Pagination    *v1.PaginationResults  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PageConversationMessagesResponse) Reset() {
-	*x = PageConversationMessagesResponse{}
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PageConversationMessagesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PageConversationMessagesResponse) ProtoMessage() {}
-
-func (x *PageConversationMessagesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PageConversationMessagesResponse.ProtoReflect.Descriptor instead.
-func (*PageConversationMessagesResponse) Descriptor() ([]byte, []int) {
-	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *PageConversationMessagesResponse) GetMessages() []*MessageRecord {
-	if x != nil {
-		return x.Messages
-	}
-	return nil
-}
-
-func (x *PageConversationMessagesResponse) GetPagination() *v1.PaginationResults {
-	if x != nil {
-		return x.Pagination
-	}
-	return nil
-}
-
-type SimpleMessageRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SimpleMessageRequest) Reset() {
-	*x = SimpleMessageRequest{}
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SimpleMessageRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SimpleMessageRequest) ProtoMessage() {}
-
-func (x *SimpleMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SimpleMessageRequest.ProtoReflect.Descriptor instead.
-func (*SimpleMessageRequest) Descriptor() ([]byte, []int) {
-	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *SimpleMessageRequest) GetId() string {
+func (x *DeleteMessageRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
+}
+
+func (x *DeleteMessageRequest) GetCascade() bool {
+	if x != nil {
+		return x.Cascade
+	}
+	return false
 }
 
 type ListConversationMessagesRequest struct {
@@ -1064,7 +984,7 @@ type ListConversationMessagesRequest struct {
 
 func (x *ListConversationMessagesRequest) Reset() {
 	*x = ListConversationMessagesRequest{}
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[15]
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1076,7 +996,7 @@ func (x *ListConversationMessagesRequest) String() string {
 func (*ListConversationMessagesRequest) ProtoMessage() {}
 
 func (x *ListConversationMessagesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[15]
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1089,7 +1009,7 @@ func (x *ListConversationMessagesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListConversationMessagesRequest.ProtoReflect.Descriptor instead.
 func (*ListConversationMessagesRequest) Descriptor() ([]byte, []int) {
-	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{15}
+	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListConversationMessagesRequest) GetPagination() *v1.PaginationArgs {
@@ -1116,7 +1036,7 @@ type ListConversationMessagesResponse struct {
 
 func (x *ListConversationMessagesResponse) Reset() {
 	*x = ListConversationMessagesResponse{}
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[16]
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1128,7 +1048,7 @@ func (x *ListConversationMessagesResponse) String() string {
 func (*ListConversationMessagesResponse) ProtoMessage() {}
 
 func (x *ListConversationMessagesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_chat_v1_chat_proto_msgTypes[16]
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1141,7 +1061,7 @@ func (x *ListConversationMessagesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListConversationMessagesResponse.ProtoReflect.Descriptor instead.
 func (*ListConversationMessagesResponse) Descriptor() ([]byte, []int) {
-	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{16}
+	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListConversationMessagesResponse) GetMessages() []*MessageRecord {
@@ -1156,6 +1076,150 @@ func (x *ListConversationMessagesResponse) GetPagination() *v1.PaginationResults
 		return x.Pagination
 	}
 	return nil
+}
+
+type RetryMessageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UseContext    bool                   `protobuf:"varint,2,opt,name=use_context,json=useContext,proto3" json:"use_context,omitempty"`
+	UseSearch     bool                   `protobuf:"varint,3,opt,name=use_search,json=useSearch,proto3" json:"use_search,omitempty"`
+	ModelId       string                 `protobuf:"bytes,4,opt,name=model_id,json=modelId,proto3" json:"model_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RetryMessageRequest) Reset() {
+	*x = RetryMessageRequest{}
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RetryMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RetryMessageRequest) ProtoMessage() {}
+
+func (x *RetryMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RetryMessageRequest.ProtoReflect.Descriptor instead.
+func (*RetryMessageRequest) Descriptor() ([]byte, []int) {
+	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *RetryMessageRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RetryMessageRequest) GetUseContext() bool {
+	if x != nil {
+		return x.UseContext
+	}
+	return false
+}
+
+func (x *RetryMessageRequest) GetUseSearch() bool {
+	if x != nil {
+		return x.UseSearch
+	}
+	return false
+}
+
+func (x *RetryMessageRequest) GetModelId() string {
+	if x != nil {
+		return x.ModelId
+	}
+	return ""
+}
+
+type PatchMessageRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
+	UseContext    bool                   `protobuf:"varint,3,opt,name=use_context,json=useContext,proto3" json:"use_context,omitempty"`
+	UseSearch     bool                   `protobuf:"varint,4,opt,name=use_search,json=useSearch,proto3" json:"use_search,omitempty"`
+	ModelId       string                 `protobuf:"bytes,5,opt,name=model_id,json=modelId,proto3" json:"model_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PatchMessageRequest) Reset() {
+	*x = PatchMessageRequest{}
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PatchMessageRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PatchMessageRequest) ProtoMessage() {}
+
+func (x *PatchMessageRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_chat_v1_chat_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PatchMessageRequest.ProtoReflect.Descriptor instead.
+func (*PatchMessageRequest) Descriptor() ([]byte, []int) {
+	return file_ai_chat_v1_chat_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *PatchMessageRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PatchMessageRequest) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *PatchMessageRequest) GetUseContext() bool {
+	if x != nil {
+		return x.UseContext
+	}
+	return false
+}
+
+func (x *PatchMessageRequest) GetUseSearch() bool {
+	if x != nil {
+		return x.UseSearch
+	}
+	return false
+}
+
+func (x *PatchMessageRequest) GetModelId() string {
+	if x != nil {
+		return x.ModelId
+	}
+	return ""
 }
 
 var File_ai_chat_v1_chat_proto protoreflect.FileDescriptor
@@ -1194,17 +1258,17 @@ const file_ai_chat_v1_chat_proto_rawDesc = "" +
 	"\vtemperature\x18\x06 \x01(\x01R\vtemperature\x12\x1d\n" +
 	"\n" +
 	"max_tokens\x18\a \x01(\x03R\tmaxTokens\x12!\n" +
-	"\fmax_contexts\x18\b \x01(\x03R\vmaxContexts\"i\n" +
-	"\x18ListConversationResponse\x12M\n" +
+	"\fmax_contexts\x18\b \x01(\x03R\vmaxContexts\"n\n" +
+	"\x1dGetMultiConversationsResponse\x12M\n" +
 	"\rconversations\x18\x01 \x03(\v2'.ai.chat.v1.GetChatConversationResponseR\rconversations\"\xca\x01\n" +
-	"\x17PageConversationRequest\x129\n" +
+	"\x17ListConversationRequest\x129\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x19.common.v1.PaginationArgsR\n" +
 	"pagination\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x120\n" +
 	"\x05start\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05start\x12,\n" +
 	"\x03end\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x03end\"\xa7\x01\n" +
-	"\x18PageConversationResponse\x12M\n" +
+	"\x18ListConversationResponse\x12M\n" +
 	"\rconversations\x18\x01 \x03(\v2'.ai.chat.v1.GetChatConversationResponseR\rconversations\x12<\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
@@ -1219,10 +1283,11 @@ const file_ai_chat_v1_chat_proto_rawDesc = "" +
 	"\n" +
 	"use_search\x18\x04 \x01(\bR\tuseSearch\x12'\n" +
 	"\x0fattachment_urls\x18\x05 \x03(\tR\x0eattachmentUrls\x12\x19\n" +
-	"\bmodel_id\x18\x06 \x01(\tR\amodelId\"y\n" +
+	"\bmodel_id\x18\x06 \x01(\tR\amodelId\"\x8d\x01\n" +
 	"\x13SendMessageResponse\x12-\n" +
 	"\x04send\x18\x01 \x01(\v2\x19.ai.chat.v1.MessageRecordR\x04send\x123\n" +
-	"\areceive\x18\x02 \x01(\v2\x19.ai.chat.v1.MessageRecordR\areceive\"\x9b\x02\n" +
+	"\areceive\x18\x02 \x01(\v2\x19.ai.chat.v1.MessageRecordR\areceive\x12\x12\n" +
+	"\x04done\x18\x03 \x01(\bR\x04done\"\xc4\x02\n" +
 	"\rMessageRecord\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x18\n" +
@@ -1231,7 +1296,8 @@ const file_ai_chat_v1_chat_proto_rawDesc = "" +
 	"\bsegments\x18\x05 \x03(\v2\x1c.ai.chat.v1.KnowledgeSegmentR\bsegments\x120\n" +
 	"\tweb_pages\x18\x06 \x03(\v2\x13.ai.chat.v1.WebPageR\bwebPages\x129\n" +
 	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x82\x01\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12'\n" +
+	"\x0fconversation_id\x18\b \x01(\tR\x0econversationId\"\x82\x01\n" +
 	"\x10KnowledgeSegment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1f\n" +
@@ -1244,19 +1310,10 @@ const file_ai_chat_v1_chat_proto_rawDesc = "" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x10\n" +
 	"\x03url\x18\x04 \x01(\tR\x03url\x12\x18\n" +
 	"\asnippet\x18\x05 \x01(\tR\asnippet\x12\x18\n" +
-	"\asummary\x18\x06 \x01(\tR\asummary\"\x85\x01\n" +
-	"\x1fPageConversationMessagesRequest\x129\n" +
-	"\n" +
-	"pagination\x18\x01 \x01(\v2\x19.common.v1.PaginationArgsR\n" +
-	"pagination\x12'\n" +
-	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\"\x97\x01\n" +
-	" PageConversationMessagesResponse\x125\n" +
-	"\bmessages\x18\x01 \x03(\v2\x19.ai.chat.v1.MessageRecordR\bmessages\x12<\n" +
-	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
-	"pagination\"&\n" +
-	"\x14SimpleMessageRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x85\x01\n" +
+	"\asummary\x18\x06 \x01(\tR\asummary\"@\n" +
+	"\x14DeleteMessageRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
+	"\acascade\x18\x02 \x01(\bR\acascade\"\x85\x01\n" +
 	"\x1fListConversationMessagesRequest\x129\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x19.common.v1.PaginationArgsR\n" +
@@ -1266,21 +1323,37 @@ const file_ai_chat_v1_chat_proto_rawDesc = "" +
 	"\bmessages\x18\x01 \x03(\v2\x19.ai.chat.v1.MessageRecordR\bmessages\x12<\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
-	"pagination2\xc6\r\n" +
+	"pagination\"\x80\x01\n" +
+	"\x13RetryMessageRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
+	"\vuse_context\x18\x02 \x01(\bR\n" +
+	"useContext\x12\x1d\n" +
+	"\n" +
+	"use_search\x18\x03 \x01(\bR\tuseSearch\x12\x19\n" +
+	"\bmodel_id\x18\x04 \x01(\tR\amodelId\"\x9a\x01\n" +
+	"\x13PatchMessageRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1f\n" +
+	"\vuse_context\x18\x03 \x01(\bR\n" +
+	"useContext\x12\x1d\n" +
+	"\n" +
+	"use_search\x18\x04 \x01(\bR\tuseSearch\x12\x19\n" +
+	"\bmodel_id\x18\x05 \x01(\tR\amodelId2\xd6\r\n" +
 	"\x04Chat\x12\x8e\x01\n" +
 	"\x16CreateChatConversation\x12).ai.chat.v1.CreateChatConversationRequest\x1a'.ai.chat.v1.GetChatConversationResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/ai/chat/conversation\x12\x93\x01\n" +
-	"\x16UpdateChatConversation\x12).ai.chat.v1.UpdateChatConversationRequest\x1a'.ai.chat.v1.GetChatConversationResponse\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\x1a\x1a/ai/chat/conversation/{id}\x12}\n" +
-	"\x16ListChatConversationMe\x12\x16.google.protobuf.Empty\x1a$.ai.chat.v1.ListConversationResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/ai/chat/conversation/list/me\x12\x8d\x01\n" +
+	"\x16UpdateChatConversation\x12).ai.chat.v1.UpdateChatConversationRequest\x1a'.ai.chat.v1.GetChatConversationResponse\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\x1a\x1a/ai/chat/conversation/{id}\x12\x82\x01\n" +
+	"\x16ListChatConversationMe\x12\x16.google.protobuf.Empty\x1a).ai.chat.v1.GetMultiConversationsResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/ai/chat/conversation/list/me\x12\x8d\x01\n" +
 	"\x13GetChatConversation\x12).ai.chat.v1.SimpleChatConversationRequest\x1a'.ai.chat.v1.GetChatConversationResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/ai/chat/conversation/{id}\x12\x7f\n" +
 	"\x16DeleteChatConversation\x12).ai.chat.v1.SimpleChatConversationRequest\x1a\x16.google.protobuf.Empty\"\"\x82\xd3\xe4\x93\x02\x1c*\x1a/ai/chat/conversation/{id}\x12y\n" +
 	"\x1fDeleteUnpinnedChatConversations\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"&\x82\xd3\xe4\x93\x02 *\x1e/ai/chat/conversation/unpinned\x12\x86\x01\n" +
-	"\x15PageChatConversations\x12#.ai.chat.v1.PageConversationRequest\x1a$.ai.chat.v1.PageConversationResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/ai/chat/conversation/list\x12p\n" +
-	"\vSendMessage\x12\x1e.ai.chat.v1.SendMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/ai/chat/message/send\x12V\n" +
-	"\x11SendMessageStream\x12\x1e.ai.chat.v1.SendMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse0\x01\x12\xb3\x01\n" +
-	"\x18PageConversationMessages\x12+.ai.chat.v1.PageConversationMessagesRequest\x1a,.ai.chat.v1.PageConversationMessagesResponse\"<\x82\xd3\xe4\x93\x026\x124/ai/chat/message/conversation/page/{conversation_id}\x12h\n" +
-	"\rDeleteMessage\x12 .ai.chat.v1.SimpleMessageRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/ai/chat/message/{id}\x12\x82\x01\n" +
-	"\x1aDeleteConversationMessages\x12 .ai.chat.v1.SimpleMessageRequest\x1a\x16.google.protobuf.Empty\"*\x82\xd3\xe4\x93\x02$*\"/ai/chat/message/conversation/{id}\x12\x93\x01\n" +
-	"\x17ListConversationMessage\x12+.ai.chat.v1.ListConversationMessagesRequest\x1a,.ai.chat.v1.ListConversationMessagesResponse\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/ai/chat/message/listB\x17Z\x15api/api/ai/chat/v1;v1b\x06proto3"
+	"\x15ListChatConversations\x12#.ai.chat.v1.ListConversationRequest\x1a$.ai.chat.v1.ListConversationResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/ai/chat/conversation/list\x12p\n" +
+	"\vSendMessage\x12\x1e.ai.chat.v1.SendMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/ai/chat/message/send\x12h\n" +
+	"\rDeleteMessage\x12 .ai.chat.v1.DeleteMessageRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/ai/chat/message/{id}\x12\x93\x01\n" +
+	"\x17ListConversationMessage\x12+.ai.chat.v1.ListConversationMessagesRequest\x1a,.ai.chat.v1.ListConversationMessagesResponse\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/ai/chat/message/list\x12u\n" +
+	"\fRetryMessage\x12\x1f.ai.chat.v1.RetryMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/ai/chat/message/{id}/retry\x12r\n" +
+	"\fPatchMessage\x12\x1f.ai.chat.v1.PatchMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*2\x15/ai/chat/message/{id}\x12V\n" +
+	"\x11SendMessageStream\x12\x1e.ai.chat.v1.SendMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse0\x01\x12X\n" +
+	"\x12RetryMessageStream\x12\x1f.ai.chat.v1.RetryMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse0\x01B\x17Z\x15api/api/ai/chat/v1;v1b\x06proto3"
 
 var (
 	file_ai_chat_v1_chat_proto_rawDescOnce sync.Once
@@ -1299,20 +1372,20 @@ var file_ai_chat_v1_chat_proto_goTypes = []any{
 	(*CreateChatConversationRequest)(nil),    // 0: ai.chat.v1.CreateChatConversationRequest
 	(*GetChatConversationResponse)(nil),      // 1: ai.chat.v1.GetChatConversationResponse
 	(*UpdateChatConversationRequest)(nil),    // 2: ai.chat.v1.UpdateChatConversationRequest
-	(*ListConversationResponse)(nil),         // 3: ai.chat.v1.ListConversationResponse
-	(*PageConversationRequest)(nil),          // 4: ai.chat.v1.PageConversationRequest
-	(*PageConversationResponse)(nil),         // 5: ai.chat.v1.PageConversationResponse
+	(*GetMultiConversationsResponse)(nil),    // 3: ai.chat.v1.GetMultiConversationsResponse
+	(*ListConversationRequest)(nil),          // 4: ai.chat.v1.ListConversationRequest
+	(*ListConversationResponse)(nil),         // 5: ai.chat.v1.ListConversationResponse
 	(*SimpleChatConversationRequest)(nil),    // 6: ai.chat.v1.SimpleChatConversationRequest
 	(*SendMessageRequest)(nil),               // 7: ai.chat.v1.SendMessageRequest
 	(*SendMessageResponse)(nil),              // 8: ai.chat.v1.SendMessageResponse
 	(*MessageRecord)(nil),                    // 9: ai.chat.v1.MessageRecord
 	(*KnowledgeSegment)(nil),                 // 10: ai.chat.v1.KnowledgeSegment
 	(*WebPage)(nil),                          // 11: ai.chat.v1.WebPage
-	(*PageConversationMessagesRequest)(nil),  // 12: ai.chat.v1.PageConversationMessagesRequest
-	(*PageConversationMessagesResponse)(nil), // 13: ai.chat.v1.PageConversationMessagesResponse
-	(*SimpleMessageRequest)(nil),             // 14: ai.chat.v1.SimpleMessageRequest
-	(*ListConversationMessagesRequest)(nil),  // 15: ai.chat.v1.ListConversationMessagesRequest
-	(*ListConversationMessagesResponse)(nil), // 16: ai.chat.v1.ListConversationMessagesResponse
+	(*DeleteMessageRequest)(nil),             // 12: ai.chat.v1.DeleteMessageRequest
+	(*ListConversationMessagesRequest)(nil),  // 13: ai.chat.v1.ListConversationMessagesRequest
+	(*ListConversationMessagesResponse)(nil), // 14: ai.chat.v1.ListConversationMessagesResponse
+	(*RetryMessageRequest)(nil),              // 15: ai.chat.v1.RetryMessageRequest
+	(*PatchMessageRequest)(nil),              // 16: ai.chat.v1.PatchMessageRequest
 	(*timestamppb.Timestamp)(nil),            // 17: google.protobuf.Timestamp
 	(*v1.PaginationArgs)(nil),                // 18: common.v1.PaginationArgs
 	(*v1.PaginationResults)(nil),             // 19: common.v1.PaginationResults
@@ -1320,54 +1393,53 @@ var file_ai_chat_v1_chat_proto_goTypes = []any{
 }
 var file_ai_chat_v1_chat_proto_depIdxs = []int32{
 	17, // 0: ai.chat.v1.GetChatConversationResponse.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 1: ai.chat.v1.ListConversationResponse.conversations:type_name -> ai.chat.v1.GetChatConversationResponse
-	18, // 2: ai.chat.v1.PageConversationRequest.pagination:type_name -> common.v1.PaginationArgs
-	17, // 3: ai.chat.v1.PageConversationRequest.start:type_name -> google.protobuf.Timestamp
-	17, // 4: ai.chat.v1.PageConversationRequest.end:type_name -> google.protobuf.Timestamp
-	1,  // 5: ai.chat.v1.PageConversationResponse.conversations:type_name -> ai.chat.v1.GetChatConversationResponse
-	19, // 6: ai.chat.v1.PageConversationResponse.pagination:type_name -> common.v1.PaginationResults
+	1,  // 1: ai.chat.v1.GetMultiConversationsResponse.conversations:type_name -> ai.chat.v1.GetChatConversationResponse
+	18, // 2: ai.chat.v1.ListConversationRequest.pagination:type_name -> common.v1.PaginationArgs
+	17, // 3: ai.chat.v1.ListConversationRequest.start:type_name -> google.protobuf.Timestamp
+	17, // 4: ai.chat.v1.ListConversationRequest.end:type_name -> google.protobuf.Timestamp
+	1,  // 5: ai.chat.v1.ListConversationResponse.conversations:type_name -> ai.chat.v1.GetChatConversationResponse
+	19, // 6: ai.chat.v1.ListConversationResponse.pagination:type_name -> common.v1.PaginationResults
 	9,  // 7: ai.chat.v1.SendMessageResponse.send:type_name -> ai.chat.v1.MessageRecord
 	9,  // 8: ai.chat.v1.SendMessageResponse.receive:type_name -> ai.chat.v1.MessageRecord
 	10, // 9: ai.chat.v1.MessageRecord.segments:type_name -> ai.chat.v1.KnowledgeSegment
 	11, // 10: ai.chat.v1.MessageRecord.web_pages:type_name -> ai.chat.v1.WebPage
 	17, // 11: ai.chat.v1.MessageRecord.created_at:type_name -> google.protobuf.Timestamp
-	18, // 12: ai.chat.v1.PageConversationMessagesRequest.pagination:type_name -> common.v1.PaginationArgs
-	9,  // 13: ai.chat.v1.PageConversationMessagesResponse.messages:type_name -> ai.chat.v1.MessageRecord
-	19, // 14: ai.chat.v1.PageConversationMessagesResponse.pagination:type_name -> common.v1.PaginationResults
-	18, // 15: ai.chat.v1.ListConversationMessagesRequest.pagination:type_name -> common.v1.PaginationArgs
-	9,  // 16: ai.chat.v1.ListConversationMessagesResponse.messages:type_name -> ai.chat.v1.MessageRecord
-	19, // 17: ai.chat.v1.ListConversationMessagesResponse.pagination:type_name -> common.v1.PaginationResults
-	0,  // 18: ai.chat.v1.Chat.CreateChatConversation:input_type -> ai.chat.v1.CreateChatConversationRequest
-	2,  // 19: ai.chat.v1.Chat.UpdateChatConversation:input_type -> ai.chat.v1.UpdateChatConversationRequest
-	20, // 20: ai.chat.v1.Chat.ListChatConversationMe:input_type -> google.protobuf.Empty
-	6,  // 21: ai.chat.v1.Chat.GetChatConversation:input_type -> ai.chat.v1.SimpleChatConversationRequest
-	6,  // 22: ai.chat.v1.Chat.DeleteChatConversation:input_type -> ai.chat.v1.SimpleChatConversationRequest
-	20, // 23: ai.chat.v1.Chat.DeleteUnpinnedChatConversations:input_type -> google.protobuf.Empty
-	4,  // 24: ai.chat.v1.Chat.PageChatConversations:input_type -> ai.chat.v1.PageConversationRequest
-	7,  // 25: ai.chat.v1.Chat.SendMessage:input_type -> ai.chat.v1.SendMessageRequest
-	7,  // 26: ai.chat.v1.Chat.SendMessageStream:input_type -> ai.chat.v1.SendMessageRequest
-	12, // 27: ai.chat.v1.Chat.PageConversationMessages:input_type -> ai.chat.v1.PageConversationMessagesRequest
-	14, // 28: ai.chat.v1.Chat.DeleteMessage:input_type -> ai.chat.v1.SimpleMessageRequest
-	14, // 29: ai.chat.v1.Chat.DeleteConversationMessages:input_type -> ai.chat.v1.SimpleMessageRequest
-	15, // 30: ai.chat.v1.Chat.ListConversationMessage:input_type -> ai.chat.v1.ListConversationMessagesRequest
-	1,  // 31: ai.chat.v1.Chat.CreateChatConversation:output_type -> ai.chat.v1.GetChatConversationResponse
-	1,  // 32: ai.chat.v1.Chat.UpdateChatConversation:output_type -> ai.chat.v1.GetChatConversationResponse
-	3,  // 33: ai.chat.v1.Chat.ListChatConversationMe:output_type -> ai.chat.v1.ListConversationResponse
-	1,  // 34: ai.chat.v1.Chat.GetChatConversation:output_type -> ai.chat.v1.GetChatConversationResponse
-	20, // 35: ai.chat.v1.Chat.DeleteChatConversation:output_type -> google.protobuf.Empty
-	20, // 36: ai.chat.v1.Chat.DeleteUnpinnedChatConversations:output_type -> google.protobuf.Empty
-	5,  // 37: ai.chat.v1.Chat.PageChatConversations:output_type -> ai.chat.v1.PageConversationResponse
-	8,  // 38: ai.chat.v1.Chat.SendMessage:output_type -> ai.chat.v1.SendMessageResponse
-	8,  // 39: ai.chat.v1.Chat.SendMessageStream:output_type -> ai.chat.v1.SendMessageResponse
-	13, // 40: ai.chat.v1.Chat.PageConversationMessages:output_type -> ai.chat.v1.PageConversationMessagesResponse
-	20, // 41: ai.chat.v1.Chat.DeleteMessage:output_type -> google.protobuf.Empty
-	20, // 42: ai.chat.v1.Chat.DeleteConversationMessages:output_type -> google.protobuf.Empty
-	16, // 43: ai.chat.v1.Chat.ListConversationMessage:output_type -> ai.chat.v1.ListConversationMessagesResponse
-	31, // [31:44] is the sub-list for method output_type
-	18, // [18:31] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	18, // 12: ai.chat.v1.ListConversationMessagesRequest.pagination:type_name -> common.v1.PaginationArgs
+	9,  // 13: ai.chat.v1.ListConversationMessagesResponse.messages:type_name -> ai.chat.v1.MessageRecord
+	19, // 14: ai.chat.v1.ListConversationMessagesResponse.pagination:type_name -> common.v1.PaginationResults
+	0,  // 15: ai.chat.v1.Chat.CreateChatConversation:input_type -> ai.chat.v1.CreateChatConversationRequest
+	2,  // 16: ai.chat.v1.Chat.UpdateChatConversation:input_type -> ai.chat.v1.UpdateChatConversationRequest
+	20, // 17: ai.chat.v1.Chat.ListChatConversationMe:input_type -> google.protobuf.Empty
+	6,  // 18: ai.chat.v1.Chat.GetChatConversation:input_type -> ai.chat.v1.SimpleChatConversationRequest
+	6,  // 19: ai.chat.v1.Chat.DeleteChatConversation:input_type -> ai.chat.v1.SimpleChatConversationRequest
+	20, // 20: ai.chat.v1.Chat.DeleteUnpinnedChatConversations:input_type -> google.protobuf.Empty
+	4,  // 21: ai.chat.v1.Chat.ListChatConversations:input_type -> ai.chat.v1.ListConversationRequest
+	7,  // 22: ai.chat.v1.Chat.SendMessage:input_type -> ai.chat.v1.SendMessageRequest
+	12, // 23: ai.chat.v1.Chat.DeleteMessage:input_type -> ai.chat.v1.DeleteMessageRequest
+	13, // 24: ai.chat.v1.Chat.ListConversationMessage:input_type -> ai.chat.v1.ListConversationMessagesRequest
+	15, // 25: ai.chat.v1.Chat.RetryMessage:input_type -> ai.chat.v1.RetryMessageRequest
+	16, // 26: ai.chat.v1.Chat.PatchMessage:input_type -> ai.chat.v1.PatchMessageRequest
+	7,  // 27: ai.chat.v1.Chat.SendMessageStream:input_type -> ai.chat.v1.SendMessageRequest
+	15, // 28: ai.chat.v1.Chat.RetryMessageStream:input_type -> ai.chat.v1.RetryMessageRequest
+	1,  // 29: ai.chat.v1.Chat.CreateChatConversation:output_type -> ai.chat.v1.GetChatConversationResponse
+	1,  // 30: ai.chat.v1.Chat.UpdateChatConversation:output_type -> ai.chat.v1.GetChatConversationResponse
+	3,  // 31: ai.chat.v1.Chat.ListChatConversationMe:output_type -> ai.chat.v1.GetMultiConversationsResponse
+	1,  // 32: ai.chat.v1.Chat.GetChatConversation:output_type -> ai.chat.v1.GetChatConversationResponse
+	20, // 33: ai.chat.v1.Chat.DeleteChatConversation:output_type -> google.protobuf.Empty
+	20, // 34: ai.chat.v1.Chat.DeleteUnpinnedChatConversations:output_type -> google.protobuf.Empty
+	5,  // 35: ai.chat.v1.Chat.ListChatConversations:output_type -> ai.chat.v1.ListConversationResponse
+	8,  // 36: ai.chat.v1.Chat.SendMessage:output_type -> ai.chat.v1.SendMessageResponse
+	20, // 37: ai.chat.v1.Chat.DeleteMessage:output_type -> google.protobuf.Empty
+	14, // 38: ai.chat.v1.Chat.ListConversationMessage:output_type -> ai.chat.v1.ListConversationMessagesResponse
+	8,  // 39: ai.chat.v1.Chat.RetryMessage:output_type -> ai.chat.v1.SendMessageResponse
+	8,  // 40: ai.chat.v1.Chat.PatchMessage:output_type -> ai.chat.v1.SendMessageResponse
+	8,  // 41: ai.chat.v1.Chat.SendMessageStream:output_type -> ai.chat.v1.SendMessageResponse
+	8,  // 42: ai.chat.v1.Chat.RetryMessageStream:output_type -> ai.chat.v1.SendMessageResponse
+	29, // [29:43] is the sub-list for method output_type
+	15, // [15:29] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_ai_chat_v1_chat_proto_init() }

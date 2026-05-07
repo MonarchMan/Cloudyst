@@ -4,7 +4,6 @@ import (
 	commonpb "api/api/common/v1"
 	filepb "api/api/file/common/v1"
 	pb "api/api/file/slave/v1"
-	pbuser "api/api/user/users/v1"
 	"api/external/trans"
 	"common/cache"
 	"context"
@@ -35,7 +34,7 @@ type SlaveService struct {
 	dep       filemanager.ManagerDep
 	dbfsDep   filemanager.DbfsDep
 	credm     credmanager.CredManager
-	uc        pbuser.UserClient
+	uc        rpc.UserClient
 	kv        cache.Driver
 	settings  setting.Provider
 	extractor mediameta.ExtractorStateManager
@@ -43,7 +42,7 @@ type SlaveService struct {
 }
 
 func NewSlaveService(dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, credm credmanager.CredManager,
-	uc pbuser.UserClient, kv cache.Driver, settings setting.Provider, extractor mediameta.ExtractorStateManager,
+	uc rpc.UserClient, kv cache.Driver, settings setting.Provider, extractor mediameta.ExtractorStateManager,
 	l log.Logger) *SlaveService {
 	return &SlaveService{
 		dep:       dep,
@@ -70,12 +69,12 @@ func (s *SlaveService) GetCredential(ctx context.Context, req *pb.SimpleSlaveReq
 }
 func (s *SlaveService) StatelessPrepareUpload(ctx context.Context, req *pb.StatelessPrepareUploadRequest) (*pb.StatelessPrepareUploadResponse, error) {
 	userClient := s.uc
-	user, err := rpc.GetUserInfo(ctx, int(req.UserId), userClient)
+	user, err := userClient.GetUserInfo(ctx, int(req.UserId))
 	if err != nil {
 		return nil, err
 	}
 
-	newCtx := context.WithValue(ctx, trans.UserCtx{}, user)
+	newCtx := trans.WithValue(ctx, user)
 	m := manager.NewFileManager(s.dep, s.dbfsDep, user)
 	uploadRequest := utils.ToFsUploadRequest(req.UploadRequest)
 	uploadSession, err := m.PrepareUpload(newCtx, uploadRequest)
@@ -90,12 +89,12 @@ func (s *SlaveService) StatelessPrepareUpload(ctx context.Context, req *pb.State
 }
 func (s *SlaveService) StatelessCompleteUpload(ctx context.Context, req *pb.StatelessCompleteUploadRequest) (*pb.StatelessCompleteUploadResponse, error) {
 	userClient := s.uc
-	user, err := rpc.GetUserInfo(ctx, int(req.UserId), userClient)
+	user, err := userClient.GetUserInfo(ctx, int(req.UserId))
 	if err != nil {
 		return nil, err
 	}
 
-	newCtx := context.WithValue(ctx, trans.UserCtx{}, user)
+	newCtx := trans.WithValue(ctx, user)
 	m := manager.NewFileManager(s.dep, s.dbfsDep, user)
 	_, err = m.CompleteUpload(newCtx, utils.ToFsUploadSession(req.UploadSession))
 	//fileBytes, _ := json.Marshal(file)
@@ -103,18 +102,18 @@ func (s *SlaveService) StatelessCompleteUpload(ctx context.Context, req *pb.Stat
 }
 func (s *SlaveService) StatelessFailUpload(ctx context.Context, req *pb.StatelessCompleteUploadRequest) (*emptypb.Empty, error) {
 	userClient := s.uc
-	user, err := rpc.GetUserInfo(ctx, int(req.UserId), userClient)
+	user, err := userClient.GetUserInfo(ctx, int(req.UserId))
 	if err != nil {
 		return nil, err
 	}
-	newCtx := context.WithValue(ctx, trans.UserCtx{}, user)
+	newCtx := trans.WithValue(ctx, user)
 	m := manager.NewFileManager(s.dep, s.dbfsDep, user)
 	m.OnUploadFailed(newCtx, utils.ToFsUploadSession(req.UploadSession))
 	return &emptypb.Empty{}, nil
 }
 func (s *SlaveService) StatelessCreateFile(ctx context.Context, req *pb.StatelessCreateFileRequest) (*emptypb.Empty, error) {
 	userClient := s.uc
-	user, err := rpc.GetUserInfo(ctx, int(req.UserId), userClient)
+	user, err := userClient.GetUserInfo(ctx, int(req.UserId))
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +123,7 @@ func (s *SlaveService) StatelessCreateFile(ctx context.Context, req *pb.Stateles
 		return nil, err
 	}
 
-	newCtx := context.WithValue(ctx, trans.UserCtx{}, user)
+	newCtx := trans.WithValue(ctx, user)
 	m := manager.NewFileManager(s.dep, s.dbfsDep, user)
 	_, err = m.Create(newCtx, uri, int(req.Type))
 	return &emptypb.Empty{}, commonpb.ErrorDb("Failed to create file: %w", err)

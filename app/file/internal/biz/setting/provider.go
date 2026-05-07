@@ -1,7 +1,7 @@
 package setting
 
 import (
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
 	"common/auth/requestinfo"
 	"common/boolset"
 	"context"

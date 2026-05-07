@@ -7,7 +7,7 @@ import (
 	"ai/ent/aiknowledgedocument"
 	"ai/ent/aiknowledgesegment"
 	pb "api/api/common/v1"
-	"common/db"
+	"api/external/data/common"
 	"context"
 	"entmodule"
 	"fmt"
@@ -36,9 +36,11 @@ type (
 
 	ListKnowledgeArgs struct {
 		*pb.PaginationArgs
-		Name    string
-		ModelID int
-		Status  entmodule.Status
+		Name     string
+		ModelID  int
+		IsPublic bool
+		IsMaster bool
+		Status   entmodule.Status
 	}
 
 	ListKnowledgeResult struct {
@@ -60,10 +62,10 @@ type (
 	}
 )
 
-func NewKnowledgeClient(client *ent.Client, dbType db.DBType) KnowledgeClient {
+func NewKnowledgeClient(client *ent.Client, dbType common.DBType) KnowledgeClient {
 	return &knowledgeClient{
 		client:      client,
-		maxSQLParam: db.SqlParamLimit(dbType),
+		maxSQLParam: common.SqlParamLimit(dbType),
 	}
 }
 
@@ -109,6 +111,14 @@ func (c *knowledgeClient) List(ctx context.Context, args *ListKnowledgeArgs) (*L
 
 	if args.Status != "" {
 		q.Where(aiknowledge.StatusEQ(args.Status))
+	}
+
+	if args.IsPublic {
+		q.Where(aiknowledge.IsPublicEQ(args.IsPublic))
+	}
+
+	if args.IsMaster {
+		q.Where(aiknowledge.IsMasterEQ(args.IsMaster))
 	}
 
 	total, err := q.Clone().Count(ctx)
@@ -212,7 +222,7 @@ func withKnowledgeEagerLoading(ctx context.Context, q *ent.AiKnowledgeQuery) *en
 }
 
 func getKnowledgeOrderOption(args *ListKnowledgeArgs) []aiknowledge.OrderOption {
-	orderTerm := db.GetOrderTerm(db.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
 	switch args.OrderBy {
 	case aiapikey.FieldUpdatedAt:
 		return []aiknowledge.OrderOption{aiknowledge.ByUpdatedAt(orderTerm), aiknowledge.ByID(orderTerm)}

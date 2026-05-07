@@ -24,13 +24,13 @@ func (f *DBFS) PatchProps(ctx context.Context, uri *fs.URI, props *types.FilePro
 		return fmt.Errorf("failed to get target files: %w", err)
 	}
 
-	if target.OwnerID() != int(f.user.Id) {
+	if target.OwnerID() != f.user.ID {
 		return fs.ErrOwnerOnly.WithCause(fmt.Errorf("only files ownerId can modify files props"))
 	}
 
 	// Lock target
 	lr := &LockByPath{target.Uri(true), target, target.Type(), ""}
-	ls, err := f.acquireByPath(ctx, -1, int(f.user.Id), true, fs.LockApp(fs.ApplicationUpdateMetadata), lr)
+	ls, err := f.acquireByPath(ctx, -1, f.user.ID, true, fs.LockApp(fs.ApplicationUpdateMetadata), lr)
 	defer func() { _ = f.Release(ctx, ls) }()
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (f *DBFS) PatchMetadata(ctx context.Context, path []*fs.URI, metas ...*file
 		}
 
 		// Require Update permission
-		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != int(f.user.Id) {
+		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != f.user.ID {
 			return fs.ErrOwnerOnly.WithCause(fmt.Errorf("permission denied"))
 		}
 
@@ -93,7 +93,7 @@ func (f *DBFS) PatchMetadata(ctx context.Context, path []*fs.URI, metas ...*file
 	lockTargets := lo.Map(targets, func(value *File, key int) *LockByPath {
 		return &LockByPath{value.Uri(true), value, value.Type(), ""}
 	})
-	ls, err := f.acquireByPath(ctx, -1, int(f.user.Id), true, fs.LockApp(fs.ApplicationUpdateMetadata), lockTargets...)
+	ls, err := f.acquireByPath(ctx, -1, f.user.ID, true, fs.LockApp(fs.ApplicationUpdateMetadata), lockTargets...)
 	defer func() { _ = f.Release(ctx, ls) }()
 	if err != nil {
 		return err

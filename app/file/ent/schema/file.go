@@ -1,7 +1,7 @@
 package schema
 
 import (
-	pb "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"context"
 	"file/ent/hook"
 	"file/internal/data/types"
@@ -10,11 +10,9 @@ import (
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // File holds the schema definition for the File entity.
@@ -30,43 +28,31 @@ func (File) Fields() []ent.Field {
 			Default(time.Now).
 			SchemaType(map[string]string{
 				dialect.MySQL: "datetime",
-			}).
-			Annotations(entproto.Field(2)),
+			}),
 		field.Time("updated_at").
 			Default(time.Now).
 			SchemaType(map[string]string{
 				dialect.MySQL: "datetime",
-			}).
-			Annotations(entproto.Field(3)),
-		field.Int("type").
-			Annotations(entproto.Field(4)),
-		field.String("name").
-			Annotations(entproto.Field(5)),
+			}),
+		field.Int("type"),
+		field.String("name"),
 		field.Int("owner_id").
-			Comment("files's owner id").
-			Annotations(entproto.Field(6)),
-		field.JSON("owner_info", &pb.UserInfo{}).
-			Default(&pb.UserInfo{}).
-			Optional().
-			Annotations(entproto.Field(7, entproto.Type(descriptorpb.FieldDescriptorProto_TYPE_STRING))),
+			Comment("files's owner id"),
+		field.JSON("owner_info", &userdata.UserInfo{}).
+			Default(&userdata.UserInfo{}).
+			Optional(),
 		field.Int64("size").
-			Default(0).
-			Annotations(entproto.Field(8)),
+			Default(0),
 		field.Int("primary_entity").
-			Optional().
-			Annotations(entproto.Field(9)),
+			Optional(),
 		field.Int("file_parent_id").
-			Optional().
-			Annotations(entproto.Field(10)),
+			Optional(),
 		field.Bool("is_symbolic").
-			Default(false).
-			Annotations(entproto.Field(11)),
+			Default(false),
 		field.JSON("props", &types.FileProps{}).
-			Optional().
-			Annotations(entproto.Field(12, entproto.Type(descriptorpb.FieldDescriptorProto_TYPE_STRING))),
+			Optional(),
 		field.Int("storage_policy_files").
-			Optional().
-			Annotations(entproto.Field(13)),
+			Optional(),
 	}
 }
 
@@ -76,22 +62,16 @@ func (File) Edges() []ent.Edge {
 		edge.From("storage_policies", StoragePolicy.Type).
 			Ref("files").
 			Field("storage_policy_files").
-			Unique().
-			Annotations(entproto.Field(81)),
+			Unique(),
 		edge.To("children", File.Type).
 			Annotations(entproto.Field(82)).
 			From("parent").
 			Field("file_parent_id").
-			Unique().
-			Annotations(entproto.Field(83)),
-		edge.To("metadata", Metadata.Type).
-			Annotations(entproto.Field(84)),
-		edge.To("entities", Entity.Type).
-			Annotations(entproto.Field(85)),
-		edge.To("shares", Share.Type).
-			Annotations(entproto.Field(86)),
-		edge.To("direct_links", DirectLink.Type).
-			Annotations(entproto.Field(87)),
+			Unique(),
+		edge.To("metadata", Metadata.Type),
+		edge.To("entities", Entity.Type),
+		edge.To("shares", Share.Type),
+		edge.To("direct_links", DirectLink.Type),
 	}
 }
 
@@ -119,12 +99,5 @@ func (f File) Hooks() []ent.Hook {
 				return v, err
 			})
 		}, ent.OpUpdate|ent.OpUpdateOne),
-	}
-}
-
-func (File) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
-		entproto.Field(1),
 	}
 }

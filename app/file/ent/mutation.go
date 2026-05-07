@@ -4,6 +4,7 @@ package ent
 
 import (
 	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"common/boolset"
 	"context"
 	"errors"
@@ -20,6 +21,7 @@ import (
 	"file/ent/task"
 	"file/internal/data/types"
 	"fmt"
+	"queue"
 	"sync"
 	"time"
 
@@ -2090,7 +2092,7 @@ type FileMutation struct {
 	name                    *string
 	owner_id                *int
 	addowner_id             *int
-	owner_info              **v1.UserInfo
+	owner_info              **userdata.UserInfo
 	size                    *int64
 	addsize                 *int64
 	primary_entity          *int
@@ -2441,12 +2443,12 @@ func (m *FileMutation) ResetOwnerID() {
 }
 
 // SetOwnerInfo sets the "owner_info" field.
-func (m *FileMutation) SetOwnerInfo(vi *v1.UserInfo) {
-	m.owner_info = &vi
+func (m *FileMutation) SetOwnerInfo(ui *userdata.UserInfo) {
+	m.owner_info = &ui
 }
 
 // OwnerInfo returns the value of the "owner_info" field in the mutation.
-func (m *FileMutation) OwnerInfo() (r *v1.UserInfo, exists bool) {
+func (m *FileMutation) OwnerInfo() (r *userdata.UserInfo, exists bool) {
 	v := m.owner_info
 	if v == nil {
 		return
@@ -2457,7 +2459,7 @@ func (m *FileMutation) OwnerInfo() (r *v1.UserInfo, exists bool) {
 // OldOwnerInfo returns the old "owner_info" field's value of the File entity.
 // If the File object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FileMutation) OldOwnerInfo(ctx context.Context) (v *v1.UserInfo, err error) {
+func (m *FileMutation) OldOwnerInfo(ctx context.Context) (v *userdata.UserInfo, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldOwnerInfo is only allowed on UpdateOne operations")
 	}
@@ -3329,7 +3331,7 @@ func (m *FileMutation) SetField(name string, value ent.Value) error {
 		m.SetOwnerID(v)
 		return nil
 	case file.FieldOwnerInfo:
-		v, ok := value.(*v1.UserInfo)
+		v, ok := value.(*userdata.UserInfo)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -6851,10 +6853,10 @@ type ShareMutation struct {
 	expires             *time.Time
 	remain_downloads    *int
 	addremain_downloads *int
-	props               **v1.ShareProps
+	props               **types.ShareProps
 	owner_id            *int
 	addowner_id         *int
-	owner_info          **v1.UserInfo
+	owner_info          **userdata.UserInfo
 	clearedFields       map[string]struct{}
 	file                *int
 	clearedfile         bool
@@ -7363,12 +7365,12 @@ func (m *ShareMutation) ResetRemainDownloads() {
 }
 
 // SetProps sets the "props" field.
-func (m *ShareMutation) SetProps(vp *v1.ShareProps) {
-	m.props = &vp
+func (m *ShareMutation) SetProps(tp *types.ShareProps) {
+	m.props = &tp
 }
 
 // Props returns the value of the "props" field in the mutation.
-func (m *ShareMutation) Props() (r *v1.ShareProps, exists bool) {
+func (m *ShareMutation) Props() (r *types.ShareProps, exists bool) {
 	v := m.props
 	if v == nil {
 		return
@@ -7379,7 +7381,7 @@ func (m *ShareMutation) Props() (r *v1.ShareProps, exists bool) {
 // OldProps returns the old "props" field's value of the Share entity.
 // If the Share object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShareMutation) OldProps(ctx context.Context) (v *v1.ShareProps, err error) {
+func (m *ShareMutation) OldProps(ctx context.Context) (v *types.ShareProps, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProps is only allowed on UpdateOne operations")
 	}
@@ -7461,19 +7463,33 @@ func (m *ShareMutation) AddedOwnerID() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearOwnerID clears the value of the "owner_id" field.
+func (m *ShareMutation) ClearOwnerID() {
+	m.owner_id = nil
+	m.addowner_id = nil
+	m.clearedFields[share.FieldOwnerID] = struct{}{}
+}
+
+// OwnerIDCleared returns if the "owner_id" field was cleared in this mutation.
+func (m *ShareMutation) OwnerIDCleared() bool {
+	_, ok := m.clearedFields[share.FieldOwnerID]
+	return ok
+}
+
 // ResetOwnerID resets all changes to the "owner_id" field.
 func (m *ShareMutation) ResetOwnerID() {
 	m.owner_id = nil
 	m.addowner_id = nil
+	delete(m.clearedFields, share.FieldOwnerID)
 }
 
 // SetOwnerInfo sets the "owner_info" field.
-func (m *ShareMutation) SetOwnerInfo(vi *v1.UserInfo) {
-	m.owner_info = &vi
+func (m *ShareMutation) SetOwnerInfo(ui *userdata.UserInfo) {
+	m.owner_info = &ui
 }
 
 // OwnerInfo returns the value of the "owner_info" field in the mutation.
-func (m *ShareMutation) OwnerInfo() (r *v1.UserInfo, exists bool) {
+func (m *ShareMutation) OwnerInfo() (r *userdata.UserInfo, exists bool) {
 	v := m.owner_info
 	if v == nil {
 		return
@@ -7484,7 +7500,7 @@ func (m *ShareMutation) OwnerInfo() (r *v1.UserInfo, exists bool) {
 // OldOwnerInfo returns the old "owner_info" field's value of the Share entity.
 // If the Share object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShareMutation) OldOwnerInfo(ctx context.Context) (v *v1.UserInfo, err error) {
+func (m *ShareMutation) OldOwnerInfo(ctx context.Context) (v *userdata.UserInfo, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldOwnerInfo is only allowed on UpdateOne operations")
 	}
@@ -7750,7 +7766,7 @@ func (m *ShareMutation) SetField(name string, value ent.Value) error {
 		m.SetRemainDownloads(v)
 		return nil
 	case share.FieldProps:
-		v, ok := value.(*v1.ShareProps)
+		v, ok := value.(*types.ShareProps)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -7764,7 +7780,7 @@ func (m *ShareMutation) SetField(name string, value ent.Value) error {
 		m.SetOwnerID(v)
 		return nil
 	case share.FieldOwnerInfo:
-		v, ok := value.(*v1.UserInfo)
+		v, ok := value.(*userdata.UserInfo)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -7866,6 +7882,9 @@ func (m *ShareMutation) ClearedFields() []string {
 	if m.FieldCleared(share.FieldProps) {
 		fields = append(fields, share.FieldProps)
 	}
+	if m.FieldCleared(share.FieldOwnerID) {
+		fields = append(fields, share.FieldOwnerID)
+	}
 	if m.FieldCleared(share.FieldOwnerInfo) {
 		fields = append(fields, share.FieldOwnerInfo)
 	}
@@ -7897,6 +7916,9 @@ func (m *ShareMutation) ClearField(name string) error {
 		return nil
 	case share.FieldProps:
 		m.ClearProps()
+		return nil
+	case share.FieldOwnerID:
+		m.ClearOwnerID()
 		return nil
 	case share.FieldOwnerInfo:
 		m.ClearOwnerInfo()
@@ -8040,7 +8062,7 @@ type StoragePolicyMutation struct {
 	addmax_size     *int64
 	dir_name_rule   *string
 	file_name_rule  *string
-	settings        **v1.PolicySetting
+	settings        **types.PolicySetting
 	clearedFields   map[string]struct{}
 	files           map[int]struct{}
 	removedfiles    map[int]struct{}
@@ -8760,12 +8782,12 @@ func (m *StoragePolicyMutation) ResetFileNameRule() {
 }
 
 // SetSettings sets the "settings" field.
-func (m *StoragePolicyMutation) SetSettings(vs *v1.PolicySetting) {
-	m.settings = &vs
+func (m *StoragePolicyMutation) SetSettings(ts *types.PolicySetting) {
+	m.settings = &ts
 }
 
 // Settings returns the value of the "settings" field in the mutation.
-func (m *StoragePolicyMutation) Settings() (r *v1.PolicySetting, exists bool) {
+func (m *StoragePolicyMutation) Settings() (r *types.PolicySetting, exists bool) {
 	v := m.settings
 	if v == nil {
 		return
@@ -8776,7 +8798,7 @@ func (m *StoragePolicyMutation) Settings() (r *v1.PolicySetting, exists bool) {
 // OldSettings returns the old "settings" field's value of the StoragePolicy entity.
 // If the StoragePolicy object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *StoragePolicyMutation) OldSettings(ctx context.Context) (v *v1.PolicySetting, err error) {
+func (m *StoragePolicyMutation) OldSettings(ctx context.Context) (v *types.PolicySetting, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSettings is only allowed on UpdateOne operations")
 	}
@@ -9250,7 +9272,7 @@ func (m *StoragePolicyMutation) SetField(name string, value ent.Value) error {
 		m.SetFileNameRule(v)
 		return nil
 	case storagepolicy.FieldSettings:
-		v, ok := value.(*v1.PolicySetting)
+		v, ok := value.(*types.PolicySetting)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -9583,8 +9605,8 @@ type TaskMutation struct {
 	updated_at    *time.Time
 	deleted_at    *time.Time
 	_type         *string
-	status        *task.Status
-	public_state  **v1.TaskPublicState
+	status        *queue.TaskStatus
+	public_state  **queue.TaskPublicState
 	private_state *string
 	trace_id      *string
 	user_id       *int
@@ -9851,12 +9873,12 @@ func (m *TaskMutation) ResetType() {
 }
 
 // SetStatus sets the "status" field.
-func (m *TaskMutation) SetStatus(t task.Status) {
-	m.status = &t
+func (m *TaskMutation) SetStatus(qs queue.TaskStatus) {
+	m.status = &qs
 }
 
 // Status returns the value of the "status" field in the mutation.
-func (m *TaskMutation) Status() (r task.Status, exists bool) {
+func (m *TaskMutation) Status() (r queue.TaskStatus, exists bool) {
 	v := m.status
 	if v == nil {
 		return
@@ -9867,7 +9889,7 @@ func (m *TaskMutation) Status() (r task.Status, exists bool) {
 // OldStatus returns the old "status" field's value of the Task entity.
 // If the Task object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldStatus(ctx context.Context) (v task.Status, err error) {
+func (m *TaskMutation) OldStatus(ctx context.Context) (v queue.TaskStatus, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
@@ -9887,12 +9909,12 @@ func (m *TaskMutation) ResetStatus() {
 }
 
 // SetPublicState sets the "public_state" field.
-func (m *TaskMutation) SetPublicState(vps *v1.TaskPublicState) {
-	m.public_state = &vps
+func (m *TaskMutation) SetPublicState(qps *queue.TaskPublicState) {
+	m.public_state = &qps
 }
 
 // PublicState returns the value of the "public_state" field in the mutation.
-func (m *TaskMutation) PublicState() (r *v1.TaskPublicState, exists bool) {
+func (m *TaskMutation) PublicState() (r *queue.TaskPublicState, exists bool) {
 	v := m.public_state
 	if v == nil {
 		return
@@ -9903,7 +9925,7 @@ func (m *TaskMutation) PublicState() (r *v1.TaskPublicState, exists bool) {
 // OldPublicState returns the old "public_state" field's value of the Task entity.
 // If the Task object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldPublicState(ctx context.Context) (v *v1.TaskPublicState, err error) {
+func (m *TaskMutation) OldPublicState(ctx context.Context) (v *queue.TaskPublicState, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPublicState is only allowed on UpdateOne operations")
 	}
@@ -10243,14 +10265,14 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 		m.SetType(v)
 		return nil
 	case task.FieldStatus:
-		v, ok := value.(task.Status)
+		v, ok := value.(queue.TaskStatus)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
 		return nil
 	case task.FieldPublicState:
-		v, ok := value.(*v1.TaskPublicState)
+		v, ok := value.(*queue.TaskPublicState)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

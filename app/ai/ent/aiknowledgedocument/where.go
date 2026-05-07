@@ -97,9 +97,29 @@ func ContentLength(v int) predicate.AiKnowledgeDocument {
 	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldContentLength, v))
 }
 
+// Size applies equality check predicate on the "size" field. It's identical to SizeEQ.
+func Size(v int64) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldSize, v))
+}
+
 // Tokens applies equality check predicate on the "tokens" field. It's identical to TokensEQ.
 func Tokens(v int) predicate.AiKnowledgeDocument {
 	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldTokens, v))
+}
+
+// Chunks applies equality check predicate on the "chunks" field. It's identical to ChunksEQ.
+func Chunks(v int) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldChunks, v))
+}
+
+// ParseType applies equality check predicate on the "parse_type" field. It's identical to ParseTypeEQ.
+func ParseType(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldParseType, v))
+}
+
+// ContentHash applies equality check predicate on the "content_hash" field. It's identical to ContentHashEQ.
+func ContentHash(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldContentHash, v))
 }
 
 // SegmentMaxTokens applies equality check predicate on the "segment_max_tokens" field. It's identical to SegmentMaxTokensEQ.
@@ -497,6 +517,46 @@ func ContentLengthLTE(v int) predicate.AiKnowledgeDocument {
 	return predicate.AiKnowledgeDocument(sql.FieldLTE(FieldContentLength, v))
 }
 
+// SizeEQ applies the EQ predicate on the "size" field.
+func SizeEQ(v int64) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldSize, v))
+}
+
+// SizeNEQ applies the NEQ predicate on the "size" field.
+func SizeNEQ(v int64) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNEQ(FieldSize, v))
+}
+
+// SizeIn applies the In predicate on the "size" field.
+func SizeIn(vs ...int64) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldIn(FieldSize, vs...))
+}
+
+// SizeNotIn applies the NotIn predicate on the "size" field.
+func SizeNotIn(vs ...int64) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNotIn(FieldSize, vs...))
+}
+
+// SizeGT applies the GT predicate on the "size" field.
+func SizeGT(v int64) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldGT(FieldSize, v))
+}
+
+// SizeGTE applies the GTE predicate on the "size" field.
+func SizeGTE(v int64) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldGTE(FieldSize, v))
+}
+
+// SizeLT applies the LT predicate on the "size" field.
+func SizeLT(v int64) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldLT(FieldSize, v))
+}
+
+// SizeLTE applies the LTE predicate on the "size" field.
+func SizeLTE(v int64) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldLTE(FieldSize, v))
+}
+
 // TokensEQ applies the EQ predicate on the "tokens" field.
 func TokensEQ(v int) predicate.AiKnowledgeDocument {
 	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldTokens, v))
@@ -535,6 +595,206 @@ func TokensLT(v int) predicate.AiKnowledgeDocument {
 // TokensLTE applies the LTE predicate on the "tokens" field.
 func TokensLTE(v int) predicate.AiKnowledgeDocument {
 	return predicate.AiKnowledgeDocument(sql.FieldLTE(FieldTokens, v))
+}
+
+// ChunksEQ applies the EQ predicate on the "chunks" field.
+func ChunksEQ(v int) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldChunks, v))
+}
+
+// ChunksNEQ applies the NEQ predicate on the "chunks" field.
+func ChunksNEQ(v int) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNEQ(FieldChunks, v))
+}
+
+// ChunksIn applies the In predicate on the "chunks" field.
+func ChunksIn(vs ...int) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldIn(FieldChunks, vs...))
+}
+
+// ChunksNotIn applies the NotIn predicate on the "chunks" field.
+func ChunksNotIn(vs ...int) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNotIn(FieldChunks, vs...))
+}
+
+// ChunksGT applies the GT predicate on the "chunks" field.
+func ChunksGT(v int) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldGT(FieldChunks, v))
+}
+
+// ChunksGTE applies the GTE predicate on the "chunks" field.
+func ChunksGTE(v int) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldGTE(FieldChunks, v))
+}
+
+// ChunksLT applies the LT predicate on the "chunks" field.
+func ChunksLT(v int) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldLT(FieldChunks, v))
+}
+
+// ChunksLTE applies the LTE predicate on the "chunks" field.
+func ChunksLTE(v int) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldLTE(FieldChunks, v))
+}
+
+// ParseTypeEQ applies the EQ predicate on the "parse_type" field.
+func ParseTypeEQ(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldParseType, v))
+}
+
+// ParseTypeNEQ applies the NEQ predicate on the "parse_type" field.
+func ParseTypeNEQ(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNEQ(FieldParseType, v))
+}
+
+// ParseTypeIn applies the In predicate on the "parse_type" field.
+func ParseTypeIn(vs ...string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldIn(FieldParseType, vs...))
+}
+
+// ParseTypeNotIn applies the NotIn predicate on the "parse_type" field.
+func ParseTypeNotIn(vs ...string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNotIn(FieldParseType, vs...))
+}
+
+// ParseTypeGT applies the GT predicate on the "parse_type" field.
+func ParseTypeGT(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldGT(FieldParseType, v))
+}
+
+// ParseTypeGTE applies the GTE predicate on the "parse_type" field.
+func ParseTypeGTE(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldGTE(FieldParseType, v))
+}
+
+// ParseTypeLT applies the LT predicate on the "parse_type" field.
+func ParseTypeLT(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldLT(FieldParseType, v))
+}
+
+// ParseTypeLTE applies the LTE predicate on the "parse_type" field.
+func ParseTypeLTE(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldLTE(FieldParseType, v))
+}
+
+// ParseTypeContains applies the Contains predicate on the "parse_type" field.
+func ParseTypeContains(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldContains(FieldParseType, v))
+}
+
+// ParseTypeHasPrefix applies the HasPrefix predicate on the "parse_type" field.
+func ParseTypeHasPrefix(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldHasPrefix(FieldParseType, v))
+}
+
+// ParseTypeHasSuffix applies the HasSuffix predicate on the "parse_type" field.
+func ParseTypeHasSuffix(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldHasSuffix(FieldParseType, v))
+}
+
+// ParseTypeIsNil applies the IsNil predicate on the "parse_type" field.
+func ParseTypeIsNil() predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldIsNull(FieldParseType))
+}
+
+// ParseTypeNotNil applies the NotNil predicate on the "parse_type" field.
+func ParseTypeNotNil() predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNotNull(FieldParseType))
+}
+
+// ParseTypeEqualFold applies the EqualFold predicate on the "parse_type" field.
+func ParseTypeEqualFold(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEqualFold(FieldParseType, v))
+}
+
+// ParseTypeContainsFold applies the ContainsFold predicate on the "parse_type" field.
+func ParseTypeContainsFold(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldContainsFold(FieldParseType, v))
+}
+
+// ContentHashEQ applies the EQ predicate on the "content_hash" field.
+func ContentHashEQ(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldContentHash, v))
+}
+
+// ContentHashNEQ applies the NEQ predicate on the "content_hash" field.
+func ContentHashNEQ(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNEQ(FieldContentHash, v))
+}
+
+// ContentHashIn applies the In predicate on the "content_hash" field.
+func ContentHashIn(vs ...string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldIn(FieldContentHash, vs...))
+}
+
+// ContentHashNotIn applies the NotIn predicate on the "content_hash" field.
+func ContentHashNotIn(vs ...string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNotIn(FieldContentHash, vs...))
+}
+
+// ContentHashGT applies the GT predicate on the "content_hash" field.
+func ContentHashGT(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldGT(FieldContentHash, v))
+}
+
+// ContentHashGTE applies the GTE predicate on the "content_hash" field.
+func ContentHashGTE(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldGTE(FieldContentHash, v))
+}
+
+// ContentHashLT applies the LT predicate on the "content_hash" field.
+func ContentHashLT(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldLT(FieldContentHash, v))
+}
+
+// ContentHashLTE applies the LTE predicate on the "content_hash" field.
+func ContentHashLTE(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldLTE(FieldContentHash, v))
+}
+
+// ContentHashContains applies the Contains predicate on the "content_hash" field.
+func ContentHashContains(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldContains(FieldContentHash, v))
+}
+
+// ContentHashHasPrefix applies the HasPrefix predicate on the "content_hash" field.
+func ContentHashHasPrefix(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldHasPrefix(FieldContentHash, v))
+}
+
+// ContentHashHasSuffix applies the HasSuffix predicate on the "content_hash" field.
+func ContentHashHasSuffix(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldHasSuffix(FieldContentHash, v))
+}
+
+// ContentHashIsNil applies the IsNil predicate on the "content_hash" field.
+func ContentHashIsNil() predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldIsNull(FieldContentHash))
+}
+
+// ContentHashNotNil applies the NotNil predicate on the "content_hash" field.
+func ContentHashNotNil() predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNotNull(FieldContentHash))
+}
+
+// ContentHashEqualFold applies the EqualFold predicate on the "content_hash" field.
+func ContentHashEqualFold(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldEqualFold(FieldContentHash, v))
+}
+
+// ContentHashContainsFold applies the ContainsFold predicate on the "content_hash" field.
+func ContentHashContainsFold(v string) predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldContainsFold(FieldContentHash, v))
+}
+
+// MetadataIsNil applies the IsNil predicate on the "metadata" field.
+func MetadataIsNil() predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldIsNull(FieldMetadata))
+}
+
+// MetadataNotNil applies the NotNil predicate on the "metadata" field.
+func MetadataNotNil() predicate.AiKnowledgeDocument {
+	return predicate.AiKnowledgeDocument(sql.FieldNotNull(FieldMetadata))
 }
 
 // SegmentMaxTokensEQ applies the EQ predicate on the "segment_max_tokens" field.
@@ -617,34 +877,34 @@ func RetrievalCountLTE(v int) predicate.AiKnowledgeDocument {
 	return predicate.AiKnowledgeDocument(sql.FieldLTE(FieldRetrievalCount, v))
 }
 
-// ProcessEQ applies the EQ predicate on the "process" field.
-func ProcessEQ(v types.DocumentStatus) predicate.AiKnowledgeDocument {
+// ProgressEQ applies the EQ predicate on the "progress" field.
+func ProgressEQ(v types.DocumentProgress) predicate.AiKnowledgeDocument {
 	vc := v
-	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldProcess, vc))
+	return predicate.AiKnowledgeDocument(sql.FieldEQ(FieldProgress, vc))
 }
 
-// ProcessNEQ applies the NEQ predicate on the "process" field.
-func ProcessNEQ(v types.DocumentStatus) predicate.AiKnowledgeDocument {
+// ProgressNEQ applies the NEQ predicate on the "progress" field.
+func ProgressNEQ(v types.DocumentProgress) predicate.AiKnowledgeDocument {
 	vc := v
-	return predicate.AiKnowledgeDocument(sql.FieldNEQ(FieldProcess, vc))
+	return predicate.AiKnowledgeDocument(sql.FieldNEQ(FieldProgress, vc))
 }
 
-// ProcessIn applies the In predicate on the "process" field.
-func ProcessIn(vs ...types.DocumentStatus) predicate.AiKnowledgeDocument {
+// ProgressIn applies the In predicate on the "progress" field.
+func ProgressIn(vs ...types.DocumentProgress) predicate.AiKnowledgeDocument {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
-	return predicate.AiKnowledgeDocument(sql.FieldIn(FieldProcess, v...))
+	return predicate.AiKnowledgeDocument(sql.FieldIn(FieldProgress, v...))
 }
 
-// ProcessNotIn applies the NotIn predicate on the "process" field.
-func ProcessNotIn(vs ...types.DocumentStatus) predicate.AiKnowledgeDocument {
+// ProgressNotIn applies the NotIn predicate on the "progress" field.
+func ProgressNotIn(vs ...types.DocumentProgress) predicate.AiKnowledgeDocument {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
-	return predicate.AiKnowledgeDocument(sql.FieldNotIn(FieldProcess, v...))
+	return predicate.AiKnowledgeDocument(sql.FieldNotIn(FieldProgress, v...))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

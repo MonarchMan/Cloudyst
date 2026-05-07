@@ -3,7 +3,8 @@
 package runtime
 
 import (
-	v1 "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"time"
 	"user/ent/davaccount"
 	"user/ent/group"
@@ -58,11 +59,11 @@ func init() {
 	// groupDescSettings is the schema descriptor for settings field.
 	groupDescSettings := groupFields[4].Descriptor()
 	// group.DefaultSettings holds the default value on creation for the settings field.
-	group.DefaultSettings = groupDescSettings.Default.(*v1.GroupSetting)
+	group.DefaultSettings = groupDescSettings.Default.(*userdata.GroupSetting)
 	// groupDescStoragePolicyInfo is the schema descriptor for storage_policy_info field.
 	groupDescStoragePolicyInfo := groupFields[6].Descriptor()
 	// group.DefaultStoragePolicyInfo holds the default value on creation for the storage_policy_info field.
-	group.DefaultStoragePolicyInfo = groupDescStoragePolicyInfo.Default.(*v1.StoragePolicyInfo)
+	group.DefaultStoragePolicyInfo = groupDescStoragePolicyInfo.Default.(*filedata.StoragePolicyInfo)
 	passkeyMixin := schema.Passkey{}.Mixin()
 	passkeyMixinHooks0 := passkeyMixin[0].Hooks()
 	passkey.Hooks[0] = passkeyMixinHooks0[0]
@@ -135,7 +136,7 @@ func init() {
 	// userDescSettings is the schema descriptor for settings field.
 	userDescSettings := userFields[7].Descriptor()
 	// user.DefaultSettings holds the default value on creation for the settings field.
-	user.DefaultSettings = userDescSettings.Default.(*v1.UserSetting)
+	user.DefaultSettings = userDescSettings.Default.(*userdata.UserSetting)
 }
 
 const (

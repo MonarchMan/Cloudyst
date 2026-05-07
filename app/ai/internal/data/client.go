@@ -20,13 +20,13 @@ import (
 	"modernc.org/sqlite"
 )
 
-func NewDBClient(l log.Logger, userClient rpc.UserClient, kv cache.Driver, config *conf.Bootstrap) (*ent.Client, func(), error) {
+func NewDBClient(l log.Logger, settingClient rpc.SettingClient, kv cache.Driver, config *conf.Bootstrap) (*ent.Client, func(), error) {
 	h := log.NewHelper(l, log.WithMessageKey("data"))
 	rawClient, err := NewRawEntClient(h, config)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create raw ent client: %w", err)
 	}
-	client, err := initializeDBClient(h, rawClient, userClient, kv, config.Version)
+	client, err := initializeDBClient(h, rawClient, settingClient, kv, config.Version)
 	cleanup := func() {
 		h.Info("Shutting down database connection...")
 		if err := rawClient.Close(); err != nil {
@@ -36,10 +36,10 @@ func NewDBClient(l log.Logger, userClient rpc.UserClient, kv cache.Driver, confi
 	return client, cleanup, err
 }
 
-func initializeDBClient(h *log.Helper, client *ent.Client, userClient rpc.UserClient, kv cache.Driver, requiredDbVersion string) (*ent.Client, error) {
+func initializeDBClient(h *log.Helper, client *ent.Client, settingClient rpc.SettingClient, kv cache.Driver, requiredDbVersion string) (*ent.Client, error) {
 	ctx := context.WithValue(context.Background(), logging.LoggerCtx{}, h)
-	if needMigration(ctx, userClient, requiredDbVersion) {
-		if err := migrate(ctx, client, userClient, requiredDbVersion, h); err != nil {
+	if needMigration(ctx, settingClient, requiredDbVersion) {
+		if err := migrate(ctx, client, settingClient, requiredDbVersion, h); err != nil {
 			return nil, fmt.Errorf("failed to migrate database: %w", err)
 		}
 	} else {

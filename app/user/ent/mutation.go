@@ -4,6 +4,8 @@ package ent
 
 import (
 	v1 "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"context"
 	"errors"
@@ -915,10 +917,10 @@ type GroupMutation struct {
 	speed_limit          *int
 	addspeed_limit       *int
 	permissions          **boolset.BooleanSet
-	settings             **v1.GroupSetting
+	settings             **userdata.GroupSetting
 	storage_policy_id    *int
 	addstorage_policy_id *int
-	storage_policy_info  **v1.StoragePolicyInfo
+	storage_policy_info  **filedata.StoragePolicyInfo
 	clearedFields        map[string]struct{}
 	users                map[int]struct{}
 	removedusers         map[int]struct{}
@@ -1360,12 +1362,12 @@ func (m *GroupMutation) ResetPermissions() {
 }
 
 // SetSettings sets the "settings" field.
-func (m *GroupMutation) SetSettings(vs *v1.GroupSetting) {
-	m.settings = &vs
+func (m *GroupMutation) SetSettings(us *userdata.GroupSetting) {
+	m.settings = &us
 }
 
 // Settings returns the value of the "settings" field in the mutation.
-func (m *GroupMutation) Settings() (r *v1.GroupSetting, exists bool) {
+func (m *GroupMutation) Settings() (r *userdata.GroupSetting, exists bool) {
 	v := m.settings
 	if v == nil {
 		return
@@ -1376,7 +1378,7 @@ func (m *GroupMutation) Settings() (r *v1.GroupSetting, exists bool) {
 // OldSettings returns the old "settings" field's value of the Group entity.
 // If the Group object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GroupMutation) OldSettings(ctx context.Context) (v *v1.GroupSetting, err error) {
+func (m *GroupMutation) OldSettings(ctx context.Context) (v *userdata.GroupSetting, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSettings is only allowed on UpdateOne operations")
 	}
@@ -1479,12 +1481,12 @@ func (m *GroupMutation) ResetStoragePolicyID() {
 }
 
 // SetStoragePolicyInfo sets the "storage_policy_info" field.
-func (m *GroupMutation) SetStoragePolicyInfo(vpi *v1.StoragePolicyInfo) {
-	m.storage_policy_info = &vpi
+func (m *GroupMutation) SetStoragePolicyInfo(fpi *filedata.StoragePolicyInfo) {
+	m.storage_policy_info = &fpi
 }
 
 // StoragePolicyInfo returns the value of the "storage_policy_info" field in the mutation.
-func (m *GroupMutation) StoragePolicyInfo() (r *v1.StoragePolicyInfo, exists bool) {
+func (m *GroupMutation) StoragePolicyInfo() (r *filedata.StoragePolicyInfo, exists bool) {
 	v := m.storage_policy_info
 	if v == nil {
 		return
@@ -1495,7 +1497,7 @@ func (m *GroupMutation) StoragePolicyInfo() (r *v1.StoragePolicyInfo, exists boo
 // OldStoragePolicyInfo returns the old "storage_policy_info" field's value of the Group entity.
 // If the Group object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GroupMutation) OldStoragePolicyInfo(ctx context.Context) (v *v1.StoragePolicyInfo, err error) {
+func (m *GroupMutation) OldStoragePolicyInfo(ctx context.Context) (v *filedata.StoragePolicyInfo, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStoragePolicyInfo is only allowed on UpdateOne operations")
 	}
@@ -1762,7 +1764,7 @@ func (m *GroupMutation) SetField(name string, value ent.Value) error {
 		m.SetPermissions(v)
 		return nil
 	case group.FieldSettings:
-		v, ok := value.(*v1.GroupSetting)
+		v, ok := value.(*userdata.GroupSetting)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1776,7 +1778,7 @@ func (m *GroupMutation) SetField(name string, value ent.Value) error {
 		m.SetStoragePolicyID(v)
 		return nil
 	case group.FieldStoragePolicyInfo:
-		v, ok := value.(*v1.StoragePolicyInfo)
+		v, ok := value.(*filedata.StoragePolicyInfo)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -3442,7 +3444,7 @@ type UserMutation struct {
 	addstorage          *int64
 	two_factor_secret   *string
 	avatar              *string
-	settings            **v1.UserSetting
+	settings            **userdata.UserSetting
 	clearedFields       map[string]struct{}
 	group               *int
 	clearedgroup        bool
@@ -3988,12 +3990,12 @@ func (m *UserMutation) ResetAvatar() {
 }
 
 // SetSettings sets the "settings" field.
-func (m *UserMutation) SetSettings(vs *v1.UserSetting) {
-	m.settings = &vs
+func (m *UserMutation) SetSettings(us *userdata.UserSetting) {
+	m.settings = &us
 }
 
 // Settings returns the value of the "settings" field in the mutation.
-func (m *UserMutation) Settings() (r *v1.UserSetting, exists bool) {
+func (m *UserMutation) Settings() (r *userdata.UserSetting, exists bool) {
 	v := m.settings
 	if v == nil {
 		return
@@ -4004,7 +4006,7 @@ func (m *UserMutation) Settings() (r *v1.UserSetting, exists bool) {
 // OldSettings returns the old "settings" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldSettings(ctx context.Context) (v *v1.UserSetting, err error) {
+func (m *UserMutation) OldSettings(ctx context.Context) (v *userdata.UserSetting, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSettings is only allowed on UpdateOne operations")
 	}
@@ -4436,7 +4438,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetAvatar(v)
 		return nil
 	case user.FieldSettings:
-		v, ok := value.(*v1.UserSetting)
+		v, ok := value.(*userdata.UserSetting)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

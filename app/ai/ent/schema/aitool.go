@@ -2,11 +2,8 @@ package schema
 
 import (
 	"entmodule"
-	mschema "entmodule/ent/schema"
 
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
 )
 
@@ -19,21 +16,16 @@ type AiTool struct {
 func (AiTool) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
-			Comment("工具名称").
-			Annotations(entproto.Field(2)),
+			Comment("工具名称"),
 		field.String("description").
-			Comment("工具描述").
-			Annotations(entproto.Field(3)),
+			Comment("工具描述"),
 		field.String("type").
-			Comment("工具类型").
-			Annotations(entproto.Field(4)),
+			Comment("工具类型"),
 		field.String("parameters").
-			Comment("工具参数").
-			Annotations(entproto.Field(5)),
+			Comment("工具参数"),
 		field.Enum("status").
 			GoType(entmodule.Status("")).
-			Comment("状态").
-			Annotations(entproto.Field(6), entproto.Enum(entmodule.StatusProtoValues)),
+			Comment("状态"),
 	}
 }
 
@@ -44,12 +36,6 @@ func (AiTool) Edges() []ent.Edge {
 
 func (AiTool) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
-	}
-}
-
-func (AiTool) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
+		CommonMixin{},
 	}
 }

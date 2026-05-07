@@ -2,8 +2,8 @@ package service
 
 import (
 	commonpb "api/api/common/v1"
-	userpb "api/api/user/common/v1"
 	pb "api/api/user/device/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"common/boolset"
 	"common/constants"
@@ -41,7 +41,7 @@ func (s *DeviceService) ListDavAccounts(ctx context.Context, req *pb.ListDavAcco
 			PageToken:           req.NextPageToken,
 			PageSize:            int(req.PageSize),
 		},
-		UserID: int(user.Id),
+		UserID: user.ID,
 	}
 
 	res, err := davAccountClient.List(ctx, args)
@@ -60,7 +60,7 @@ func (s *DeviceService) CreateDavAccount(ctx context.Context, req *pb.UpsertDavA
 
 	davAccountClient := s.davc
 	account, err := davAccountClient.Create(ctx, &data.CreateDavAccountParams{
-		UserID:   int(user.Id),
+		UserID:   user.ID,
 		Name:     req.Name,
 		URI:      req.Uri,
 		Password: util.RandString(32, util.RandomLowerCases),
@@ -80,7 +80,7 @@ func (s *DeviceService) UpdateDavAccount(ctx context.Context, req *pb.UpsertDavA
 	}
 	// 查询帐户是否已存在
 	davAccountClient := s.davc
-	account, err := davAccountClient.GetByIDAndUserID(ctx, accountId, int(user.Id))
+	account, err := davAccountClient.GetByIDAndUserID(ctx, accountId, user.ID)
 	if err != nil {
 		return nil, commonpb.ErrorNotFound("Account not exist: %w", err)
 	}
@@ -111,7 +111,7 @@ func (s *DeviceService) DeleteDavAccount(ctx context.Context, req *pb.SimpleDavA
 
 	// 检查账户是否已存在
 	davAccountClient := s.davc
-	_, err = davAccountClient.GetByIDAndUserID(ctx, accountId, int(user.Id))
+	_, err = davAccountClient.GetByIDAndUserID(ctx, accountId, user.ID)
 	if err != nil {
 		return nil, commonpb.ErrorNotFound("Account not exist: %w", err)
 	}
@@ -125,9 +125,9 @@ func (s *DeviceService) DeleteDavAccount(ctx context.Context, req *pb.SimpleDavA
 	return &emptypb.Empty{}, nil
 }
 
-func (s *DeviceService) validateAndGetBs(user *userpb.User, req *pb.UpsertDavAccountRequest) (*boolset.BooleanSet, error) {
-	permissions := boolset.BooleanSet(user.Group.Permissions)
-	if !(&permissions).Enabled(types.GroupPermissionWebDAV) {
+func (s *DeviceService) validateAndGetBs(user *userdata.User, req *pb.UpsertDavAccountRequest) (*boolset.BooleanSet, error) {
+	permissions := user.Group.Permissions
+	if !permissions.Enabled(types.GroupPermissionWebDAV) {
 		return nil, commonpb.ErrorParamInvalid("User does not have permission to create dav account")
 	}
 
@@ -151,7 +151,7 @@ func (s *DeviceService) validateAndGetBs(user *userpb.User, req *pb.UpsertDavAcc
 		boolset.Set(constants.DavAccountDisableSysFiles, true, &bs)
 	}
 
-	if req.Proxy && (&permissions).Enabled(int(types.GroupPermissionWebDAVProxy)) {
+	if req.Proxy && permissions.Enabled(types.GroupPermissionWebDAVProxy) {
 		boolset.Set(constants.DavAccountProxy, true, &bs)
 	}
 	return &bs, nil

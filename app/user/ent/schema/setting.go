@@ -1,9 +1,7 @@
 package schema
 
 import (
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
 )
 
@@ -16,11 +14,9 @@ type Setting struct {
 func (Setting) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
-			Unique().
-			Annotations(entproto.Field(2)),
+			Unique(),
 		field.Text("value").
-			Optional().
-			Annotations(entproto.Field(3)),
+			Optional(),
 	}
 }
 
@@ -32,11 +28,5 @@ func (Setting) Edges() []ent.Edge {
 func (Setting) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		CommonMixin{},
-	}
-}
-
-func (Setting) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
 	}
 }

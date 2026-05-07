@@ -10,10 +10,11 @@ import (
 
 type (
 	ImageBiz interface {
+		GetImage(ctx context.Context, id int) (*ent.AiImage, error)
 		ListImages(ctx context.Context, args *data.ListAIImageArgs) (*data.ListAIImageResult, error)
-		UpdateImageStatus(ctx context.Context, id int, status types.ImageStatus) (*ent.AiImage, error)
 		DeleteImage(ctx context.Context, id int) error
 		BatchDeleteImages(ctx context.Context, ids []int) ([]int, error)
+		UpdateImage(ctx context.Context, args *data.UpsertImageArgs) (*ent.AiImage, error)
 	}
 	imageBiz struct {
 		ic data.ImageClient
@@ -24,15 +25,16 @@ func NewImageBiz(ic data.ImageClient) ImageBiz {
 	return &imageBiz{ic}
 }
 
+func (b *imageBiz) GetImage(ctx context.Context, id int) (*ent.AiImage, error) {
+	return b.ic.GetByID(ctx, id)
+}
+
 func (b *imageBiz) ListImages(ctx context.Context, args *data.ListAIImageArgs) (*data.ListAIImageResult, error) {
 	return b.ic.List(ctx, args)
 }
 
 func (b *imageBiz) UpdateImageStatus(ctx context.Context, id int, status types.ImageStatus) (*ent.AiImage, error) {
-	_, err := b.validateImage(ctx, id)
-	if err != nil {
-		return nil, err
-	}
+
 	return b.UpdateImageStatus(ctx, id, status)
 }
 
@@ -80,4 +82,12 @@ func (b *imageBiz) BatchDeleteImages(ctx context.Context, ids []int) ([]int, err
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 	return imageIDs, nil
+}
+
+func (b *imageBiz) UpdateImage(ctx context.Context, args *data.UpsertImageArgs) (*ent.AiImage, error) {
+	_, err := b.validateImage(ctx, args.ID)
+	if err != nil {
+		return nil, err
+	}
+	return b.ic.Upsert(ctx, args)
 }

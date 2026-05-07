@@ -1,9 +1,7 @@
 ﻿package workflows
 
 import (
-	pb "api/api/file/common/v1"
-	explorerpb "api/api/file/workflow/v1"
-	userpb "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"common/hashid"
 	"common/serializer"
@@ -12,14 +10,14 @@ import (
 	"encoding/json"
 	"errors"
 	"file/ent"
-	"file/ent/task"
 	"file/internal/biz/filemanager"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/filemanager/manager"
 	"file/internal/biz/queue"
+	"file/internal/data"
 	"file/internal/data/types"
 	"fmt"
-	"strconv"
+	mqueue "queue"
 	"sync/atomic"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -31,7 +29,7 @@ type (
 
 		l        *log.Helper
 		state    *ImportTaskState
-		progress *explorerpb.TaskPhaseProgressResponse
+		progress mqueue.Progresses
 	}
 	ImportTaskState struct {
 		PolicyID         int             `json:"policy_id"`
@@ -51,10 +49,10 @@ const (
 )
 
 func init() {
-	queue.RegisterResumableTaskFactory(queue.ImportTaskType, NewImportTaskFromModel)
+	mqueue.RegisterResumableTaskFactory(queue.ImportTaskType, NewImportTaskFromModel)
 }
 
-func NewImportTask(ctx context.Context, user *userpb.User, src string, recursive bool, dst string, policyID int) (queue.Task, error) {
+func NewImportTask(ctx context.Context, user *userdata.User, src string, recursive bool, dst string, policyID int) (mqueue.Task, error) {
 	state := &ImportTaskState{
 		Src:       src,
 		Recursive: recursive,
@@ -72,7 +70,7 @@ func NewImportTask(ctx context.Context, user *userpb.User, src string, recursive
 				Type:         queue.ImportTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState:  &pb.TaskPublicState{},
+				PublicState:  &mqueue.TaskPublicState{},
 			},
 			DirectOwner: user,
 		},
@@ -81,32 +79,34 @@ func NewImportTask(ctx context.Context, user *userpb.User, src string, recursive
 	return t, nil
 }
 
-func NewImportTaskFromModel(task *ent.Task) queue.Task {
+func NewImportTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := task.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &ImportTask{
 		DBTask: &queue.DBTask{
-			Task: task,
+			Task: wrapped.Task,
 		},
 	}
 }
 
-func (t *ImportTask) Do(ctx context.Context) (task.Status, error) {
+func (t *ImportTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	t.l = dep.Logger()
 
 	t.Lock()
 	if t.progress == nil {
-		t.progress = &explorerpb.TaskPhaseProgressResponse{
-			ProgressMap: make(map[string]*explorerpb.Progress),
-		}
+		t.progress = make(mqueue.Progresses)
 	}
-	t.progress.ProgressMap[ProgressTypeIndexed] = &explorerpb.Progress{}
+	t.progress[ProgressTypeIndexed] = &mqueue.Progress{}
 	t.Unlock()
 
 	// unmarshal state
 	state := &ImportTaskState{}
 	if err := json.Unmarshal([]byte(t.State()), state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
 	}
 	t.state = state
 
@@ -114,7 +114,7 @@ func (t *ImportTask) Do(ctx context.Context) (task.Status, error) {
 
 	newStateStr, marshalErr := json.Marshal(t.state)
 	if marshalErr != nil {
-		return task.StatusError, fmt.Errorf("failed to marshal state: %w", marshalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to marshal state: %w", marshalErr)
 	}
 
 	t.Lock()
@@ -123,7 +123,7 @@ func (t *ImportTask) Do(ctx context.Context) (task.Status, error) {
 	return next, err
 }
 
-func (t *ImportTask) processImport(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (task.Status, error) {
+func (t *ImportTask) processImport(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (mqueue.TaskStatus, error) {
 	user := trans.FromContext(ctx)
 	fm := manager.NewFileManager(dep, dbfsDep, user)
 	defer fm.Recycle()
@@ -131,31 +131,31 @@ func (t *ImportTask) processImport(ctx context.Context, dep filemanager.ManagerD
 	failed := 0
 	dst, err := fs.NewUriFromString(t.state.Dst)
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to parse dst: %s (%w)", err, queue.CriticalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to parse dst: %s (%w)", err, queue.CriticalErr)
 	}
 
 	physicalFiles, err := fm.ListPhysical(ctx, t.state.Src, t.state.PolicyID, t.state.Recursive,
 		func(i int) {
-			atomic.AddInt64(&t.progress.ProgressMap[ProgressTypeIndexed].Current, int64(i))
+			atomic.AddInt64(&t.progress[ProgressTypeIndexed].Current, int64(i))
 		})
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to list physical files: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to list physical files: %w", err)
 	}
 
 	t.l.WithContext(ctx).Infof("Importing %d physical files", len(physicalFiles))
 
 	t.Lock()
-	t.progress.ProgressMap[ProgressTypeImported] = &explorerpb.Progress{
+	t.progress[ProgressTypeImported] = &mqueue.Progress{
 		Total: int64(len(physicalFiles)),
 	}
-	delete(t.progress.ProgressMap, ProgressTypeIndexed)
+	delete(t.progress, ProgressTypeIndexed)
 	t.Unlock()
 
 	for _, physicalFile := range physicalFiles {
 		if physicalFile.IsDir {
 			t.l.WithContext(ctx).Infof("Creating folder %s", physicalFile.RelativePath)
 			_, err := fm.Create(ctx, dst.Join(physicalFile.RelativePath), types.FileTypeFolder)
-			atomic.AddInt64(&t.progress.ProgressMap[ProgressTypeImported].Current, 1)
+			atomic.AddInt64(&t.progress[ProgressTypeImported].Current, 1)
 			if err != nil {
 				t.l.WithContext(ctx).Warnf("Failed to create folder %s: %s", physicalFile.RelativePath, err)
 				failed++
@@ -163,7 +163,7 @@ func (t *ImportTask) processImport(ctx context.Context, dep filemanager.ManagerD
 		} else {
 			t.l.WithContext(ctx).Infof("Importing files %s", physicalFile.RelativePath)
 			err := fm.ImportPhysical(ctx, dst, t.state.PolicyID, physicalFile, t.state.ExtractMediaMeta)
-			atomic.AddInt64(&t.progress.ProgressMap[ProgressTypeImported].Current, 1)
+			atomic.AddInt64(&t.progress[ProgressTypeImported].Current, 1)
 			if err != nil {
 				var appErr serializer.AppError
 				if errors.As(err, &appErr) && appErr.Code == serializer.CodeObjectExist {
@@ -176,16 +176,16 @@ func (t *ImportTask) processImport(ctx context.Context, dep filemanager.ManagerD
 		}
 	}
 
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
-func (t *ImportTask) Progress(ctx context.Context) *explorerpb.TaskPhaseProgressResponse {
+func (t *ImportTask) Progress(ctx context.Context) mqueue.Progresses {
 	t.Lock()
 	defer t.Unlock()
 	return t.progress
 }
 
-func (t *ImportTask) Summarize(hasher hashid.Encoder) *explorerpb.Summary {
+func (t *ImportTask) Summarize(hasher hashid.Encoder) *mqueue.Summary {
 	// unmarshal state
 	if t.state == nil {
 		if err := json.Unmarshal([]byte(t.State()), &t.state); err != nil {
@@ -193,12 +193,12 @@ func (t *ImportTask) Summarize(hasher hashid.Encoder) *explorerpb.Summary {
 		}
 	}
 
-	return &explorerpb.Summary{
+	return &mqueue.Summary{
 		Phase: string(t.state.Phase),
-		Props: map[string]string{
+		Props: map[string]any{
 			SummaryKeyDst:            t.state.Dst,
 			SummaryKeySrcStr:         t.state.Src,
-			SummaryKeyFailed:         strconv.Itoa(t.state.Failed),
+			SummaryKeyFailed:         t.state.Failed,
 			SummaryKeySrcDstPolicyID: hashid.EncodePolicyID(hasher, t.state.PolicyID),
 		},
 	}

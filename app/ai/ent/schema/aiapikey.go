@@ -2,12 +2,8 @@ package schema
 
 import (
 	"entmodule"
-	mschema "entmodule/ent/schema"
 
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/dialect/entsql"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -22,45 +18,32 @@ func (AiApiKey) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
 			MaxLen(255).
-			Comment("名称").
-			Annotations(entproto.Field(2)),
+			Comment("名称"),
 		field.String("api_key").
 			MaxLen(255).
-			Comment("API 密钥").
-			Annotations(entproto.Field(3)),
+			Comment("API 密钥"),
 		field.String("platform").
 			MaxLen(255).
-			Comment("平台").
-			Annotations(entproto.Field(4)),
+			Comment("平台"),
 		field.String("url").
 			MaxLen(255).
 			Default("").
-			Comment("custom api url").
-			Annotations(entproto.Field(5)),
+			Comment("custom api url"),
 		field.Enum("status").
 			GoType(entmodule.Status("")).
-			Comment("状态").
-			Annotations(entproto.Field(6), entproto.Enum(entmodule.StatusProtoValues)),
+			Comment("状态"),
 	}
 }
 
 // Edges of the AiApiKey.
 func (AiApiKey) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("ai_model", AiModel.Type).
-			Annotations(entproto.Field(81)),
+		edge.To("ai_model", AiModel.Type),
 	}
 }
 
 func (AiApiKey) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
-	}
-}
-
-func (AiApiKey) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entsql.Annotation{Table: "AiApiKey"},
-		entproto.Message(),
+		CommonMixin{},
 	}
 }

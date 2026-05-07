@@ -53,7 +53,7 @@ func (c *KnowledgeClient) GetMasterKnowledge(ctx context.Context, userID int) (*
 	return resp, nil
 }
 
-func (c *KnowledgeClient) CreateDocument(ctx context.Context, doc *CreateDocumentRequest) (*pbknowledge.GetDocumentResponse, error) {
+func (c *KnowledgeClient) CreateDocument(ctx context.Context, doc *CreateDocumentRequest) (*pbknowledge.UpsertDocumentResponse, error) {
 	req := &pbknowledge.UpsertDocumentRequest{
 		KnowledgeId: doc.KnowledgeId,
 		Name:        doc.DocumentName,
@@ -85,7 +85,7 @@ func (c *KnowledgeClient) CreateDocuments(ctx context.Context, knowledgeID strin
 }
 
 func (c *KnowledgeClient) DeleteDocuments(ctx context.Context, ids ...string) error {
-	req := &pbknowledge.BatchDeleteRequest{
+	req := &pbknowledge.MultiRequest{
 		Ids: ids,
 	}
 	_, err := c.kc.BatchDeleteDocuments(ctx, req)

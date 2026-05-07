@@ -786,6 +786,35 @@ func (m *ListImageResponse) validate(all bool) error {
 
 	}
 
+	if all {
+		switch v := interface{}(m.GetPagination()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ListImageResponseValidationError{
+					field:  "Pagination",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ListImageResponseValidationError{
+					field:  "Pagination",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPagination()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ListImageResponseValidationError{
+				field:  "Pagination",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return ListImageResponseMultiError(errors)
 	}
@@ -866,22 +895,22 @@ var _ interface {
 	ErrorName() string
 } = ListImageResponseValidationError{}
 
-// Validate checks the field values on ListImageByIdsRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListImageByIdsRequest) Validate() error {
+// Validate checks the field values on GetImagesRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetImagesRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ListImageByIdsRequest with the rules
+// ValidateAll checks the field values on GetImagesRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ListImageByIdsRequestMultiError, or nil if none found.
-func (m *ListImageByIdsRequest) ValidateAll() error {
+// GetImagesRequestMultiError, or nil if none found.
+func (m *GetImagesRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ListImageByIdsRequest) validate(all bool) error {
+func (m *GetImagesRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -889,19 +918,19 @@ func (m *ListImageByIdsRequest) validate(all bool) error {
 	var errors []error
 
 	if len(errors) > 0 {
-		return ListImageByIdsRequestMultiError(errors)
+		return GetImagesRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListImageByIdsRequestMultiError is an error wrapping multiple validation
-// errors returned by ListImageByIdsRequest.ValidateAll() if the designated
-// constraints aren't met.
-type ListImageByIdsRequestMultiError []error
+// GetImagesRequestMultiError is an error wrapping multiple validation errors
+// returned by GetImagesRequest.ValidateAll() if the designated constraints
+// aren't met.
+type GetImagesRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ListImageByIdsRequestMultiError) Error() string {
+func (m GetImagesRequestMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -910,11 +939,11 @@ func (m ListImageByIdsRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ListImageByIdsRequestMultiError) AllErrors() []error { return m }
+func (m GetImagesRequestMultiError) AllErrors() []error { return m }
 
-// ListImageByIdsRequestValidationError is the validation error returned by
-// ListImageByIdsRequest.Validate if the designated constraints aren't met.
-type ListImageByIdsRequestValidationError struct {
+// GetImagesRequestValidationError is the validation error returned by
+// GetImagesRequest.Validate if the designated constraints aren't met.
+type GetImagesRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -922,24 +951,22 @@ type ListImageByIdsRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e ListImageByIdsRequestValidationError) Field() string { return e.field }
+func (e GetImagesRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ListImageByIdsRequestValidationError) Reason() string { return e.reason }
+func (e GetImagesRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ListImageByIdsRequestValidationError) Cause() error { return e.cause }
+func (e GetImagesRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ListImageByIdsRequestValidationError) Key() bool { return e.key }
+func (e GetImagesRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ListImageByIdsRequestValidationError) ErrorName() string {
-	return "ListImageByIdsRequestValidationError"
-}
+func (e GetImagesRequestValidationError) ErrorName() string { return "GetImagesRequestValidationError" }
 
 // Error satisfies the builtin error interface
-func (e ListImageByIdsRequestValidationError) Error() string {
+func (e GetImagesRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -951,14 +978,14 @@ func (e ListImageByIdsRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sListImageByIdsRequest.%s: %s%s",
+		"invalid %sGetImagesRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ListImageByIdsRequestValidationError{}
+var _ error = GetImagesRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -966,4 +993,140 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ListImageByIdsRequestValidationError{}
+} = GetImagesRequestValidationError{}
+
+// Validate checks the field values on GetImagesResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetImagesResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetImagesResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetImagesResponseMultiError, or nil if none found.
+func (m *GetImagesResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetImagesResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetImages() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetImagesResponseValidationError{
+						field:  fmt.Sprintf("Images[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetImagesResponseValidationError{
+						field:  fmt.Sprintf("Images[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetImagesResponseValidationError{
+					field:  fmt.Sprintf("Images[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return GetImagesResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetImagesResponseMultiError is an error wrapping multiple validation errors
+// returned by GetImagesResponse.ValidateAll() if the designated constraints
+// aren't met.
+type GetImagesResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetImagesResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetImagesResponseMultiError) AllErrors() []error { return m }
+
+// GetImagesResponseValidationError is the validation error returned by
+// GetImagesResponse.Validate if the designated constraints aren't met.
+type GetImagesResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetImagesResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetImagesResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetImagesResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetImagesResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetImagesResponseValidationError) ErrorName() string {
+	return "GetImagesResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetImagesResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetImagesResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetImagesResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetImagesResponseValidationError{}

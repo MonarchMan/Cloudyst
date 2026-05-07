@@ -4,9 +4,10 @@ import (
 	"ai/ent"
 	"ai/ent/aichatmessage"
 	"ai/internal/biz/types"
-	"common/db"
+	"api/external/data/common"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/samber/lo"
 )
@@ -20,9 +21,8 @@ type (
 		List(ctx context.Context, args *ListChatMessageArgs) (*ListChatMessageResult, error)
 		Create(ctx context.Context, message *CreateChatMessageArgs) (*ent.AiChatMessage, error)
 		UpdateContent(ctx context.Context, id int, content string, reasoningContent string) (*ent.AiChatMessage, error)
-		Delete(ctx context.Context, id int) error
+		Delete(ctx context.Context, id int, cascade bool) error
 		BatchDelete(ctx context.Context, ids []int) (int, error)
-		DeleteByConversationID(ctx context.Context, conversationID int) (int, error)
 	}
 
 	chatMessageClient struct {
@@ -31,16 +31,19 @@ type (
 	}
 
 	ListChatMessageArgs struct {
-		*db.PaginationArgs
+		*common.PaginationArgs
 		ConversationID int
 		UserID         int
 		RoleID         int
 		ModelID        int
+		BeforeMsgID    int
 		Type           string
+		Start          time.Time
+		End            time.Time
 	}
 
 	ListChatMessageResult struct {
-		*db.PaginationResults
+		*common.PaginationResults
 		ChatMessages []*ent.AiChatMessage
 		PageMap      map[int][]*types.WebPage
 	}
@@ -59,8 +62,8 @@ type (
 	}
 )
 
-func NewChatMessageClient(client *ent.Client, dbType db.DBType) ChatMessageClient {
-	return &chatMessageClient{client: client, maxSQLParam: db.SqlParamLimit(dbType)}
+func NewChatMessageClient(client *ent.Client, dbType common.DBType) ChatMessageClient {
+	return &chatMessageClient{client: client, maxSQLParam: common.SqlParamLimit(dbType)}
 }
 
 func (c *chatMessageClient) SetClient(newClient *ent.Client) TxOperator {
@@ -80,7 +83,7 @@ func (c *chatMessageClient) GetByIDs(ctx context.Context, ids []int) ([]*ent.AiC
 }
 
 func (c *chatMessageClient) List(ctx context.Context, args *ListChatMessageArgs) (*ListChatMessageResult, error) {
-	pageSize := db.CapPageSize(c.maxSQLParam, int(args.PageSize), 10)
+	pageSize := common.CapPageSize(c.maxSQLParam, int(args.PageSize), 10)
 	q := c.client.AiChatMessage.Query()
 	if args.ConversationID != 0 {
 		q.Where(aichatmessage.ConversationID(args.ConversationID))
@@ -98,8 +101,20 @@ func (c *chatMessageClient) List(ctx context.Context, args *ListChatMessageArgs)
 		q.Where(aichatmessage.ModelID(args.ModelID))
 	}
 
+	if args.BeforeMsgID != 0 {
+		q.Where(aichatmessage.IDLTE(args.BeforeMsgID))
+	}
+
 	if args.Type != "" {
 		q.Where(aichatmessage.Type(args.Type))
+	}
+
+	if args.Start.IsZero() {
+		q.Where(aichatmessage.CreatedAtGTE(args.Start))
+	}
+
+	if args.End.IsZero() {
+		q.Where(aichatmessage.CreatedAtLTE(args.End))
 	}
 
 	total, err := q.Clone().Count(ctx)
@@ -113,7 +128,7 @@ func (c *chatMessageClient) List(ctx context.Context, args *ListChatMessageArgs)
 	}
 
 	return &ListChatMessageResult{
-		PaginationResults: &db.PaginationResults{
+		PaginationResults: &common.PaginationResults{
 			TotalItems: total,
 			Page:       args.Page,
 			PageSize:   pageSize,
@@ -162,7 +177,19 @@ func (c *chatMessageClient) UpdateContent(ctx context.Context, id int, content s
 	return c.client.AiChatMessage.UpdateOneID(id).SetContent(content).SetReasonContent(reasoningContent).Save(ctx)
 }
 
-func (c *chatMessageClient) Delete(ctx context.Context, id int) error {
+func (c *chatMessageClient) Delete(ctx context.Context, id int, cascade bool) error {
+	if cascade {
+		// delete a cascade of message
+		aiMsg, err := c.client.AiChatMessage.Query().Where(aichatmessage.ReplyID(id)).First(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get Ai reply message: %w", err)
+		}
+		if aiMsg != nil {
+			if err := c.client.AiChatMessage.DeleteOneID(aiMsg.ID).Exec(ctx); err != nil {
+				return fmt.Errorf("failed to delete Ai reply message: %w", err)
+			}
+		}
+	}
 	return c.client.AiChatMessage.DeleteOneID(id).Exec(ctx)
 }
 
@@ -170,12 +197,8 @@ func (c *chatMessageClient) BatchDelete(ctx context.Context, ids []int) (int, er
 	return c.client.AiChatMessage.Delete().Where(aichatmessage.IDIn(ids...)).Exec(ctx)
 }
 
-func (c *chatMessageClient) DeleteByConversationID(ctx context.Context, conversationID int) (int, error) {
-	return c.client.AiChatMessage.Delete().Where(aichatmessage.ConversationID(conversationID)).Exec(ctx)
-}
-
 func getChatMessageOrderOption(args *ListChatMessageArgs) []aichatmessage.OrderOption {
-	orderTerm := db.GetOrderTerm(args.OrderDir)
+	orderTerm := common.GetOrderTerm(args.OrderDir)
 	switch args.OrderBy {
 	case aichatmessage.FieldCreatedAt:
 		return []aichatmessage.OrderOption{aichatmessage.ByUpdatedAt(orderTerm), aichatmessage.ByID(orderTerm)}

@@ -4,6 +4,8 @@ import (
 	pbfile "api/api/file/files/v1"
 	pbshare "api/api/file/share/v1"
 	pbexplorer "api/api/file/workflow/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/auth"
 	"common/boolset"
 	"common/hashid"
@@ -13,17 +15,18 @@ import (
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/filemanager/fs/dbfs"
 	"file/internal/biz/filemanager/manager"
-	"file/internal/biz/queue"
 	"file/internal/biz/setting"
 	"file/internal/data"
 	"file/internal/pkg/utils"
 	"net/url"
+	mqueue "queue"
 
 	"github.com/samber/lo"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func buildListResponse(ctx context.Context, uid int64, parent fs.File, res *fs.ListFileResult, hasher hashid.Encoder,
+func buildListResponse(ctx context.Context, uid int, parent fs.File, res *fs.ListFileResult, hasher hashid.Encoder,
 	settings setting.Provider) *pbfile.ListFileResponse {
 	r := &pbfile.ListFileResponse{
 		Files: lo.Map(res.Files, func(f fs.File, index int) *pbfile.FileResponse {
@@ -51,11 +54,11 @@ func buildListResponse(ctx context.Context, uid int64, parent fs.File, res *fs.L
 	return r
 }
 
-func buildFileResponse(ctx context.Context, uid int64, f fs.File, hasher hashid.Encoder, cap *boolset.BooleanSet,
+func buildFileResponse(ctx context.Context, uid int, f fs.File, hasher hashid.Encoder, cap *boolset.BooleanSet,
 	settings setting.Provider) *pbfile.FileResponse {
-	var owner int64
+	var owner int
 	if f != nil {
-		owner = int64(f.OwnerID())
+		owner = f.OwnerID()
 	}
 
 	if cap == nil {
@@ -81,7 +84,7 @@ func buildFileResponse(ctx context.Context, uid int64, f fs.File, hasher hashid.
 	return res
 }
 
-func buildExtendedInfo(ctx context.Context, uid int64, f fs.File, hasher hashid.Encoder, settings setting.Provider) *pbfile.ExtendedInfo {
+func buildExtendedInfo(ctx context.Context, uid int, f fs.File, hasher hashid.Encoder, settings setting.Provider) *pbfile.ExtendedInfo {
 	extendedInfo := f.ExtendedInfo()
 	if extendedInfo == nil {
 		return nil
@@ -103,15 +106,15 @@ func buildExtendedInfo(ctx context.Context, uid int64, f fs.File, hasher hashid.
 	if int(uid) == f.OwnerID() {
 		// Only owner can see the shares settings.
 		ext.Shares = lo.Map(extendedInfo.Shares, func(s *ent.Share, index int) *pbshare.GetShareResponse {
-			return buildShare(s, base, hasher, uid, f.Owner().Id, f.DisplayName(), f.Type(), true, false)
+			return buildShare(s, base, hasher, uid, f.OwnerID(), f.DisplayName(), f.Type(), true, false)
 		})
-		ext.View = utils.ToProtoView(extendedInfo.View)
+		ext.View = filedata.ExplorerViewToProto(extendedInfo.View)
 	}
 
 	return ext
 }
 
-func buildShare(s *ent.Share, base *url.URL, hasher hashid.Encoder, requester int64, userId int64, name string, fileType int,
+func buildShare(s *ent.Share, base *url.URL, hasher hashid.Encoder, requester int, userId int, name string, fileType int,
 	unlocked bool, expired bool) *pbshare.GetShareResponse {
 	res := pbshare.GetShareResponse{
 		Name:     name,
@@ -124,7 +127,7 @@ func buildShare(s *ent.Share, base *url.URL, hasher hashid.Encoder, requester in
 		Visited:           int32(s.Views),
 		SourceType:        int32(fileType),
 		PasswordProtected: s.Password != "",
-		OwnerInfo:         s.OwnerInfo,
+		OwnerInfo:         userdata.UserInfoToProto(s.OwnerInfo),
 	}
 	res.OwnerInfo.Id = hashid.EncodeUserID(hasher, s.OwnerID)
 
@@ -241,7 +244,7 @@ func buildDirectLinkResponse(links []manager.DirectLink) *pbfile.GetSourceRespon
 	}
 }
 
-func buildListShareResponse(res *data.ListShareResult, hasher hashid.Encoder, base *url.URL, requester int64,
+func buildListShareResponse(res *data.ListShareResult, hasher hashid.Encoder, base *url.URL, requester int,
 	unlocked bool) *pbshare.ListSharesResponse {
 	var infos []*pbshare.GetShareResponse
 	for _, share := range res.Shares {
@@ -260,7 +263,7 @@ func buildListShareResponse(res *data.ListShareResult, hasher hashid.Encoder, ba
 			}
 		}
 
-		infos = append(infos, buildShare(share, base, hasher, requester, int64(share.OwnerID), shareName,
+		infos = append(infos, buildShare(share, base, hasher, requester, share.OwnerID, shareName,
 			share.Edges.File.Type, unlocked, expired))
 	}
 
@@ -270,22 +273,22 @@ func buildListShareResponse(res *data.ListShareResult, hasher hashid.Encoder, ba
 	}
 }
 
-func buildTaskResponse(task queue.Task, node *ent.Node, hasher hashid.Encoder) *pbexplorer.TaskResponse {
-	model := task.Model()
+func buildTaskResponse(task mqueue.Task, node *ent.Node, hasher hashid.Encoder) *pbexplorer.TaskResponse {
+	model := task.Model().(*data.TaskModel)
 	t := &pbexplorer.TaskResponse{
 		Status:    string(task.Status()),
 		CreatedAt: timestamppb.New(model.CreatedAt),
 		UpdatedAt: timestamppb.New(model.UpdatedAt),
 		Id:        hashid.EncodeTaskID(hasher, task.ID()),
 		Type:      task.Type(),
-		Summary:   task.Summarize(hasher),
+		Summary:   buildTaskSummary(task.Summarize(hasher)),
 		Error:     auth.RedactSensitiveValues(model.PublicState.Error),
 		ErrorHistory: lo.Map(model.PublicState.ErrorHistory, func(s string, index int) string {
 			return auth.RedactSensitiveValues(s)
 		}),
-		Duration:   int64(model.PublicState.ExecutedDuration.AsDuration()),
+		Duration:   int64(model.PublicState.ExecutedDuration),
 		ResumeTime: model.PublicState.ResumeTime,
-		RetryCount: model.PublicState.RetryCount,
+		RetryCount: int32(model.PublicState.RetryCount),
 	}
 
 	if node != nil {
@@ -293,6 +296,15 @@ func buildTaskResponse(task queue.Task, node *ent.Node, hasher hashid.Encoder) *
 	}
 
 	return t
+}
+
+func buildTaskSummary(summary *mqueue.Summary) *pbexplorer.Summary {
+	proto := &pbexplorer.Summary{
+		NodeId: int32(summary.NodeID),
+		Phase:  summary.Phase,
+	}
+	proto.Props, _ = structpb.NewStruct(summary.Props)
+	return proto
 }
 
 func buildNodeOption(node *ent.Node, hasher hashid.Encoder) *pbexplorer.NodeOption {
@@ -304,20 +316,35 @@ func buildNodeOption(node *ent.Node, hasher hashid.Encoder) *pbexplorer.NodeOpti
 	}
 }
 
-func buildTaskListResponse(tasks []queue.Task, res *data.ListTaskResult, nodeMap map[int]*ent.Node,
+func buildTaskListResponse(tasks []mqueue.Task, res *data.ListTaskResult, nodeMap map[int]*ent.Node,
 	hasher hashid.Encoder) *pbexplorer.ListTasksResponse {
 	return &pbexplorer.ListTasksResponse{
-		Pagination: res.PaginationResults,
-		Tasks: lo.Map(tasks, func(t queue.Task, index int) *pbexplorer.TaskResponse {
+		Pagination: utils.PaginationResultsToProto(res.PaginationResults),
+		Tasks: lo.Map(tasks, func(t mqueue.Task, index int) *pbexplorer.TaskResponse {
 			var (
 				node *ent.Node
 				s    = t.Summarize(hasher)
 			)
 
-			if s.NodeId > 0 {
-				node = nodeMap[int(s.NodeId)]
+			if s.NodeID > 0 {
+				node = nodeMap[s.NodeID]
 			}
 			return buildTaskResponse(t, node, hasher)
 		}),
+	}
+}
+
+func buildTaskPhaseProgressResponse(ctx context.Context, t mqueue.Task) *pbexplorer.TaskPhaseProgressResponse {
+	progressMap := make(map[string]*pbexplorer.Progress)
+	for _, progress := range t.Progress(ctx) {
+		progressMap[progress.Identifier] = &pbexplorer.Progress{
+			Total:      progress.Total,
+			Current:    progress.Current,
+			Identifier: progress.Identifier,
+		}
+	}
+
+	return &pbexplorer.TaskPhaseProgressResponse{
+		ProgressMap: progressMap,
 	}
 }

@@ -1,7 +1,6 @@
 package workflows
 
 import (
-	pb "api/api/file/common/v1"
 	explorerpb "api/api/file/workflow/v1"
 	"api/external/trans"
 	"common/hashid"
@@ -11,19 +10,19 @@ import (
 	"encoding/json"
 	"errors"
 	"file/ent"
-	"file/ent/task"
 	"file/internal/biz/cluster"
 	"file/internal/biz/downloader"
 	"file/internal/biz/filemanager"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/filemanager/manager"
 	"file/internal/biz/queue"
+	"file/internal/data"
 	"file/internal/data/types"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
+	mqueue "queue"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -41,7 +40,7 @@ type (
 		state    *RemoteDownloadTaskState
 		node     cluster.Node
 		d        downloader.Downloader
-		progress *explorerpb.TaskPhaseProgressResponse
+		progress mqueue.Progresses
 	}
 	RemoteDownloadTaskPhase string
 	RemoteDownloadTaskState struct {
@@ -80,11 +79,11 @@ const (
 )
 
 func init() {
-	queue.RegisterResumableTaskFactory(queue.RemoteDownloadTaskType, NewRemoteDownloadTaskFromModel)
+	mqueue.RegisterResumableTaskFactory(queue.RemoteDownloadTaskType, NewRemoteDownloadTaskFromModel)
 }
 
 // NewRemoteDownloadTask creates a new RemoteDownloadTask
-func NewRemoteDownloadTask(ctx context.Context, src string, srcFile, dst string) (queue.Task, error) {
+func NewRemoteDownloadTask(ctx context.Context, src string, srcFile, dst string) (mqueue.Task, error) {
 	state := &RemoteDownloadTaskState{
 		SrcUri:     src,
 		SrcFileUri: srcFile,
@@ -102,7 +101,7 @@ func NewRemoteDownloadTask(ctx context.Context, src string, srcFile, dst string)
 				Type:         queue.RemoteDownloadTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState:  &pb.TaskPublicState{},
+				PublicState:  &mqueue.TaskPublicState{},
 			},
 			DirectOwner: trans.FromContext(ctx),
 		},
@@ -110,15 +109,19 @@ func NewRemoteDownloadTask(ctx context.Context, src string, srcFile, dst string)
 	return t, nil
 }
 
-func NewRemoteDownloadTaskFromModel(task *ent.Task) queue.Task {
+func NewRemoteDownloadTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := task.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &RemoteDownloadTask{
 		DBTask: &queue.DBTask{
-			Task: task,
+			Task: wrapped.Task,
 		},
 	}
 }
 
-func (m *RemoteDownloadTask) Do(ctx context.Context) (task.Status, error) {
+func (m *RemoteDownloadTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	np := filemanager.NodePoolFromContext(ctx)
@@ -127,14 +130,14 @@ func (m *RemoteDownloadTask) Do(ctx context.Context) (task.Status, error) {
 	// unmarshal state
 	state := &RemoteDownloadTaskState{}
 	if err := json.Unmarshal([]byte(m.State()), state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
 	}
 	m.state = state
 
 	// select node
 	node, err := allocateNode(ctx, np, &m.state.NodeState, types.NodeCapabilityRemoteDownload)
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to allocate node: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to allocate node: %w", err)
 	}
 	m.node = node
 
@@ -142,13 +145,13 @@ func (m *RemoteDownloadTask) Do(ctx context.Context) (task.Status, error) {
 	if m.d == nil {
 		d, err := node.CreateDownloader(ctx, dep.RequestClient(), dep.SettingProvider())
 		if err != nil {
-			return task.StatusError, fmt.Errorf("failed to create downloader: %w", err)
+			return mqueue.StatusError, fmt.Errorf("failed to create downloader: %w", err)
 		}
 
 		m.d = d
 	}
 
-	next := task.StatusCompleted
+	next := mqueue.StatusCompleted
 	switch m.state.Phase {
 	case RemoteDownloadTaskPhaseNotStarted:
 		next, err = m.createDownloadTask(ctx, dep, dbfsDep)
@@ -164,7 +167,7 @@ func (m *RemoteDownloadTask) Do(ctx context.Context) (task.Status, error) {
 
 	newStateStr, marshalErr := json.Marshal(m.state)
 	if marshalErr != nil {
-		return task.StatusError, fmt.Errorf("failed to marshal state: %w", marshalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to marshal state: %w", marshalErr)
 	}
 
 	m.Lock()
@@ -173,10 +176,10 @@ func (m *RemoteDownloadTask) Do(ctx context.Context) (task.Status, error) {
 	return next, err
 }
 
-func (m *RemoteDownloadTask) createDownloadTask(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (task.Status, error) {
+func (m *RemoteDownloadTask) createDownloadTask(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (mqueue.TaskStatus, error) {
 	if m.state.Handle != nil {
 		m.state.Phase = RemoteDownloadTaskPhaseMonitor
-		return task.StatusSuspending, nil
+		return mqueue.StatusSuspending, nil
 	}
 
 	user := trans.FromContext(ctx)
@@ -185,7 +188,7 @@ func (m *RemoteDownloadTask) createDownloadTask(ctx context.Context, dep fileman
 		// Target is a torrent files
 		uri, err := fs.NewUriFromString(m.state.SrcFileUri)
 		if err != nil {
-			return task.StatusError, fmt.Errorf("failed to parse src files uri: %s (%w)", err, queue.CriticalErr)
+			return mqueue.StatusError, fmt.Errorf("failed to parse src files uri: %s (%w)", err, queue.CriticalErr)
 		}
 
 		fm := manager.NewFileManager(dep, dbfsDep, user)
@@ -194,11 +197,11 @@ func (m *RemoteDownloadTask) createDownloadTask(ctx context.Context, dep fileman
 			{URI: uri},
 		}, fs.WithUrlExpire(&expire))
 		if err != nil {
-			return task.StatusError, fmt.Errorf("failed to get torrent entity urls: %w", err)
+			return mqueue.StatusError, fmt.Errorf("failed to get torrent entity urls: %w", err)
 		}
 
 		if len(torrentUrls) == 0 {
-			return task.StatusError, fmt.Errorf("no torrent urls found")
+			return mqueue.StatusError, fmt.Errorf("no torrent urls found")
 		}
 
 		torrentUrl = torrentUrls[0].Url
@@ -207,15 +210,15 @@ func (m *RemoteDownloadTask) createDownloadTask(ctx context.Context, dep fileman
 	// Create download task
 	handle, err := m.d.CreateTask(ctx, torrentUrl, nil)
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to create download task: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to create download task: %w", err)
 	}
 
 	m.state.Handle = handle
 	m.state.Phase = RemoteDownloadTaskPhaseMonitor
-	return task.StatusSuspending, nil
+	return mqueue.StatusSuspending, nil
 }
 
-func (m *RemoteDownloadTask) monitor(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (task.Status, error) {
+func (m *RemoteDownloadTask) monitor(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (mqueue.TaskStatus, error) {
 	resumeAfter := time.Duration(m.node.Settings(ctx).Interval) * time.Second
 
 	// Update task status
@@ -224,17 +227,17 @@ func (m *RemoteDownloadTask) monitor(ctx context.Context, dep filemanager.Manage
 		if errors.Is(err, downloader.ErrTaskNotFount) && m.state.Status != nil {
 			// If task is not found, but it previously existed, consider it as canceled
 			m.l.WithContext(ctx).Warnf("task not found, consider it as canceled")
-			return task.StatusCanceled, nil
+			return mqueue.StatusCanceled, nil
 		}
 
 		m.state.GetTaskStatusTried++
 		if m.state.GetTaskStatusTried >= GetTaskStatusMaxTries {
-			return task.StatusError, fmt.Errorf("failed to get task status after %d retry: %w", m.state.GetTaskStatusTried, err)
+			return mqueue.StatusError, fmt.Errorf("failed to get task status after %d retry: %w", m.state.GetTaskStatusTried, err)
 		}
 
 		m.l.WithContext(ctx).Warnf("failed to get task info: %s, will retry.", err)
 		m.ResumeAfter(resumeAfter)
-		return task.StatusSuspending, nil
+		return mqueue.StatusSuspending, nil
 	}
 
 	// Follow to new handle if needed
@@ -242,7 +245,7 @@ func (m *RemoteDownloadTask) monitor(ctx context.Context, dep filemanager.Manage
 		m.l.WithContext(ctx).Infof("Task handle updated to %v", status.FollowedBy)
 		m.state.Handle = status.FollowedBy
 		m.ResumeAfter(0)
-		return task.StatusSuspending, nil
+		return mqueue.StatusSuspending, nil
 	}
 
 	if m.state.Status == nil || m.state.Status.Total != status.Total {
@@ -250,7 +253,7 @@ func (m *RemoteDownloadTask) monitor(ctx context.Context, dep filemanager.Manage
 		// First time to get status / total size changed, check users capacity
 		if err := m.validateFiles(ctx, dep, dbfsDep, status); err != nil {
 			m.state.Status = status
-			return task.StatusError, fmt.Errorf("failed to validate files: %s (%w)", err, queue.CriticalErr)
+			return mqueue.StatusError, fmt.Errorf("failed to validate files: %s (%w)", err, queue.CriticalErr)
 		}
 	}
 
@@ -264,38 +267,38 @@ func (m *RemoteDownloadTask) monitor(ctx context.Context, dep filemanager.Manage
 		if m.state.Phase == RemoteDownloadTaskPhaseMonitor {
 			// Not transferred
 			m.state.Phase = RemoteDownloadTaskPhaseTransfer
-			return task.StatusSuspending, nil
+			return mqueue.StatusSuspending, nil
 		} else if !m.node.Settings(ctx).WaitForSeeding {
 			// Skip seeding
 			m.l.WithContext(ctx).Info("Download task seeding skipped.")
-			return task.StatusCompleted, nil
+			return mqueue.StatusCompleted, nil
 		} else {
 			// Still seeding
 			m.ResumeAfter(resumeAfter)
-			return task.StatusSuspending, nil
+			return mqueue.StatusSuspending, nil
 		}
 	case downloader.StatusCompleted:
 		m.l.WithContext(ctx).Info("Download task completed")
 		if m.state.Phase == RemoteDownloadTaskPhaseMonitor {
 			// Not transferred
 			m.state.Phase = RemoteDownloadTaskPhaseTransfer
-			return task.StatusSuspending, nil
+			return mqueue.StatusSuspending, nil
 		}
 		// Seeding complete
 		m.l.WithContext(ctx).Info("Download task seeding completed")
-		return task.StatusCompleted, nil
+		return mqueue.StatusCompleted, nil
 	case downloader.StatusDownloading:
 		m.ResumeAfter(resumeAfter)
-		return task.StatusSuspending, nil
+		return mqueue.StatusSuspending, nil
 	case downloader.StatusUnknown, downloader.StatusError:
-		return task.StatusError, fmt.Errorf("download task failed with state %q (%w), errorMsg: %s", status.State, queue.CriticalErr, status.ErrorMessage)
+		return mqueue.StatusError, fmt.Errorf("download task failed with state %q (%w), errorMsg: %s", status.State, queue.CriticalErr, status.ErrorMessage)
 	}
 
 	m.ResumeAfter(resumeAfter)
-	return task.StatusSuspending, nil
+	return mqueue.StatusSuspending, nil
 }
 
-func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.ManagerDep) (task.Status, error) {
+func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.ManagerDep) (mqueue.TaskStatus, error) {
 	user := trans.FromContext(ctx)
 	if m.state.Transferred == nil {
 		m.state.Transferred = make(map[int]interface{})
@@ -304,14 +307,14 @@ func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.
 	if m.state.SlaveUploadTaskID == 0 {
 		dstUri, err := fs.NewUriFromString(m.state.Dst)
 		if err != nil {
-			return task.StatusError, fmt.Errorf("failed to parse dst uri %q: %s (%w)", m.state.Dst, err, queue.CriticalErr)
+			return mqueue.StatusError, fmt.Errorf("failed to parse dst uri %q: %s (%w)", m.state.Dst, err, queue.CriticalErr)
 		}
 
 		// Create slave upload task
 		payload := &SlaveUploadTaskState{
 			Files:       []SlaveUploadEntity{},
 			MaxParallel: dep.SettingProvider().MaxParallelTransfer(ctx),
-			UserID:      int(user.Id),
+			UserID:      user.ID,
 		}
 
 		// Construct files to be transferred
@@ -337,24 +340,24 @@ func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.
 
 		payloadStr, err := json.Marshal(payload)
 		if err != nil {
-			return task.StatusError, fmt.Errorf("failed to marshal payload: %w", err)
+			return mqueue.StatusError, fmt.Errorf("failed to marshal payload: %w", err)
 		}
 
 		taskId, err := m.node.CreateTask(ctx, queue.SlaveUploadTaskType, string(payloadStr))
 		if err != nil {
-			return task.StatusError, fmt.Errorf("failed to create slave task: %w", err)
+			return mqueue.StatusError, fmt.Errorf("failed to create slave task: %w", err)
 		}
 
 		m.state.NodeState.progress = nil
 		m.state.SlaveUploadTaskID = taskId
 		m.ResumeAfter(0)
-		return task.StatusSuspending, nil
+		return mqueue.StatusSuspending, nil
 	}
 
 	m.l.WithContext(ctx).Infof("Checking slave upload task %d...", m.state.SlaveUploadTaskID)
 	t, err := m.node.GetTask(ctx, m.state.SlaveUploadTaskID, true)
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to get slave task: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to get slave task: %w", err)
 	}
 
 	m.Lock()
@@ -363,10 +366,10 @@ func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.
 
 	m.state.SlaveUploadState = &SlaveUploadTaskState{}
 	if err := json.Unmarshal([]byte(t.PrivateState), m.state.SlaveUploadState); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal slave compress state: %s (%w)", err, queue.CriticalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal slave compress state: %s (%w)", err, queue.CriticalErr)
 	}
 
-	if t.Status == task.StatusError || t.Status == task.StatusCompleted {
+	if t.Status == mqueue.StatusError || t.Status == mqueue.StatusCompleted {
 		if len(m.state.SlaveUploadState.Transferred) < len(m.state.SlaveUploadState.Files) {
 			// Not all files transferred, retry
 			slaveTaskId := m.state.SlaveUploadTaskID
@@ -376,7 +379,7 @@ func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.
 			}
 
 			m.l.WithContext(ctx).Warnf("Slave task %d failed to transfer %d files, retrying...", slaveTaskId, len(m.state.SlaveUploadState.Files)-len(m.state.SlaveUploadState.Transferred))
-			return task.StatusError, fmt.Errorf(
+			return mqueue.StatusError, fmt.Errorf(
 				"slave task failed to transfer %d files, first 5 errors: %s",
 				len(m.state.SlaveUploadState.Files)-len(m.state.SlaveUploadState.Transferred),
 				m.state.SlaveUploadState.First5TransferErrors,
@@ -384,20 +387,20 @@ func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.
 		} else {
 			m.state.Phase = RemoteDownloadTaskPhaseAwaitSeeding
 			m.ResumeAfter(0)
-			return task.StatusSuspending, nil
+			return mqueue.StatusSuspending, nil
 		}
 	}
 
-	if t.Status == task.StatusCanceled {
-		return task.StatusError, fmt.Errorf("slave task canceled (%w)", queue.CriticalErr)
+	if t.Status == mqueue.StatusCanceled {
+		return mqueue.StatusError, fmt.Errorf("slave task canceled (%w)", queue.CriticalErr)
 	}
 
 	m.l.WithContext(ctx).Infof("Slave task %d is still uploading, resume after 30s.", m.state.SlaveUploadTaskID)
 	m.ResumeAfter(time.Second * 30)
-	return task.StatusSuspending, nil
+	return mqueue.StatusSuspending, nil
 }
 
-func (m *RemoteDownloadTask) masterTransfer(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (task.Status, error) {
+func (m *RemoteDownloadTask) masterTransfer(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (mqueue.TaskStatus, error) {
 	if m.state.Transferred == nil {
 		m.state.Transferred = make(map[int]interface{})
 	}
@@ -422,16 +425,14 @@ func (m *RemoteDownloadTask) masterTransfer(ctx context.Context, dep filemanager
 	}
 
 	m.Lock()
-	m.progress = &explorerpb.TaskPhaseProgressResponse{
-		ProgressMap: make(map[string]*explorerpb.Progress),
-	}
-	m.progress.ProgressMap[ProgressTypeUploadCount] = &explorerpb.Progress{Total: int64(totalCount)}
-	m.progress.ProgressMap[ProgressTypeUpload] = &explorerpb.Progress{Total: totalSize}
+	m.progress = make(mqueue.Progresses)
+	m.progress[ProgressTypeUploadCount] = &mqueue.Progress{Total: int64(totalCount)}
+	m.progress[ProgressTypeUpload] = &mqueue.Progress{Total: totalSize}
 	m.Unlock()
 
 	dstUri, err := fs.NewUriFromString(m.state.Dst)
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to parse dst uri: %s (%w)", err, queue.CriticalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to parse dst uri: %s (%w)", err, queue.CriticalErr)
 	}
 
 	user := trans.FromContext(ctx)
@@ -447,10 +448,10 @@ func (m *RemoteDownloadTask) masterTransfer(ctx context.Context, dep filemanager
 
 		progressKey := fmt.Sprintf("%s%d", ProgressTypeUploadSinglePrefix, workerId)
 		m.Lock()
-		m.progress.ProgressMap[progressKey] = &explorerpb.Progress{Identifier: dst.String(), Total: file.Size}
-		fileProgress := m.progress.ProgressMap[progressKey]
-		uploadProgress := m.progress.ProgressMap[ProgressTypeUpload]
-		uploadCountProgress := m.progress.ProgressMap[ProgressTypeUploadCount]
+		m.progress[progressKey] = &mqueue.Progress{Identifier: dst.String(), Total: file.Size}
+		fileProgress := m.progress[progressKey]
+		uploadProgress := m.progress[ProgressTypeUpload]
+		uploadCountProgress := m.progress[ProgressTypeUploadCount]
 		m.Unlock()
 
 		defer func() {
@@ -502,15 +503,15 @@ func (m *RemoteDownloadTask) masterTransfer(ctx context.Context, dep filemanager
 		if _, ok := m.state.Transferred[file.Index]; ok {
 			m.l.WithContext(ctx).Infof("File %s already transferred, skipping...", file.Name)
 			m.Lock()
-			atomic.AddInt64(&m.progress.ProgressMap[ProgressTypeUpload].Current, file.Size)
-			atomic.AddInt64(&m.progress.ProgressMap[ProgressTypeUploadCount].Current, 1)
+			atomic.AddInt64(&m.progress[ProgressTypeUpload].Current, file.Size)
+			atomic.AddInt64(&m.progress[ProgressTypeUploadCount].Current, 1)
 			m.Unlock()
 			continue
 		}
 
 		select {
 		case <-ctx.Done():
-			return task.StatusError, ctx.Err()
+			return mqueue.StatusError, ctx.Err()
 		case workerId := <-worker:
 			wg.Add(1)
 
@@ -522,16 +523,16 @@ func (m *RemoteDownloadTask) masterTransfer(ctx context.Context, dep filemanager
 	if failed > 0 {
 		m.state.Failed = int(failed)
 		m.l.WithContext(ctx).Errorf("Failed to transfer %d files(s).", failed)
-		return task.StatusError, fmt.Errorf("failed to transfer %d files(s), first 5 errors: %s", failed, ae.FormatFirstN(5))
+		return mqueue.StatusError, fmt.Errorf("failed to transfer %d files(s), first 5 errors: %s", failed, ae.FormatFirstN(5))
 	}
 
 	m.l.WithContext(ctx).Info("All files transferred.")
 	m.state.Phase = RemoteDownloadTaskPhaseAwaitSeeding
-	return task.StatusSuspending, nil
+	return mqueue.StatusSuspending, nil
 }
 
-func (m *RemoteDownloadTask) awaitSeeding(ctx context.Context) (task.Status, error) {
-	return task.StatusSuspending, nil
+func (m *RemoteDownloadTask) awaitSeeding(ctx context.Context) (mqueue.TaskStatus, error) {
+	return mqueue.StatusSuspending, nil
 }
 
 func (m *RemoteDownloadTask) validateFiles(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep,
@@ -601,7 +602,7 @@ func (m *RemoteDownloadTask) CancelDownload(ctx context.Context) error {
 	return m.d.Cancel(ctx, m.state.Handle)
 }
 
-func (m *RemoteDownloadTask) Summarize(hasher hashid.Encoder) *explorerpb.Summary {
+func (m *RemoteDownloadTask) Summarize(hasher hashid.Encoder) *mqueue.Summary {
 	// unmarshal state
 	if m.state == nil {
 		if err := json.Unmarshal([]byte(m.State()), &m.state); err != nil {
@@ -622,38 +623,35 @@ func (m *RemoteDownloadTask) Summarize(hasher hashid.Encoder) *explorerpb.Summar
 		failed = len(m.state.SlaveUploadState.Files) - len(m.state.SlaveUploadState.Transferred)
 	}
 
-	statusBytes, _ := json.Marshal(status)
-	return &explorerpb.Summary{
+	return &mqueue.Summary{
 		Phase:  string(m.state.Phase),
-		NodeId: int32(m.state.NodeID),
-		Props: map[string]string{
+		NodeID: m.state.NodeID,
+		Props: map[string]any{
 			SummaryKeySrcStr:         m.state.SrcUri,
 			SummaryKeySrc:            m.state.SrcFileUri,
 			SummaryKeyDst:            m.state.Dst,
-			SummaryKeyFailed:         strconv.Itoa(failed),
-			SummaryKeyDownloadStatus: string(statusBytes),
+			SummaryKeyFailed:         failed,
+			SummaryKeyDownloadStatus: status,
 		},
 	}
 }
 
-func (m *RemoteDownloadTask) Progress(ctx context.Context) *explorerpb.TaskPhaseProgressResponse {
+func (m *RemoteDownloadTask) Progress(ctx context.Context) mqueue.Progresses {
 	m.Lock()
 	defer m.Unlock()
 
-	merged := make(map[string]*explorerpb.Progress)
-	for k, v := range m.progress.ProgressMap {
+	merged := make(mqueue.Progresses)
+	for k, v := range m.progress {
 		merged[k] = v
 	}
 
 	if m.state.NodeState.progress != nil {
-		for k, v := range m.state.NodeState.progress.ProgressMap {
+		for k, v := range m.state.NodeState.progress {
 			merged[k] = v
 		}
 	}
 
-	return &explorerpb.TaskPhaseProgressResponse{
-		ProgressMap: merged,
-	}
+	return merged
 }
 
 func sanitizeFileName(name string) string {

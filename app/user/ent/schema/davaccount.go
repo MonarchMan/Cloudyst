@@ -4,13 +4,10 @@ import (
 	pb "api/api/user/common/v1"
 	"common/boolset"
 
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // DavAccount holds the schema definition for the DavAccount entity.
@@ -22,22 +19,15 @@ type DavAccount struct {
 func (DavAccount) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("id").
-			StorageKey("id").
-			Annotations(entproto.Field(1)),
-		field.String("name").
-			Annotations(entproto.Field(2)),
-		field.Text("uri").
-			Annotations(entproto.Field(3)),
+			StorageKey("id"),
+		field.String("name"),
+		field.Text("uri"),
 		field.String("password").
-			Sensitive().
-			Annotations(entproto.Field(4)),
-		field.Bytes("options").GoType(&boolset.BooleanSet{}).
-			Annotations(entproto.Field(5)),
+			Sensitive(),
+		field.Bytes("options").GoType(&boolset.BooleanSet{}),
 		field.JSON("props", &pb.DavAccountProps{}).
-			Optional().
-			Annotations(entproto.Field(6, entproto.Type(descriptorpb.FieldDescriptorProto_TYPE_STRING))),
-		field.Int("owner_id").
-			Annotations(entproto.Field(7)),
+			Optional(),
+		field.Int("owner_id"),
 	}
 }
 
@@ -48,8 +38,7 @@ func (DavAccount) Edges() []ent.Edge {
 			Ref("dav_accounts").
 			Field("owner_id").
 			Unique().
-			Required().
-			Annotations(entproto.Field(80)),
+			Required(),
 	}
 }
 
@@ -64,11 +53,5 @@ func (DavAccount) Indexes() []ent.Index {
 func (DavAccount) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		CommonMixin{},
-	}
-}
-
-func (DavAccount) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
 	}
 }

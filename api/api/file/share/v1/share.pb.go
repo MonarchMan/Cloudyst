@@ -7,6 +7,7 @@
 package v1
 
 import (
+	v11 "api/api/common/v1"
 	v1 "api/api/file/common/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -421,7 +422,7 @@ type GetShareResponse struct {
 	PasswordProtected bool                   `protobuf:"varint,8,opt,name=password_protected,json=passwordProtected,proto3" json:"password_protected,omitempty"`
 	SourceType        int32                  `protobuf:"varint,9,opt,name=source_type,json=sourceType,proto3" json:"source_type,omitempty"`
 	OwnerId           int32                  `protobuf:"varint,10,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
-	OwnerInfo         *v1.UserInfo           `protobuf:"bytes,11,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
+	OwnerInfo         *v11.UserInfo          `protobuf:"bytes,11,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
 	CreatedAt         *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	Expired           bool                   `protobuf:"varint,13,opt,name=expired,proto3" json:"expired,omitempty"`
 	Url               string                 `protobuf:"bytes,14,opt,name=url,proto3" json:"url,omitempty"`
@@ -534,7 +535,7 @@ func (x *GetShareResponse) GetOwnerId() int32 {
 	return 0
 }
 
-func (x *GetShareResponse) GetOwnerInfo() *v1.UserInfo {
+func (x *GetShareResponse) GetOwnerInfo() *v11.UserInfo {
 	if x != nil {
 		return x.OwnerInfo
 	}
@@ -750,7 +751,7 @@ var File_file_share_v1_share_proto protoreflect.FileDescriptor
 
 const file_file_share_v1_share_proto_rawDesc = "" +
 	"\n" +
-	"\x19file/share/v1/share.proto\x12\rfile.share.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1bfile/common/v1/common.proto\"\xf5\x01\n" +
+	"\x19file/share/v1/share.proto\x12\rfile.share.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1bfile/common/v1/common.proto\x1a\x16common/v1/common.proto\"\xf5\x01\n" +
 	"\x12UpsertShareRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03uri\x18\x02 \x01(\tR\x03uri\x12\x1d\n" +
@@ -783,7 +784,7 @@ const file_file_share_v1_share_proto_rawDesc = "" +
 	"pagination\x18\x02 \x01(\v2!.file.common.v1.PaginationResultsR\n" +
 	"pagination\"$\n" +
 	"\x12DeleteShareRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\"\x92\x05\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\"\x8d\x05\n" +
 	"\x10GetShareResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12)\n" +
@@ -798,9 +799,9 @@ const file_file_share_v1_share_proto_rawDesc = "" +
 	"\vsource_type\x18\t \x01(\x05R\n" +
 	"sourceType\x12\x19\n" +
 	"\bowner_id\x18\n" +
-	" \x01(\x05R\aownerId\x127\n" +
+	" \x01(\x05R\aownerId\x122\n" +
 	"\n" +
-	"owner_info\x18\v \x01(\v2\x18.file.common.v1.UserInfoR\townerInfo\x129\n" +
+	"owner_info\x18\v \x01(\v2\x13.common.v1.UserInfoR\townerInfo\x129\n" +
 	"\n" +
 	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x18\n" +
 	"\aexpired\x18\r \x01(\bR\aexpired\x12\x10\n" +
@@ -858,14 +859,14 @@ var file_file_share_v1_share_proto_goTypes = []any{
 	(*RedirectShareRequest)(nil),     // 9: file.share.v1.RedirectShareRequest
 	(*v1.PaginationResults)(nil),     // 10: file.common.v1.PaginationResults
 	(*timestamppb.Timestamp)(nil),    // 11: google.protobuf.Timestamp
-	(*v1.UserInfo)(nil),              // 12: file.common.v1.UserInfo
+	(*v11.UserInfo)(nil),             // 12: common.v1.UserInfo
 	(*emptypb.Empty)(nil),            // 13: google.protobuf.Empty
 }
 var file_file_share_v1_share_proto_depIdxs = []int32{
 	6,  // 0: file.share.v1.ListSharesResponse.shares:type_name -> file.share.v1.GetShareResponse
 	10, // 1: file.share.v1.ListSharesResponse.pagination:type_name -> file.common.v1.PaginationResults
 	11, // 2: file.share.v1.GetShareResponse.expires:type_name -> google.protobuf.Timestamp
-	12, // 3: file.share.v1.GetShareResponse.owner_info:type_name -> file.common.v1.UserInfo
+	12, // 3: file.share.v1.GetShareResponse.owner_info:type_name -> common.v1.UserInfo
 	11, // 4: file.share.v1.GetShareResponse.created_at:type_name -> google.protobuf.Timestamp
 	11, // 5: file.share.v1.TimeRangeRequest.start:type_name -> google.protobuf.Timestamp
 	11, // 6: file.share.v1.TimeRangeRequest.end:type_name -> google.protobuf.Timestamp

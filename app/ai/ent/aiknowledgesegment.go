@@ -5,6 +5,7 @@ package ent
 import (
 	"ai/ent/aiknowledgedocument"
 	"ai/ent/aiknowledgesegment"
+	"encoding/json"
 	"entmodule"
 	"fmt"
 	"strings"
@@ -33,6 +34,16 @@ type AiKnowledgeSegment struct {
 	ContentLength int `json:"content_length,omitempty"`
 	// 分段token数
 	Tokens int `json:"tokens,omitempty"`
+	// 文档内切片顺序
+	ChunkIndex int `json:"chunk_index,omitempty"`
+	// 章节路径
+	SectionPath string `json:"section_path,omitempty"`
+	// 切片在原文中的起始字符偏移
+	StartOffset int `json:"start_offset,omitempty"`
+	// 切片在原文中的结束字符偏移
+	EndOffset int `json:"end_offset,omitempty"`
+	// 切片级增强元信息
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// 向量库的分片向量ID
 	VectorID string `json:"vector_id,omitempty"`
 	// 召回次数
@@ -70,9 +81,11 @@ func (*AiKnowledgeSegment) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case aiknowledgesegment.FieldID, aiknowledgesegment.FieldDocumentID, aiknowledgesegment.FieldKnowledgeID, aiknowledgesegment.FieldContentLength, aiknowledgesegment.FieldTokens, aiknowledgesegment.FieldRetrievalCount:
+		case aiknowledgesegment.FieldMetadata:
+			values[i] = new([]byte)
+		case aiknowledgesegment.FieldID, aiknowledgesegment.FieldDocumentID, aiknowledgesegment.FieldKnowledgeID, aiknowledgesegment.FieldContentLength, aiknowledgesegment.FieldTokens, aiknowledgesegment.FieldChunkIndex, aiknowledgesegment.FieldStartOffset, aiknowledgesegment.FieldEndOffset, aiknowledgesegment.FieldRetrievalCount:
 			values[i] = new(sql.NullInt64)
-		case aiknowledgesegment.FieldVectorID, aiknowledgesegment.FieldStatus:
+		case aiknowledgesegment.FieldSectionPath, aiknowledgesegment.FieldVectorID, aiknowledgesegment.FieldStatus:
 			values[i] = new(sql.NullString)
 		case aiknowledgesegment.FieldCreatedAt, aiknowledgesegment.FieldUpdatedAt, aiknowledgesegment.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -139,6 +152,38 @@ func (_m *AiKnowledgeSegment) assignValues(columns []string, values []any) error
 				return fmt.Errorf("unexpected type %T for field tokens", values[i])
 			} else if value.Valid {
 				_m.Tokens = int(value.Int64)
+			}
+		case aiknowledgesegment.FieldChunkIndex:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field chunk_index", values[i])
+			} else if value.Valid {
+				_m.ChunkIndex = int(value.Int64)
+			}
+		case aiknowledgesegment.FieldSectionPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field section_path", values[i])
+			} else if value.Valid {
+				_m.SectionPath = value.String
+			}
+		case aiknowledgesegment.FieldStartOffset:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field start_offset", values[i])
+			} else if value.Valid {
+				_m.StartOffset = int(value.Int64)
+			}
+		case aiknowledgesegment.FieldEndOffset:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field end_offset", values[i])
+			} else if value.Valid {
+				_m.EndOffset = int(value.Int64)
+			}
+		case aiknowledgesegment.FieldMetadata:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field metadata", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Metadata); err != nil {
+					return fmt.Errorf("unmarshal field metadata: %w", err)
+				}
 			}
 		case aiknowledgesegment.FieldVectorID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -221,6 +266,21 @@ func (_m *AiKnowledgeSegment) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("tokens=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Tokens))
+	builder.WriteString(", ")
+	builder.WriteString("chunk_index=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ChunkIndex))
+	builder.WriteString(", ")
+	builder.WriteString("section_path=")
+	builder.WriteString(_m.SectionPath)
+	builder.WriteString(", ")
+	builder.WriteString("start_offset=")
+	builder.WriteString(fmt.Sprintf("%v", _m.StartOffset))
+	builder.WriteString(", ")
+	builder.WriteString("end_offset=")
+	builder.WriteString(fmt.Sprintf("%v", _m.EndOffset))
+	builder.WriteString(", ")
+	builder.WriteString("metadata=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))
 	builder.WriteString(", ")
 	builder.WriteString("vector_id=")
 	builder.WriteString(_m.VectorID)

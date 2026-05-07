@@ -3,7 +3,8 @@
 package group
 
 import (
-	v1 "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"time"
 
 	"entgo.io/ent"
@@ -89,9 +90,9 @@ var (
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultSettings holds the default value on creation for the "settings" field.
-	DefaultSettings *v1.GroupSetting
+	DefaultSettings *userdata.GroupSetting
 	// DefaultStoragePolicyInfo holds the default value on creation for the "storage_policy_info" field.
-	DefaultStoragePolicyInfo *v1.StoragePolicyInfo
+	DefaultStoragePolicyInfo *filedata.StoragePolicyInfo
 )
 
 // OrderOption defines the ordering options for the Group queries.

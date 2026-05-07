@@ -1,6 +1,6 @@
 module file
 
-go 1.24.0
+go 1.25
 
 require (
 	entgo.io/contrib v0.7.0
@@ -27,11 +27,9 @@ require (
 	github.com/google/go-querystring v1.1.0
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.6.0
-	github.com/gorilla/sessions v1.4.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/hashicorp/consul/api v1.30.0
 	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.25.9+incompatible
-	github.com/jpillora/backoff v1.0.0
 	github.com/juju/ratelimit v1.0.2
 	github.com/ks3sdklib/aws-sdk-go v1.8.1
 	github.com/lib/pq v1.10.9
@@ -49,6 +47,9 @@ require (
 	golang.org/x/tools v0.37.0
 	google.golang.org/protobuf v1.36.10
 	modernc.org/sqlite v1.40.0
+	go.opentelemetry.io/otel v1.39.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.39.0
+	go.opentelemetry.io/otel/sdk v1.39.0
 )
 
 require (
@@ -60,7 +61,6 @@ require (
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/alex-ant/gomath v0.0.0-20160516115720-89013a210a82 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
-	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
@@ -131,10 +131,6 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/zclconf/go-cty v1.14.4 // indirect
 	github.com/zclconf/go-cty-yaml v1.1.0 // indirect
-	go.opentelemetry.io/otel v1.24.0 // indirect
-	go.opentelemetry.io/otel/metric v1.24.0 // indirect
-	go.opentelemetry.io/otel/trace v1.24.0 // indirect
-	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	go4.org v0.0.0-20230225012048-214862532bf5 // indirect
 	golang.org/x/crypto v0.42.0 // indirect

@@ -3,7 +3,7 @@
 package ent
 
 import (
-	v1 "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"context"
 	"errors"
 	"fmt"
@@ -182,7 +182,7 @@ func (_u *UserUpdate) ClearAvatar() *UserUpdate {
 }
 
 // SetSettings sets the "settings" field.
-func (_u *UserUpdate) SetSettings(v *v1.UserSetting) *UserUpdate {
+func (_u *UserUpdate) SetSettings(v *userdata.UserSetting) *UserUpdate {
 	_u.mutation.SetSettings(v)
 	return _u
 }
@@ -358,11 +358,6 @@ func (_u *UserUpdate) check() error {
 	if v, ok := _u.mutation.Status(); ok {
 		if err := user.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "User.status": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.Settings(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "settings", err: fmt.Errorf(`ent: validator failed for field "User.settings": %w`, err)}
 		}
 	}
 	if _u.mutation.GroupCleared() && len(_u.mutation.GroupIDs()) > 0 {
@@ -720,7 +715,7 @@ func (_u *UserUpdateOne) ClearAvatar() *UserUpdateOne {
 }
 
 // SetSettings sets the "settings" field.
-func (_u *UserUpdateOne) SetSettings(v *v1.UserSetting) *UserUpdateOne {
+func (_u *UserUpdateOne) SetSettings(v *userdata.UserSetting) *UserUpdateOne {
 	_u.mutation.SetSettings(v)
 	return _u
 }
@@ -909,11 +904,6 @@ func (_u *UserUpdateOne) check() error {
 	if v, ok := _u.mutation.Status(); ok {
 		if err := user.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "User.status": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.Settings(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "settings", err: fmt.Errorf(`ent: validator failed for field "User.settings": %w`, err)}
 		}
 	}
 	if _u.mutation.GroupCleared() && len(_u.mutation.GroupIDs()) > 0 {

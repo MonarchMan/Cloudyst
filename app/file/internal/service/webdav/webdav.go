@@ -2,7 +2,7 @@ package webdav
 
 import (
 	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"common/boolset"
 	"common/constants"
@@ -20,6 +20,7 @@ import (
 	"file/internal/biz/filemanager/manager"
 	"file/internal/biz/filemanager/manager/entitysource"
 	"file/internal/biz/setting"
+	"file/internal/data/rpc"
 	"file/internal/data/types"
 	"file/internal/pkg/webdav"
 	"net/http"
@@ -34,17 +35,29 @@ import (
 	"golang.org/x/tools/container/intsets"
 )
 
+func UserFromContext(ctx context.Context) *userpb.User {
+	user, ok := ctx.Value(trans.UserCtx{}).(*userpb.User)
+	if !ok {
+		return nil
+	}
+	return user
+}
+
+func WithContext(ctx context.Context, user *userpb.User) context.Context {
+	return context.WithValue(ctx, trans.UserCtx{}, user)
+}
+
 type WebDAVService struct {
 	dep      filemanager.ManagerDep
 	dbfsDep  filemanager.DbfsDep
-	uc       pbuser.UserClient
+	uc       rpc.UserClient
 	l        *log.Helper
 	settings setting.Provider
 	hasher   hashid.Encoder
 	mime     mime.MimeManager
 }
 
-func NewWebDAVService(dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, uc pbuser.UserClient, l log.Logger,
+func NewWebDAVService(dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, uc rpc.UserClient, l log.Logger,
 	settings setting.Provider, hasher hashid.Encoder, mm mime.MimeManager) *WebDAVService {
 	return &WebDAVService{
 		dep:      dep,
@@ -58,33 +71,35 @@ func NewWebDAVService(dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, u
 }
 
 func (s *WebDAVService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	u := trans.FromContext(r.Context())
-	fm := manager.NewFileManager(s.dep, s.dbfsDep, u)
+	u := UserFromContext(r.Context())
+	user := userdata.UserFromProto(u)
+	fm := manager.NewFileManager(s.dep, s.dbfsDep, user)
 	defer fm.Recycle()
 
 	status, err := http.StatusBadRequest, webdav.ErrUnsupportedMethod
+	s.auth(w, r)
 
 	switch r.Method {
 	case "OPTIONS":
-		status, err = s.handleOptions(w, r, u, fm)
+		status, err = s.handleOptions(w, r, user, u.DavAccounts, fm)
 	case "GET", "HEAD", "POST":
-		status, err = s.handleGetHeadPost(w, r, u, fm)
+		status, err = s.handleGetHeadPost(w, r, user, u.DavAccounts, fm)
 	case "DELETE":
-		status, err = s.handleDelete(w, r, u, fm)
+		status, err = s.handleDelete(w, r, user, u.DavAccounts, fm)
 	case "PUT":
-		status, err = s.handlePut(w, r, u, fm)
+		status, err = s.handlePut(w, r, user, u.DavAccounts, fm)
 	case "MKCOL":
-		status, err = s.handleMkcol(w, r, u, fm)
+		status, err = s.handleMkcol(w, r, user, u.DavAccounts, fm)
 	case "COPY", "MOVE":
-		status, err = s.handleCopyMove(w, r, u, fm)
+		status, err = s.handleCopyMove(w, r, user, u.DavAccounts, fm)
 	case "LOCK":
-		status, err = s.handleLock(w, r, u, fm)
+		status, err = s.handleLock(w, r, user, u.DavAccounts, fm)
 	case "UNLOCK":
-		status, err = s.handleUnlock(w, r, u, fm)
+		status, err = s.handleUnlock(w, r, user, u.DavAccounts, fm)
 	case "PROPFIND":
-		status, err = s.handlePropfind(w, r, u, fm)
+		status, err = s.handlePropfind(w, r, user, u.DavAccounts, fm)
 	case "PROPPATCH":
-		status, err = s.handleProppatch(w, r, u, fm)
+		status, err = s.handleProppatch(w, r, user, u.DavAccounts, fm)
 	}
 	if status != 0 {
 		w.WriteHeader(status)
@@ -97,8 +112,8 @@ func (s *WebDAVService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *WebDAVService) handleGetHeadPost(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (int, error) {
-	_, reqPath, status, err := stripPrefix(r.URL.Path, user)
+func (s *WebDAVService) handleGetHeadPost(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (int, error) {
+	_, reqPath, status, err := stripPrefix(r.URL.Path, davAccounts[0].Uri)
 	if err != nil {
 		return status, err
 	}
@@ -117,11 +132,10 @@ func (s *WebDAVService) handleGetHeadPost(w http.ResponseWriter, r *http.Request
 	}
 	defer es.Close()
 
-	es.Apply(entitysource.WithSpeedLimit(user.Group.SpeedLimit.GetValue()))
-	options := boolset.BooleanSet(user.DavAccounts[0].Options)
-	permissions := boolset.BooleanSet(user.Group.Permissions)
-	if es.ShouldInternalProxy() || ((&options).Enabled(constants.DavAccountProxy) &&
-		(&permissions).Enabled(int(types.GroupPermissionWebDAVProxy))) {
+	es.Apply(entitysource.WithSpeedLimit(int64(user.Group.SpeedLimit)))
+	options := (*boolset.BooleanSet)(&davAccounts[0].Options)
+	if es.ShouldInternalProxy() || (options.Enabled(constants.DavAccountProxy) &&
+		user.Group.Permissions.Enabled(int(types.GroupPermissionWebDAVProxy))) {
 		es.Serve(w, r)
 	} else {
 		expire := time.Now().Add(s.settings.EntityUrlValidDuration(r.Context()))
@@ -135,18 +149,18 @@ func (s *WebDAVService) handleGetHeadPost(w http.ResponseWriter, r *http.Request
 	return 0, nil
 }
 
-func (s *WebDAVService) handleOptions(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (int, error) {
+func (s *WebDAVService) handleOptions(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (int, error) {
 	allow := []string{"OPTIONS", "LOCK", "PUT", "MKCOL"}
 
 	if user != nil {
-		_, reqPath, status, err := stripPrefix(r.URL.Path, user)
+		_, reqPath, status, err := stripPrefix(r.URL.Path, davAccounts[0].Uri)
 		if err != nil {
 			return status, err
 		}
 		if target, _, err := fm.SharedAddressTranslation(r.Context(), reqPath); err == nil {
 			allow = allow[:1]
 			read, update, del, create := true, true, true, true
-			if target.OwnerID() != int(user.Id) {
+			if target.OwnerID() != user.ID {
 				update = false
 				del = false
 				create = false
@@ -189,10 +203,7 @@ func (s *WebDAVService) auth(w http.ResponseWriter, r *http.Request) bool {
 		w.WriteHeader(http.StatusUnauthorized)
 		return false
 	}
-	expectedUser, err := s.uc.GetActiveUserByDavAccount(r.Context(), &pbuser.GetActiveUserByDavAccountRequest{
-		Username: username,
-		Password: password,
-	})
+	expectedUser, err := s.uc.GetUserByDavAccount(r.Context(), username, password)
 	if err != nil {
 		//if username != "" {
 		//	if u, err := s.uc.GetUserByEmail(r.Context(), &pbuser.GetUserByEmailRequest{Email: username}); err == nil {
@@ -230,7 +241,7 @@ func (s *WebDAVService) auth(w http.ResponseWriter, r *http.Request) bool {
 
 	// check read-only
 	permissions = expectedUser.DavAccounts[0].Options
-	if !(&permissions).Enabled(int(constants.DavAccountReadOnly)) {
+	if !(&permissions).Enabled(constants.DavAccountReadOnly) {
 		switch r.Method {
 		case http.MethodDelete, http.MethodPut, "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK":
 			w.WriteHeader(http.StatusForbidden)
@@ -238,12 +249,12 @@ func (s *WebDAVService) auth(w http.ResponseWriter, r *http.Request) bool {
 		}
 	}
 
-	context.WithValue(r.Context(), trans.UserCtx{}, expectedUser)
+	trans.WithProtoValue(r.Context(), expectedUser)
 	return true
 }
 
-func (s *WebDAVService) handleDelete(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (int, error) {
-	_, reqPath, status, err := stripPrefix(r.URL.Path, user)
+func (s *WebDAVService) handleDelete(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (int, error) {
+	_, reqPath, status, err := stripPrefix(r.URL.Path, davAccounts[0].Uri)
 	if err != nil {
 		return status, err
 	}
@@ -270,7 +281,7 @@ func (s *WebDAVService) handleDelete(w http.ResponseWriter, r *http.Request, use
 	return http.StatusNoContent, nil
 }
 
-func (s *WebDAVService) confirmLock(r *http.Request, fm manager.FileManager, user *userpb.User, srcAnc, dstAnc fs.File,
+func (s *WebDAVService) confirmLock(r *http.Request, fm manager.FileManager, user *userdata.User, srcAnc, dstAnc fs.File,
 	src, dst *fs.URI) (func(), fs.LockSession, int, error) {
 	hdr := r.Header.Get("If")
 	if hdr == "" {
@@ -287,7 +298,7 @@ func (s *WebDAVService) confirmLock(r *http.Request, fm manager.FileManager, use
 			err error
 		)
 		if src != nil {
-			ls, err = fm.Lock(ctx, -1, int(user.Id), true, ap, src, "")
+			ls, err = fm.Lock(ctx, -1, user.ID, true, ap, src, "")
 			if err != nil {
 				return nil, nil, purposeStatusCodeFromError(err), err
 			}
@@ -296,7 +307,7 @@ func (s *WebDAVService) confirmLock(r *http.Request, fm manager.FileManager, use
 		}
 
 		if dst != nil {
-			ls, err = fm.Lock(ctx, -1, int(user.Id), true, ap, dst, "")
+			ls, err = fm.Lock(ctx, -1, user.ID, true, ap, dst, "")
 			if err != nil {
 				if src != nil {
 					_ = fm.Unlock(ctx, srcToken)
@@ -365,8 +376,8 @@ func (s *WebDAVService) confirmLock(r *http.Request, fm manager.FileManager, use
 	return nil, nil, http.StatusPreconditionFailed, webdav.ErrLocked
 }
 
-func (s *WebDAVService) handlePut(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (int, error) {
-	_, reqPath, status, err := stripPrefix(r.URL.Path, user)
+func (s *WebDAVService) handlePut(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (int, error) {
+	_, reqPath, status, err := stripPrefix(r.URL.Path, davAccounts[0].Uri)
 	if err != nil {
 		return status, err
 	}
@@ -376,7 +387,7 @@ func (s *WebDAVService) handlePut(w http.ResponseWriter, r *http.Request, user *
 		return purposeStatusCodeFromError(err), err
 	}
 
-	if options := boolset.BooleanSet(user.DavAccounts[0].Options); (&options).Enabled(constants.DavAccountDisableSysFiles) {
+	if options := boolset.BooleanSet(davAccounts[0].Options); (&options).Enabled(constants.DavAccountDisableSysFiles) {
 		if strings.HasPrefix(reqPath.Name(), ".") {
 			return http.StatusMethodNotAllowed, nil
 		}
@@ -423,8 +434,8 @@ func (s *WebDAVService) handlePut(w http.ResponseWriter, r *http.Request, user *
 	return http.StatusCreated, nil
 }
 
-func (s *WebDAVService) handleMkcol(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (int, error) {
-	_, reqPath, status, err := stripPrefix(r.URL.Path, user)
+func (s *WebDAVService) handleMkcol(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (int, error) {
+	_, reqPath, status, err := stripPrefix(r.URL.Path, davAccounts[0].Uri)
 	if err != nil {
 		return status, err
 	}
@@ -454,7 +465,7 @@ func (s *WebDAVService) handleMkcol(w http.ResponseWriter, r *http.Request, user
 	return http.StatusCreated, nil
 }
 
-func (s *WebDAVService) handleCopyMove(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (int, error) {
+func (s *WebDAVService) handleCopyMove(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (int, error) {
 	header := r.Header.Get("Destination")
 	if header == "" {
 		return http.StatusBadRequest, webdav.ErrInvalidDestination
@@ -467,7 +478,7 @@ func (s *WebDAVService) handleCopyMove(w http.ResponseWriter, r *http.Request, u
 		return http.StatusBadGateway, webdav.ErrInvalidDestination
 	}
 
-	_, src, status, err := stripPrefix(r.URL.Path, user)
+	_, src, status, err := stripPrefix(r.URL.Path, davAccounts[0].Uri)
 	if err != nil {
 		return status, err
 	}
@@ -477,7 +488,7 @@ func (s *WebDAVService) handleCopyMove(w http.ResponseWriter, r *http.Request, u
 		return purposeStatusCodeFromError(err), err
 	}
 
-	_, dst, status, err := stripPrefix(u.Path, user)
+	_, dst, status, err := stripPrefix(u.Path, davAccounts[0].Uri)
 	if err != nil {
 		return status, err
 	}
@@ -492,7 +503,7 @@ func (s *WebDAVService) handleCopyMove(w http.ResponseWriter, r *http.Request, u
 		return purposeStatusCodeFromError(err), err
 	}
 
-	if srcUri.IsSame(dstUri, hashid.EncodeUserID(s.hasher, int(user.Id))) {
+	if srcUri.IsSame(dstUri, hashid.EncodeUserID(s.hasher, user.ID)) {
 		return http.StatusForbidden, webdav.ErrDestinationEqualsSource
 	}
 
@@ -554,7 +565,7 @@ func (s *WebDAVService) handleCopyMove(w http.ResponseWriter, r *http.Request, u
 	return http.StatusNoContent, nil
 }
 
-func (s *WebDAVService) handleLock(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (retStatus int, retErr error) {
+func (s *WebDAVService) handleLock(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (retStatus int, retErr error) {
 	duration, err := webdav.ParseTimeout(r.Header.Get("Timeout"))
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -564,7 +575,7 @@ func (s *WebDAVService) handleLock(w http.ResponseWriter, r *http.Request, user 
 		return status, err
 	}
 
-	href, reqPath, status, err := stripPrefix(r.URL.Path, user)
+	href, reqPath, status, err := stripPrefix(r.URL.Path, davAccounts[0].Uri)
 	if err != nil {
 		return status, err
 	}
@@ -618,7 +629,7 @@ func (s *WebDAVService) handleLock(w http.ResponseWriter, r *http.Request, user 
 			Type:     string(fs.ApplicationDAV),
 			InnerXML: li.Owner.InnerXML,
 		}
-		ls, err := fm.Lock(r.Context(), duration, int(user.Id), depth == 0, app, uri, "")
+		ls, err := fm.Lock(r.Context(), duration, user.ID, depth == 0, app, uri, "")
 		if err != nil {
 			if errors.Is(err, lock.ErrLocked) {
 				return http.StatusLocked, err
@@ -634,7 +645,7 @@ func (s *WebDAVService) handleLock(w http.ResponseWriter, r *http.Request, user 
 		}()
 
 		// Create the resource if it didn't previously exist.
-		if !ancestor.Uri(false).IsSame(uri, hashid.EncodeUserID(s.hasher, int(user.Id))) {
+		if !ancestor.Uri(false).IsSame(uri, hashid.EncodeUserID(s.hasher, user.ID)) {
 			if _, err = fm.Create(ctx, uri, types.FileTypeFile); err != nil {
 				return purposeStatusCodeFromError(err), err
 			}
@@ -657,7 +668,7 @@ func (s *WebDAVService) handleLock(w http.ResponseWriter, r *http.Request, user 
 	return 0, nil
 }
 
-func (s *WebDAVService) handleUnlock(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (int, error) {
+func (s *WebDAVService) handleUnlock(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (int, error) {
 	// http://www.webdav.org/specs/rfc4918.html#HEADER_Lock-Token says that the
 	// Lock-Token value is a Coded-URL. We strip its angle brackets.
 	t := r.Header.Get("Lock-Token")
@@ -673,8 +684,8 @@ func (s *WebDAVService) handleUnlock(w http.ResponseWriter, r *http.Request, use
 	return http.StatusNoContent, err
 }
 
-func (s *WebDAVService) handlePropfind(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (int, error) {
-	href, reqPath, status, err := stripPrefix(r.URL.Path, user)
+func (s *WebDAVService) handlePropfind(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (int, error) {
+	href, reqPath, status, err := stripPrefix(r.URL.Path, davAccounts[0].Uri)
 	if err != nil {
 		return status, err
 	}
@@ -743,8 +754,8 @@ func (s *WebDAVService) handlePropfind(w http.ResponseWriter, r *http.Request, u
 	return 0, nil
 }
 
-func (s *WebDAVService) handleProppatch(w http.ResponseWriter, r *http.Request, user *userpb.User, fm manager.FileManager) (int, error) {
-	_, reqPath, status, err := stripPrefix(r.URL.Path, user)
+func (s *WebDAVService) handleProppatch(w http.ResponseWriter, r *http.Request, user *userdata.User, davAccounts []*userpb.DavAccount, fm manager.FileManager) (int, error) {
+	_, reqPath, status, err := stripPrefix(r.URL.Path, davAccounts[0].Uri)
 	if err != nil {
 		return status, err
 	}
@@ -814,8 +825,8 @@ func purposeStatusCodeFromError(err error) int {
 	return http.StatusInternalServerError
 }
 
-func stripPrefix(p string, u *userpb.User) (string, *fs.URI, int, error) {
-	base, err := fs.NewUriFromString(u.DavAccounts[0].Uri)
+func stripPrefix(p string, uri string) (string, *fs.URI, int, error) {
+	base, err := fs.NewUriFromString(uri)
 	if err != nil {
 		return "", nil, http.StatusInternalServerError, err
 	}

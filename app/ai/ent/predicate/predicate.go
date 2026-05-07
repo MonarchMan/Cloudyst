@@ -38,3 +38,6 @@ type AiTool func(*sql.Selector)
 
 // AiWebPage is the predicate function for aiwebpage builders.
 type AiWebPage func(*sql.Selector)
+
+// Task is the predicate function for task builders.
+type Task func(*sql.Selector)

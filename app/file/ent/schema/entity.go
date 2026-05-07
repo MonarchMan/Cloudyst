@@ -1,7 +1,6 @@
 package schema
 
 import (
-	mschema "entmodule/ent/schema"
 	"file/internal/data/types"
 
 	"entgo.io/contrib/entproto"
@@ -62,7 +61,7 @@ func (Entity) Edges() []ent.Edge {
 
 func (Entity) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
+		CommonMixin{},
 	}
 }
 

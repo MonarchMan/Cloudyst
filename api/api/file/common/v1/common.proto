@@ -7,6 +7,7 @@ import "google/protobuf/struct.proto";
 import "google/protobuf/duration.proto";
 import "errors/errors.proto";
 import "validate/validate.proto";
+import "common/v1/common.proto";
 
 option go_package = "api/api/file/common/v1;v1";
 
@@ -52,7 +53,6 @@ message UserInfo {
   string avatar = 5;
 }
 
-
 // Additional
 message EntityProps {
   bool unlink_only = 1;
@@ -78,7 +78,7 @@ message ExplorerView {
   string order = 2 [(validate.rules).string = {max_len: 255}];
 
   // order_direction: 只能是 asc 或 desc
-  OrderDirection order_direction = 3;
+  .common.v1.OrderDirection order_direction = 3;
 
   // view: 只能是 list, grid 或 gallery
   ViewType view = 4;
@@ -93,13 +93,6 @@ message ExplorerView {
   repeated ListViewColumn columns = 7 [(validate.rules).repeated = {max_items: 1000}];
 }
 
-// 排序方向枚举
-enum OrderDirection {
-  ORDER_DIRECTION_UNSPECIFIED = 0;
-  ORDER_DIRECTION_ASC = 1;
-  ORDER_DIRECTION_DESC = 2;
-}
-
 // 视图类型枚举
 enum ViewType {
   VIEW_TYPE_UNSPECIFIED = 0;
@@ -110,8 +103,8 @@ enum ViewType {
 
 message ListViewColumn {
   int32 type = 1 [(validate.rules).int32 = {gte: 0}];
-  int32 width = 2;
-
+  optional int32 width = 2;
+  ColumnTypeProps props = 3;
 }
 
 message ColumnTypeProps {

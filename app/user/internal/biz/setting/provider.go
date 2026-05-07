@@ -2,7 +2,7 @@ package setting
 
 import (
 	pbsite "api/api/user/site/v1"
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
 	"common/auth/requestinfo"
 	"common/boolset"
 	"context"

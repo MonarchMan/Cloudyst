@@ -135,6 +135,27 @@ func (_u *AiKnowledgeDocumentUpdate) AddContentLength(v int) *AiKnowledgeDocumen
 	return _u
 }
 
+// SetSize sets the "size" field.
+func (_u *AiKnowledgeDocumentUpdate) SetSize(v int64) *AiKnowledgeDocumentUpdate {
+	_u.mutation.ResetSize()
+	_u.mutation.SetSize(v)
+	return _u
+}
+
+// SetNillableSize sets the "size" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdate) SetNillableSize(v *int64) *AiKnowledgeDocumentUpdate {
+	if v != nil {
+		_u.SetSize(*v)
+	}
+	return _u
+}
+
+// AddSize adds value to the "size" field.
+func (_u *AiKnowledgeDocumentUpdate) AddSize(v int64) *AiKnowledgeDocumentUpdate {
+	_u.mutation.AddSize(v)
+	return _u
+}
+
 // SetTokens sets the "tokens" field.
 func (_u *AiKnowledgeDocumentUpdate) SetTokens(v int) *AiKnowledgeDocumentUpdate {
 	_u.mutation.ResetTokens()
@@ -153,6 +174,79 @@ func (_u *AiKnowledgeDocumentUpdate) SetNillableTokens(v *int) *AiKnowledgeDocum
 // AddTokens adds value to the "tokens" field.
 func (_u *AiKnowledgeDocumentUpdate) AddTokens(v int) *AiKnowledgeDocumentUpdate {
 	_u.mutation.AddTokens(v)
+	return _u
+}
+
+// SetChunks sets the "chunks" field.
+func (_u *AiKnowledgeDocumentUpdate) SetChunks(v int) *AiKnowledgeDocumentUpdate {
+	_u.mutation.ResetChunks()
+	_u.mutation.SetChunks(v)
+	return _u
+}
+
+// SetNillableChunks sets the "chunks" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdate) SetNillableChunks(v *int) *AiKnowledgeDocumentUpdate {
+	if v != nil {
+		_u.SetChunks(*v)
+	}
+	return _u
+}
+
+// AddChunks adds value to the "chunks" field.
+func (_u *AiKnowledgeDocumentUpdate) AddChunks(v int) *AiKnowledgeDocumentUpdate {
+	_u.mutation.AddChunks(v)
+	return _u
+}
+
+// SetParseType sets the "parse_type" field.
+func (_u *AiKnowledgeDocumentUpdate) SetParseType(v string) *AiKnowledgeDocumentUpdate {
+	_u.mutation.SetParseType(v)
+	return _u
+}
+
+// SetNillableParseType sets the "parse_type" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdate) SetNillableParseType(v *string) *AiKnowledgeDocumentUpdate {
+	if v != nil {
+		_u.SetParseType(*v)
+	}
+	return _u
+}
+
+// ClearParseType clears the value of the "parse_type" field.
+func (_u *AiKnowledgeDocumentUpdate) ClearParseType() *AiKnowledgeDocumentUpdate {
+	_u.mutation.ClearParseType()
+	return _u
+}
+
+// SetContentHash sets the "content_hash" field.
+func (_u *AiKnowledgeDocumentUpdate) SetContentHash(v string) *AiKnowledgeDocumentUpdate {
+	_u.mutation.SetContentHash(v)
+	return _u
+}
+
+// SetNillableContentHash sets the "content_hash" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdate) SetNillableContentHash(v *string) *AiKnowledgeDocumentUpdate {
+	if v != nil {
+		_u.SetContentHash(*v)
+	}
+	return _u
+}
+
+// ClearContentHash clears the value of the "content_hash" field.
+func (_u *AiKnowledgeDocumentUpdate) ClearContentHash() *AiKnowledgeDocumentUpdate {
+	_u.mutation.ClearContentHash()
+	return _u
+}
+
+// SetMetadata sets the "metadata" field.
+func (_u *AiKnowledgeDocumentUpdate) SetMetadata(v map[string]interface{}) *AiKnowledgeDocumentUpdate {
+	_u.mutation.SetMetadata(v)
+	return _u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AiKnowledgeDocumentUpdate) ClearMetadata() *AiKnowledgeDocumentUpdate {
+	_u.mutation.ClearMetadata()
 	return _u
 }
 
@@ -198,16 +292,16 @@ func (_u *AiKnowledgeDocumentUpdate) AddRetrievalCount(v int) *AiKnowledgeDocume
 	return _u
 }
 
-// SetProcess sets the "process" field.
-func (_u *AiKnowledgeDocumentUpdate) SetProcess(v types.DocumentStatus) *AiKnowledgeDocumentUpdate {
-	_u.mutation.SetProcess(v)
+// SetProgress sets the "progress" field.
+func (_u *AiKnowledgeDocumentUpdate) SetProgress(v types.DocumentProgress) *AiKnowledgeDocumentUpdate {
+	_u.mutation.SetProgress(v)
 	return _u
 }
 
-// SetNillableProcess sets the "process" field if the given value is not nil.
-func (_u *AiKnowledgeDocumentUpdate) SetNillableProcess(v *types.DocumentStatus) *AiKnowledgeDocumentUpdate {
+// SetNillableProgress sets the "progress" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdate) SetNillableProgress(v *types.DocumentProgress) *AiKnowledgeDocumentUpdate {
 	if v != nil {
-		_u.SetProcess(*v)
+		_u.SetProgress(*v)
 	}
 	return _u
 }
@@ -333,9 +427,9 @@ func (_u *AiKnowledgeDocumentUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "AiKnowledgeDocument.name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Process(); ok {
-		if err := aiknowledgedocument.ProcessValidator(v); err != nil {
-			return &ValidationError{Name: "process", err: fmt.Errorf(`ent: validator failed for field "AiKnowledgeDocument.process": %w`, err)}
+	if v, ok := _u.mutation.Progress(); ok {
+		if err := aiknowledgedocument.ProgressValidator(v); err != nil {
+			return &ValidationError{Name: "progress", err: fmt.Errorf(`ent: validator failed for field "AiKnowledgeDocument.progress": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Status(); ok {
@@ -385,11 +479,41 @@ func (_u *AiKnowledgeDocumentUpdate) sqlSave(ctx context.Context) (_node int, er
 	if value, ok := _u.mutation.AddedContentLength(); ok {
 		_spec.AddField(aiknowledgedocument.FieldContentLength, field.TypeInt, value)
 	}
+	if value, ok := _u.mutation.Size(); ok {
+		_spec.SetField(aiknowledgedocument.FieldSize, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedSize(); ok {
+		_spec.AddField(aiknowledgedocument.FieldSize, field.TypeInt64, value)
+	}
 	if value, ok := _u.mutation.Tokens(); ok {
 		_spec.SetField(aiknowledgedocument.FieldTokens, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.AddedTokens(); ok {
 		_spec.AddField(aiknowledgedocument.FieldTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Chunks(); ok {
+		_spec.SetField(aiknowledgedocument.FieldChunks, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChunks(); ok {
+		_spec.AddField(aiknowledgedocument.FieldChunks, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ParseType(); ok {
+		_spec.SetField(aiknowledgedocument.FieldParseType, field.TypeString, value)
+	}
+	if _u.mutation.ParseTypeCleared() {
+		_spec.ClearField(aiknowledgedocument.FieldParseType, field.TypeString)
+	}
+	if value, ok := _u.mutation.ContentHash(); ok {
+		_spec.SetField(aiknowledgedocument.FieldContentHash, field.TypeString, value)
+	}
+	if _u.mutation.ContentHashCleared() {
+		_spec.ClearField(aiknowledgedocument.FieldContentHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(aiknowledgedocument.FieldMetadata, field.TypeJSON, value)
+	}
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(aiknowledgedocument.FieldMetadata, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.SegmentMaxTokens(); ok {
 		_spec.SetField(aiknowledgedocument.FieldSegmentMaxTokens, field.TypeInt, value)
@@ -403,8 +527,8 @@ func (_u *AiKnowledgeDocumentUpdate) sqlSave(ctx context.Context) (_node int, er
 	if value, ok := _u.mutation.AddedRetrievalCount(); ok {
 		_spec.AddField(aiknowledgedocument.FieldRetrievalCount, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.Process(); ok {
-		_spec.SetField(aiknowledgedocument.FieldProcess, field.TypeEnum, value)
+	if value, ok := _u.mutation.Progress(); ok {
+		_spec.SetField(aiknowledgedocument.FieldProgress, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(aiknowledgedocument.FieldStatus, field.TypeEnum, value)
@@ -606,6 +730,27 @@ func (_u *AiKnowledgeDocumentUpdateOne) AddContentLength(v int) *AiKnowledgeDocu
 	return _u
 }
 
+// SetSize sets the "size" field.
+func (_u *AiKnowledgeDocumentUpdateOne) SetSize(v int64) *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.ResetSize()
+	_u.mutation.SetSize(v)
+	return _u
+}
+
+// SetNillableSize sets the "size" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdateOne) SetNillableSize(v *int64) *AiKnowledgeDocumentUpdateOne {
+	if v != nil {
+		_u.SetSize(*v)
+	}
+	return _u
+}
+
+// AddSize adds value to the "size" field.
+func (_u *AiKnowledgeDocumentUpdateOne) AddSize(v int64) *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.AddSize(v)
+	return _u
+}
+
 // SetTokens sets the "tokens" field.
 func (_u *AiKnowledgeDocumentUpdateOne) SetTokens(v int) *AiKnowledgeDocumentUpdateOne {
 	_u.mutation.ResetTokens()
@@ -624,6 +769,79 @@ func (_u *AiKnowledgeDocumentUpdateOne) SetNillableTokens(v *int) *AiKnowledgeDo
 // AddTokens adds value to the "tokens" field.
 func (_u *AiKnowledgeDocumentUpdateOne) AddTokens(v int) *AiKnowledgeDocumentUpdateOne {
 	_u.mutation.AddTokens(v)
+	return _u
+}
+
+// SetChunks sets the "chunks" field.
+func (_u *AiKnowledgeDocumentUpdateOne) SetChunks(v int) *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.ResetChunks()
+	_u.mutation.SetChunks(v)
+	return _u
+}
+
+// SetNillableChunks sets the "chunks" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdateOne) SetNillableChunks(v *int) *AiKnowledgeDocumentUpdateOne {
+	if v != nil {
+		_u.SetChunks(*v)
+	}
+	return _u
+}
+
+// AddChunks adds value to the "chunks" field.
+func (_u *AiKnowledgeDocumentUpdateOne) AddChunks(v int) *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.AddChunks(v)
+	return _u
+}
+
+// SetParseType sets the "parse_type" field.
+func (_u *AiKnowledgeDocumentUpdateOne) SetParseType(v string) *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.SetParseType(v)
+	return _u
+}
+
+// SetNillableParseType sets the "parse_type" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdateOne) SetNillableParseType(v *string) *AiKnowledgeDocumentUpdateOne {
+	if v != nil {
+		_u.SetParseType(*v)
+	}
+	return _u
+}
+
+// ClearParseType clears the value of the "parse_type" field.
+func (_u *AiKnowledgeDocumentUpdateOne) ClearParseType() *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.ClearParseType()
+	return _u
+}
+
+// SetContentHash sets the "content_hash" field.
+func (_u *AiKnowledgeDocumentUpdateOne) SetContentHash(v string) *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.SetContentHash(v)
+	return _u
+}
+
+// SetNillableContentHash sets the "content_hash" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdateOne) SetNillableContentHash(v *string) *AiKnowledgeDocumentUpdateOne {
+	if v != nil {
+		_u.SetContentHash(*v)
+	}
+	return _u
+}
+
+// ClearContentHash clears the value of the "content_hash" field.
+func (_u *AiKnowledgeDocumentUpdateOne) ClearContentHash() *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.ClearContentHash()
+	return _u
+}
+
+// SetMetadata sets the "metadata" field.
+func (_u *AiKnowledgeDocumentUpdateOne) SetMetadata(v map[string]interface{}) *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.SetMetadata(v)
+	return _u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AiKnowledgeDocumentUpdateOne) ClearMetadata() *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.ClearMetadata()
 	return _u
 }
 
@@ -669,16 +887,16 @@ func (_u *AiKnowledgeDocumentUpdateOne) AddRetrievalCount(v int) *AiKnowledgeDoc
 	return _u
 }
 
-// SetProcess sets the "process" field.
-func (_u *AiKnowledgeDocumentUpdateOne) SetProcess(v types.DocumentStatus) *AiKnowledgeDocumentUpdateOne {
-	_u.mutation.SetProcess(v)
+// SetProgress sets the "progress" field.
+func (_u *AiKnowledgeDocumentUpdateOne) SetProgress(v types.DocumentProgress) *AiKnowledgeDocumentUpdateOne {
+	_u.mutation.SetProgress(v)
 	return _u
 }
 
-// SetNillableProcess sets the "process" field if the given value is not nil.
-func (_u *AiKnowledgeDocumentUpdateOne) SetNillableProcess(v *types.DocumentStatus) *AiKnowledgeDocumentUpdateOne {
+// SetNillableProgress sets the "progress" field if the given value is not nil.
+func (_u *AiKnowledgeDocumentUpdateOne) SetNillableProgress(v *types.DocumentProgress) *AiKnowledgeDocumentUpdateOne {
 	if v != nil {
-		_u.SetProcess(*v)
+		_u.SetProgress(*v)
 	}
 	return _u
 }
@@ -817,9 +1035,9 @@ func (_u *AiKnowledgeDocumentUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "AiKnowledgeDocument.name": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Process(); ok {
-		if err := aiknowledgedocument.ProcessValidator(v); err != nil {
-			return &ValidationError{Name: "process", err: fmt.Errorf(`ent: validator failed for field "AiKnowledgeDocument.process": %w`, err)}
+	if v, ok := _u.mutation.Progress(); ok {
+		if err := aiknowledgedocument.ProgressValidator(v); err != nil {
+			return &ValidationError{Name: "progress", err: fmt.Errorf(`ent: validator failed for field "AiKnowledgeDocument.progress": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Status(); ok {
@@ -886,11 +1104,41 @@ func (_u *AiKnowledgeDocumentUpdateOne) sqlSave(ctx context.Context) (_node *AiK
 	if value, ok := _u.mutation.AddedContentLength(); ok {
 		_spec.AddField(aiknowledgedocument.FieldContentLength, field.TypeInt, value)
 	}
+	if value, ok := _u.mutation.Size(); ok {
+		_spec.SetField(aiknowledgedocument.FieldSize, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedSize(); ok {
+		_spec.AddField(aiknowledgedocument.FieldSize, field.TypeInt64, value)
+	}
 	if value, ok := _u.mutation.Tokens(); ok {
 		_spec.SetField(aiknowledgedocument.FieldTokens, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.AddedTokens(); ok {
 		_spec.AddField(aiknowledgedocument.FieldTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Chunks(); ok {
+		_spec.SetField(aiknowledgedocument.FieldChunks, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChunks(); ok {
+		_spec.AddField(aiknowledgedocument.FieldChunks, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ParseType(); ok {
+		_spec.SetField(aiknowledgedocument.FieldParseType, field.TypeString, value)
+	}
+	if _u.mutation.ParseTypeCleared() {
+		_spec.ClearField(aiknowledgedocument.FieldParseType, field.TypeString)
+	}
+	if value, ok := _u.mutation.ContentHash(); ok {
+		_spec.SetField(aiknowledgedocument.FieldContentHash, field.TypeString, value)
+	}
+	if _u.mutation.ContentHashCleared() {
+		_spec.ClearField(aiknowledgedocument.FieldContentHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(aiknowledgedocument.FieldMetadata, field.TypeJSON, value)
+	}
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(aiknowledgedocument.FieldMetadata, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.SegmentMaxTokens(); ok {
 		_spec.SetField(aiknowledgedocument.FieldSegmentMaxTokens, field.TypeInt, value)
@@ -904,8 +1152,8 @@ func (_u *AiKnowledgeDocumentUpdateOne) sqlSave(ctx context.Context) (_node *AiK
 	if value, ok := _u.mutation.AddedRetrievalCount(); ok {
 		_spec.AddField(aiknowledgedocument.FieldRetrievalCount, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.Process(); ok {
-		_spec.SetField(aiknowledgedocument.FieldProcess, field.TypeEnum, value)
+	if value, ok := _u.mutation.Progress(); ok {
+		_spec.SetField(aiknowledgedocument.FieldProgress, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(aiknowledgedocument.FieldStatus, field.TypeEnum, value)

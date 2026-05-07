@@ -22,6 +22,7 @@ import (
 	"ai/ent/aimodel"
 	"ai/ent/aitool"
 	"ai/ent/aiwebpage"
+	"ai/ent/task"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -58,6 +59,8 @@ type Client struct {
 	AiTool *AiToolClient
 	// AiWebPage is the client for interacting with the AiWebPage builders.
 	AiWebPage *AiWebPageClient
+	// Task is the client for interacting with the Task builders.
+	Task *TaskClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -80,6 +83,7 @@ func (c *Client) init() {
 	c.AiModel = NewAiModelClient(c.config)
 	c.AiTool = NewAiToolClient(c.config)
 	c.AiWebPage = NewAiWebPageClient(c.config)
+	c.Task = NewTaskClient(c.config)
 }
 
 type (
@@ -183,6 +187,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AiModel:             NewAiModelClient(cfg),
 		AiTool:              NewAiToolClient(cfg),
 		AiWebPage:           NewAiWebPageClient(cfg),
+		Task:                NewTaskClient(cfg),
 	}, nil
 }
 
@@ -213,6 +218,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AiModel:             NewAiModelClient(cfg),
 		AiTool:              NewAiToolClient(cfg),
 		AiWebPage:           NewAiWebPageClient(cfg),
+		Task:                NewTaskClient(cfg),
 	}, nil
 }
 
@@ -244,7 +250,7 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AiApiKey, c.AiChatConversation, c.AiChatMessage, c.AiChatRole, c.AiImage,
 		c.AiKnowledge, c.AiKnowledgeDocument, c.AiKnowledgeSegment, c.AiModel,
-		c.AiTool, c.AiWebPage,
+		c.AiTool, c.AiWebPage, c.Task,
 	} {
 		n.Use(hooks...)
 	}
@@ -256,7 +262,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AiApiKey, c.AiChatConversation, c.AiChatMessage, c.AiChatRole, c.AiImage,
 		c.AiKnowledge, c.AiKnowledgeDocument, c.AiKnowledgeSegment, c.AiModel,
-		c.AiTool, c.AiWebPage,
+		c.AiTool, c.AiWebPage, c.Task,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -287,6 +293,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AiTool.mutate(ctx, m)
 	case *AiWebPageMutation:
 		return c.AiWebPage.mutate(ctx, m)
+	case *TaskMutation:
+		return c.Task.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -1905,16 +1913,152 @@ func (c *AiWebPageClient) mutate(ctx context.Context, m *AiWebPageMutation) (Val
 	}
 }
 
+// TaskClient is a client for the Task schema.
+type TaskClient struct {
+	config
+}
+
+// NewTaskClient returns a client for the Task from the given config.
+func NewTaskClient(c config) *TaskClient {
+	return &TaskClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `task.Hooks(f(g(h())))`.
+func (c *TaskClient) Use(hooks ...Hook) {
+	c.hooks.Task = append(c.hooks.Task, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `task.Intercept(f(g(h())))`.
+func (c *TaskClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Task = append(c.inters.Task, interceptors...)
+}
+
+// Create returns a builder for creating a Task entity.
+func (c *TaskClient) Create() *TaskCreate {
+	mutation := newTaskMutation(c.config, OpCreate)
+	return &TaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Task entities.
+func (c *TaskClient) CreateBulk(builders ...*TaskCreate) *TaskCreateBulk {
+	return &TaskCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TaskClient) MapCreateBulk(slice any, setFunc func(*TaskCreate, int)) *TaskCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TaskCreateBulk{err: fmt.Errorf("calling to TaskClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TaskCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TaskCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Task.
+func (c *TaskClient) Update() *TaskUpdate {
+	mutation := newTaskMutation(c.config, OpUpdate)
+	return &TaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TaskClient) UpdateOne(_m *Task) *TaskUpdateOne {
+	mutation := newTaskMutation(c.config, OpUpdateOne, withTask(_m))
+	return &TaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TaskClient) UpdateOneID(id int) *TaskUpdateOne {
+	mutation := newTaskMutation(c.config, OpUpdateOne, withTaskID(id))
+	return &TaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Task.
+func (c *TaskClient) Delete() *TaskDelete {
+	mutation := newTaskMutation(c.config, OpDelete)
+	return &TaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TaskClient) DeleteOne(_m *Task) *TaskDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TaskClient) DeleteOneID(id int) *TaskDeleteOne {
+	builder := c.Delete().Where(task.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TaskDeleteOne{builder}
+}
+
+// Query returns a query builder for Task.
+func (c *TaskClient) Query() *TaskQuery {
+	return &TaskQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTask},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Task entity by its id.
+func (c *TaskClient) Get(ctx context.Context, id int) (*Task, error) {
+	return c.Query().Where(task.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TaskClient) GetX(ctx context.Context, id int) *Task {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TaskClient) Hooks() []Hook {
+	hooks := c.hooks.Task
+	return append(hooks[:len(hooks):len(hooks)], task.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *TaskClient) Interceptors() []Interceptor {
+	inters := c.inters.Task
+	return append(inters[:len(inters):len(inters)], task.Interceptors[:]...)
+}
+
+func (c *TaskClient) mutate(ctx context.Context, m *TaskMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TaskCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TaskUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TaskDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Task mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
 		AiApiKey, AiChatConversation, AiChatMessage, AiChatRole, AiImage, AiKnowledge,
-		AiKnowledgeDocument, AiKnowledgeSegment, AiModel, AiTool, AiWebPage []ent.Hook
+		AiKnowledgeDocument, AiKnowledgeSegment, AiModel, AiTool, AiWebPage,
+		Task []ent.Hook
 	}
 	inters struct {
 		AiApiKey, AiChatConversation, AiChatMessage, AiChatRole, AiImage, AiKnowledge,
-		AiKnowledgeDocument, AiKnowledgeSegment, AiModel, AiTool,
-		AiWebPage []ent.Interceptor
+		AiKnowledgeDocument, AiKnowledgeSegment, AiModel, AiTool, AiWebPage,
+		Task []ent.Interceptor
 	}
 )
 

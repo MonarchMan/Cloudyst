@@ -4,7 +4,11 @@ package common.v1;
 
 option go_package = "api/api/common/v1;v1";
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
 import "errors/errors.proto";
+import "validate/validate.proto";
 
 // 列取参数
 message ListRequest {
@@ -35,6 +39,172 @@ enum Status {
   STATUS_ACTIVE = 1;
 
   STATUS_INACTIVE = 2;
+}
+
+// 排序方向枚举
+enum OrderDirection {
+  ORDER_DIRECTION_UNSPECIFIED = 0;
+  ORDER_DIRECTION_ASC = 1;
+  ORDER_DIRECTION_DESC = 2;
+}
+
+// 解决循环引用问题
+// 存储策略信息
+message StoragePolicyInfo {
+  int32 id = 1 [(validate.rules).int32 = {gt: 0}];
+  string name = 2 [(validate.rules).string = {max_len: 255}];
+  string type = 3 [(validate.rules).string = {max_len: 255}];
+  bool is_private = 4;
+}
+
+// UserInfo 用户信息
+message UserInfo {
+  string id = 1;
+  string nickname = 3;
+  string status = 4;
+  string avatar = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+// Task
+message ListTasksRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string type = 3;
+}
+
+message ListTasksResponse {
+  repeated TaskResponse tasks = 1;
+  PaginationResults pagination = 2;
+}
+
+message TaskResponse {
+  google.protobuf.Timestamp created_at = 1;
+  google.protobuf.Timestamp updated_at = 2;
+  string id = 3;
+  string status = 4;
+  string type = 5;
+  NodeOption node = 6;
+  Summary summary = 7;
+  string error = 8;
+  repeated string error_history = 9;
+  int64 duration = 10;
+  int64 resume_time = 11;
+  int32 retry_count = 12;
+}
+
+message NodeOption {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  optional bytes capabilities = 4;
+}
+
+message Summary {
+  int32 node_id = 1;
+  string phase = 2;
+  google.protobuf.Struct props = 3;
+}
+
+message Progress {
+  int64 total = 1;
+  int64 current = 2;
+  string identifier = 3;
+}
+
+message TaskPhaseProgressResponse {
+  map<string, Progress> progress_map = 1;
+}
+
+// Task Admin API
+message QueueMetricsResponse {
+  repeated QueueMetric metrics = 1;
+}
+
+message QueueMetric {
+  string name = 1;
+  int32 busy_workers = 2;
+  int32 success_tasks = 3;
+  int32 failed_tasks = 4;
+  int32 submitted_tasks = 5;
+  int32 suspending_tasks = 6;
+}
+
+message ListTaskResponse {
+  repeated GetTaskResponse tasks = 1;
+  PaginationResults pagination = 2;
+}
+
+message CleanupTaskRequest {
+  google.protobuf.Timestamp no_after = 1;
+  repeated string types = 2;
+  repeated string status = 3;
+}
+
+message GetTaskResponse {
+  Task task = 1;
+  string user_hash_id = 2;
+  string task_hash_id = 3;
+  Summary summary = 4;
+//  Node node = 5;
+}
+
+message Task {
+  int64 id = 1;
+
+  google.protobuf.Timestamp created_at = 100;
+
+  google.protobuf.Timestamp updated_at = 101;
+
+  google.protobuf.Timestamp deleted_at = 102;
+
+  string type = 2;
+
+  Status status = 3;
+
+  TaskPublicState public_state = 4;
+
+  string private_state = 5;
+
+  string trace_id = 6;
+
+  int64 user_id = 7;
+
+  enum Status {
+    STATUS_QUEUED = 0;
+
+    STATUS_PROCESSING = 1;
+
+    STATUS_SUSPENDING = 2;
+
+    STATUS_ERROR = 3;
+
+    STATUS_CANCELED = 4;
+
+    STATUS_COMPLETED = 5;
+  }
+}
+
+// TaskPublicState 任务公共状态
+message TaskPublicState {
+  // 错误信息
+  string error = 1;
+
+  // 错误历史
+  repeated string error_history = 2 [(validate.rules).repeated.max_items = 100];
+
+  // 已执行时长
+  google.protobuf.Duration executed_duration = 3;
+
+  // 重试次数
+  int32 retry_count = 4 [(validate.rules).int32 = {gte: 0, lte: 100}];
+
+  // 恢复时间（Unix timestamp）
+  int64 resume_time = 5 [(validate.rules).int64.gte = 0];
+}
+
+message DeleteTaskByUserIdsRequest {
+  repeated int32 ids = 1;
 }
 
 enum ErrorReason {

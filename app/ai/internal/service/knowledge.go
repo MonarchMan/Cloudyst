@@ -33,7 +33,7 @@ func (s *KnowledgeService) CreateKnowledge(ctx context.Context, req *pb.UpsertKn
 	args := &data.UpsertKnowledgeArgs{
 		Name:        req.Name,
 		Description: req.Description,
-		UserID:      int(u.Id),
+		UserID:      u.ID,
 		IsPublic:    req.IsPublic,
 	}
 	k, err := s.kb.CreateKnowledge(ctx, args)
@@ -91,8 +91,9 @@ func (s *KnowledgeService) ListKnowledge(ctx context.Context, req *pb.ListKnowle
 			OrderBy:        req.Pagination.OrderBy,
 			OrderDirection: req.Pagination.OrderDirection,
 		},
-		Name:   req.Name,
-		Status: entmodule.StatusFromProto(req.Status),
+		Name:     req.Name,
+		IsPublic: req.IsPublic,
+		Status:   entmodule.StatusFromProto(req.Status),
 	}
 	res, err := s.kb.ListKnowledge(ctx, args)
 	if err != nil {
@@ -105,7 +106,18 @@ func (s *KnowledgeService) ListKnowledge(ctx context.Context, req *pb.ListKnowle
 		}),
 	}, nil
 }
-func (s *KnowledgeService) CreateDocument(ctx context.Context, req *pb.UpsertDocumentRequest) (*pb.GetDocumentResponse, error) {
+func (s *KnowledgeService) KnowledgeStats(ctx context.Context, req *pb.SimpleRequest) (*pb.KnowledgeStatsResponse, error) {
+	id, err := validateID(s.hasher, req.Id, hashid.KnowledgeID, false)
+	if err != nil {
+		return nil, err
+	}
+	stats, err := s.kb.GetKnowledgeStats(ctx, id)
+	if err != nil {
+		return nil, commonpb.ErrorDb("Failed to get knowledge stats: %w", err)
+	}
+	return buildKnowledgeStatsResponse(stats), nil
+}
+func (s *KnowledgeService) CreateDocument(ctx context.Context, req *pb.UpsertDocumentRequest) (*pb.UpsertDocumentResponse, error) {
 	kid, err := validateID(s.hasher, req.KnowledgeId, hashid.KnowledgeID, false)
 	if err != nil {
 		return nil, err
@@ -117,11 +129,11 @@ func (s *KnowledgeService) CreateDocument(ctx context.Context, req *pb.UpsertDoc
 		SegmentMaxTokens: int(req.SegmentMaxTokens),
 		Version:          req.Version,
 	}
-	doc, err := s.kb.CreateKnowledgeDocument(ctx, args)
+	res, err := s.kb.CreateKnowledgeDocument(ctx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to create document: %w", err)
 	}
-	return buildGetDocumentResponse(s.hasher, doc), nil
+	return buildCreateDocumentResponse(s.hasher, res), nil
 }
 func (s *KnowledgeService) BatchCreateDocuments(ctx context.Context, req *pb.BatchCreateDocumentRequest) (*pb.BatchCreateDocumentResponse, error) {
 	args := make([]*data.UpsertDocumentArgs, len(req.Documents))
@@ -135,20 +147,16 @@ func (s *KnowledgeService) BatchCreateDocuments(ctx context.Context, req *pb.Bat
 			Name:             doc.Name,
 			Url:              doc.Url,
 			SegmentMaxTokens: int(doc.SegmentMaxTokens),
+			Version:          doc.Version,
 		}
 	}
-	docs, err := s.kb.BatchCreateKnowledgeDocuments(ctx, args)
+	docs, task, err := s.kb.BatchCreateKnowledgeDocuments(ctx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to batch create knowledge documents: %w", err)
 	}
-	return &pb.BatchCreateDocumentResponse{
-		Total: int64(len(docs)),
-		Documents: lo.Map(docs, func(doc *ent.AiKnowledgeDocument, index int) *pb.GetDocumentResponse {
-			return buildGetDocumentResponse(s.hasher, doc)
-		}),
-	}, nil
+	return buildBatchCreateDocumentResponse(s.hasher, docs, task), nil
 }
-func (s *KnowledgeService) UpdateDocument(ctx context.Context, req *pb.UpsertDocumentRequest) (*pb.GetDocumentResponse, error) {
+func (s *KnowledgeService) UpdateDocument(ctx context.Context, req *pb.UpsertDocumentRequest) (*pb.UpsertDocumentResponse, error) {
 	id, err := validateID(s.hasher, req.Id, hashid.KnowledgeDocumentID, false)
 	if err != nil {
 		return nil, err
@@ -169,7 +177,7 @@ func (s *KnowledgeService) UpdateDocument(ctx context.Context, req *pb.UpsertDoc
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to update document: %w", err)
 	}
-	return buildGetDocumentResponse(s.hasher, doc), nil
+	return buildUpdateDocumentResponse(s.hasher, doc), nil
 }
 func (s *KnowledgeService) GetDocument(ctx context.Context, req *pb.SimpleRequest) (*pb.GetDocumentResponse, error) {
 	id, err := validateID(s.hasher, req.Id, hashid.KnowledgeDocumentID, false)
@@ -193,7 +201,7 @@ func (s *KnowledgeService) DeleteDocument(ctx context.Context, req *pb.SimpleReq
 	}
 	return &emptypb.Empty{}, nil
 }
-func (s *KnowledgeService) BatchDeleteDocuments(ctx context.Context, req *pb.BatchDeleteRequest) (*emptypb.Empty, error) {
+func (s *KnowledgeService) BatchDeleteDocuments(ctx context.Context, req *pb.MultiRequest) (*emptypb.Empty, error) {
 	ids := make([]int, len(req.Ids))
 	var err error
 	for i, id := range req.Ids {
@@ -231,11 +239,51 @@ func (s *KnowledgeService) ListDocuments(ctx context.Context, req *pb.ListDocume
 		}),
 	}, nil
 }
+func (s *KnowledgeService) GetDocumentProgress(ctx context.Context, req *pb.SimpleRequest) (*pb.GetDocumentProgressResponse, error) {
+	id, err := validateID(s.hasher, req.Id, hashid.KnowledgeDocumentID, false)
+	if err != nil {
+		return nil, err
+	}
+	doc, err := s.kb.GetKnowledgeDocument(ctx, id)
+	if err != nil {
+		return nil, commonpb.ErrorDb("Failed to get document: %w", err)
+	}
+	return buildGetDocumentProgressResponse(s.hasher, doc), nil
+}
+func (s *KnowledgeService) ReindexDocument(ctx context.Context, req *pb.SimpleRequest) (*pb.ReindexDocumentResponse, error) {
+	id, err := validateID(s.hasher, req.Id, hashid.KnowledgeDocumentID, false)
+	if err != nil {
+		return nil, err
+	}
+	res, err := s.kb.ReindexDocument(ctx, id)
+	if err != nil {
+		return nil, commonpb.ErrorDb("Failed to reindex document: %w", err)
+	}
+	return buildReindexDocumentResponse(s.hasher, res), nil
+}
+func (s *KnowledgeService) BatchReindexDocument(ctx context.Context, req *pb.MultiRequest) (*pb.BatchReindexDocumentResponse, error) {
+	if len(req.Ids) >= 500 {
+		return nil, commonpb.ErrorParamInvalid("batch reindex documents: documents too many")
+	}
+	ids := make([]int, len(req.Ids))
+	var err error
+	for i, id := range req.Ids {
+		ids[i], err = validateID(s.hasher, id, hashid.KnowledgeDocumentID, false)
+		if err != nil {
+			return nil, err
+		}
+	}
+	docs, task, err := s.kb.BatchReindexDocuments(ctx, ids)
+	if err != nil {
+		return nil, commonpb.ErrorDb("Failed to batch reindex documents: %w", err)
+	}
+	return buildBatchReindexDocumentResponse(s.hasher, docs, task), nil
+}
 func (s *KnowledgeService) Search(ctx context.Context, req *pb.SearchRequest) (*pb.SearchResponse, error) {
 	found, err := s.kb.Retrieve(ctx, &types.SegmentSearchArgs{
 		Content:    req.Query,
-		TopK:       int(s.conf.Server.Sys.Retrieve.TopK),
-		Similarity: s.conf.Server.Sys.Retrieve.Similarity,
+		TopK:       int(s.conf.Server.Retrieve.TopK),
+		Similarity: s.conf.Server.Retrieve.Similarity,
 	})
 	if err != nil {
 		return nil, commonpb.ErrorInternalSetting("search knowledge: %w", err)
@@ -272,7 +320,7 @@ func (s *KnowledgeService) CreateMasterKnowledge(ctx context.Context, req *pb.Cr
 	args := &data.UpsertKnowledgeArgs{
 		Name:        req.Name,
 		Description: req.Description,
-		UserID:      int(u.Id),
+		UserID:      u.ID,
 		IsPublic:    req.IsPublic,
 	}
 	k, err := s.kb.CreateKnowledge(ctx, args)
@@ -286,7 +334,7 @@ func (s *KnowledgeService) GetMasterKnowledge(ctx context.Context, req *pb.GetMa
 	if req.UserId > 0 {
 		userID = int(req.UserId)
 	} else {
-		userID = int(trans.FromContext(ctx).Id)
+		userID = trans.FromContext(ctx).ID
 	}
 	k, err := s.kb.GetUserMasterKnowledge(ctx, userID)
 	if err != nil {

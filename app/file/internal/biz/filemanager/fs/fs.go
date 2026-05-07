@@ -5,6 +5,8 @@ import (
 	pb "api/api/file/common/v1"
 	pbfile "api/api/file/files/v1"
 	userpb "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"common/hashid"
 	"context"
@@ -52,7 +54,7 @@ type (
 		// Recycle recycles a DBFS and its generated resources.
 		Recycle()
 		// Capacity returns the storage capacity of the filesystem.
-		Capacity(ctx context.Context, user *userpb.User) (*Capacity, error)
+		Capacity(ctx context.Context, user *userdata.User) (*Capacity, error)
 		// CheckCapability checks if the filesystem supports given capability.
 		CheckCapability(ctx context.Context, uri *URI, opts ...Option) error
 		// StaleEntities returns all stale entities of given IDs. If no ID is given, all
@@ -153,7 +155,7 @@ type (
 		Metadata() map[string]string
 		// Uri returns the URI of the files.
 		Uri(isRoot bool) *URI
-		Owner() *userpb.User
+		Owner() *userdata.User
 		OwnerID() int
 		// RootUri return the URI of the users root files under owner's view.
 		RootUri() *URI
@@ -167,7 +169,7 @@ type (
 		FolderSummary() *pbfile.FolderSummary
 		Capabilities() *boolset.BooleanSet
 		IsRootFolder() bool
-		View() *types.ExplorerView
+		View() *filedata.ExplorerView
 	}
 
 	Entities []Entity
@@ -192,7 +194,7 @@ type (
 		StorageUsed           int64
 		Shares                []*ent.Share
 		EntityStoragePolicies map[int]*ent.StoragePolicy
-		View                  *types.ExplorerView
+		View                  *filedata.ExplorerView
 		DirectLinks           []*ent.DirectLink
 	}
 

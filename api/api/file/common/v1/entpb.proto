@@ -5,8 +5,8 @@ package file.common.v1;
 
 import "google/protobuf/timestamp.proto";
 
-import "google/protobuf/wrappers.proto";
 import "file/common/v1/common.proto";
+import "common/v1/common.proto";
 
 option go_package = "api/api/file/common/v1;v1";
 
@@ -49,9 +49,9 @@ message Entity {
 
   int64 storage_policy_entities = 6;
 
-  google.protobuf.Int64Value created_by = 7;
+  int64 created_by = 7;
 
-  google.protobuf.BytesValue upload_session_id = 8;
+  optional bytes upload_session_id = 8;
 
   file.common.v1.EntityProps props = 9;
 
@@ -73,19 +73,19 @@ message File {
 
   int64 owner_id = 6;
 
-  file.common.v1.UserInfo owner_info = 7;
+  .common.v1.UserInfo owner_info = 7;
 
   int64 size = 8;
 
-  google.protobuf.Int64Value primary_entity = 9;
+  int64 primary_entity = 9;
 
-  google.protobuf.Int64Value file_parent_id = 10;
+  int64 file_parent_id = 10;
 
   bool is_symbolic = 11;
 
   file.common.v1.FileProps props = 12;
 
-  google.protobuf.Int64Value storage_policy_files = 13;
+  int64 storage_policy_files = 13;
 
   StoragePolicy storage_policies = 81;
 
@@ -137,9 +137,9 @@ message Node {
 
   Type type = 4;
 
-  google.protobuf.StringValue server = 5;
+  string server = 5;
 
-  google.protobuf.StringValue slave_key = 6;
+  string slave_key = 6;
 
   bytes capabilities = 7;
 
@@ -177,7 +177,7 @@ message Setting {
 
   string name = 2;
 
-  google.protobuf.StringValue value = 3;
+  string value = 3;
 }
 
 message Share {
@@ -189,7 +189,7 @@ message Share {
 
   google.protobuf.Timestamp deleted_at = 102;
 
-  google.protobuf.StringValue password = 2;
+  string password = 2;
 
   int64 views = 3;
 
@@ -197,13 +197,13 @@ message Share {
 
   google.protobuf.Timestamp expires = 5;
 
-  google.protobuf.Int64Value remain_downloads = 6;
+  optional int64 remain_downloads = 6;
 
   file.common.v1.ShareProps props = 7;
 
   int64 owner_id = 8;
 
-  file.common.v1.UserInfo owner_info = 9;
+  .common.v1.UserInfo owner_info = 9;
 
   File file = 81;
 }
@@ -221,25 +221,25 @@ message StoragePolicy {
 
   string type = 3;
 
-  google.protobuf.StringValue server = 4;
+  string server = 4;
 
-  google.protobuf.StringValue bucket_name = 5;
+  string bucket_name = 5;
 
-  google.protobuf.BoolValue is_private = 6;
+  bool is_private = 6;
 
-  google.protobuf.StringValue access_key = 7;
+  string access_key = 7;
 
-  google.protobuf.StringValue secret_key = 8;
+  string secret_key = 8;
 
-  google.protobuf.Int64Value max_size = 9;
+  int64 max_size = 9;
 
-  google.protobuf.StringValue dir_name_rule = 10;
+  string dir_name_rule = 10;
 
-  google.protobuf.StringValue file_name_rule = 11;
+  string file_name_rule = 11;
 
   file.common.v1.PolicySetting settings = 12;
 
-  google.protobuf.Int64Value node_id = 13;
+  int64 node_id = 13;
 
   repeated File files = 81 [json_name = "-"];
 
@@ -263,11 +263,11 @@ message Task {
 
   file.common.v1.TaskPublicState public_state = 4;
 
-  google.protobuf.StringValue private_state = 5;
+  string private_state = 5;
 
   string trace_id = 6;
 
-  google.protobuf.Int64Value user_id = 7;
+  int64 user_id = 7;
 
   enum Status {
     STATUS_QUEUED = 0;

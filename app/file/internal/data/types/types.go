@@ -2,6 +2,7 @@ package types
 
 import (
 	pb "api/api/file/common/v1"
+	"api/external/data/filedata"
 	"time"
 )
 
@@ -183,7 +184,7 @@ type (
 	PolicyType string
 
 	FileProps struct {
-		View *ExplorerView `json:"view,omitempty"`
+		View *filedata.ExplorerView `json:"view,omitempty"`
 	}
 
 	ExplorerView struct {

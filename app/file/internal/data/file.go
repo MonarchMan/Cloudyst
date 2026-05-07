@@ -2,17 +2,18 @@ package data
 
 import (
 	pb "api/api/file/common/v1"
+	"api/external/data/common"
+	"api/external/data/userdata"
 	"api/external/trans"
-	"common/db"
 	"common/hashid"
 	"context"
-	mschema "entmodule/ent/schema"
 	"file/ent"
 	"file/ent/directlink"
 	"file/ent/entity"
 	"file/ent/file"
 	"file/ent/metadata"
 	"file/ent/predicate"
+	"file/ent/schema"
 	"file/ent/share"
 	"file/internal/data/types"
 	"fmt"
@@ -115,7 +116,7 @@ type (
 
 	CreateFolderParameters struct {
 		OwnerID             int
-		Owner               *pb.UserInfo
+		Owner               *userdata.UserInfo
 		Name                string
 		IsSymbolic          bool
 		Metadata            map[string]string
@@ -234,8 +235,8 @@ type FileClient interface {
 	UpdateModifiedAt(ctx context.Context, file *ent.File, modifiedAt time.Time) error
 }
 
-func NewFileClient(client *ent.Client, dbType db.DBType, hasher hashid.Encoder) FileClient {
-	return &fileClient{client: client, maxSQlParam: db.SqlParamLimit(dbType), hasher: hasher}
+func NewFileClient(client *ent.Client, dbType common.DBType, hasher hashid.Encoder) FileClient {
+	return &fileClient{client: client, maxSQlParam: common.SqlParamLimit(dbType), hasher: hasher}
 }
 
 type fileClient struct {
@@ -273,7 +274,7 @@ func (c *fileClient) Update(ctx context.Context, file *ent.File) (*ent.File, err
 	metadataToDelete := lo.Without(existingMetadataIds, metadataIDs...)
 
 	// process metadata diff, delete metadata not in files.Edges.Metadata
-	_, err = c.client.Metadata.Delete().Where(metadata.FileID(file.ID), metadata.IDIn(metadataToDelete...)).Exec(mschema.SkipSoftDelete(ctx))
+	_, err = c.client.Metadata.Delete().Where(metadata.FileID(file.ID), metadata.IDIn(metadataToDelete...)).Exec(schema.SkipSoftDelete(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -391,7 +392,7 @@ func (c *fileClient) RemoveEntitiesByID(ctx context.Context, ids ...int) (map[in
 	// storageReduced stores the relation between OwnerId ID and storage reduced.
 	storageReduced := make(map[int]int64)
 
-	ctx = mschema.SkipSoftDelete(ctx)
+	ctx = schema.SkipSoftDelete(ctx)
 	for _, group := range groups {
 		// For entities that are referenced by files, we need to reduce the storage of the OwnerId of the files.
 		entities, err := c.client.Entity.Query().
@@ -565,7 +566,7 @@ func (c *fileClient) Delete(ctx context.Context, files []*ent.File, props *types
 		}
 	}
 
-	hardDeleteCtx := mschema.SkipSoftDelete(ctx)
+	hardDeleteCtx := schema.SkipSoftDelete(ctx)
 	fileGroups, chunks := c.batchInCondition(intsets.MaxInt, 10, 1,
 		lo.Map(files, func(file *ent.File, index int) int {
 			return file.ID
@@ -578,7 +579,7 @@ func (c *fileClient) Delete(ctx context.Context, files []*ent.File, props *types
 			return nil, nil, fmt.Errorf("failed to delete shares of files %v: %w", group, err)
 		}
 
-		if _, err := c.client.Metadata.Delete().Where(metadata.FileIDIn(chunks[i]...)).Exec(mschema.SkipSoftDelete(ctx)); err != nil {
+		if _, err := c.client.Metadata.Delete().Where(metadata.FileIDIn(chunks[i]...)).Exec(schema.SkipSoftDelete(ctx)); err != nil {
 			return nil, nil, fmt.Errorf("failed to delete metadata of files %v: %w", group, err)
 		}
 
@@ -729,7 +730,7 @@ func (c *fileClient) RemoveMetadata(ctx context.Context, file *ent.File, keys ..
 	if len(keys) == 0 {
 		return nil
 	}
-	ctx = mschema.SkipSoftDelete(ctx)
+	ctx = schema.SkipSoftDelete(ctx)
 	groups, _ := c.batchInConditionMetadataName(intsets.MaxInt, 10, 1, keys)
 	for _, group := range groups {
 		if _, err := c.client.Metadata.Delete().Where(metadata.FileID(file.ID), group).Exec(ctx); err != nil {
@@ -926,13 +927,13 @@ func (c *fileClient) CreateEntity(ctx context.Context, file *ent.File, args *Ent
 	createdBy := trans.FromContext(ctx)
 	stm := c.client.Entity.
 		Create().
-		SetType(int(args.EntityType)).
+		SetType(args.EntityType).
 		SetSource(args.Source).
 		SetSize(args.Size).
 		SetStoragePolicyID(args.StoragePolicyID)
 
 	if !IsAnonymousUser(createdBy) {
-		stm.SetCreatedBy(int(createdBy.Id))
+		stm.SetCreatedBy(createdBy.ID)
 	}
 
 	if args.ModifiedAt != nil {

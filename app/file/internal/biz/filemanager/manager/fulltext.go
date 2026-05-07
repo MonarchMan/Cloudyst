@@ -2,9 +2,8 @@ package manager
 
 import (
 	pbknowledge "api/api/ai/knowledge/v1"
-	filepb "api/api/file/common/v1"
 	pbfile "api/api/file/files/v1"
-	userpb "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"common/constants"
 	"common/hashid"
@@ -12,14 +11,15 @@ import (
 	"context"
 	"encoding/json"
 	"file/ent"
-	"file/ent/task"
 	"file/internal/biz/filemanager"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/filemanager/fs/dbfs"
 	"file/internal/biz/queue"
+	"file/internal/data"
 	"file/internal/data/rpc"
 	"file/internal/data/types"
 	"fmt"
+	mqueue "queue"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/samber/lo"
@@ -89,13 +89,13 @@ func (m *manager) SearchFullText(ctx context.Context, query string, offset int) 
 }
 
 func init() {
-	queue.RegisterResumableTaskFactory(queue.FullTextIndexTaskType, NewFullTextIndexTaskFromModel)
-	queue.RegisterResumableTaskFactory(queue.FullTextCopyTaskType, NewFullTextCopyTaskFromModel)
-	queue.RegisterResumableTaskFactory(queue.FullTextChangeOwnerTaskType, NewFullTextChangeOwnerTaskFromModel)
-	queue.RegisterResumableTaskFactory(queue.FullTextDeleteTaskType, NewFullTextDeleteTaskFromModel)
+	mqueue.RegisterResumableTaskFactory(queue.FullTextIndexTaskType, NewFullTextIndexTaskFromModel)
+	mqueue.RegisterResumableTaskFactory(queue.FullTextCopyTaskType, NewFullTextCopyTaskFromModel)
+	mqueue.RegisterResumableTaskFactory(queue.FullTextChangeOwnerTaskType, NewFullTextChangeOwnerTaskFromModel)
+	mqueue.RegisterResumableTaskFactory(queue.FullTextDeleteTaskType, NewFullTextDeleteTaskFromModel)
 }
 
-func NewFullTextIndexTask(ctx context.Context, uri *fs.URI, entityID, fileID int, ownerID int, creator *userpb.User) (*FullTextIndexTask, error) {
+func NewFullTextIndexTask(ctx context.Context, uri *fs.URI, entityID, fileID int, ownerID int, creator *userdata.User) (*FullTextIndexTask, error) {
 	state := &FullTextIndexTaskState{
 		Uri:      uri,
 		FileID:   fileID,
@@ -114,21 +114,25 @@ func NewFullTextIndexTask(ctx context.Context, uri *fs.URI, entityID, fileID int
 				Type:         queue.FullTextIndexTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState:  &filepb.TaskPublicState{},
+				PublicState:  &mqueue.TaskPublicState{},
 			},
 		},
 	}, nil
 }
 
-func NewFullTextIndexTaskFromModel(t *ent.Task) queue.Task {
+func NewFullTextIndexTaskFromModel(t mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := t.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &FullTextIndexTask{
 		DBTask: &queue.DBTask{
-			Task: t,
+			Task: wrapped.Task,
 		},
 	}
 }
 
-func (t *FullTextIndexTask) Do(ctx context.Context) (task.Status, error) {
+func (t *FullTextIndexTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	l := dep.Logger()
@@ -136,24 +140,24 @@ func (t *FullTextIndexTask) Do(ctx context.Context) (task.Status, error) {
 
 	if fm.settings.FTSEnabled(ctx) {
 		l.Debug("FTS disabled, skipping full text index task.")
-		return task.StatusCompleted, nil
+		return mqueue.StatusCompleted, nil
 	}
 
 	// Unmarshal state
 	var state FullTextIndexTaskState
 	if err := json.Unmarshal([]byte(t.State()), &state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
 	}
 
 	// Get fresh file to make sure task is not stale
 	file, err := fm.Get(ctx, state.Uri, dbfs.WithFilePublicMetadata())
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to get latest file: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to get latest file: %w", err)
 	}
 
 	if file.PrimaryEntityID() != state.EntityID {
 		l.Debug("File %d is not the latest version, skipping indexing.", state.FileID)
-		return task.StatusCompleted, nil
+		return mqueue.StatusCompleted, nil
 	}
 
 	docID, _ := file.Metadata()[dbfs.FullTextIndexKey]
@@ -162,7 +166,7 @@ func (t *FullTextIndexTask) Do(ctx context.Context) (task.Status, error) {
 }
 
 func performIndexing(ctx context.Context, fm *manager, uri *fs.URI, entityID, fileID, ownerID int, fileName string,
-	docID string, client *rpc.KnowledgeClient, l *log.Helper) (task.Status, error) {
+	docID string, client *rpc.KnowledgeClient, l *log.Helper) (mqueue.TaskStatus, error) {
 	// Delete old chunks
 	if docID != "" {
 		err := client.DeleteDocuments(ctx, docID)
@@ -180,19 +184,19 @@ func performIndexing(ctx context.Context, fm *manager, uri *fs.URI, entityID, fi
 		Version:      hashid.EncodeID(fm.hasher, entityID, hashid.EntityID),
 	})
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to create document to index: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to create document to index: %w", err)
 	}
 
 	// Upsert metadata
 	if err := fm.fs.PatchMetadata(ctx, []*fs.URI{uri}, &pbfile.MetadataPatch{
 		Key:   dbfs.FullTextIndexKey,
-		Value: document.Id,
+		Value: document.Document.Id,
 	}); err != nil {
-		return task.StatusError, fmt.Errorf("failed to patch metadata: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to patch metadata: %w", err)
 	}
 
 	l.Debugf("Successfully indexed file %d for owner %d.", fileID, ownerID)
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
 type (
@@ -210,7 +214,7 @@ type (
 	}
 )
 
-func NewFullTextCopyTask(ctx context.Context, uri *fs.URI, originalFileID, fileID, ownerID, entityID int, creator *userpb.User,
+func NewFullTextCopyTask(ctx context.Context, uri *fs.URI, originalFileID, fileID, ownerID, entityID int, creator *userdata.User,
 	client *rpc.KnowledgeClient) (*FullTextCopyTask, error) {
 	state := &FullTextCopyTaskState{
 		Uri:            uri,
@@ -231,22 +235,26 @@ func NewFullTextCopyTask(ctx context.Context, uri *fs.URI, originalFileID, fileI
 				Type:         queue.FullTextCopyTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState:  &filepb.TaskPublicState{},
+				PublicState:  &mqueue.TaskPublicState{},
 			},
 		},
 		client: client,
 	}, nil
 }
 
-func NewFullTextCopyTaskFromModel(t *ent.Task) queue.Task {
+func NewFullTextCopyTaskFromModel(t mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := t.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &FullTextCopyTask{
 		DBTask: &queue.DBTask{
-			Task: t,
+			Task: wrapped.Task,
 		},
 	}
 }
 
-func (t *FullTextCopyTask) Do(ctx context.Context) (task.Status, error) {
+func (t *FullTextCopyTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	fm := NewFileManager(dep, dbfsDep, trans.FromContext(ctx)).(*manager)
@@ -254,34 +262,34 @@ func (t *FullTextCopyTask) Do(ctx context.Context) (task.Status, error) {
 
 	if !fm.settings.FTSEnabled(ctx) {
 		l.Debug("FTS disabled, skipping full text copy task.")
-		return task.StatusCompleted, nil
+		return mqueue.StatusCompleted, nil
 	}
 
 	var state FullTextCopyTaskState
 	if err := json.Unmarshal([]byte(t.State()), &state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
 	}
 
 	// Get fresh file to make sure task is not stale
 	file, err := fm.Get(ctx, state.Uri, dbfs.WithFilePublicMetadata())
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to get latest file: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to get latest file: %w", err)
 	}
 
 	if file.PrimaryEntityID() != state.EntityID {
 		l.Debugf("File %d entity changed, skipping copy index.", state.FileID)
-		return task.StatusCompleted, nil
+		return mqueue.StatusCompleted, nil
 	}
 
 	entityID := hashid.EncodeID(fm.hasher, state.EntityID, hashid.EntityID)
 	docID, _ := file.Metadata()[dbfs.FullTextIndexKey]
 	if docID == "" {
-		return task.StatusError, fmt.Errorf("failed to find index for file %d", state.FileID)
+		return mqueue.StatusError, fmt.Errorf("failed to find index for file %d", state.FileID)
 	}
 	doc, err := t.client.CopyDocument(ctx, docID, entityID)
 	if err != nil {
 		l.Warnf("Failed to copy index from file %d to %d, falling back to full indexing: %s", state.OriginalFileID, state.FileID, err)
-		return task.StatusError, fmt.Errorf("failed to copy document: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to copy document: %w", err)
 	}
 
 	// Patch metadata to mark file as indexed
@@ -289,11 +297,11 @@ func (t *FullTextCopyTask) Do(ctx context.Context) (task.Status, error) {
 		Key:   dbfs.FullTextIndexKey,
 		Value: doc.Id,
 	}); err != nil {
-		return task.StatusError, fmt.Errorf("failed to patch metadata: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to patch metadata: %w", err)
 	}
 
 	l.Debugf("Successfully copied index from file %d to %d.", state.OriginalFileID, state.FileID)
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
 type (
@@ -311,7 +319,7 @@ type (
 	}
 )
 
-func NewFullTextChangeOwnerTask(ctx context.Context, uri *fs.URI, entityID, fileID, originalOwnerID, newOwnerID int, creator *userpb.User,
+func NewFullTextChangeOwnerTask(ctx context.Context, uri *fs.URI, entityID, fileID, originalOwnerID, newOwnerID int, creator *userdata.User,
 	client *rpc.KnowledgeClient) (*FullTextChangeOwnerTask, error) {
 	state := &FullTextChangeOwnerTaskState{
 		Uri:             uri,
@@ -332,22 +340,26 @@ func NewFullTextChangeOwnerTask(ctx context.Context, uri *fs.URI, entityID, file
 				Type:         queue.FullTextChangeOwnerTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState:  &filepb.TaskPublicState{},
+				PublicState:  &mqueue.TaskPublicState{},
 			},
 		},
 		client: client,
 	}, nil
 }
 
-func NewFullTextChangeOwnerTaskFromModel(t *ent.Task) queue.Task {
+func NewFullTextChangeOwnerTaskFromModel(t mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := t.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &FullTextChangeOwnerTask{
 		DBTask: &queue.DBTask{
-			Task: t,
+			Task: wrapped.Task,
 		},
 	}
 }
 
-func (t *FullTextChangeOwnerTask) Do(ctx context.Context) (task.Status, error) {
+func (t *FullTextChangeOwnerTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	fm := NewFileManager(dep, dbfsDep, trans.FromContext(ctx)).(*manager)
@@ -355,35 +367,35 @@ func (t *FullTextChangeOwnerTask) Do(ctx context.Context) (task.Status, error) {
 
 	if !fm.settings.FTSEnabled(ctx) {
 		l.Debug("FTS disabled, skipping full text change owner task.")
-		return task.StatusCompleted, nil
+		return mqueue.StatusCompleted, nil
 	}
 
 	var state FullTextChangeOwnerTaskState
 	if err := json.Unmarshal([]byte(t.State()), &state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
 	}
 
 	// Get fresh file to make sure task is not stale
 	file, err := fm.Get(ctx, state.Uri, dbfs.WithFilePublicMetadata())
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to get latest file: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to get latest file: %w", err)
 	}
 
 	if file.PrimaryEntityID() != state.EntityID {
 		l.Debugf("File %d entity changed, skipping copy index.", state.FileID)
-		return task.StatusCompleted, nil
+		return mqueue.StatusCompleted, nil
 	}
 
 	docID, _ := file.Metadata()[dbfs.FullTextIndexKey]
 	if docID == "" {
-		return task.StatusError, fmt.Errorf("failed to find index for file %d", state.FileID)
+		return mqueue.StatusError, fmt.Errorf("failed to find index for file %d", state.FileID)
 	}
 	if _, err := t.client.ChangeDocumentOwner(ctx, docID, state.OriginalOwnerID, state.NewOwnerID); err != nil {
-		return task.StatusError, fmt.Errorf("failed to change document owner for file %d: %w", state.FileID, err)
+		return mqueue.StatusError, fmt.Errorf("failed to change document owner for file %d: %w", state.FileID, err)
 	}
 
 	l.Debugf("Successfully changed index owner for file %d from %d to %d.", state.FileID, state.OriginalOwnerID, state.NewOwnerID)
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
 type (
@@ -397,7 +409,7 @@ type (
 	}
 )
 
-func NewFullTextDeleteTask(ctx context.Context, docIDs []int, creator *userpb.User, client *rpc.KnowledgeClient) (*FullTextDeleteTask, error) {
+func NewFullTextDeleteTask(ctx context.Context, docIDs []int, creator *userdata.User, client *rpc.KnowledgeClient) (*FullTextDeleteTask, error) {
 	state := &FullTextDeleteTaskState{
 		DocIDs: docIDs,
 	}
@@ -413,40 +425,44 @@ func NewFullTextDeleteTask(ctx context.Context, docIDs []int, creator *userpb.Us
 				Type:         queue.FullTextDeleteTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState:  &filepb.TaskPublicState{},
+				PublicState:  &mqueue.TaskPublicState{},
 			},
 		},
 		client: client,
 	}, nil
 }
 
-func NewFullTextDeleteTaskFromModel(t *ent.Task) queue.Task {
+func NewFullTextDeleteTaskFromModel(t mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := t.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &FullTextDeleteTask{
 		DBTask: &queue.DBTask{
-			Task: t,
+			Task: wrapped.Task,
 		},
 	}
 }
 
-func (t *FullTextDeleteTask) Do(ctx context.Context) (task.Status, error) {
+func (t *FullTextDeleteTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	l := dep.Logger()
 
 	// Unmarshal state
 	var state FullTextDeleteTaskState
 	if err := json.Unmarshal([]byte(t.State()), &state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %s (%w)", err, queue.CriticalErr)
 	}
 
 	docIDs := lo.Map(state.DocIDs, func(id int, _ int) string {
 		return hashid.EncodeID(dep.Encoder(), id, hashid.KnowledgeDocumentID)
 	})
 	if err := t.client.DeleteDocuments(ctx, docIDs...); err != nil {
-		return task.StatusError, fmt.Errorf("failed to delete index for %d file(s): %w", len(state.DocIDs), err)
+		return mqueue.StatusError, fmt.Errorf("failed to delete index for %d file(s): %w", len(state.DocIDs), err)
 	}
 
 	l.Debugf("Successfully deleted index for %d file(s).", len(state.DocIDs))
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
 // ShouldExtractText checks if a file is eligible for text extraction based on

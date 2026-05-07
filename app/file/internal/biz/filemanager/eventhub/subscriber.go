@@ -1,8 +1,7 @@
 package eventhub
 
 import (
-	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"context"
 	"encoding/json"
@@ -25,7 +24,7 @@ type Subscriber interface {
 	Stop()
 	Buffer() []*Event
 	// Owner returns the owner of the subscriber.
-	Owner() (*userpb.User, error)
+	Owner() (*userdata.User, error)
 	// Online returns whether the subscriber is online.
 	Online() bool
 	// OfflineSince returns when the subscriber went offline.
@@ -39,7 +38,7 @@ const (
 
 type subscriber struct {
 	mu            sync.Mutex
-	userClient    pbuser.UserClient
+	userClient    rpc.UserClient
 	fsEventClient data.FsEventClient
 	l             *log.Helper
 
@@ -58,7 +57,7 @@ type subscriber struct {
 	debounceDelay time.Duration
 
 	// Owner info
-	ownerCached *userpb.User
+	ownerCached *userdata.User
 	cachedAt    time.Time
 
 	// Close signal
@@ -66,7 +65,7 @@ type subscriber struct {
 	closedCh chan struct{}
 }
 
-func newSubscriber(ctx context.Context, id string, userClient pbuser.UserClient, fsEventClient data.FsEventClient, maxAge, debounceDelay time.Duration, l *log.Helper) (*subscriber, error) {
+func newSubscriber(ctx context.Context, id string, userClient rpc.UserClient, fsEventClient data.FsEventClient, maxAge, debounceDelay time.Duration, l *log.Helper) (*subscriber, error) {
 	user := trans.FromContext(ctx)
 	if user == nil || data.IsAnonymousUser(user) {
 		return nil, errors.New("user not found")
@@ -79,7 +78,7 @@ func newSubscriber(ctx context.Context, id string, userClient pbuser.UserClient,
 		fsEventClient: fsEventClient,
 
 		ownerCached:   user,
-		uid:           int(user.Id),
+		uid:           int(user.ID),
 		cachedAt:      time.Now(),
 		online:        true,
 		closedCh:      make(chan struct{}),
@@ -109,16 +108,16 @@ func (s *subscriber) OfflineSince() time.Time {
 	return s.offlineSince
 }
 
-func (s *subscriber) Owner() (*userpb.User, error) {
+func (s *subscriber) Owner() (*userdata.User, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	return s.ownerLocked()
 }
 
-func (s *subscriber) ownerLocked() (*userpb.User, error) {
+func (s *subscriber) ownerLocked() (*userdata.User, error) {
 	if time.Since(s.cachedAt) > userCacheTTL || s.ownerCached == nil {
-		user, err := rpc.GetUserInfo(context.Background(), s.uid, s.userClient)
+		user, err := s.userClient.GetUserInfo(context.Background(), s.uid)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get login user: %w", err)
 		}
@@ -178,7 +177,7 @@ func (s *subscriber) flushLocked(ctx context.Context) {
 		if err != nil {
 			return
 		}
-		_ = s.fsEventClient.Create(ctx, int(owner.Id), uuid.FromStringOrNil(s.id), lo.Map(s.buffer, func(item *Event, index int) string {
+		_ = s.fsEventClient.Create(ctx, int(owner.ID), uuid.FromStringOrNil(s.id), lo.Map(s.buffer, func(item *Event, index int) string {
 			res, _ := json.Marshal(item)
 			return string(res)
 		})...)

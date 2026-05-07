@@ -1,8 +1,10 @@
 package service
 
 import (
+	userpb "api/api/user/common/v1"
 	pbdevice "api/api/user/device/v1"
 	pb "api/api/user/users/v1"
+	"api/external/data/userdata"
 	"common/hashid"
 	"user/ent"
 	"user/internal/data"
@@ -18,19 +20,21 @@ const (
 
 func buildUser(u *ent.User, hasher hashid.Encoder) *pb.GetUserResponse {
 	return &pb.GetUserResponse{
-		Id:                  hashid.EncodeUserID(hasher, u.ID),
-		Email:               u.Email,
-		Nickname:            u.Nick,
-		Status:              string(u.Status),
-		Avatar:              u.Avatar,
-		CreatedAt:           timestamppb.New(u.CreatedAt),
-		PreferredTheme:      u.Settings.PreferredTheme,
-		Anonymous:           u.ID == 0,
-		Group:               buildGroup(u.Edges.Group, hasher),
-		Pined:               u.Settings.Pined,
+		Id:             hashid.EncodeUserID(hasher, u.ID),
+		Email:          u.Email,
+		Nickname:       u.Nick,
+		Status:         string(u.Status),
+		Avatar:         u.Avatar,
+		CreatedAt:      timestamppb.New(u.CreatedAt),
+		PreferredTheme: u.Settings.PreferredTheme,
+		Anonymous:      u.ID == 0,
+		Group:          buildGroup(u.Edges.Group, hasher),
+		Pined: lo.Map(u.Settings.Pined, func(item *userdata.PinedFile, _ int) *userpb.PinedFile {
+			return userdata.PinedFileToProto(item)
+		}),
 		Language:            u.Settings.Language,
 		DisableViewSync:     u.Settings.DisableViewSync,
-		ShareLinksInProfile: string(u.Settings.ShareLinksInProfile),
+		ShareLinksInProfile: u.Settings.ShareLinksInProfile,
 	}
 }
 
@@ -42,8 +46,8 @@ func buildGroup(group *ent.Group, hasher hashid.Encoder) *pb.GetGroupResponse {
 		Id:                  hashid.EncodeGroupID(hasher, group.ID),
 		Name:                group.Name,
 		Permissions:         *group.Permissions,
-		DirectLinkBatchSize: group.Settings.SourceBatchSize,
-		TrashRetention:      group.Settings.TrashRetention,
+		DirectLinkBatchSize: int32(group.Settings.SourceBatchSize),
+		TrashRetention:      int32(group.Settings.TrashRetention),
 	}
 }
 
@@ -119,7 +123,7 @@ func buildUserSettingResponse(user *ent.User, passkeys []*ent.Passkey) *pb.GetSe
 	return &pb.GetSettingResponse{
 		VersionRetentionEnabled: user.Settings.VersionRetention,
 		VersionRetentionExt:     user.Settings.VersionRetentionExt,
-		VersionRetentionMax:     user.Settings.VersionRetentionMax,
+		VersionRetentionMax:     int32(user.Settings.VersionRetentionMax),
 		PasswordLess:            user.Password != "",
 		TwoFaEnabled:            user.TwoFactorSecret != "",
 		Passkeys: lo.Map(passkeys, func(item *ent.Passkey, index int) *pb.GetPasskeyResponse {

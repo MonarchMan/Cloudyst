@@ -1,7 +1,6 @@
 package admin
 
 import (
-	pbuser "api/api/user/users/v1"
 	"common/auth"
 	"common/cache"
 	"common/hashid"
@@ -15,6 +14,7 @@ import (
 	"file/internal/biz/setting"
 	"file/internal/conf"
 	"file/internal/data"
+	"file/internal/data/rpc"
 
 	pb "api/api/file/admin/v1"
 
@@ -33,7 +33,7 @@ type AdminService struct {
 	tc               data.TaskClient
 	nc               data.NodeClient
 	sc               data.ShareClient
-	uc               pbuser.UserClient
+	uc               rpc.UserClient
 	rc               request.Client
 	hasher           hashid.Encoder
 	mm               mime.MimeManager
@@ -46,7 +46,7 @@ type AdminService struct {
 }
 
 func NewAdminService(config *conf.Bootstrap, kv cache.Driver, auth auth.Auth, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep,
-	fc data.FileClient, pc data.StoragePolicyClient, tc data.TaskClient, nc data.NodeClient, sc data.ShareClient, uc pbuser.UserClient,
+	fc data.FileClient, pc data.StoragePolicyClient, tc data.TaskClient, nc data.NodeClient, sc data.ShareClient, uc rpc.UserClient,
 	hasher hashid.Encoder, mm mime.MimeManager, settings setting.Provider, credm credmanager.CredManager, qm *queue.QueueManager,
 	np cluster.NodePool, l log.Logger) *AdminService {
 	return &AdminService{

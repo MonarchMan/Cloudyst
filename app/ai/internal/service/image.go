@@ -59,7 +59,7 @@ func (s *ImageService) ListImage(ctx context.Context, req *pb.ListImageRequest) 
 		PaginationArgs: req.Pagination,
 		Platform:       req.Platform,
 		Status:         types.ImageStatus(req.Status),
-		UserID:         int(u.Id),
+		UserID:         u.ID,
 	}
 	// 2. 列表查询
 	images, err := s.ic.List(ctx, args)
@@ -70,6 +70,7 @@ func (s *ImageService) ListImage(ctx context.Context, req *pb.ListImageRequest) 
 		Images: lo.Map(images.Images, func(i *ent.AiImage, index int) *pb.GetImageResponse {
 			return buildImageResponse(i, s.hasher)
 		}),
+		Pagination: images.PaginationResults,
 	}, nil
 }
 
@@ -79,7 +80,7 @@ func validateStatus(status string) error {
 	}
 	return nil
 }
-func (s *ImageService) ListImageByIds(ctx context.Context, req *pb.ListImageByIdsRequest) (*pb.ListImageResponse, error) {
+func (s *ImageService) GetImages(ctx context.Context, req *pb.GetImagesRequest) (*pb.GetImagesResponse, error) {
 	var ids []int
 	for _, rawID := range req.Ids {
 		id, err := s.hasher.Decode(rawID, hashid.ImageID)
@@ -92,7 +93,7 @@ func (s *ImageService) ListImageByIds(ctx context.Context, req *pb.ListImageById
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list images %w", err)
 	}
-	return &pb.ListImageResponse{
+	return &pb.GetImagesResponse{
 		Images: lo.Map(images, func(i *ent.AiImage, index int) *pb.GetImageResponse {
 			return buildImageResponse(i, s.hasher)
 		}),

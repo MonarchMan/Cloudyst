@@ -1,8 +1,8 @@
 package data
 
 import (
+	"api/external/data/common"
 	"common/cache"
-	"common/db"
 	"file/internal/conf"
 	"file/internal/data/rpc"
 
@@ -12,7 +12,6 @@ import (
 
 var ProviderSet = wire.NewSet(
 	rpc.NewUserClient,
-	rpc.NewUserAdminClient,
 	NewDirectLinkClient,
 	NewFileClient,
 	NewNodeClient,
@@ -36,6 +35,6 @@ func KVWrapper(config *conf.Bootstrap, l log.Logger) cache.Driver {
 		redisConf.User, redisConf.Password, redisConf.UseTls, redisConf.TlsSkipVerify)
 }
 
-func DbTypeWrapper(config *conf.Bootstrap) db.DBType {
-	return db.DBType(config.Data.Database.DbType)
+func DbTypeWrapper(config *conf.Bootstrap) common.DBType {
+	return common.DBType(config.Data.Database.DbType)
 }

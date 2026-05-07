@@ -7,8 +7,9 @@
 package v1
 
 import (
-	v1 "api/api/file/common/v1"
-	v11 "api/api/file/share/v1"
+	v1 "api/api/common/v1"
+	v11 "api/api/file/common/v1"
+	v12 "api/api/file/share/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -32,7 +33,7 @@ type ListFileRequest struct {
 	Page           int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize       int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	OrderBy        string                 `protobuf:"bytes,4,opt,name=order_by,json=orderBy,proto3" json:"order_by,omitempty"`
-	OrderDirection v1.OrderDirection      `protobuf:"varint,5,opt,name=order_direction,json=orderDirection,proto3,enum=file.common.v1.OrderDirection" json:"order_direction,omitempty"`
+	OrderDirection v1.OrderDirection      `protobuf:"varint,5,opt,name=order_direction,json=orderDirection,proto3,enum=common.v1.OrderDirection" json:"order_direction,omitempty"`
 	NextPageToken  string                 `protobuf:"bytes,6,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -114,14 +115,14 @@ type ListFileResponse struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
 	Files                 []*FileResponse        `protobuf:"bytes,1,rep,name=files,proto3" json:"files,omitempty"`
 	Parent                *FileResponse          `protobuf:"bytes,2,opt,name=parent,proto3" json:"parent,omitempty"`
-	Pagination            *v1.PaginationResults  `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Pagination            *v11.PaginationResults `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	Props                 *NavigatorProps        `protobuf:"bytes,4,opt,name=props,proto3" json:"props,omitempty"`
 	ContextHint           string                 `protobuf:"bytes,5,opt,name=context_hint,json=contextHint,proto3" json:"context_hint,omitempty"`
 	RecursionLimitReached bool                   `protobuf:"varint,6,opt,name=recursion_limit_reached,json=recursionLimitReached,proto3" json:"recursion_limit_reached,omitempty"`
 	MixedType             bool                   `protobuf:"varint,7,opt,name=mixed_type,json=mixedType,proto3" json:"mixed_type,omitempty"`
 	SingleFileView        bool                   `protobuf:"varint,8,opt,name=single_file_view,json=singleFileView,proto3" json:"single_file_view,omitempty"`
 	StoragePolicy         *StoragePolicy         `protobuf:"bytes,9,opt,name=storage_policy,json=storagePolicy,proto3" json:"storage_policy,omitempty"`
-	View                  *v1.ExplorerView       `protobuf:"bytes,10,opt,name=view,proto3" json:"view,omitempty"`
+	View                  *v11.ExplorerView      `protobuf:"bytes,10,opt,name=view,proto3" json:"view,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -170,7 +171,7 @@ func (x *ListFileResponse) GetParent() *FileResponse {
 	return nil
 }
 
-func (x *ListFileResponse) GetPagination() *v1.PaginationResults {
+func (x *ListFileResponse) GetPagination() *v11.PaginationResults {
 	if x != nil {
 		return x.Pagination
 	}
@@ -219,7 +220,7 @@ func (x *ListFileResponse) GetStoragePolicy() *StoragePolicy {
 	return nil
 }
 
-func (x *ListFileResponse) GetView() *v1.ExplorerView {
+func (x *ListFileResponse) GetView() *v11.ExplorerView {
 	if x != nil {
 		return x.View
 	}
@@ -454,9 +455,9 @@ type ExtendedInfo struct {
 	state         protoimpl.MessageState  `protogen:"open.v1"`
 	StoragePolicy *StoragePolicy          `protobuf:"bytes,1,opt,name=storage_policy,json=storagePolicy,proto3" json:"storage_policy,omitempty"`
 	StorageUsed   int64                   `protobuf:"varint,2,opt,name=storage_used,json=storageUsed,proto3" json:"storage_used,omitempty"`
-	Shares        []*v11.GetShareResponse `protobuf:"bytes,3,rep,name=shares,proto3" json:"shares,omitempty"`
+	Shares        []*v12.GetShareResponse `protobuf:"bytes,3,rep,name=shares,proto3" json:"shares,omitempty"`
 	Entities      []*EntityResponse       `protobuf:"bytes,4,rep,name=entities,proto3" json:"entities,omitempty"`
-	View          *v1.ExplorerView        `protobuf:"bytes,5,opt,name=view,proto3" json:"view,omitempty"`
+	View          *v11.ExplorerView       `protobuf:"bytes,5,opt,name=view,proto3" json:"view,omitempty"`
 	DirectLinks   []*DirectLink           `protobuf:"bytes,6,rep,name=direct_links,json=directLinks,proto3" json:"direct_links,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -506,7 +507,7 @@ func (x *ExtendedInfo) GetStorageUsed() int64 {
 	return 0
 }
 
-func (x *ExtendedInfo) GetShares() []*v11.GetShareResponse {
+func (x *ExtendedInfo) GetShares() []*v12.GetShareResponse {
 	if x != nil {
 		return x.Shares
 	}
@@ -520,7 +521,7 @@ func (x *ExtendedInfo) GetEntities() []*EntityResponse {
 	return nil
 }
 
-func (x *ExtendedInfo) GetView() *v1.ExplorerView {
+func (x *ExtendedInfo) GetView() *v11.ExplorerView {
 	if x != nil {
 		return x.View
 	}
@@ -2800,7 +2801,7 @@ func (x *EntityUrl) GetBrowserDownloadDisplayName() string {
 type PatchViewRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Uri           string                 `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
-	View          *v1.ExplorerView       `protobuf:"bytes,2,opt,name=view,proto3" json:"view,omitempty"`
+	View          *v11.ExplorerView      `protobuf:"bytes,2,opt,name=view,proto3" json:"view,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2842,7 +2843,7 @@ func (x *PatchViewRequest) GetUri() string {
 	return ""
 }
 
-func (x *PatchViewRequest) GetView() *v1.ExplorerView {
+func (x *PatchViewRequest) GetView() *v11.ExplorerView {
 	if x != nil {
 		return x.View
 	}
@@ -3380,13 +3381,13 @@ var File_file_files_v1_file_proto protoreflect.FileDescriptor
 
 const file_file_files_v1_file_proto_rawDesc = "" +
 	"\n" +
-	"\x18file/files/v1/file.proto\x12\rfile.files.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bfile/common/v1/common.proto\x1a\x19file/share/v1/share.proto\"\xe0\x01\n" +
+	"\x18file/files/v1/file.proto\x12\rfile.files.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bfile/common/v1/common.proto\x1a\x19file/share/v1/share.proto\x1a\x16common/v1/common.proto\"\xdb\x01\n" +
 	"\x0fListFileRequest\x12\x10\n" +
 	"\x03uri\x18\x01 \x01(\tR\x03uri\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x19\n" +
-	"\border_by\x18\x04 \x01(\tR\aorderBy\x12G\n" +
-	"\x0forder_direction\x18\x05 \x01(\x0e2\x1e.file.common.v1.OrderDirectionR\x0eorderDirection\x12&\n" +
+	"\border_by\x18\x04 \x01(\tR\aorderBy\x12B\n" +
+	"\x0forder_direction\x18\x05 \x01(\x0e2\x19.common.v1.OrderDirectionR\x0eorderDirection\x12&\n" +
 	"\x0fnext_page_token\x18\x06 \x01(\tR\rnextPageToken\"\x8d\x04\n" +
 	"\x10ListFileResponse\x121\n" +
 	"\x05files\x18\x01 \x03(\v2\x1b.file.files.v1.FileResponseR\x05files\x123\n" +
@@ -3768,15 +3769,15 @@ var file_file_files_v1_file_proto_goTypes = []any{
 	nil,                                // 51: file.files.v1.FileResponse.MetadataEntry
 	nil,                                // 52: file.files.v1.CreateFileRequest.MetadataEntry
 	nil,                                // 53: file.files.v1.CreateUploadSessionRequest.MetadataEntry
-	(v1.OrderDirection)(0),             // 54: file.common.v1.OrderDirection
-	(*v1.PaginationResults)(nil),       // 55: file.common.v1.PaginationResults
-	(*v1.ExplorerView)(nil),            // 56: file.common.v1.ExplorerView
+	(v1.OrderDirection)(0),             // 54: common.v1.OrderDirection
+	(*v11.PaginationResults)(nil),      // 55: file.common.v1.PaginationResults
+	(*v11.ExplorerView)(nil),           // 56: file.common.v1.ExplorerView
 	(*timestamppb.Timestamp)(nil),      // 57: google.protobuf.Timestamp
-	(*v11.GetShareResponse)(nil),       // 58: file.share.v1.GetShareResponse
+	(*v12.GetShareResponse)(nil),       // 58: file.share.v1.GetShareResponse
 	(*emptypb.Empty)(nil),              // 59: google.protobuf.Empty
 }
 var file_file_files_v1_file_proto_depIdxs = []int32{
-	54, // 0: file.files.v1.ListFileRequest.order_direction:type_name -> file.common.v1.OrderDirection
+	54, // 0: file.files.v1.ListFileRequest.order_direction:type_name -> common.v1.OrderDirection
 	2,  // 1: file.files.v1.ListFileResponse.files:type_name -> file.files.v1.FileResponse
 	2,  // 2: file.files.v1.ListFileResponse.parent:type_name -> file.files.v1.FileResponse
 	55, // 3: file.files.v1.ListFileResponse.pagination:type_name -> file.common.v1.PaginationResults

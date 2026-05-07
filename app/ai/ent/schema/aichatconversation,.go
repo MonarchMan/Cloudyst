@@ -1,11 +1,7 @@
 package schema
 
 import (
-	mschema "entmodule/ent/schema"
-
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
 )
 
@@ -19,38 +15,28 @@ func (AiChatConversation) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("title").
 			MaxLen(256).
-			Comment("会话标题").
-			Annotations(entproto.Field(2)),
+			Comment("会话标题"),
 		field.Bool("pinned").
-			Comment("是否置顶会话").
-			Annotations(entproto.Field(3)),
+			Comment("是否置顶会话"),
 		field.Int("user_id").
-			Comment("用户ID").
-			Annotations(entproto.Field(4)),
+			Comment("用户ID"),
 		field.Int("role_id").
-			Comment("角色ID").
-			Annotations(entproto.Field(5)),
+			Comment("角色ID"),
 		field.String("system_message").
 			MaxLen(1024).
 			Default("").
-			Comment("角色设定").
-			Annotations(entproto.Field(6)),
+			Comment("角色设定"),
 		field.Int("model_id").
-			Comment("模型ID").
-			Annotations(entproto.Field(7)),
+			Comment("模型ID"),
 		field.String("model").
 			MaxLen(32).
-			Comment("模型标识").
-			Annotations(entproto.Field(8)),
+			Comment("模型标识"),
 		field.Float("temperature").
-			Comment("温度").
-			Annotations(entproto.Field(9)),
+			Comment("温度"),
 		field.Int("max_tokens").
-			Comment("单条回复的最大Token数").
-			Annotations(entproto.Field(10)),
+			Comment("单条回复的最大Token数"),
 		field.Int("max_contexts").
-			Comment("上下文的最大Messages数").
-			Annotations(entproto.Field(11)),
+			Comment("上下文的最大Messages数"),
 	}
 }
 
@@ -61,12 +47,6 @@ func (AiChatConversation) Edges() []ent.Edge {
 
 func (AiChatConversation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
-	}
-}
-
-func (AiChatConversation) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
+		CommonMixin{},
 	}
 }

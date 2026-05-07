@@ -5,7 +5,7 @@ import (
 	"ai/ent/aiknowledgesegment"
 	"ai/internal/biz/types"
 	pb "api/api/common/v1"
-	"common/db"
+	"api/external/data/common"
 	"context"
 	"entmodule"
 
@@ -18,6 +18,9 @@ type (
 		GetByID(ctx context.Context, id int) (*ent.AiKnowledgeSegment, error)
 		GetByIDs(ctx context.Context, ids []int) ([]*ent.AiKnowledgeSegment, error)
 		GetActiveByDocumentIDs(ctx context.Context, docIDs []int) ([]*ent.AiKnowledgeSegment, error)
+		GetByDocumentChunkIndexes(ctx context.Context, documentID int, indexes []int) ([]*ent.AiKnowledgeSegment, error)
+		GetNeighbors(ctx context.Context, documentID int, chunkIndex int, window int) ([]*ent.AiKnowledgeSegment, error)
+		GetNeighborsByID(ctx context.Context, id int, window int) ([]*ent.AiKnowledgeSegment, error)
 		List(ctx context.Context, args *ListKnowledgeSegmentArgs) (*ListKnowledgeSegmentResult, error)
 		Upsert(ctx context.Context, segment *types.KnowledgeSegment) (*ent.AiKnowledgeSegment, error)
 		BatchCreate(ctx context.Context, segments []*types.KnowledgeSegment) ([]*ent.AiKnowledgeSegment, error)
@@ -49,10 +52,10 @@ type (
 	}
 )
 
-func NewKnowledgeSegmentClient(client *ent.Client, dbType db.DBType) KnowledgeSegmentClient {
+func NewKnowledgeSegmentClient(client *ent.Client, dbType common.DBType) KnowledgeSegmentClient {
 	return &knowledgeSegmentClient{
 		client:      client,
-		maxSQLParam: db.SqlParamLimit(dbType),
+		maxSQLParam: common.SqlParamLimit(dbType),
 	}
 }
 
@@ -83,8 +86,55 @@ func (c *knowledgeSegmentClient) GetActiveByDocumentIDs(ctx context.Context, doc
 		All(ctx)
 }
 
+func (c *knowledgeSegmentClient) GetByDocumentChunkIndexes(ctx context.Context, documentID int, indexes []int) ([]*ent.AiKnowledgeSegment, error) {
+	if documentID == 0 || len(indexes) == 0 {
+		return nil, nil
+	}
+	return withKnowledgeSegmentEagerLoading(ctx, c.client.AiKnowledgeSegment.Query()).
+		Where(
+			aiknowledgesegment.DocumentID(documentID),
+			aiknowledgesegment.ChunkIndexIn(indexes...),
+		).
+		Order(aiknowledgesegment.ByChunkIndex()).
+		All(ctx)
+}
+
+func (c *knowledgeSegmentClient) GetNeighbors(ctx context.Context, documentID int, chunkIndex int, window int) ([]*ent.AiKnowledgeSegment, error) {
+	if documentID == 0 {
+		return nil, nil
+	}
+	if window < 0 {
+		window = 0
+	}
+	start := chunkIndex - window
+	if start < 0 {
+		start = 0
+	}
+	end := chunkIndex + window
+	return withKnowledgeSegmentEagerLoading(ctx, c.client.AiKnowledgeSegment.Query()).
+		Where(
+			aiknowledgesegment.DocumentID(documentID),
+			aiknowledgesegment.ChunkIndexGTE(start),
+			aiknowledgesegment.ChunkIndexLTE(end),
+			aiknowledgesegment.StatusEQ(entmodule.StatusActive),
+		).
+		Order(aiknowledgesegment.ByChunkIndex()).
+		All(ctx)
+}
+
+func (c *knowledgeSegmentClient) GetNeighborsByID(ctx context.Context, id int, window int) ([]*ent.AiKnowledgeSegment, error) {
+	seg, err := c.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return c.GetNeighbors(ctx, seg.DocumentID, seg.ChunkIndex, window)
+}
+
 func (c *knowledgeSegmentClient) List(ctx context.Context, args *ListKnowledgeSegmentArgs) (*ListKnowledgeSegmentResult, error) {
 	q := c.client.AiKnowledgeSegment.Query()
+	if args.KnowledgeID != 0 {
+		q.Where(aiknowledgesegment.KnowledgeID(args.KnowledgeID))
+	}
 	if args.DocumentID != 0 {
 		q.Where(aiknowledgesegment.DocumentID(args.DocumentID))
 	}
@@ -113,15 +163,29 @@ func (c *knowledgeSegmentClient) Upsert(ctx context.Context, segment *types.Know
 	if segment.ID == 0 {
 		return c.client.AiKnowledgeSegment.Create().
 			SetDocumentID(segment.DocumentID).
+			SetKnowledgeID(segment.KnowledgeID).
+			SetContentLength(segment.ContentLen).
 			SetTokens(segment.Tokens).
+			SetChunkIndex(segment.ChunkIndex).
+			SetSectionPath(segment.SectionPath).
+			SetStartOffset(segment.StartOffset).
+			SetEndOffset(segment.EndOffset).
+			SetMetadata(nonNilMetadata(segment.Metadata)).
 			SetVectorID(segment.VectorID).
-			SetStatus(segment.Status).
+			SetStatus(defaultSegmentStatus(segment.Status)).
 			Save(ctx)
 	}
 	return c.client.AiKnowledgeSegment.UpdateOneID(segment.ID).
+		SetKnowledgeID(segment.KnowledgeID).
+		SetContentLength(segment.ContentLen).
 		SetTokens(segment.Tokens).
+		SetChunkIndex(segment.ChunkIndex).
+		SetSectionPath(segment.SectionPath).
+		SetStartOffset(segment.StartOffset).
+		SetEndOffset(segment.EndOffset).
+		SetMetadata(nonNilMetadata(segment.Metadata)).
 		SetVectorID(segment.VectorID).
-		SetStatus(segment.Status).
+		SetStatus(defaultSegmentStatus(segment.Status)).
 		Save(ctx)
 }
 
@@ -129,9 +193,16 @@ func (c *knowledgeSegmentClient) BatchCreate(ctx context.Context, segments []*ty
 	batch := lo.Map(segments, func(segment *types.KnowledgeSegment, _ int) *ent.AiKnowledgeSegmentCreate {
 		return c.client.AiKnowledgeSegment.Create().
 			SetDocumentID(segment.DocumentID).
+			SetKnowledgeID(segment.KnowledgeID).
+			SetContentLength(segment.ContentLen).
 			SetTokens(segment.Tokens).
+			SetChunkIndex(segment.ChunkIndex).
+			SetSectionPath(segment.SectionPath).
+			SetStartOffset(segment.StartOffset).
+			SetEndOffset(segment.EndOffset).
+			SetMetadata(nonNilMetadata(segment.Metadata)).
 			SetVectorID(segment.VectorID).
-			SetStatus(segment.Status)
+			SetStatus(defaultSegmentStatus(segment.Status))
 	})
 	return c.client.AiKnowledgeSegment.CreateBulk(batch...).Save(ctx)
 }
@@ -186,7 +257,7 @@ func withKnowledgeSegmentEagerLoading(ctx context.Context, q *ent.AiKnowledgeSeg
 }
 
 func getKnowledgeSegmentOrderOption(args *ListKnowledgeSegmentArgs) []aiknowledgesegment.OrderOption {
-	orderTerm := db.GetOrderTerm(db.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
 	switch args.OrderBy {
 	case aiknowledgesegment.FieldRetrievalCount:
 		return []aiknowledgesegment.OrderOption{aiknowledgesegment.ByRetrievalCount(orderTerm), aiknowledgesegment.ByID(orderTerm)}
@@ -195,4 +266,11 @@ func getKnowledgeSegmentOrderOption(args *ListKnowledgeSegmentArgs) []aiknowledg
 	default:
 		return []aiknowledgesegment.OrderOption{aiknowledgesegment.ByID(orderTerm)}
 	}
+}
+
+func defaultSegmentStatus(status entmodule.Status) entmodule.Status {
+	if status == "" {
+		return entmodule.StatusActive
+	}
+	return status
 }

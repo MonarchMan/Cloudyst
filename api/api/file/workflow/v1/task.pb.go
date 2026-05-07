@@ -9,6 +9,7 @@ package v1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -25,7 +26,7 @@ type Summary struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	NodeId        int32                  `protobuf:"varint,1,opt,name=node_id,json=-,proto3" json:"node_id,omitempty"`
 	Phase         string                 `protobuf:"bytes,2,opt,name=phase,proto3" json:"phase,omitempty"`
-	Props         map[string]string      `protobuf:"bytes,3,rep,name=props,proto3" json:"props,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Props         *structpb.Struct       `protobuf:"bytes,3,opt,name=props,proto3" json:"props,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -74,7 +75,7 @@ func (x *Summary) GetPhase() string {
 	return ""
 }
 
-func (x *Summary) GetProps() map[string]string {
+func (x *Summary) GetProps() *structpb.Struct {
 	if x != nil {
 		return x.Props
 	}
@@ -145,15 +146,11 @@ var File_file_workflow_v1_task_proto protoreflect.FileDescriptor
 
 const file_file_workflow_v1_task_proto_rawDesc = "" +
 	"\n" +
-	"\x1bfile/workflow/v1/task.proto\x12\x10file.workflow.v1\"\xa9\x01\n" +
+	"\x1bfile/workflow/v1/task.proto\x12\x10file.workflow.v1\x1a\x1cgoogle/protobuf/struct.proto\"b\n" +
 	"\aSummary\x12\x12\n" +
 	"\anode_id\x18\x01 \x01(\x05R\x01-\x12\x14\n" +
-	"\x05phase\x18\x02 \x01(\tR\x05phase\x12:\n" +
-	"\x05props\x18\x03 \x03(\v2$.file.workflow.v1.Summary.PropsEntryR\x05props\x1a8\n" +
-	"\n" +
-	"PropsEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"Z\n" +
+	"\x05phase\x18\x02 \x01(\tR\x05phase\x12-\n" +
+	"\x05props\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x05props\"Z\n" +
 	"\bProgress\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12\x18\n" +
 	"\acurrent\x18\x02 \x01(\x03R\acurrent\x12\x1e\n" +
@@ -173,14 +170,14 @@ func file_file_workflow_v1_task_proto_rawDescGZIP() []byte {
 	return file_file_workflow_v1_task_proto_rawDescData
 }
 
-var file_file_workflow_v1_task_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_file_workflow_v1_task_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_file_workflow_v1_task_proto_goTypes = []any{
-	(*Summary)(nil),  // 0: file.workflow.v1.Summary
-	(*Progress)(nil), // 1: file.workflow.v1.Progress
-	nil,              // 2: file.workflow.v1.Summary.PropsEntry
+	(*Summary)(nil),         // 0: file.workflow.v1.Summary
+	(*Progress)(nil),        // 1: file.workflow.v1.Progress
+	(*structpb.Struct)(nil), // 2: google.protobuf.Struct
 }
 var file_file_workflow_v1_task_proto_depIdxs = []int32{
-	2, // 0: file.workflow.v1.Summary.props:type_name -> file.workflow.v1.Summary.PropsEntry
+	2, // 0: file.workflow.v1.Summary.props:type_name -> google.protobuf.Struct
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -199,7 +196,7 @@ func file_file_workflow_v1_task_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_file_workflow_v1_task_proto_rawDesc), len(file_file_workflow_v1_task_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

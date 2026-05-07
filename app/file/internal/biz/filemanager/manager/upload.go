@@ -1,7 +1,6 @@
 package manager
 
 import (
-	pb "api/api/file/common/v1"
 	pbfile "api/api/file/files/v1"
 	"api/external/trans"
 	"common/serializer"
@@ -9,14 +8,15 @@ import (
 	"context"
 	"encoding/json"
 	"file/ent"
-	"file/ent/task"
 	"file/internal/biz/cluster"
 	"file/internal/biz/filemanager"
 	"file/internal/biz/filemanager/driver"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/queue"
+	"file/internal/data"
 	"file/internal/data/types"
 	"fmt"
+	mqueue "queue"
 	"strconv"
 	"time"
 
@@ -450,13 +450,17 @@ const (
 )
 
 func init() {
-	queue.RegisterResumableTaskFactory(queue.UploadSentinelCheckTaskType, NewUploadSentinelCheckTaskFromModel)
+	mqueue.RegisterResumableTaskFactory(queue.UploadSentinelCheckTaskType, NewUploadSentinelCheckTaskFromModel)
 }
 
-func NewUploadSentinelCheckTaskFromModel(task *ent.Task) queue.Task {
+func NewUploadSentinelCheckTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := task.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &UploadSentinelCheckTask{
 		DBTask: &queue.DBTask{
-			Task: task,
+			Task: wrapped.Task,
 		},
 	}
 }
@@ -478,7 +482,7 @@ func newUploadSentinelCheckTask(ctx context.Context, uploadSession *fs.UploadSes
 				Type:         queue.UploadSentinelCheckTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState: &pb.TaskPublicState{
+				PublicState: &mqueue.TaskPublicState{
 					ResumeTime: resumeAfter.Unix(),
 				},
 			},
@@ -488,7 +492,7 @@ func newUploadSentinelCheckTask(ctx context.Context, uploadSession *fs.UploadSes
 	return t, nil
 }
 
-func (m *UploadSentinelCheckTask) Do(ctx context.Context) (task.Status, error) {
+func (m *UploadSentinelCheckTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	user := trans.FromContext(ctx)
@@ -499,42 +503,42 @@ func (m *UploadSentinelCheckTask) Do(ctx context.Context) (task.Status, error) {
 	// Check if sentinel is canceled due to callback complete
 	t, err := taskClient.GetTaskByID(ctx, m.ID())
 	if err != nil {
-		return task.StatusError, fmt.Errorf("failed to get task by ID: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to get task by ID: %w", err)
 	}
 
-	if t.Status == task.StatusCompleted {
+	if t.Status == mqueue.StatusCompleted {
 		l.WithContext(ctx).Infof("Upload sentinel check task [%d] is canceled due to callback complete.", m.ID())
-		return task.StatusCompleted, nil
+		return mqueue.StatusCompleted, nil
 	}
 
 	// unmarshal state
 	state := &UploadSentinelCheckTaskState{}
 	if err := json.Unmarshal([]byte(m.State()), state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
 	}
 
 	l.WithContext(ctx).Infof("Upload sentinel check triggered, clean up stale place holder entity [%d].", state.Session.EntityID)
 	entity, err := fm.fs.GetEntity(ctx, state.Session.EntityID)
 	if err != nil {
 		l.WithContext(ctx).Debugf("Failed to get entity [%d]: %s, skip sentinel check.", state.Session.EntityID, err)
-		return task.StatusCompleted, nil
+		return mqueue.StatusCompleted, nil
 	}
 
 	_, d, err := fm.getEntityPolicyDriver(ctx, entity, nil)
 	if err != nil {
 		l.WithContext(ctx).Debugf("Failed to get storage driver for entity [%d]: %s", state.Session.EntityID, err)
-		return task.StatusError, err
+		return mqueue.StatusError, err
 	}
 
 	_, err = d.Delete(ctx, entity.Source())
 	if err != nil {
 		l.WithContext(ctx).Debugf("Failed to delete entity source [%d]: %s", state.Session.EntityID, err)
-		return task.StatusError, err
+		return mqueue.StatusError, err
 	}
 
 	if err := d.CancelToken(ctx, state.Session); err != nil {
 		l.WithContext(ctx).Debugf("Failed to cancel token [%d]: %s", state.Session.EntityID, err)
 	}
 
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }

@@ -8,7 +8,6 @@ import (
 	"file/ent"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/data"
-	"file/internal/data/rpc"
 	"file/internal/data/types"
 	"fmt"
 	"path"
@@ -34,7 +33,7 @@ func (f *DBFS) PreValidateUpload(ctx context.Context, dst *fs.URI, files ...fs.P
 	}
 
 	// check ownership
-	if int(f.user.Id) != dstFile.OwnerID() {
+	if f.user.ID != dstFile.OwnerID() {
 		return fmt.Errorf("failed to evaluate permission: %w", err)
 	}
 
@@ -89,7 +88,7 @@ func (f *DBFS) PrepareUpload(ctx context.Context, req *fs.UploadRequest, opts ..
 	}
 
 	fileExisted := false
-	if ancestor.Uri(false).IsSame(req.Props.Uri, hashid.EncodeUserID(f.hasher, int(f.user.Id))) {
+	if ancestor.Uri(false).IsSame(req.Props.Uri, hashid.EncodeUserID(f.hasher, int(f.user.ID))) {
 		fileExisted = true
 	}
 
@@ -103,14 +102,14 @@ func (f *DBFS) PrepareUpload(ctx context.Context, req *fs.UploadRequest, opts ..
 		return nil, fs.ErrPathNotExist
 	}
 
-	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && ancestor.OwnerID() != int(f.user.Id) {
+	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && ancestor.OwnerID() != f.user.ID {
 		return nil, fs.ErrOwnerOnly
 	}
 
 	// Lock target
 	lockedPath := ancestor.RootUri().JoinRaw(req.Props.Uri.PathTrimmed())
 	lr := &LockByPath{lockedPath, ancestor, types.FileTypeFile, ""}
-	ls, err := f.acquireByPath(ctx, time.Until(req.Props.ExpireAt), int(f.user.Id), false, fs.LockApp(fs.ApplicationUpload), lr)
+	ls, err := f.acquireByPath(ctx, time.Until(req.Props.ExpireAt), f.user.ID, false, fs.LockApp(fs.ApplicationUpload), lr)
 	defer func() { _ = f.Release(ctx, ls) }()
 	ctx = fs.LockSessionToContext(ctx, ls)
 	if err != nil {
@@ -145,7 +144,7 @@ func (f *DBFS) PrepareUpload(ctx context.Context, req *fs.UploadRequest, opts ..
 		(req.Props.EntityType != nil && *req.Props.EntityType == types.EntityTypeThumbnail) &&
 		req.ImportFrom == nil
 	if req.Props.SavePath == "" || isThumbnailAndPolicyNotAvailable {
-		req.Props.SavePath = generateSavePath(policy, req, int(f.user.Id))
+		req.Props.SavePath = generateSavePath(policy, req, int(f.user.ID))
 		if isThumbnailAndPolicyNotAvailable {
 			req.Props.SavePath = req.Props.SavePath + f.settingClient.ThumbEntitySuffix(ctx)
 		}
@@ -199,7 +198,7 @@ func (f *DBFS) PrepareUpload(ctx context.Context, req *fs.UploadRequest, opts ..
 
 	if req.ImportFrom == nil {
 		// If not importing, we can keep the lock
-		lockToken = ls.Exclude(lr, f.user.Id, f.hasher)
+		lockToken = ls.Exclude(lr, f.user.ID, f.hasher)
 
 		// create metadata to record uploading entity id
 		if err := fc.UpsertMetadata(ctx, targetFile, map[string]string{
@@ -229,7 +228,7 @@ func (f *DBFS) PrepareUpload(ctx context.Context, req *fs.UploadRequest, opts ..
 		NewFileCreated: !fileExisted,
 		Importing:      req.ImportFrom != nil,
 		EntityID:       entityId,
-		UID:            int(f.user.Id),
+		UID:            f.user.ID,
 		Policy:         policy,
 		CallbackSecret: util.RandStringRunes(32),
 		LockToken:      lockToken, // Prevent lock being released.
@@ -357,7 +356,7 @@ func (f *DBFS) CancelUploadSession(ctx context.Context, path *fs.URI, sessionID 
 	filePrivate := file.(*File)
 
 	// Make sure presented upload session is valid
-	if session != nil && (session.UID != int(f.user.Id) || session.FileID != file.ID()) {
+	if session != nil && (session.UID != f.user.ID || session.FileID != file.ID()) {
 		return nil, nil, errors.NotFound("upload session not found", sessionID)
 	}
 
@@ -370,12 +369,12 @@ func (f *DBFS) CancelUploadSession(ctx context.Context, path *fs.URI, sessionID 
 		}
 	}
 
-	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && filePrivate.OwnerID() != int(f.user.Id) {
+	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && filePrivate.OwnerID() != f.user.ID {
 		return nil, nil, fs.ErrOwnerOnly
 	}
 
 	// Lock files
-	ls, err := f.acquireByPath(ctx, -1, int(f.user.Id), true, fs.LockApp(fs.ApplicationUpload),
+	ls, err := f.acquireByPath(ctx, -1, f.user.ID, true, fs.LockApp(fs.ApplicationUpload),
 		&LockByPath{filePrivate.Uri(true), filePrivate, filePrivate.Type(), ""})
 	defer func() { _ = f.Release(ctx, ls) }()
 	ctx = fs.LockSessionToContext(ctx, ls)
@@ -421,7 +420,7 @@ func (f *DBFS) CancelUploadSession(ctx context.Context, path *fs.URI, sessionID 
 		return nil, nil, fmt.Errorf("failed to delete placeholder entity: %w", err)
 	}
 
-	if err := rpc.ApplyStorageDiff(ctx, storageDiff, f.userClient); err != nil {
+	if err := f.userClient.ApplyStorageDiff(ctx, storageDiff); err != nil {
 		return nil, nil, fmt.Errorf("failed to apply storage diff: %w", err)
 	}
 

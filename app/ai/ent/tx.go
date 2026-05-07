@@ -36,6 +36,8 @@ type Tx struct {
 	AiTool *AiToolClient
 	// AiWebPage is the client for interacting with the AiWebPage builders.
 	AiWebPage *AiWebPageClient
+	// Task is the client for interacting with the Task builders.
+	Task *TaskClient
 
 	// lazily loaded.
 	client     *Client
@@ -178,6 +180,7 @@ func (tx *Tx) init() {
 	tx.AiModel = NewAiModelClient(tx.config)
 	tx.AiTool = NewAiToolClient(tx.config)
 	tx.AiWebPage = NewAiWebPageClient(tx.config)
+	tx.Task = NewTaskClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

@@ -22,49 +22,64 @@ const _ = http.SupportPackageIsVersion1
 
 const OperationKnowledgeBatchCreateDocuments = "/ai.knowledge.v1.Knowledge/BatchCreateDocuments"
 const OperationKnowledgeBatchDeleteDocuments = "/ai.knowledge.v1.Knowledge/BatchDeleteDocuments"
+const OperationKnowledgeBatchReindexDocument = "/ai.knowledge.v1.Knowledge/BatchReindexDocument"
 const OperationKnowledgeCreateDocument = "/ai.knowledge.v1.Knowledge/CreateDocument"
 const OperationKnowledgeCreateKnowledge = "/ai.knowledge.v1.Knowledge/CreateKnowledge"
 const OperationKnowledgeDeleteDocument = "/ai.knowledge.v1.Knowledge/DeleteDocument"
 const OperationKnowledgeDeleteKnowledge = "/ai.knowledge.v1.Knowledge/DeleteKnowledge"
 const OperationKnowledgeGetDocument = "/ai.knowledge.v1.Knowledge/GetDocument"
+const OperationKnowledgeGetDocumentProgress = "/ai.knowledge.v1.Knowledge/GetDocumentProgress"
 const OperationKnowledgeGetKnowledge = "/ai.knowledge.v1.Knowledge/GetKnowledge"
+const OperationKnowledgeKnowledgeStats = "/ai.knowledge.v1.Knowledge/KnowledgeStats"
 const OperationKnowledgeListDocuments = "/ai.knowledge.v1.Knowledge/ListDocuments"
 const OperationKnowledgeListKnowledge = "/ai.knowledge.v1.Knowledge/ListKnowledge"
+const OperationKnowledgeReindexDocument = "/ai.knowledge.v1.Knowledge/ReindexDocument"
 const OperationKnowledgeUpdateDocument = "/ai.knowledge.v1.Knowledge/UpdateDocument"
 const OperationKnowledgeUpdateKnowledge = "/ai.knowledge.v1.Knowledge/UpdateKnowledge"
 
 type KnowledgeHTTPServer interface {
 	BatchCreateDocuments(context.Context, *BatchCreateDocumentRequest) (*BatchCreateDocumentResponse, error)
-	BatchDeleteDocuments(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
-	CreateDocument(context.Context, *UpsertDocumentRequest) (*GetDocumentResponse, error)
+	BatchDeleteDocuments(context.Context, *MultiRequest) (*emptypb.Empty, error)
+	// BatchReindexDocument batch reindex document, return progress of each document
+	// total of documents should be no more than 500
+	BatchReindexDocument(context.Context, *MultiRequest) (*BatchReindexDocumentResponse, error)
+	CreateDocument(context.Context, *UpsertDocumentRequest) (*UpsertDocumentResponse, error)
 	CreateKnowledge(context.Context, *UpsertKnowledgeRequest) (*GetKnowledgeResponse, error)
 	DeleteDocument(context.Context, *SimpleRequest) (*emptypb.Empty, error)
 	DeleteKnowledge(context.Context, *SimpleRequest) (*emptypb.Empty, error)
 	GetDocument(context.Context, *SimpleRequest) (*GetDocumentResponse, error)
+	GetDocumentProgress(context.Context, *SimpleRequest) (*GetDocumentProgressResponse, error)
 	GetKnowledge(context.Context, *SimpleRequest) (*GetKnowledgeResponse, error)
+	// KnowledgeStats get knowledge stats:
+	KnowledgeStats(context.Context, *SimpleRequest) (*KnowledgeStatsResponse, error)
 	ListDocuments(context.Context, *ListDocumentsRequest) (*ListDocumentsResponse, error)
 	ListKnowledge(context.Context, *ListKnowledgeRequest) (*ListKnowledgeResponse, error)
-	UpdateDocument(context.Context, *UpsertDocumentRequest) (*GetDocumentResponse, error)
+	ReindexDocument(context.Context, *SimpleRequest) (*ReindexDocumentResponse, error)
+	UpdateDocument(context.Context, *UpsertDocumentRequest) (*UpsertDocumentResponse, error)
 	UpdateKnowledge(context.Context, *UpsertKnowledgeRequest) (*GetKnowledgeResponse, error)
 }
 
 func RegisterKnowledgeHTTPServer(s *http.Server, srv KnowledgeHTTPServer) {
 	r := s.Route("/")
-	r.POST("/ai/knowledge", _Knowledge_CreateKnowledge0_HTTP_Handler(srv))
-	r.PUT("/ai/knowledge/{id}", _Knowledge_UpdateKnowledge0_HTTP_Handler(srv))
+	r.POST("/ai/knowledge", _Knowledge_CreateKnowledge1_HTTP_Handler(srv))
+	r.PUT("/ai/knowledge/{id}", _Knowledge_UpdateKnowledge1_HTTP_Handler(srv))
 	r.GET("/ai/knowledge/{id}", _Knowledge_GetKnowledge1_HTTP_Handler(srv))
-	r.DELETE("/ai/knowledge/{id}", _Knowledge_DeleteKnowledge1_HTTP_Handler(srv))
-	r.GET("/ai/knowledge/list", _Knowledge_ListKnowledge1_HTTP_Handler(srv))
+	r.DELETE("/ai/knowledge/{id}", _Knowledge_DeleteKnowledge0_HTTP_Handler(srv))
+	r.POST("/ai/knowledge/list", _Knowledge_ListKnowledge1_HTTP_Handler(srv))
+	r.GET("/ai/knowledge/{id}/stats", _Knowledge_KnowledgeStats0_HTTP_Handler(srv))
 	r.POST("/ai/knowledge/document", _Knowledge_CreateDocument0_HTTP_Handler(srv))
 	r.POST("/ai/knowledge/document/create", _Knowledge_BatchCreateDocuments0_HTTP_Handler(srv))
 	r.PUT("/ai/knowledge/document/{id}", _Knowledge_UpdateDocument0_HTTP_Handler(srv))
 	r.GET("/ai/knowledge/document/{id}", _Knowledge_GetDocument0_HTTP_Handler(srv))
 	r.DELETE("/ai/knowledge/document/{id}", _Knowledge_DeleteDocument0_HTTP_Handler(srv))
 	r.POST("/ai/knowledge/document/delete", _Knowledge_BatchDeleteDocuments0_HTTP_Handler(srv))
-	r.GET("/ai/knowledge/document/list", _Knowledge_ListDocuments0_HTTP_Handler(srv))
+	r.POST("/ai/knowledge/document/list", _Knowledge_ListDocuments0_HTTP_Handler(srv))
+	r.GET("/ai/knowledge/document/progress/{id}", _Knowledge_GetDocumentProgress0_HTTP_Handler(srv))
+	r.POST("/ai/knowledge/document/{id}/reindex", _Knowledge_ReindexDocument0_HTTP_Handler(srv))
+	r.POST("/ai/knowledge/document/reindex", _Knowledge_BatchReindexDocument0_HTTP_Handler(srv))
 }
 
-func _Knowledge_CreateKnowledge0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
+func _Knowledge_CreateKnowledge1_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in UpsertKnowledgeRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -86,7 +101,7 @@ func _Knowledge_CreateKnowledge0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx 
 	}
 }
 
-func _Knowledge_UpdateKnowledge0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
+func _Knowledge_UpdateKnowledge1_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in UpsertKnowledgeRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -133,7 +148,7 @@ func _Knowledge_GetKnowledge1_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx htt
 	}
 }
 
-func _Knowledge_DeleteKnowledge1_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
+func _Knowledge_DeleteKnowledge0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in SimpleRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -158,6 +173,9 @@ func _Knowledge_DeleteKnowledge1_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx 
 func _Knowledge_ListKnowledge1_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ListKnowledgeRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -170,6 +188,28 @@ func _Knowledge_ListKnowledge1_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx ht
 			return err
 		}
 		reply := out.(*ListKnowledgeResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Knowledge_KnowledgeStats0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SimpleRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationKnowledgeKnowledgeStats)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.KnowledgeStats(ctx, req.(*SimpleRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*KnowledgeStatsResponse)
 		return ctx.Result(200, reply)
 	}
 }
@@ -191,7 +231,7 @@ func _Knowledge_CreateDocument0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx h
 		if err != nil {
 			return err
 		}
-		reply := out.(*GetDocumentResponse)
+		reply := out.(*UpsertDocumentResponse)
 		return ctx.Result(200, reply)
 	}
 }
@@ -238,7 +278,7 @@ func _Knowledge_UpdateDocument0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx h
 		if err != nil {
 			return err
 		}
-		reply := out.(*GetDocumentResponse)
+		reply := out.(*UpsertDocumentResponse)
 		return ctx.Result(200, reply)
 	}
 }
@@ -289,7 +329,7 @@ func _Knowledge_DeleteDocument0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx h
 
 func _Knowledge_BatchDeleteDocuments0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in BatchDeleteRequest
+		var in MultiRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
@@ -298,7 +338,7 @@ func _Knowledge_BatchDeleteDocuments0_HTTP_Handler(srv KnowledgeHTTPServer) func
 		}
 		http.SetOperation(ctx, OperationKnowledgeBatchDeleteDocuments)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.BatchDeleteDocuments(ctx, req.(*BatchDeleteRequest))
+			return srv.BatchDeleteDocuments(ctx, req.(*MultiRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
@@ -312,6 +352,9 @@ func _Knowledge_BatchDeleteDocuments0_HTTP_Handler(srv KnowledgeHTTPServer) func
 func _Knowledge_ListDocuments0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ListDocumentsRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -328,18 +371,94 @@ func _Knowledge_ListDocuments0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx ht
 	}
 }
 
+func _Knowledge_GetDocumentProgress0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SimpleRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationKnowledgeGetDocumentProgress)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetDocumentProgress(ctx, req.(*SimpleRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetDocumentProgressResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Knowledge_ReindexDocument0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SimpleRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationKnowledgeReindexDocument)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ReindexDocument(ctx, req.(*SimpleRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ReindexDocumentResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Knowledge_BatchReindexDocument0_HTTP_Handler(srv KnowledgeHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in MultiRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationKnowledgeBatchReindexDocument)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.BatchReindexDocument(ctx, req.(*MultiRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*BatchReindexDocumentResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type KnowledgeHTTPClient interface {
 	BatchCreateDocuments(ctx context.Context, req *BatchCreateDocumentRequest, opts ...http.CallOption) (rsp *BatchCreateDocumentResponse, err error)
-	BatchDeleteDocuments(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
-	CreateDocument(ctx context.Context, req *UpsertDocumentRequest, opts ...http.CallOption) (rsp *GetDocumentResponse, err error)
+	BatchDeleteDocuments(ctx context.Context, req *MultiRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	// BatchReindexDocument batch reindex document, return progress of each document
+	// total of documents should be no more than 500
+	BatchReindexDocument(ctx context.Context, req *MultiRequest, opts ...http.CallOption) (rsp *BatchReindexDocumentResponse, err error)
+	CreateDocument(ctx context.Context, req *UpsertDocumentRequest, opts ...http.CallOption) (rsp *UpsertDocumentResponse, err error)
 	CreateKnowledge(ctx context.Context, req *UpsertKnowledgeRequest, opts ...http.CallOption) (rsp *GetKnowledgeResponse, err error)
 	DeleteDocument(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	DeleteKnowledge(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	GetDocument(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *GetDocumentResponse, err error)
+	GetDocumentProgress(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *GetDocumentProgressResponse, err error)
 	GetKnowledge(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *GetKnowledgeResponse, err error)
+	// KnowledgeStats get knowledge stats:
+	KnowledgeStats(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *KnowledgeStatsResponse, err error)
 	ListDocuments(ctx context.Context, req *ListDocumentsRequest, opts ...http.CallOption) (rsp *ListDocumentsResponse, err error)
 	ListKnowledge(ctx context.Context, req *ListKnowledgeRequest, opts ...http.CallOption) (rsp *ListKnowledgeResponse, err error)
-	UpdateDocument(ctx context.Context, req *UpsertDocumentRequest, opts ...http.CallOption) (rsp *GetDocumentResponse, err error)
+	ReindexDocument(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *ReindexDocumentResponse, err error)
+	UpdateDocument(ctx context.Context, req *UpsertDocumentRequest, opts ...http.CallOption) (rsp *UpsertDocumentResponse, err error)
 	UpdateKnowledge(ctx context.Context, req *UpsertKnowledgeRequest, opts ...http.CallOption) (rsp *GetKnowledgeResponse, err error)
 }
 
@@ -364,7 +483,7 @@ func (c *KnowledgeHTTPClientImpl) BatchCreateDocuments(ctx context.Context, in *
 	return &out, nil
 }
 
-func (c *KnowledgeHTTPClientImpl) BatchDeleteDocuments(ctx context.Context, in *BatchDeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+func (c *KnowledgeHTTPClientImpl) BatchDeleteDocuments(ctx context.Context, in *MultiRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
 	pattern := "/ai/knowledge/document/delete"
 	path := binding.EncodeURL(pattern, in, false)
@@ -377,8 +496,23 @@ func (c *KnowledgeHTTPClientImpl) BatchDeleteDocuments(ctx context.Context, in *
 	return &out, nil
 }
 
-func (c *KnowledgeHTTPClientImpl) CreateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...http.CallOption) (*GetDocumentResponse, error) {
-	var out GetDocumentResponse
+// BatchReindexDocument batch reindex document, return progress of each document
+// total of documents should be no more than 500
+func (c *KnowledgeHTTPClientImpl) BatchReindexDocument(ctx context.Context, in *MultiRequest, opts ...http.CallOption) (*BatchReindexDocumentResponse, error) {
+	var out BatchReindexDocumentResponse
+	pattern := "/ai/knowledge/document/reindex"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationKnowledgeBatchReindexDocument))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *KnowledgeHTTPClientImpl) CreateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...http.CallOption) (*UpsertDocumentResponse, error) {
+	var out UpsertDocumentResponse
 	pattern := "/ai/knowledge/document"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationKnowledgeCreateDocument))
@@ -442,6 +576,19 @@ func (c *KnowledgeHTTPClientImpl) GetDocument(ctx context.Context, in *SimpleReq
 	return &out, nil
 }
 
+func (c *KnowledgeHTTPClientImpl) GetDocumentProgress(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*GetDocumentProgressResponse, error) {
+	var out GetDocumentProgressResponse
+	pattern := "/ai/knowledge/document/progress/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationKnowledgeGetDocumentProgress))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *KnowledgeHTTPClientImpl) GetKnowledge(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*GetKnowledgeResponse, error) {
 	var out GetKnowledgeResponse
 	pattern := "/ai/knowledge/{id}"
@@ -455,13 +602,27 @@ func (c *KnowledgeHTTPClientImpl) GetKnowledge(ctx context.Context, in *SimpleRe
 	return &out, nil
 }
 
+// KnowledgeStats get knowledge stats:
+func (c *KnowledgeHTTPClientImpl) KnowledgeStats(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*KnowledgeStatsResponse, error) {
+	var out KnowledgeStatsResponse
+	pattern := "/ai/knowledge/{id}/stats"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationKnowledgeKnowledgeStats))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *KnowledgeHTTPClientImpl) ListDocuments(ctx context.Context, in *ListDocumentsRequest, opts ...http.CallOption) (*ListDocumentsResponse, error) {
 	var out ListDocumentsResponse
 	pattern := "/ai/knowledge/document/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationKnowledgeListDocuments))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -471,18 +632,31 @@ func (c *KnowledgeHTTPClientImpl) ListDocuments(ctx context.Context, in *ListDoc
 func (c *KnowledgeHTTPClientImpl) ListKnowledge(ctx context.Context, in *ListKnowledgeRequest, opts ...http.CallOption) (*ListKnowledgeResponse, error) {
 	var out ListKnowledgeResponse
 	pattern := "/ai/knowledge/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationKnowledgeListKnowledge))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-func (c *KnowledgeHTTPClientImpl) UpdateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...http.CallOption) (*GetDocumentResponse, error) {
-	var out GetDocumentResponse
+func (c *KnowledgeHTTPClientImpl) ReindexDocument(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*ReindexDocumentResponse, error) {
+	var out ReindexDocumentResponse
+	pattern := "/ai/knowledge/document/{id}/reindex"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationKnowledgeReindexDocument))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *KnowledgeHTTPClientImpl) UpdateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...http.CallOption) (*UpsertDocumentResponse, error) {
+	var out UpsertDocumentResponse
 	pattern := "/ai/knowledge/document/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationKnowledgeUpdateDocument))

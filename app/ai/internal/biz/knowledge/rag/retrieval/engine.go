@@ -28,18 +28,22 @@ type RetrieveEngine struct {
 	tr   *factory.ToolRegistry
 	l    *log.Helper
 
-	chain compose.Runnable[string, []*schema.Document]
+	embedder    embedding.Embedder
+	vectorStore vector.VectorStore
+	chain       compose.Runnable[string, []*schema.Document]
 }
 
 func NewRetrieveEngine(kc data.KnowledgeClient, kdc data.KnowledgeDocumentClient, ksc data.KnowledgeSegmentClient, tr *factory.ToolRegistry,
-	embedder embedding.Embedder, conf *conf.Bootstrap, l log.Logger) (*RetrieveEngine, error) {
+	embedder embedding.Embedder, vectorStore vector.VectorStore, conf *conf.Bootstrap, l log.Logger) (*RetrieveEngine, error) {
 	e := &RetrieveEngine{
-		kc:   kc,
-		kdc:  kdc,
-		ksc:  ksc,
-		tr:   tr,
-		conf: conf,
-		l:    log.NewHelper(l, log.WithMessageKey("biz-knowledge-retrieveEngine")),
+		kc:          kc,
+		kdc:         kdc,
+		ksc:         ksc,
+		tr:          tr,
+		conf:        conf,
+		l:           log.NewHelper(l, log.WithMessageKey("biz-knowledge-retrieveEngine")),
+		embedder:    embedder,
+		vectorStore: vectorStore,
 	}
 	var err error
 	e.chain, err = e.buildRetrieveChain(context.Background(), embedder)
@@ -69,6 +73,16 @@ func (e *RetrieveEngine) buildRetrieveChain(ctx context.Context, emb embedding.E
 }
 
 func (e *RetrieveEngine) Retrieve(ctx context.Context, args *types.SegmentSearchArgs) ([]*types.KnowledgeSegment, error) {
+	if args == nil {
+		return nil, fmt.Errorf("segment search args is nil")
+	}
+	if args.UseRAGGraph {
+		return e.RetrieveWithRAGGraph(ctx, args, nil)
+	}
+	return e.retrieveLegacy(ctx, args)
+}
+
+func (e *RetrieveEngine) retrieveLegacy(ctx context.Context, args *types.SegmentSearchArgs) ([]*types.KnowledgeSegment, error) {
 	options := []retriever.Option{
 		retriever.WithTopK(args.TopK * 3),
 		retriever.WithScoreThreshold(args.Similarity),
@@ -84,6 +98,9 @@ func (e *RetrieveEngine) Retrieve(ctx context.Context, args *types.SegmentSearch
 	docs, err := e.chain.Invoke(ctx, args.Content,
 		compose.WithRetrieverOption(options...),
 	)
+	if err != nil {
+		return nil, err
+	}
 	vectorIDs := make([]string, 0, len(docs))
 	for _, doc := range docs {
 		vectorIDs = append(vectorIDs, doc.ID)
@@ -137,6 +154,112 @@ func (e *RetrieveEngine) Retrieve(ctx context.Context, args *types.SegmentSearch
 			Tokens:      seg.Tokens,
 			Score:       docs[i].Score(),
 			VectorID:    seg.VectorID,
+		})
+	}
+
+	compose.ProcessState(ctx, func(ctx context.Context, state *types.ChatState) error {
+		state.Record.Segs = segsResp
+		return nil
+	})
+	return segsResp, nil
+}
+
+func (e *RetrieveEngine) RetrieveWithRAGGraph(ctx context.Context, args *types.SegmentSearchArgs, cfg *RAGGraphBuilderConfig) ([]*types.KnowledgeSegment, error) {
+	if args == nil {
+		return nil, fmt.Errorf("segment search args is nil")
+	}
+	if e.embedder == nil {
+		return nil, fmt.Errorf("raggraph embedder is nil")
+	}
+	if e.vectorStore == nil {
+		return nil, fmt.Errorf("raggraph vector store is nil")
+	}
+
+	graphCfg := cloneRAGGraphBuilderConfig(cfg)
+	if graphCfg.TopK <= 0 {
+		graphCfg.TopK = args.TopK
+	}
+	if graphCfg.ScoreThreshold <= 0 {
+		graphCfg.ScoreThreshold = args.Similarity
+	}
+	if graphCfg.NeighborWindow <= 0 {
+		graphCfg.NeighborWindow = args.NeighborWindow
+	}
+	graphCfg.IncludeOriginal = !args.ExcludeOriginal
+
+	graph, err := e.BuildRAGGraphWithVectorStore(ctx, e.embedder, e.vectorStore, graphCfg)
+	if err != nil {
+		return nil, err
+	}
+	req, err := e.NewRAGGraphRequest(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+	result, err := graph.Invoke(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return e.ragGraphDocumentsToKnowledgeSegments(ctx, result.Documents)
+}
+
+func (e *RetrieveEngine) ragGraphDocumentsToKnowledgeSegments(ctx context.Context, docs []*schema.Document) ([]*types.KnowledgeSegment, error) {
+	vectorIDs := make([]string, 0, len(docs))
+	docByVectorID := make(map[string]*schema.Document, len(docs))
+	for _, doc := range docs {
+		if doc == nil || doc.ID == "" {
+			continue
+		}
+		if _, ok := docByVectorID[doc.ID]; ok {
+			continue
+		}
+		vectorIDs = append(vectorIDs, doc.ID)
+		docByVectorID[doc.ID] = doc
+	}
+	if len(vectorIDs) == 0 {
+		return nil, nil
+	}
+
+	segments, err := e.ksc.GetByVectorIDs(ctx, vectorIDs)
+	if err != nil {
+		return nil, err
+	}
+	segIDs := make([]int, 0, len(segments))
+	segmentByVectorID := make(map[string]*ent.AiKnowledgeSegment, len(segments))
+	for _, segment := range segments {
+		if segment == nil {
+			continue
+		}
+		segIDs = append(segIDs, segment.ID)
+		segmentByVectorID[segment.VectorID] = segment
+	}
+	if len(segIDs) > 0 {
+		if err := e.ksc.UpdateRetrievalCountByIDs(ctx, segIDs, 1); err != nil {
+			return nil, err
+		}
+	}
+
+	segsResp := make([]*types.KnowledgeSegment, 0, len(vectorIDs))
+	for _, vectorID := range vectorIDs {
+		seg := segmentByVectorID[vectorID]
+		doc := docByVectorID[vectorID]
+		if seg == nil || doc == nil {
+			continue
+		}
+		segsResp = append(segsResp, &types.KnowledgeSegment{
+			ID:          seg.ID,
+			DocumentID:  seg.DocumentID,
+			KnowledgeID: seg.KnowledgeID,
+			Content:     doc.Content,
+			ContentLen:  seg.ContentLength,
+			Tokens:      seg.Tokens,
+			ChunkIndex:  seg.ChunkIndex,
+			SectionPath: seg.SectionPath,
+			StartOffset: seg.StartOffset,
+			EndOffset:   seg.EndOffset,
+			Metadata:    seg.Metadata,
+			Score:       doc.Score(),
+			VectorID:    seg.VectorID,
+			Status:      seg.Status,
 		})
 	}
 

@@ -14,53 +14,37 @@ import "common/v1/common.proto";
 service Role {
   rpc CreateRole (UpsertRoleRequest) returns (GetRoleResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/role"
+      post: "/ai/role"
       body: "*"
     };
   };
   rpc UpdateRole (UpsertRoleRequest) returns (GetRoleResponse) {
     option (google.api.http) = {
-      put: "/admin/ai/role/{id}"
+      put: "/ai/role/{id}"
       body: "*"
     };
   };
   rpc DeleteRole (SimpleRoleRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/admin/ai/role/{id}"
+      delete: "/ai/role/{id}"
     };
   };
   rpc GetRole (SimpleRoleRequest) returns (GetRoleResponse) {
     option (google.api.http) = {
-      get: "/admin/ai/role/{id}"
+      get: "/ai/role/{id}"
     };
   };
-  rpc ListRole (google.protobuf.Empty) returns (ListRoleResponse) {
+  rpc ListRoleMe (google.protobuf.Empty) returns (GetMultiRolesResponse) {
     option (google.api.http) = {
-      get: "/admin/ai/role/list/me"
+      get: "/ai/role/list/me"
     };
   };
-  rpc PageRole (PageRoleRequest) returns (PageRoleResponse) {
+  rpc ListRole (ListRoleRequest) returns (ListRoleResponse) {
     option (google.api.http) = {
-      get: "/admin/ai/role/page/list"
+      post: "/ai/role/list"
+      body: "*"
     };
   };
-}
-
-message SimpleModelRequest {
-  string id = 1;
-}
-message GetModelResponse {
-  string id = 1;
-  string name = 2;
-  string type = 3;
-  string platform = 4;
-  int32 sort = 5;
-  string status = 6;
-  float temperature = 7;
-  int32 max_tokens = 8;
-  int32 max_contexts = 9;
-  string key_id = 10;
-  google.protobuf.Timestamp created_at = 11;
 }
 
 // Role
@@ -97,18 +81,18 @@ message GetRoleResponse {
   google.protobuf.Timestamp created_at = 12;
 }
 
-message ListRoleResponse {
+message GetMultiRolesResponse {
   repeated GetRoleResponse roles = 1;
 }
 
-message PageRoleRequest {
+message ListRoleRequest {
   common.v1.PaginationArgs pagination = 1;
   string name = 2;
   string category = 3;
   bool is_public = 4;
 }
 
-message PageRoleResponse {
+message ListRoleResponse {
   repeated GetRoleResponse roles = 1;
   common.v1.PaginationResults pagination = 2;
 }

@@ -2,7 +2,6 @@ package manager
 
 import (
 	pbfile "api/api/file/files/v1"
-	"common/boolset"
 	"common/hashid"
 	"common/request"
 	"common/serializer"
@@ -74,8 +73,8 @@ func (m *manager) GetDirectLink(ctx context.Context, urls ...*fs.URI) ([]DirectL
 			continue
 		}
 
-		permissions := boolset.BooleanSet(m.user.Group.Permissions)
-		if file.OwnerID() != int(m.user.Id) || !permissions.Enabled(int(types.GroupPermissionIsAdmin)) {
+		permissions := m.user.Group.Permissions
+		if file.OwnerID() != m.user.ID || !permissions.Enabled(int(types.GroupPermissionIsAdmin)) {
 			ae.Add(url.String(), fs.ErrOwnerOnly)
 			continue
 		}
@@ -99,7 +98,7 @@ func (m *manager) GetDirectLink(ctx context.Context, urls ...*fs.URI) ([]DirectL
 		if useRedirect {
 			reuseExisting := !permissions.Enabled(int(types.GroupPermissionUniqueRedirectDirectLink))
 			// Use redirect source
-			link, err := m.fc.CreateDirectLink(ctx, file.ID(), file.Name(), int(m.user.Group.SpeedLimit.Value), reuseExisting)
+			link, err := m.fc.CreateDirectLink(ctx, file.ID(), file.Name(), m.user.Group.SpeedLimit, reuseExisting)
 			if err != nil {
 				ae.Add(url.String(), err)
 				continue

@@ -100,33 +100,33 @@ service Admin {
 
   rpc GetQueueMetrics(google.protobuf.Empty) returns (QueueMetricsResponse) {
     option (google.api.http) = {
-      get: "/admin/queue/metrics",
+      get: "/admin/file/queue/metrics",
     };
   }
 
   rpc ListTasks(file.common.v1.ListRequest) returns (ListTaskResponse) {
     option (google.api.http) = {
-      post: "/admin/queue",
+      post: "/admin/file/queue",
       body: "*",
     };
   }
 
   rpc GetTask(SimpleTaskRequest) returns (GetTaskResponse) {
     option (google.api.http) = {
-      get: "/admin/queue/{id}",
+      get: "/admin/file/queue/{id}",
     };
   }
 
   rpc BatchDeleteTasks(BatchDeleteTasksRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/queue/batch/delete",
+      post: "/admin/file/queue/batch/delete",
       body: "*"
     };
   }
 
   rpc CleanupTask(CleanupTaskRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/queue/cleanup",
+      post: "/admin/file/queue/cleanup",
       body: "*",
     };
   }
@@ -261,7 +261,7 @@ service Admin {
 
   rpc GetShare(SimpleShareRequest) returns (GetShareResponse) {
     option (google.api.http) = {
-      get: "/admin/share/info/{id}",
+      get: "/admin/share/{id}",
     };
   }
 
@@ -347,6 +347,7 @@ message TestMailRequest {
   string to = 2;
 }
 
+// Task
 message QueueMetricsResponse {
   repeated QueueMetric metrics = 1;
 }

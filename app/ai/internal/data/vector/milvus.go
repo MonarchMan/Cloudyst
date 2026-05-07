@@ -4,7 +4,9 @@ import (
 	"ai/internal/biz/types"
 	"ai/internal/conf"
 	"context"
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/milvus-io/milvus/client/v2/column"
@@ -15,11 +17,28 @@ import (
 )
 
 type VectorStore interface {
+	// Upsert 写入或覆盖单个向量切片。
+	Upsert(ctx context.Context, chunk *VectorChunk) (string, error)
+
+	// BatchUpsert 批量写入或覆盖向量切片。
+	BatchUpsert(ctx context.Context, chunks []*VectorChunk) ([]string, error)
+
 	// DeleteByDocID 按业务文档 ID 删除所有切片 (极度常用：用户在界面上点击"删除该文件"时触发)
 	DeleteByDocID(ctx context.Context, kbID int, docID int) error
 
+	// DeleteByDocIDs 按业务文档 IDs 删除所有切片
+	DeleteByDocIDs(ctx context.Context, docIDs []int) error
+
 	// CountChunksByDocID 获取某文档切片数量/详情 (用于后台管理或对账)
+	DeleteByDocIDsInKB(ctx context.Context, kbID int, docIDs []int) error
+
+	DeleteByKBID(ctx context.Context, kbID int) error
+
+	DeleteByKBIDs(ctx context.Context, kbIDs []int) error
+
 	CountChunksByDocID(ctx context.Context, kbID int, docID int) (int64, error)
+
+	Search(ctx context.Context, req *SearchRequest) ([]*SearchHit, error)
 
 	// SearchKnowledge 搜索知识库，返回 topK 个最相关的切片 ID
 	SearchKnowledge(ctx context.Context, kbID string, queryVectors [][]float32, topK int) ([]string, error)
@@ -29,9 +48,51 @@ type VectorStore interface {
 
 	// GetContentByIDs 获取切片内容
 	GetContentByIDs(ctx context.Context, ids []string) ([]string, error)
+
+	// EnsureCollection 确保集合存在
+	EnsureCollection(ctx context.Context) error
 }
 
-func NewMilvusClient(bs *conf.Bootstrap) (VectorStore, error) {
+type SearchMode string
+
+const (
+	SearchModeDense  SearchMode = "dense"
+	SearchModeSparse SearchMode = "sparse"
+)
+
+type VectorChunk struct {
+	ID          string
+	KnowledgeID int64
+	DocumentID  int64
+	Content     string
+	Vector      []float32
+	Metadata    map[string]any
+}
+
+type SearchRequest struct {
+	Mode         SearchMode
+	TopK         int
+	QueryVector  []float32
+	QueryVectors [][]float32
+	QueryText    string
+	VectorField  string
+	Filter       string
+	KnowledgeIDs []int
+	DocumentIDs  []int
+	OutputFields []string
+	SearchParams map[string]string
+}
+
+type SearchHit struct {
+	ID          string
+	KnowledgeID int64
+	DocumentID  int64
+	Content     string
+	Score       float32
+	Metadata    map[string]any
+}
+
+func NewMilvusClient(bs *conf.Bootstrap) (VectorStore, func(), error) {
 	cfg := bs.Data.Milvus
 	client, err := milvusclient.New(context.Background(), &milvusclient.ClientConfig{
 		Address:  cfg.Addr,
@@ -39,17 +100,34 @@ func NewMilvusClient(bs *conf.Bootstrap) (VectorStore, error) {
 		Password: cfg.Password,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create milvus client: %w", err)
+		return nil, nil, fmt.Errorf("failed to create milvus client: %w", err)
+	}
+	cleanup := func() {
+		client.Close(context.Background())
+	}
+	denseMetric := entity.COSINE
+	sparseMetric := entity.BM25
+	if cfg.MetricType != nil {
+		if cfg.MetricType.Dense != "" {
+			denseMetric = entity.MetricType(cfg.MetricType.Dense)
+		}
+		if cfg.MetricType.Sparse != "" {
+			sparseMetric = entity.MetricType(cfg.MetricType.Sparse)
+		}
 	}
 	return &milvusClient{
-		client:     client,
-		collection: cfg.Collection,
-	}, nil
+		client:       client,
+		collection:   cfg.Collection,
+		denseMetric:  denseMetric,
+		sparseMetric: sparseMetric,
+	}, cleanup, nil
 }
 
 type milvusClient struct {
-	client     *milvusclient.Client
-	collection string
+	client       *milvusclient.Client
+	collection   string
+	denseMetric  entity.MetricType
+	sparseMetric entity.MetricType
 }
 
 func (c *milvusClient) GetByIDs(ctx context.Context, ids []string) (milvusclient.ResultSet, error) {
@@ -81,8 +159,98 @@ func (c *milvusClient) GetContentByIDs(ctx context.Context, ids []string) ([]str
 	return contents, nil
 }
 
+func (c *milvusClient) Upsert(ctx context.Context, chunk *VectorChunk) (string, error) {
+	ids, err := c.BatchUpsert(ctx, []*VectorChunk{chunk})
+	if err != nil {
+		return "", err
+	}
+	if len(ids) == 0 {
+		return "", fmt.Errorf("upsert returned no ids")
+	}
+	return ids[0], nil
+}
+
+func (c *milvusClient) BatchUpsert(ctx context.Context, chunks []*VectorChunk) ([]string, error) {
+	if len(chunks) == 0 {
+		return nil, nil
+	}
+
+	columns, err := vectorChunksToColumns(chunks)
+	if err != nil {
+		return nil, err
+	}
+	option := milvusclient.NewColumnBasedInsertOption(c.collection, columns...)
+	result, err := c.client.Upsert(ctx, option)
+	if err != nil {
+		return nil, fmt.Errorf("upsert vector chunks: %w", err)
+	}
+
+	ids := make([]string, 0, len(chunks))
+	if result.IDs != nil {
+		for i := 0; i < result.IDs.Len(); i++ {
+			id, err := result.IDs.GetAsString(i)
+			if err != nil {
+				return nil, fmt.Errorf("parse upsert id: %w", err)
+			}
+			ids = append(ids, id)
+		}
+	}
+	if len(ids) == 0 {
+		for _, chunk := range chunks {
+			ids = append(ids, chunk.ID)
+		}
+	}
+	return ids, nil
+}
+
+func vectorChunksToColumns(chunks []*VectorChunk) ([]column.Column, error) {
+	ids := make([]string, 0, len(chunks))
+	kbIDs := make([]int64, 0, len(chunks))
+	docIDs := make([]int64, 0, len(chunks))
+	contents := make([]string, 0, len(chunks))
+	vectors := make([][]float32, 0, len(chunks))
+	metadatas := make([][]byte, 0, len(chunks))
+
+	for i, chunk := range chunks {
+		if chunk == nil {
+			return nil, fmt.Errorf("vector chunk %d is nil", i)
+		}
+		if chunk.ID == "" {
+			return nil, fmt.Errorf("vector chunk %d id is empty", i)
+		}
+		if len(chunk.Vector) == 0 {
+			return nil, fmt.Errorf("vector chunk %s vector is empty", chunk.ID)
+		}
+
+		metadata := chunk.Metadata
+		if metadata == nil {
+			metadata = map[string]any{}
+		}
+		metadataBytes, err := json.Marshal(metadata)
+		if err != nil {
+			return nil, fmt.Errorf("marshal metadata for chunk %s: %w", chunk.ID, err)
+		}
+
+		ids = append(ids, chunk.ID)
+		kbIDs = append(kbIDs, chunk.KnowledgeID)
+		docIDs = append(docIDs, chunk.DocumentID)
+		contents = append(contents, chunk.Content)
+		vectors = append(vectors, chunk.Vector)
+		metadatas = append(metadatas, metadataBytes)
+	}
+
+	return []column.Column{
+		column.NewColumnVarChar(types.MilvusIDField, ids),
+		column.NewColumnInt64(types.MilvusKnowledgeIDField, kbIDs),
+		column.NewColumnInt64(types.MilvusDocumentIDField, docIDs),
+		column.NewColumnVarChar(types.MilvusContentField, contents),
+		column.NewColumnFloatVector(types.MilvusVectorFieldField, len(vectors[0]), vectors),
+		column.NewColumnJSONBytes(types.MilvusMetadataField, metadatas),
+	}, nil
+}
+
 func (c *milvusClient) DeleteByDocID(ctx context.Context, kbID int, docID int) error {
-	expr := fmt.Sprintf("%s = '%d' AND %s = '%d'", types.MilvusKnowledgeIDField, kbID, types.MilvusDocumentIDField, docID)
+	expr := fmt.Sprintf("%s == %d AND %s == %d", types.MilvusKnowledgeIDField, kbID, types.MilvusDocumentIDField, docID)
 	_, err := c.client.Delete(ctx, milvusclient.NewDeleteOption(c.collection).
 		WithExpr(expr))
 	if err != nil {
@@ -91,8 +259,53 @@ func (c *milvusClient) DeleteByDocID(ctx context.Context, kbID int, docID int) e
 	return nil
 }
 
+func (c *milvusClient) DeleteByDocIDs(ctx context.Context, docIDs []int) error {
+	if len(docIDs) == 0 {
+		return nil
+	}
+	expr := intInFilter(types.MilvusDocumentIDField, docIDs)
+	_, err := c.client.Delete(ctx, milvusclient.NewDeleteOption(c.collection).WithExpr(expr))
+	if err != nil {
+		return fmt.Errorf("failed to delete chunks for docs: %w", err)
+	}
+	return nil
+}
+
+func (c *milvusClient) DeleteByDocIDsInKB(ctx context.Context, kbID int, docIDs []int) error {
+	if len(docIDs) == 0 {
+		return nil
+	}
+	expr := fmt.Sprintf("%s == %d AND %s", types.MilvusKnowledgeIDField, kbID, intInFilter(types.MilvusDocumentIDField, docIDs))
+	_, err := c.client.Delete(ctx, milvusclient.NewDeleteOption(c.collection).WithExpr(expr))
+	if err != nil {
+		return fmt.Errorf("failed to delete chunks for kb %d docs: %w", kbID, err)
+	}
+	return nil
+}
+
+func (c *milvusClient) DeleteByKBID(ctx context.Context, kbID int) error {
+	expr := fmt.Sprintf("%s == %d", types.MilvusKnowledgeIDField, kbID)
+	_, err := c.client.Delete(ctx, milvusclient.NewDeleteOption(c.collection).WithExpr(expr))
+	if err != nil {
+		return fmt.Errorf("failed to delete chunks for kb %d: %w", kbID, err)
+	}
+	return nil
+}
+
+func (c *milvusClient) DeleteByKBIDs(ctx context.Context, kbIDs []int) error {
+	if len(kbIDs) == 0 {
+		return nil
+	}
+	expr := intInFilter(types.MilvusKnowledgeIDField, kbIDs)
+	_, err := c.client.Delete(ctx, milvusclient.NewDeleteOption(c.collection).WithExpr(expr))
+	if err != nil {
+		return fmt.Errorf("failed to delete chunks for kbs: %w", err)
+	}
+	return nil
+}
+
 func (c *milvusClient) CountChunksByDocID(ctx context.Context, kbID int, docID int) (int64, error) {
-	expr := fmt.Sprintf("%s = '%d' AND %s = '%d'", types.MilvusKnowledgeIDField, kbID, types.MilvusDocumentIDField, docID)
+	expr := fmt.Sprintf("%s == %d AND %s == %d", types.MilvusKnowledgeIDField, kbID, types.MilvusDocumentIDField, docID)
 	// 查询统计信息，只返回 count(*)
 	// 现代版本的 Milvus Go SDK 支持使用 aggregation 快速 Count
 	option := milvusclient.NewQueryOption(c.collection).
@@ -115,13 +328,182 @@ func (c *milvusClient) CountChunksByDocID(ctx context.Context, kbID int, docID i
 }
 
 func (c *milvusClient) Delete(ctx context.Context, ids []string) error {
+	if len(ids) == 0 {
+		return nil
+	}
 	option := milvusclient.NewDeleteOption(c.collection).
 		WithStringIDs(types.MilvusIDField, ids)
 
 	_, err := c.client.Delete(ctx, option)
 	return err
 }
+
+func (c *milvusClient) Search(ctx context.Context, req *SearchRequest) ([]*SearchHit, error) {
+	if req == nil {
+		return nil, fmt.Errorf("search request is nil")
+	}
+	topK := req.TopK
+	if topK <= 0 {
+		topK = 10
+	}
+
+	fieldName := req.VectorField
+	mode := req.Mode
+	if mode == "" {
+		mode = SearchModeDense
+	}
+
+	var vectors []entity.Vector
+	switch mode {
+	case SearchModeSparse:
+		if req.QueryText == "" {
+			return nil, fmt.Errorf("sparse search query text is empty")
+		}
+		if fieldName == "" {
+			fieldName = types.MilvusSparseVectorField
+		}
+		vectors = []entity.Vector{entity.Text(req.QueryText)}
+	case SearchModeDense:
+		if fieldName == "" {
+			fieldName = types.MilvusVectorFieldField
+		}
+		queryVectors := req.QueryVectors
+		if len(queryVectors) == 0 && len(req.QueryVector) > 0 {
+			queryVectors = [][]float32{req.QueryVector}
+		}
+		if len(queryVectors) == 0 {
+			return nil, fmt.Errorf("dense search query vector is empty")
+		}
+		vectors = lo.Map(queryVectors, func(vec []float32, _ int) entity.Vector {
+			return entity.FloatVector(vec)
+		})
+	default:
+		return nil, fmt.Errorf("unsupported search mode: %s", mode)
+	}
+
+	outputFields := req.OutputFields
+	if len(outputFields) == 0 {
+		outputFields = []string{
+			types.MilvusIDField,
+			types.MilvusKnowledgeIDField,
+			types.MilvusDocumentIDField,
+			types.MilvusContentField,
+			types.MilvusMetadataField,
+		}
+	}
+
+	searchOpt := milvusclient.NewSearchOption(c.collection, topK, vectors).
+		WithANNSField(fieldName).
+		WithOutputFields(outputFields...)
+	if filter := req.filterExpr(); filter != "" {
+		searchOpt = searchOpt.WithFilter(filter)
+	}
+	if _, ok := req.SearchParams["metric_type"]; !ok {
+		if mode == SearchModeSparse {
+			searchOpt = searchOpt.WithSearchParam("metric_type", string(c.sparseMetric))
+		} else {
+			searchOpt = searchOpt.WithSearchParam("metric_type", string(c.denseMetric))
+		}
+	}
+	for key, value := range req.SearchParams {
+		searchOpt = searchOpt.WithSearchParam(key, value)
+	}
+
+	resultSets, err := c.client.Search(ctx, searchOpt)
+	if err != nil {
+		return nil, fmt.Errorf("search vector chunks: %w", err)
+	}
+	return resultSetsToHits(resultSets), nil
+}
+
+func (r *SearchRequest) filterExpr() string {
+	filters := make([]string, 0, 3)
+	if r.Filter != "" {
+		filters = append(filters, r.Filter)
+	}
+	if len(r.KnowledgeIDs) > 0 {
+		filters = append(filters, intInFilter(types.MilvusKnowledgeIDField, r.KnowledgeIDs))
+	}
+	if len(r.DocumentIDs) > 0 {
+		filters = append(filters, intInFilter(types.MilvusDocumentIDField, r.DocumentIDs))
+	}
+	return strings.Join(filters, " AND ")
+}
+
+func resultSetsToHits(resultSets []milvusclient.ResultSet) []*SearchHit {
+	hits := make([]*SearchHit, 0)
+	for _, resultSet := range resultSets {
+		for i := 0; i < resultSet.ResultCount; i++ {
+			hits = append(hits, &SearchHit{
+				ID:          getStringColumn(resultSet, types.MilvusIDField, i),
+				KnowledgeID: getInt64Column(resultSet, types.MilvusKnowledgeIDField, i),
+				DocumentID:  getInt64Column(resultSet, types.MilvusDocumentIDField, i),
+				Content:     getStringColumn(resultSet, types.MilvusContentField, i),
+				Score:       getScore(resultSet, i),
+				Metadata:    getJSONColumn(resultSet, types.MilvusMetadataField, i),
+			})
+		}
+	}
+	return hits
+}
+
+func getStringColumn(resultSet milvusclient.ResultSet, fieldName string, idx int) string {
+	col := resultSet.GetColumn(fieldName)
+	if col == nil {
+		return ""
+	}
+	value, _ := col.GetAsString(idx)
+	return value
+}
+
+func getInt64Column(resultSet milvusclient.ResultSet, fieldName string, idx int) int64 {
+	col := resultSet.GetColumn(fieldName)
+	if col == nil {
+		return 0
+	}
+	value, _ := col.GetAsInt64(idx)
+	return value
+}
+
+func getJSONColumn(resultSet milvusclient.ResultSet, fieldName string, idx int) map[string]any {
+	col := resultSet.GetColumn(fieldName)
+	if col == nil {
+		return nil
+	}
+	raw, err := col.Get(idx)
+	if err != nil {
+		return nil
+	}
+
+	var bs []byte
+	switch value := raw.(type) {
+	case []byte:
+		bs = value
+	case string:
+		bs = []byte(value)
+	default:
+		return nil
+	}
+	if len(bs) == 0 {
+		return nil
+	}
+
+	metadata := make(map[string]any)
+	if err := json.Unmarshal(bs, &metadata); err != nil {
+		return nil
+	}
+	return metadata
+}
+
+func getScore(resultSet milvusclient.ResultSet, idx int) float32 {
+	if idx < 0 || idx >= len(resultSet.Scores) {
+		return 0
+	}
+	return resultSet.Scores[idx]
+}
+
 func (c *milvusClient) SearchKnowledge(ctx context.Context, kbID string, queryVectors [][]float32, topK int) ([]string, error) {
+
 	// 1. 设置标量过滤条件：强制将搜索范围锁定在这个知识库内 (Partition Key 裁剪)
 	expr := fmt.Sprintf("kb_id == '%s'", kbID)
 
@@ -162,12 +544,17 @@ func (c *milvusClient) EnsureCollection(ctx context.Context) error {
 		return err
 	}
 	if has {
-		return nil
+		return c.ensureLoaded(ctx)
 	}
 
 	// 配置中文分词器
 	analyzerParams := map[string]any{"type": "chinese"}
 	// 定义 Schema: id, kb_id, doc_id, content, vector, metadata
+	bm25Function := entity.NewFunction().
+		WithName("bm25_auto").
+		WithType(entity.FunctionTypeBM25).
+		WithInputFields(types.MilvusContentField).
+		WithOutputFields(types.MilvusSparseVectorField)
 	schema := entity.NewSchema().
 		WithField(entity.NewField().
 			WithName(types.MilvusIDField).
@@ -187,6 +574,7 @@ func (c *milvusClient) EnsureCollection(ctx context.Context) error {
 			WithName(types.MilvusContentField).
 			WithDataType(entity.FieldTypeVarChar).
 			WithMaxLength(65535).
+			WithEnableAnalyzer(true).
 			WithAnalyzerParams(analyzerParams)).
 		WithField(entity.NewField().
 			WithName(types.MilvusVectorFieldField).
@@ -197,7 +585,8 @@ func (c *milvusClient) EnsureCollection(ctx context.Context) error {
 			WithDataType(entity.FieldTypeSparseVector)).
 		WithField(entity.NewField().
 			WithName(types.MilvusMetadataField).
-			WithDataType(entity.FieldTypeJSON))
+			WithDataType(entity.FieldTypeJSON)).
+		WithFunction(bm25Function)
 
 	// 创建 Collection
 	err = c.client.CreateCollection(ctx,
@@ -207,14 +596,60 @@ func (c *milvusClient) EnsureCollection(ctx context.Context) error {
 		return fmt.Errorf("create collection: %w", err)
 	}
 
-	// 创建向量索引（HNSW，适合单机高精度场景）
-	idx := index.NewHNSWIndex(entity.COSINE, 16, 200)
-	_, err = c.client.CreateIndex(ctx, milvusclient.NewCreateIndexOption(c.collection, types.MilvusVectorFieldField, idx))
-	if err != nil {
-		return fmt.Errorf("create index: %w", err)
+	if err := c.createIndex(ctx); err != nil {
+		return err
 	}
-	_, err = c.client.LoadCollection(ctx, milvusclient.NewLoadCollectionOption(c.collection))
-	return err
+	return c.ensureLoaded(ctx)
+}
+
+func (c *milvusClient) createIndex(ctx context.Context) error {
+	denseIdx := index.NewHNSWIndex(c.denseMetric, 16, 200)
+	task, err := c.client.CreateIndex(ctx, milvusclient.NewCreateIndexOption(c.collection, types.MilvusVectorFieldField, denseIdx))
+	if err != nil {
+		return fmt.Errorf("ensure dense vector index: %w", err)
+	}
+	if err = task.Await(ctx); err != nil {
+		return err
+	}
+
+	sparseIdx := index.NewSparseInvertedIndex(c.sparseMetric, 0.2)
+	task, err = c.client.CreateIndex(ctx, milvusclient.NewCreateIndexOption(c.collection, types.MilvusSparseVectorField, sparseIdx))
+	if err != nil {
+		return fmt.Errorf("ensure sparse vector index: %w", err)
+	}
+
+	return task.Await(ctx)
+}
+
+func (c *milvusClient) ensureIndex(ctx context.Context, fieldName string, idx index.Index) error {
+	indexes, err := c.client.ListIndexes(ctx, milvusclient.NewListIndexOption(c.collection).WithFieldName(fieldName))
+	if err != nil {
+		return err
+	}
+	if len(indexes) > 0 {
+		return nil
+	}
+
+	task, err := c.client.CreateIndex(ctx, milvusclient.NewCreateIndexOption(c.collection, fieldName, idx))
+	if err != nil {
+		return err
+	}
+	return task.Await(ctx)
+}
+
+func (c *milvusClient) ensureLoaded(ctx context.Context) error {
+	loadState, err := c.client.GetLoadState(ctx, milvusclient.NewGetLoadStateOption(c.collection))
+	if err != nil {
+		return err
+	}
+	if loadState.State == entity.LoadStateLoaded {
+		return nil
+	}
+	task, err := c.client.LoadCollection(ctx, milvusclient.NewLoadCollectionOption(c.collection))
+	if err != nil {
+		return err
+	}
+	return task.Await(ctx)
 }
 
 // SearchChunks 向量相似度检索，返回 TopK 个匹配块
@@ -257,17 +692,16 @@ func (c *milvusClient) GetCollectionStats(ctx context.Context) (map[string]strin
 }
 
 // BuildKBFilter 辅助函数：将业务侧的 []int 转为 Milvus 的 IN 表达式
+func intInFilter(fieldName string, ids []int) string {
+	values := lo.Map(ids, func(id int, _ int) string {
+		return strconv.Itoa(id)
+	})
+	return fmt.Sprintf("%s in [%s]", fieldName, strings.Join(values, ", "))
+}
+
 func BuildKBFilter(kbIDs []int) string {
 	if len(kbIDs) == 0 {
 		return ""
 	}
-
-	// 给每个 ID 加上单引号
-	quotedIDs := make([]string, len(kbIDs))
-	for i, id := range kbIDs {
-		quotedIDs[i] = fmt.Sprintf("'%d'", id)
-	}
-
-	// 拼接成: kb_id in ['id1', 'id2']
-	return fmt.Sprintf("%s in [%s]", types.MilvusKnowledgeIDField, strings.Join(quotedIDs, ", "))
+	return intInFilter(types.MilvusKnowledgeIDField, kbIDs)
 }

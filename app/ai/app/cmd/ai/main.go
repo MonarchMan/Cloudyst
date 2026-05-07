@@ -1,16 +1,19 @@
 package main
 
 import (
+	"ai/app"
 	"common/constants"
 	"context"
 	"flag"
-	"fmt"
 	"os"
 
 	"ai/internal/conf"
 
+	"github.com/go-kratos/kratos/contrib/config/consul/v2"
 	creg "github.com/go-kratos/kratos/contrib/registry/consul/v2"
 	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/config"
+	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -34,8 +37,12 @@ func init() {
 	flag.StringVar(&flagConsul, "consul", "127.0.0.1:8500", "consul address, eg: -consul 127.0.0.1:8500")
 }
 
-func newApp(gs *grpc.Server, hs *http.Server, bs *conf.Bootstrap, client *api.Client, l log.Logger) (*kratos.App, error) {
+func newApp(gs *grpc.Server, hs *http.Server, bs *conf.Bootstrap, client *api.Client, l log.Logger, server app.Server) (*kratos.App, error) {
 	// prepare kratos app
+	server.PrintBanner()
+	if err := server.Start(); err != nil {
+		return nil, err
+	}
 	h := log.NewHelper(l, log.WithMessageKey("app"))
 	reg := creg.New(client)
 	var options []kratos.Option
@@ -67,59 +74,43 @@ func newApp(gs *grpc.Server, hs *http.Server, bs *conf.Bootstrap, client *api.Cl
 	), nil
 }
 
-func printBanner() {
-	fmt.Print(`
-   	___ _                _                    
-  / __\ | ___  _   _  __| |__ __ _____ _____           ____     _____
- / /  | |/ _ \| | | |/ _  | |_| |_  __|_____|         / __ \   |_   _|
-/ /___| | (_) | |_| | (_| |     |_\ \_  | |	 ------- / /__\ \   _| |_
-\____/|_|\___/ \__,_|\__,_|\_  /|_____| |_|         /_/    \_\ |_____|
-                            / /
-                           /_/
-
-   V` + constants.BackendVersion + `
-================================================
-
-`)
-}
-
 func main() {
-	//flag.Parse()
-	//consulClient, err := api.NewClient(&api.Config{
-	//	Address: flagConsul,
-	//})
-	//if err != nil {
-	//	panic(err)
-	//}
-	//cs, err := consul.New(consulClient, consul.WithPath("cloudyst/common.yaml"))
-	//if err != nil {
-	//	panic(err)
-	//}
-	//c := config.New(
-	//	config.WithSource(
-	//		cs,
-	//		file.NewSource(flagconf),
-	//	),
-	//)
-	//defer c.Close()
-	//
-	//if err := c.Load(); err != nil {
-	//	panic(err)
-	//}
-	//
-	//var bs conf.Bootstrap
-	//if err := c.Scan(&bs); err != nil {
-	//	panic(err)
-	//}
-	//
-	//app, cleanup, err := wireApp(&bs, consulClient)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer cleanup()
-	//
-	//// start and wait for stop signal
-	//if err := app.Run(); err != nil {
-	//	panic(err)
-	//}
+	flag.Parse()
+	consulClient, err := api.NewClient(&api.Config{
+		Address: flagConsul,
+	})
+	if err != nil {
+		panic(err)
+	}
+	cs, err := consul.New(consulClient, consul.WithPath("cloudyst/common.yaml"))
+	if err != nil {
+		panic(err)
+	}
+	c := config.New(
+		config.WithSource(
+			cs,
+			file.NewSource(flagconf),
+		),
+	)
+	defer c.Close()
+
+	if err := c.Load(); err != nil {
+		panic(err)
+	}
+
+	var bs conf.Bootstrap
+	if err := c.Scan(&bs); err != nil {
+		panic(err)
+	}
+
+	app, cleanup, err := wireApp(&bs, consulClient)
+	if err != nil {
+		panic(err)
+	}
+	defer cleanup()
+
+	// start and wait for stop signal
+	if err := app.Run(); err != nil {
+		panic(err)
+	}
 }

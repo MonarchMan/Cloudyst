@@ -4,6 +4,7 @@ import (
 	commonpb "api/api/common/v1"
 	pb "api/api/file/common/v1"
 	userpb "api/api/user/common/v1"
+	"api/external/data/filedata"
 	"common/boolset"
 	"common/cache"
 	"common/constants"
@@ -58,7 +59,7 @@ type (
 		// ExecuteHook performs custom operations before or after certain actions.
 		ExecuteHook(ctx context.Context, hookType fs.HookType, file *File) error
 		// GetView returns the view setting of the given files.
-		GetView(ctx context.Context, file *File) *types.ExplorerView
+		GetView(ctx context.Context, file *File) *filedata.ExplorerView
 	}
 
 	State interface{}
@@ -167,7 +168,7 @@ type (
 
 var defaultFilter = func(ctx context.Context, f *File) (*File, bool) { return f, true }
 
-func newBaseNavigator(fileClient data.FileClient, filterFunc fileFilter, user int64,
+func newBaseNavigator(fileClient data.FileClient, filterFunc fileFilter, user int,
 	hasher hashid.Encoder, config *setting.DBFS) *baseNavigator {
 	return &baseNavigator{
 		fileClient: fileClient,
@@ -324,7 +325,7 @@ func (b *baseNavigator) walk(ctx context.Context, levelFiles []*File, limit, dep
 					},
 					MixedType: true,
 				},
-				int(owner.Id),
+				owner.ID,
 				lo.Map(folders, func(item *File, index int) *ent.File {
 					return item.Model
 				})...)

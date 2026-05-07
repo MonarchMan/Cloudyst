@@ -1,14 +1,12 @@
 package data
 
 import (
-	pb "api/api/file/common/v1"
 	userpb "api/api/user/common/v1"
 	"common/constants"
 	"common/hashid"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -23,6 +21,14 @@ type (
 		PageSize            int
 		OrderBy             string
 		Order               OrderDirection
+	}
+
+	PaginationResults struct {
+		Page          int    `json:"page"`
+		PageSize      int    `json:"page_size"`
+		TotalItems    int    `json:"total_items,omitempty"`
+		NextPageToken string `json:"next_token,omitempty"`
+		IsCursor      bool   `json:"is_cursor,omitempty"`
 	}
 
 	PageToken struct {
@@ -98,21 +104,6 @@ func capPageSize(maxSQlParam, preferredSize, margin int) int {
 	}
 
 	return pageSize
-}
-
-func UserInfoFromPbUser(user *userpb.User) *pb.UserInfo {
-	if user == nil {
-		return nil
-	}
-	ownerInfo := &pb.UserInfo{
-		Id:       strconv.FormatInt(user.Id, 10),
-		Nickname: user.Nick,
-		Status:   GetUserStatus(user.Status),
-	}
-	if user.Avatar != nil {
-		ownerInfo.Avatar = user.Avatar.Value
-	}
-	return ownerInfo
 }
 
 func GetUserStatus(status userpb.User_Status) string {

@@ -20,11 +20,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Image_DrawImage_FullMethodName      = "/ai.image.v1.Image/DrawImage"
-	Image_DeleteImage_FullMethodName    = "/ai.image.v1.Image/DeleteImage"
-	Image_GetImage_FullMethodName       = "/ai.image.v1.Image/GetImage"
-	Image_ListImage_FullMethodName      = "/ai.image.v1.Image/ListImage"
-	Image_ListImageByIds_FullMethodName = "/ai.image.v1.Image/ListImageByIds"
+	Image_DrawImage_FullMethodName   = "/ai.image.v1.Image/DrawImage"
+	Image_DeleteImage_FullMethodName = "/ai.image.v1.Image/DeleteImage"
+	Image_GetImage_FullMethodName    = "/ai.image.v1.Image/GetImage"
+	Image_ListImage_FullMethodName   = "/ai.image.v1.Image/ListImage"
+	Image_GetImages_FullMethodName   = "/ai.image.v1.Image/GetImages"
 )
 
 // ImageClient is the client API for Image service.
@@ -35,7 +35,7 @@ type ImageClient interface {
 	DeleteImage(ctx context.Context, in *SimpleImageRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetImage(ctx context.Context, in *SimpleImageRequest, opts ...grpc.CallOption) (*GetImageResponse, error)
 	ListImage(ctx context.Context, in *ListImageRequest, opts ...grpc.CallOption) (*ListImageResponse, error)
-	ListImageByIds(ctx context.Context, in *ListImageByIdsRequest, opts ...grpc.CallOption) (*ListImageResponse, error)
+	GetImages(ctx context.Context, in *GetImagesRequest, opts ...grpc.CallOption) (*GetImagesResponse, error)
 }
 
 type imageClient struct {
@@ -86,10 +86,10 @@ func (c *imageClient) ListImage(ctx context.Context, in *ListImageRequest, opts 
 	return out, nil
 }
 
-func (c *imageClient) ListImageByIds(ctx context.Context, in *ListImageByIdsRequest, opts ...grpc.CallOption) (*ListImageResponse, error) {
+func (c *imageClient) GetImages(ctx context.Context, in *GetImagesRequest, opts ...grpc.CallOption) (*GetImagesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListImageResponse)
-	err := c.cc.Invoke(ctx, Image_ListImageByIds_FullMethodName, in, out, cOpts...)
+	out := new(GetImagesResponse)
+	err := c.cc.Invoke(ctx, Image_GetImages_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ type ImageServer interface {
 	DeleteImage(context.Context, *SimpleImageRequest) (*emptypb.Empty, error)
 	GetImage(context.Context, *SimpleImageRequest) (*GetImageResponse, error)
 	ListImage(context.Context, *ListImageRequest) (*ListImageResponse, error)
-	ListImageByIds(context.Context, *ListImageByIdsRequest) (*ListImageResponse, error)
+	GetImages(context.Context, *GetImagesRequest) (*GetImagesResponse, error)
 	mustEmbedUnimplementedImageServer()
 }
 
@@ -127,8 +127,8 @@ func (UnimplementedImageServer) GetImage(context.Context, *SimpleImageRequest) (
 func (UnimplementedImageServer) ListImage(context.Context, *ListImageRequest) (*ListImageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListImage not implemented")
 }
-func (UnimplementedImageServer) ListImageByIds(context.Context, *ListImageByIdsRequest) (*ListImageResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListImageByIds not implemented")
+func (UnimplementedImageServer) GetImages(context.Context, *GetImagesRequest) (*GetImagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetImages not implemented")
 }
 func (UnimplementedImageServer) mustEmbedUnimplementedImageServer() {}
 func (UnimplementedImageServer) testEmbeddedByValue()               {}
@@ -223,20 +223,20 @@ func _Image_ListImage_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Image_ListImageByIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListImageByIdsRequest)
+func _Image_GetImages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetImagesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ImageServer).ListImageByIds(ctx, in)
+		return srv.(ImageServer).GetImages(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Image_ListImageByIds_FullMethodName,
+		FullMethod: Image_GetImages_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ImageServer).ListImageByIds(ctx, req.(*ListImageByIdsRequest))
+		return srv.(ImageServer).GetImages(ctx, req.(*GetImagesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -265,8 +265,8 @@ var Image_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Image_ListImage_Handler,
 		},
 		{
-			MethodName: "ListImageByIds",
-			Handler:    _Image_ListImageByIds_Handler,
+			MethodName: "GetImages",
+			Handler:    _Image_GetImages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

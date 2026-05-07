@@ -4,9 +4,9 @@ import (
 	commonpb "api/api/common/v1"
 	filepb "api/api/file/common/v1"
 	pbfile "api/api/file/files/v1"
-	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
-	ftypes "api/external/data/file"
+	"api/external/data/common"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"common/auth"
 	"common/auth/requestinfo"
@@ -28,6 +28,7 @@ import (
 	"file/internal/biz/thumb"
 	"file/internal/conf"
 	"file/internal/data"
+	"file/internal/data/rpc"
 	"file/internal/data/types"
 	"file/internal/pkg/utils"
 	"file/internal/pkg/wopi"
@@ -50,7 +51,7 @@ import (
 
 type FileService struct {
 	pbfile.UnimplementedFileServer
-	userClient       pbuser.UserClient
+	userClient       rpc.UserClient
 	directLinkClient data.DirectLinkClient
 	fileClient       data.FileClient
 	policyClient     data.StoragePolicyClient
@@ -67,7 +68,7 @@ type FileService struct {
 	eventHub   eventhub.EventHub
 }
 
-func NewFileService(c pbuser.UserClient, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, fc data.FileClient,
+func NewFileService(c rpc.UserClient, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, fc data.FileClient,
 	pc data.StoragePolicyClient, hasher hashid.Encoder, settings setting.Provider, kv cache.Driver,
 	auth auth.Auth, l log.Logger, bs *conf.Bootstrap, mm mime.MimeManager, eventHub eventhub.EventHub) *FileService {
 	return &FileService{
@@ -101,13 +102,13 @@ func (s *FileService) ListDirectory(ctx context.Context, req *pbfile.ListFileReq
 		Page:           int(req.Page),
 		PageSize:       int(req.PageSize),
 		Order:          req.OrderBy,
-		OrderDirection: utils.FromProtoOrderDirection(req.OrderDirection),
+		OrderDirection: common.OrderDirectionFromProto(req.OrderDirection),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	listResponse := buildListResponse(ctx, user.Id, parent, res, s.hasher, s.settings)
+	listResponse := buildListResponse(ctx, user.ID, parent, res, s.hasher, s.settings)
 	return listResponse, nil
 }
 
@@ -150,7 +151,7 @@ func (s *FileService) CreateFile(ctx context.Context, req *pbfile.CreateFileRequ
 		return nil, commonpb.ErrorUnspecified("failed to create files: %w", err)
 	}
 
-	return buildFileResponse(ctx, user.Id, file, s.hasher, nil, s.settings), nil
+	return buildFileResponse(ctx, user.ID, file, s.hasher, nil, s.settings), nil
 }
 func (s *FileService) RenameFile(ctx context.Context, req *pbfile.RenameFileRequest) (*pbfile.FileResponse, error) {
 	user := trans.FromContext(ctx)
@@ -167,7 +168,7 @@ func (s *FileService) RenameFile(ctx context.Context, req *pbfile.RenameFileRequ
 		return nil, commonpb.ErrorUnspecified("failed to rename files: %w", err)
 	}
 
-	return buildFileResponse(ctx, user.Id, file, s.hasher, nil, s.settings), nil
+	return buildFileResponse(ctx, user.ID, file, s.hasher, nil, s.settings), nil
 }
 func (s *FileService) MoveOrCopyFile(ctx context.Context, req *pbfile.MoveOrCopyFileRequest) (*emptypb.Empty, error) {
 	user := trans.FromContext(ctx)
@@ -285,7 +286,7 @@ func (s *FileService) PutContentStream(stream grpc.ClientStreamingServer[pbfile.
 		return commonpb.ErrorParamInvalid("file size mismatch")
 	}
 
-	return stream.SendAndClose(buildFileResponse(ctx, user.Id, res, s.hasher, nil, s.settings))
+	return stream.SendAndClose(buildFileResponse(ctx, user.ID, res, s.hasher, nil, s.settings))
 }
 func (s *FileService) GetThumb(ctx context.Context, req *pbfile.FileThumbRequest) (*pbfile.FileThumbResponse, error) {
 	return &pbfile.FileThumbResponse{}, nil
@@ -413,7 +414,7 @@ func (s *FileService) UploadFile(ctx context.Context, req *pbfile.UploadFileRequ
 	m := manager.NewFileManager(s.managerDep, s.dbfsDep, user)
 	defer m.Recycle()
 
-	if uploadSession.UID != int(user.Id) {
+	if uploadSession.UID != user.ID {
 		return nil, filepb.ErrorUploadSessionExpired("upload session expired")
 	}
 
@@ -532,7 +533,7 @@ func (s *FileService) GetFileInfo(ctx context.Context, req *pbfile.GetFileInfoRe
 		return nil, commonpb.ErrorNotFound("files not found: %s", req.Uri)
 	}
 
-	return buildFileResponse(ctx, user.Id, file, s.hasher, nil, s.settings), nil
+	return buildFileResponse(ctx, user.ID, file, s.hasher, nil, s.settings), nil
 }
 func (s *FileService) SetCurrentVersion(ctx context.Context, req *pbfile.SetCurrentVersionRequest) (*emptypb.Empty, error) {
 	user := trans.FromContext(ctx)
@@ -588,7 +589,7 @@ func (s *FileService) CreateViewerSession(ctx context.Context, req *pbfile.Creat
 
 	// Find the given viewer
 	viewers := s.settings.FileViewers(ctx)
-	var targetViewer *ftypes.Viewer
+	var targetViewer *filedata.Viewer
 	for _, group := range viewers {
 		for _, viewer := range group.Viewers {
 			if viewer.ID == req.ViewerId && !viewer.Disabled {
@@ -622,7 +623,7 @@ func (s *FileService) CreateViewerSession(ctx context.Context, req *pbfile.Creat
 		// For WOPI viewer, generate WOPI src
 		base := s.settings.SiteURL(setting.UseFirstSiteUrl(ctx))
 		fileId := hashid.EncodeFileID(s.hasher, viewerSession.File.ID())
-		wopiSrc, err := wopi.GenerateWopiSrc(base, ftypes.ViewerAction(req.PreferAction), targetViewer, viewerSession, fileId)
+		wopiSrc, err := wopi.GenerateWopiSrc(base, filedata.ViewerAction(req.PreferAction), targetViewer, viewerSession, fileId)
 		if err != nil {
 			return nil, commonpb.ErrorInternalSetting("failed to generate wopi src: %w", err)
 		}
@@ -656,7 +657,7 @@ func (s *FileService) DeleteDirectLink(ctx context.Context, req *pbfile.DeleteDi
 		return nil, commonpb.ErrorNotFound("direct link not found: %w", err)
 	}
 
-	if link.Edges.File.OwnerID != int(user.Id) {
+	if link.Edges.File.OwnerID != user.ID {
 		return nil, commonpb.ErrorNotFound("direct link not found: %w", err)
 	}
 	if err := s.directLinkClient.Delete(ctx, link.ID); err != nil {
@@ -675,7 +676,7 @@ func (s *FileService) PatchView(ctx context.Context, req *pbfile.PatchViewReques
 		return nil, commonpb.ErrorParamInvalid("unknown uri: %w", err)
 	}
 
-	view := utils.FromProtoView(req.View)
+	view := filedata.ExplorerViewFromProto(req.View)
 	if err := m.PatchView(ctx, uri, view); err != nil {
 		return nil, err
 	}
@@ -866,7 +867,7 @@ func (s *FileService) UploadAvatar(ctx khttp.Context) error {
 	return s.updateAvatarFile(ctx, user, req.Header.Get("Content-Type"), req.Body, avatarSettings)
 }
 
-func (s *FileService) updateAvatarFile(ctx khttp.Context, user *userpb.User, contentType string, file io.ReadCloser, avatarSettings *setting.AvatarProcess) error {
+func (s *FileService) updateAvatarFile(ctx khttp.Context, user *userdata.User, contentType string, file io.ReadCloser, avatarSettings *setting.AvatarProcess) error {
 	ext := "png"
 	switch contentType {
 	case "image/jpeg", "image/jpg":
@@ -882,7 +883,7 @@ func (s *FileService) updateAvatarFile(ctx khttp.Context, user *userpb.User, con
 	// Resize and save avatar
 	avatar.CreateAvatar(avatarSettings.MaxWidth)
 	avatarRoot := util.DataPath(avatarSettings.Path)
-	f, err := util.CreateNestedFile(filepath.Join(avatarRoot, fmt.Sprintf("avatar_%d.png", user.Id)))
+	f, err := util.CreateNestedFile(filepath.Join(avatarRoot, fmt.Sprintf("avatar_%d.png", user.ID)))
 	if err != nil {
 		return commonpb.ErrorIoFailed("Failed to create avatar file: %w", err)
 	}
@@ -895,9 +896,7 @@ func (s *FileService) updateAvatarFile(ctx khttp.Context, user *userpb.User, con
 		return commonpb.ErrorIoFailed("Failed to save avatar file: %w", err)
 	}
 
-	if _, err := s.userClient.UpdateAvatar(ctx, &pbuser.UpdateAvatarRequest{
-		Type: pbuser.AvatarType_FILE_AVATAR,
-	}); err != nil {
+	if err := s.userClient.UpdateAvatar(ctx, 1); err != nil {
 		return err
 	}
 
@@ -922,7 +921,7 @@ func (s *FileService) GetArchiveDownloadSession(ctx context.Context, req *pbfile
 
 	archiveSession := &ArchiveDownloadSession{
 		Uris:        uris,
-		RequesterID: int(user.Id),
+		RequesterID: user.ID,
 	}
 	sessionId := uuid.Must(uuid.NewV4()).String()
 
@@ -1025,7 +1024,7 @@ func (s *FileService) putContentWithLockSession(ctx context.Context, req *pbfile
 		return nil, fmt.Errorf("failed to update files: %w", err)
 	}
 
-	return buildFileResponse(ctx, user.Id, res, s.hasher, nil, s.settings), nil
+	return buildFileResponse(ctx, user.ID, res, s.hasher, nil, s.settings), nil
 }
 
 func (s *FileService) redirectDirectLink(ctx context.Context, id, name string, download bool) (*pbfile.RedirectResponse, error) {

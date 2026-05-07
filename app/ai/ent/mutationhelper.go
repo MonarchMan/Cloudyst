@@ -67,3 +67,9 @@ func (m *AiToolMutation) SetRawID(t int) {
 func (m *AiWebPageMutation) SetRawID(t int) {
 	m.id = &t
 }
+
+// SetUpdatedAt sets the "updated_at" field.
+
+func (m *TaskMutation) SetRawID(t int) {
+	m.id = &t
+}

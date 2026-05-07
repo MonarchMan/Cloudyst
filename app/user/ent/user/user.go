@@ -3,7 +3,7 @@
 package user
 
 import (
-	v1 "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"fmt"
 	"time"
 
@@ -120,7 +120,7 @@ var (
 	// DefaultStorage holds the default value on creation for the "storage" field.
 	DefaultStorage int64
 	// DefaultSettings holds the default value on creation for the "settings" field.
-	DefaultSettings *v1.UserSetting
+	DefaultSettings *userdata.UserSetting
 )
 
 // Status defines the type for the "status" enum field.

@@ -2,13 +2,14 @@ package utils
 
 import (
 	pb "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"user/ent"
 	"user/ent/user"
 
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 func EntUserToProto(user *ent.User) *pb.User {
@@ -20,7 +21,7 @@ func EntUserToProto(user *ent.User) *pb.User {
 		Nick:       user.Nick,
 		Status:     GetUserStatus(user.Status),
 		Storage:    user.Storage,
-		Settings:   user.Settings,
+		Settings:   userdata.UserSettingToProto(user.Settings),
 		GroupUsers: int64(user.GroupUsers),
 	}
 
@@ -56,7 +57,7 @@ func ProtoUserToEnt(protoUser *pb.User) *ent.User {
 		Nick:       protoUser.Nick,
 		Status:     ProtoUserStatusToEnt(protoUser.Status),
 		Storage:    protoUser.Storage,
-		Settings:   protoUser.Settings,
+		Settings:   userdata.UserSettingFromProto(protoUser.Settings),
 		GroupUsers: int(protoUser.GroupUsers),
 		Edges:      ent.UserEdges{},
 	}
@@ -103,12 +104,12 @@ func EntGroupToProto(group *ent.Group) *pb.Group {
 		CreatedAt:         timestamppb.New(group.CreatedAt),
 		UpdatedAt:         timestamppb.New(group.UpdatedAt),
 		Name:              group.Name,
-		MaxStorage:        &wrapperspb.Int64Value{Value: group.MaxStorage},
-		SpeedLimit:        &wrapperspb.Int64Value{Value: int64(group.SpeedLimit)},
+		MaxStorage:        group.MaxStorage,
+		SpeedLimit:        int64(group.SpeedLimit),
 		Permissions:       *group.Permissions,
-		Settings:          group.Settings,
-		StoragePolicyId:   &wrapperspb.Int64Value{Value: int64(group.StoragePolicyID)},
-		StoragePolicyInfo: group.StoragePolicyInfo,
+		Settings:          userdata.GroupSettingToProto(group.Settings),
+		StoragePolicyId:   int64(group.StoragePolicyID),
+		StoragePolicyInfo: filedata.StoragePolicyInfoToProto(group.StoragePolicyInfo),
 	}
 
 	if group.DeletedAt != nil {
@@ -156,11 +157,11 @@ func ProtoGroupToEnt(protoGroup *pb.Group) *ent.Group {
 		CreatedAt:         protoGroup.CreatedAt.AsTime(),
 		UpdatedAt:         protoGroup.UpdatedAt.AsTime(),
 		Name:              protoGroup.Name,
-		MaxStorage:        protoGroup.MaxStorage.GetValue(),
-		SpeedLimit:        int(protoGroup.SpeedLimit.GetValue()),
-		Settings:          protoGroup.Settings,
-		StoragePolicyID:   int(protoGroup.StoragePolicyId.GetValue()),
-		StoragePolicyInfo: protoGroup.StoragePolicyInfo,
+		MaxStorage:        protoGroup.MaxStorage,
+		SpeedLimit:        int(protoGroup.SpeedLimit),
+		Settings:          userdata.GroupSettingFromProto(protoGroup.Settings),
+		StoragePolicyID:   int(protoGroup.StoragePolicyId),
+		StoragePolicyInfo: filedata.StoragePolicyInfoFromProto(protoGroup.StoragePolicyInfo),
 		Edges:             ent.GroupEdges{},
 	}
 

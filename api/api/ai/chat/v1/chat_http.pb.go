@@ -22,14 +22,14 @@ const _ = http.SupportPackageIsVersion1
 
 const OperationChatCreateChatConversation = "/ai.chat.v1.Chat/CreateChatConversation"
 const OperationChatDeleteChatConversation = "/ai.chat.v1.Chat/DeleteChatConversation"
-const OperationChatDeleteConversationMessages = "/ai.chat.v1.Chat/DeleteConversationMessages"
 const OperationChatDeleteMessage = "/ai.chat.v1.Chat/DeleteMessage"
 const OperationChatDeleteUnpinnedChatConversations = "/ai.chat.v1.Chat/DeleteUnpinnedChatConversations"
 const OperationChatGetChatConversation = "/ai.chat.v1.Chat/GetChatConversation"
 const OperationChatListChatConversationMe = "/ai.chat.v1.Chat/ListChatConversationMe"
+const OperationChatListChatConversations = "/ai.chat.v1.Chat/ListChatConversations"
 const OperationChatListConversationMessage = "/ai.chat.v1.Chat/ListConversationMessage"
-const OperationChatPageChatConversations = "/ai.chat.v1.Chat/PageChatConversations"
-const OperationChatPageConversationMessages = "/ai.chat.v1.Chat/PageConversationMessages"
+const OperationChatPatchMessage = "/ai.chat.v1.Chat/PatchMessage"
+const OperationChatRetryMessage = "/ai.chat.v1.Chat/RetryMessage"
 const OperationChatSendMessage = "/ai.chat.v1.Chat/SendMessage"
 const OperationChatUpdateChatConversation = "/ai.chat.v1.Chat/UpdateChatConversation"
 
@@ -37,14 +37,14 @@ type ChatHTTPServer interface {
 	// CreateChatConversation Conversation 相关接口
 	CreateChatConversation(context.Context, *CreateChatConversationRequest) (*GetChatConversationResponse, error)
 	DeleteChatConversation(context.Context, *SimpleChatConversationRequest) (*emptypb.Empty, error)
-	DeleteConversationMessages(context.Context, *SimpleMessageRequest) (*emptypb.Empty, error)
-	DeleteMessage(context.Context, *SimpleMessageRequest) (*emptypb.Empty, error)
+	DeleteMessage(context.Context, *DeleteMessageRequest) (*emptypb.Empty, error)
 	DeleteUnpinnedChatConversations(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	GetChatConversation(context.Context, *SimpleChatConversationRequest) (*GetChatConversationResponse, error)
-	ListChatConversationMe(context.Context, *emptypb.Empty) (*ListConversationResponse, error)
+	ListChatConversationMe(context.Context, *emptypb.Empty) (*GetMultiConversationsResponse, error)
+	ListChatConversations(context.Context, *ListConversationRequest) (*ListConversationResponse, error)
 	ListConversationMessage(context.Context, *ListConversationMessagesRequest) (*ListConversationMessagesResponse, error)
-	PageChatConversations(context.Context, *PageConversationRequest) (*PageConversationResponse, error)
-	PageConversationMessages(context.Context, *PageConversationMessagesRequest) (*PageConversationMessagesResponse, error)
+	PatchMessage(context.Context, *PatchMessageRequest) (*SendMessageResponse, error)
+	RetryMessage(context.Context, *RetryMessageRequest) (*SendMessageResponse, error)
 	// SendMessage Message 相关接口
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
 	UpdateChatConversation(context.Context, *UpdateChatConversationRequest) (*GetChatConversationResponse, error)
@@ -55,15 +55,15 @@ func RegisterChatHTTPServer(s *http.Server, srv ChatHTTPServer) {
 	r.POST("/ai/chat/conversation", _Chat_CreateChatConversation0_HTTP_Handler(srv))
 	r.PUT("/ai/chat/conversation/{id}", _Chat_UpdateChatConversation0_HTTP_Handler(srv))
 	r.GET("/ai/chat/conversation/list/me", _Chat_ListChatConversationMe0_HTTP_Handler(srv))
-	r.GET("/ai/chat/conversation/{id}", _Chat_GetChatConversation0_HTTP_Handler(srv))
+	r.GET("/ai/chat/conversation/{id}", _Chat_GetChatConversation1_HTTP_Handler(srv))
 	r.DELETE("/ai/chat/conversation/{id}", _Chat_DeleteChatConversation0_HTTP_Handler(srv))
 	r.DELETE("/ai/chat/conversation/unpinned", _Chat_DeleteUnpinnedChatConversations0_HTTP_Handler(srv))
-	r.GET("/ai/chat/conversation/list", _Chat_PageChatConversations0_HTTP_Handler(srv))
+	r.GET("/ai/chat/conversation/list", _Chat_ListChatConversations0_HTTP_Handler(srv))
 	r.POST("/ai/chat/message/send", _Chat_SendMessage0_HTTP_Handler(srv))
-	r.GET("/ai/chat/message/conversation/page/{conversation_id}", _Chat_PageConversationMessages0_HTTP_Handler(srv))
 	r.DELETE("/ai/chat/message/{id}", _Chat_DeleteMessage0_HTTP_Handler(srv))
-	r.DELETE("/ai/chat/message/conversation/{id}", _Chat_DeleteConversationMessages0_HTTP_Handler(srv))
 	r.GET("/ai/chat/message/list", _Chat_ListConversationMessage0_HTTP_Handler(srv))
+	r.GET("/ai/chat/message/{id}/retry", _Chat_RetryMessage0_HTTP_Handler(srv))
+	r.PATCH("/ai/chat/message/{id}", _Chat_PatchMessage0_HTTP_Handler(srv))
 }
 
 func _Chat_CreateChatConversation0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
@@ -127,12 +127,12 @@ func _Chat_ListChatConversationMe0_HTTP_Handler(srv ChatHTTPServer) func(ctx htt
 		if err != nil {
 			return err
 		}
-		reply := out.(*ListConversationResponse)
+		reply := out.(*GetMultiConversationsResponse)
 		return ctx.Result(200, reply)
 	}
 }
 
-func _Chat_GetChatConversation0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
+func _Chat_GetChatConversation1_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in SimpleChatConversationRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -195,21 +195,21 @@ func _Chat_DeleteUnpinnedChatConversations0_HTTP_Handler(srv ChatHTTPServer) fun
 	}
 }
 
-func _Chat_PageChatConversations0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
+func _Chat_ListChatConversations0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in PageConversationRequest
+		var in ListConversationRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationChatPageChatConversations)
+		http.SetOperation(ctx, OperationChatListChatConversations)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.PageChatConversations(ctx, req.(*PageConversationRequest))
+			return srv.ListChatConversations(ctx, req.(*ListConversationRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*PageConversationResponse)
+		reply := out.(*ListConversationResponse)
 		return ctx.Result(200, reply)
 	}
 }
@@ -236,31 +236,9 @@ func _Chat_SendMessage0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) 
 	}
 }
 
-func _Chat_PageConversationMessages0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in PageConversationMessagesRequest
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationChatPageConversationMessages)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.PageConversationMessages(ctx, req.(*PageConversationMessagesRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*PageConversationMessagesResponse)
-		return ctx.Result(200, reply)
-	}
-}
-
 func _Chat_DeleteMessage0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in SimpleMessageRequest
+		var in DeleteMessageRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -269,29 +247,7 @@ func _Chat_DeleteMessage0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context
 		}
 		http.SetOperation(ctx, OperationChatDeleteMessage)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.DeleteMessage(ctx, req.(*SimpleMessageRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*emptypb.Empty)
-		return ctx.Result(200, reply)
-	}
-}
-
-func _Chat_DeleteConversationMessages0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in SimpleMessageRequest
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationChatDeleteConversationMessages)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.DeleteConversationMessages(ctx, req.(*SimpleMessageRequest))
+			return srv.DeleteMessage(ctx, req.(*DeleteMessageRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
@@ -321,18 +277,65 @@ func _Chat_ListConversationMessage0_HTTP_Handler(srv ChatHTTPServer) func(ctx ht
 	}
 }
 
+func _Chat_RetryMessage0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in RetryMessageRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationChatRetryMessage)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.RetryMessage(ctx, req.(*RetryMessageRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SendMessageResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Chat_PatchMessage0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in PatchMessageRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationChatPatchMessage)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.PatchMessage(ctx, req.(*PatchMessageRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SendMessageResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type ChatHTTPClient interface {
 	// CreateChatConversation Conversation 相关接口
 	CreateChatConversation(ctx context.Context, req *CreateChatConversationRequest, opts ...http.CallOption) (rsp *GetChatConversationResponse, err error)
 	DeleteChatConversation(ctx context.Context, req *SimpleChatConversationRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
-	DeleteConversationMessages(ctx context.Context, req *SimpleMessageRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
-	DeleteMessage(ctx context.Context, req *SimpleMessageRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	DeleteMessage(ctx context.Context, req *DeleteMessageRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	DeleteUnpinnedChatConversations(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	GetChatConversation(ctx context.Context, req *SimpleChatConversationRequest, opts ...http.CallOption) (rsp *GetChatConversationResponse, err error)
-	ListChatConversationMe(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *ListConversationResponse, err error)
+	ListChatConversationMe(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *GetMultiConversationsResponse, err error)
+	ListChatConversations(ctx context.Context, req *ListConversationRequest, opts ...http.CallOption) (rsp *ListConversationResponse, err error)
 	ListConversationMessage(ctx context.Context, req *ListConversationMessagesRequest, opts ...http.CallOption) (rsp *ListConversationMessagesResponse, err error)
-	PageChatConversations(ctx context.Context, req *PageConversationRequest, opts ...http.CallOption) (rsp *PageConversationResponse, err error)
-	PageConversationMessages(ctx context.Context, req *PageConversationMessagesRequest, opts ...http.CallOption) (rsp *PageConversationMessagesResponse, err error)
+	PatchMessage(ctx context.Context, req *PatchMessageRequest, opts ...http.CallOption) (rsp *SendMessageResponse, err error)
+	RetryMessage(ctx context.Context, req *RetryMessageRequest, opts ...http.CallOption) (rsp *SendMessageResponse, err error)
 	// SendMessage Message 相关接口
 	SendMessage(ctx context.Context, req *SendMessageRequest, opts ...http.CallOption) (rsp *SendMessageResponse, err error)
 	UpdateChatConversation(ctx context.Context, req *UpdateChatConversationRequest, opts ...http.CallOption) (rsp *GetChatConversationResponse, err error)
@@ -373,20 +376,7 @@ func (c *ChatHTTPClientImpl) DeleteChatConversation(ctx context.Context, in *Sim
 	return &out, nil
 }
 
-func (c *ChatHTTPClientImpl) DeleteConversationMessages(ctx context.Context, in *SimpleMessageRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
-	var out emptypb.Empty
-	pattern := "/ai/chat/message/conversation/{id}"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationChatDeleteConversationMessages))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func (c *ChatHTTPClientImpl) DeleteMessage(ctx context.Context, in *SimpleMessageRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+func (c *ChatHTTPClientImpl) DeleteMessage(ctx context.Context, in *DeleteMessageRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
 	pattern := "/ai/chat/message/{id}"
 	path := binding.EncodeURL(pattern, in, true)
@@ -425,11 +415,24 @@ func (c *ChatHTTPClientImpl) GetChatConversation(ctx context.Context, in *Simple
 	return &out, nil
 }
 
-func (c *ChatHTTPClientImpl) ListChatConversationMe(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*ListConversationResponse, error) {
-	var out ListConversationResponse
+func (c *ChatHTTPClientImpl) ListChatConversationMe(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*GetMultiConversationsResponse, error) {
+	var out GetMultiConversationsResponse
 	pattern := "/ai/chat/conversation/list/me"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationChatListChatConversationMe))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *ChatHTTPClientImpl) ListChatConversations(ctx context.Context, in *ListConversationRequest, opts ...http.CallOption) (*ListConversationResponse, error) {
+	var out ListConversationResponse
+	pattern := "/ai/chat/conversation/list"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationChatListChatConversations))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
@@ -451,24 +454,24 @@ func (c *ChatHTTPClientImpl) ListConversationMessage(ctx context.Context, in *Li
 	return &out, nil
 }
 
-func (c *ChatHTTPClientImpl) PageChatConversations(ctx context.Context, in *PageConversationRequest, opts ...http.CallOption) (*PageConversationResponse, error) {
-	var out PageConversationResponse
-	pattern := "/ai/chat/conversation/list"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationChatPageChatConversations))
+func (c *ChatHTTPClientImpl) PatchMessage(ctx context.Context, in *PatchMessageRequest, opts ...http.CallOption) (*SendMessageResponse, error) {
+	var out SendMessageResponse
+	pattern := "/ai/chat/message/{id}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationChatPatchMessage))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "PATCH", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return &out, nil
 }
 
-func (c *ChatHTTPClientImpl) PageConversationMessages(ctx context.Context, in *PageConversationMessagesRequest, opts ...http.CallOption) (*PageConversationMessagesResponse, error) {
-	var out PageConversationMessagesResponse
-	pattern := "/ai/chat/message/conversation/page/{conversation_id}"
+func (c *ChatHTTPClientImpl) RetryMessage(ctx context.Context, in *RetryMessageRequest, opts ...http.CallOption) (*SendMessageResponse, error) {
+	var out SendMessageResponse
+	pattern := "/ai/chat/message/{id}/retry"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationChatPageConversationMessages))
+	opts = append(opts, http.Operation(OperationChatRetryMessage))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

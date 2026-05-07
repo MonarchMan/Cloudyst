@@ -9,6 +9,7 @@
 package v1
 
 import (
+	v1 "api/api/common/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -84,12 +85,12 @@ type Group struct {
 	UpdatedAt         *timestamppb.Timestamp `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	DeletedAt         *timestamppb.Timestamp `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
 	Name              string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	MaxStorage        *wrapperspb.Int64Value `protobuf:"bytes,3,opt,name=max_storage,json=maxStorage,proto3" json:"max_storage,omitempty"`
-	SpeedLimit        *wrapperspb.Int64Value `protobuf:"bytes,4,opt,name=speed_limit,json=speedLimit,proto3" json:"speed_limit,omitempty"`
+	MaxStorage        int64                  `protobuf:"varint,3,opt,name=max_storage,json=maxStorage,proto3" json:"max_storage,omitempty"`
+	SpeedLimit        int64                  `protobuf:"varint,4,opt,name=speed_limit,json=speedLimit,proto3" json:"speed_limit,omitempty"`
 	Permissions       []byte                 `protobuf:"bytes,5,opt,name=permissions,proto3" json:"permissions,omitempty"`
 	Settings          *GroupSetting          `protobuf:"bytes,6,opt,name=settings,proto3" json:"settings,omitempty"`
-	StoragePolicyId   *wrapperspb.Int64Value `protobuf:"bytes,7,opt,name=storage_policy_id,json=storagePolicyId,proto3" json:"storage_policy_id,omitempty"`
-	StoragePolicyInfo *StoragePolicyInfo     `protobuf:"bytes,8,opt,name=storage_policy_info,json=storagePolicyInfo,proto3" json:"storage_policy_info,omitempty"`
+	StoragePolicyId   int64                  `protobuf:"varint,7,opt,name=storage_policy_id,json=storagePolicyId,proto3" json:"storage_policy_id,omitempty"`
+	StoragePolicyInfo *v1.StoragePolicyInfo  `protobuf:"bytes,8,opt,name=storage_policy_info,json=storagePolicyInfo,proto3" json:"storage_policy_info,omitempty"`
 	Users             []*User                `protobuf:"bytes,80,rep,name=users,proto3" json:"users,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
@@ -160,18 +161,18 @@ func (x *Group) GetName() string {
 	return ""
 }
 
-func (x *Group) GetMaxStorage() *wrapperspb.Int64Value {
+func (x *Group) GetMaxStorage() int64 {
 	if x != nil {
 		return x.MaxStorage
 	}
-	return nil
+	return 0
 }
 
-func (x *Group) GetSpeedLimit() *wrapperspb.Int64Value {
+func (x *Group) GetSpeedLimit() int64 {
 	if x != nil {
 		return x.SpeedLimit
 	}
-	return nil
+	return 0
 }
 
 func (x *Group) GetPermissions() []byte {
@@ -188,14 +189,14 @@ func (x *Group) GetSettings() *GroupSetting {
 	return nil
 }
 
-func (x *Group) GetStoragePolicyId() *wrapperspb.Int64Value {
+func (x *Group) GetStoragePolicyId() int64 {
 	if x != nil {
 		return x.StoragePolicyId
 	}
-	return nil
+	return 0
 }
 
-func (x *Group) GetStoragePolicyInfo() *StoragePolicyInfo {
+func (x *Group) GetStoragePolicyInfo() *v1.StoragePolicyInfo {
 	if x != nil {
 		return x.StoragePolicyInfo
 	}
@@ -693,7 +694,7 @@ var File_user_common_v1_entpb_proto protoreflect.FileDescriptor
 
 const file_user_common_v1_entpb_proto_rawDesc = "" +
 	"\n" +
-	"\x1auser/common/v1/entpb.proto\x12\x0euser.common.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1buser/common/v1/common.proto\"\xfc\x04\n" +
+	"\x1auser/common/v1/entpb.proto\x12\x0euser.common.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1buser/common/v1/common.proto\x1a\x16common/v1/common.proto\"\xa0\x04\n" +
 	"\x05Group\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -702,15 +703,15 @@ const file_user_common_v1_entpb_proto_rawDesc = "" +
 	"updated_at\x18e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x129\n" +
 	"\n" +
 	"deleted_at\x18f \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12<\n" +
-	"\vmax_storage\x18\x03 \x01(\v2\x1b.google.protobuf.Int64ValueR\n" +
-	"maxStorage\x12<\n" +
-	"\vspeed_limit\x18\x04 \x01(\v2\x1b.google.protobuf.Int64ValueR\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1f\n" +
+	"\vmax_storage\x18\x03 \x01(\x03R\n" +
+	"maxStorage\x12\x1f\n" +
+	"\vspeed_limit\x18\x04 \x01(\x03R\n" +
 	"speedLimit\x12 \n" +
 	"\vpermissions\x18\x05 \x01(\fR\vpermissions\x128\n" +
-	"\bsettings\x18\x06 \x01(\v2\x1c.user.common.v1.GroupSettingR\bsettings\x12G\n" +
-	"\x11storage_policy_id\x18\a \x01(\v2\x1b.google.protobuf.Int64ValueR\x0fstoragePolicyId\x12Q\n" +
-	"\x13storage_policy_info\x18\b \x01(\v2!.user.common.v1.StoragePolicyInfoR\x11storagePolicyInfo\x12*\n" +
+	"\bsettings\x18\x06 \x01(\v2\x1c.user.common.v1.GroupSettingR\bsettings\x12*\n" +
+	"\x11storage_policy_id\x18\a \x01(\x03R\x0fstoragePolicyId\x12L\n" +
+	"\x13storage_policy_info\x18\b \x01(\v2\x1c.common.v1.StoragePolicyInfoR\x11storagePolicyInfo\x12*\n" +
 	"\x05users\x18P \x03(\v2\x14.user.common.v1.UserR\x05users\"\x9d\x03\n" +
 	"\aPasskey\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
@@ -803,52 +804,48 @@ var file_user_common_v1_entpb_proto_goTypes = []any{
 	(*User)(nil),                   // 4: user.common.v1.User
 	(*DavAccount)(nil),             // 5: user.common.v1.DavAccount
 	(*timestamppb.Timestamp)(nil),  // 6: google.protobuf.Timestamp
-	(*wrapperspb.Int64Value)(nil),  // 7: google.protobuf.Int64Value
-	(*GroupSetting)(nil),           // 8: user.common.v1.GroupSetting
-	(*StoragePolicyInfo)(nil),      // 9: user.common.v1.StoragePolicyInfo
-	(*wrapperspb.StringValue)(nil), // 10: google.protobuf.StringValue
-	(*UserSetting)(nil),            // 11: user.common.v1.UserSetting
-	(*DavAccountProps)(nil),        // 12: user.common.v1.DavAccountProps
+	(*GroupSetting)(nil),           // 7: user.common.v1.GroupSetting
+	(*v1.StoragePolicyInfo)(nil),   // 8: common.v1.StoragePolicyInfo
+	(*wrapperspb.StringValue)(nil), // 9: google.protobuf.StringValue
+	(*UserSetting)(nil),            // 10: user.common.v1.UserSetting
+	(*DavAccountProps)(nil),        // 11: user.common.v1.DavAccountProps
 }
 var file_user_common_v1_entpb_proto_depIdxs = []int32{
 	6,  // 0: user.common.v1.Group.created_at:type_name -> google.protobuf.Timestamp
 	6,  // 1: user.common.v1.Group.updated_at:type_name -> google.protobuf.Timestamp
 	6,  // 2: user.common.v1.Group.deleted_at:type_name -> google.protobuf.Timestamp
-	7,  // 3: user.common.v1.Group.max_storage:type_name -> google.protobuf.Int64Value
-	7,  // 4: user.common.v1.Group.speed_limit:type_name -> google.protobuf.Int64Value
-	8,  // 5: user.common.v1.Group.settings:type_name -> user.common.v1.GroupSetting
-	7,  // 6: user.common.v1.Group.storage_policy_id:type_name -> google.protobuf.Int64Value
-	9,  // 7: user.common.v1.Group.storage_policy_info:type_name -> user.common.v1.StoragePolicyInfo
-	4,  // 8: user.common.v1.Group.users:type_name -> user.common.v1.User
-	6,  // 9: user.common.v1.Passkey.created_at:type_name -> google.protobuf.Timestamp
-	6,  // 10: user.common.v1.Passkey.updated_at:type_name -> google.protobuf.Timestamp
-	6,  // 11: user.common.v1.Passkey.deleted_at:type_name -> google.protobuf.Timestamp
-	6,  // 12: user.common.v1.Passkey.used_at:type_name -> google.protobuf.Timestamp
-	4,  // 13: user.common.v1.Passkey.users:type_name -> user.common.v1.User
-	6,  // 14: user.common.v1.Setting.created_at:type_name -> google.protobuf.Timestamp
-	6,  // 15: user.common.v1.Setting.updated_at:type_name -> google.protobuf.Timestamp
-	6,  // 16: user.common.v1.Setting.deleted_at:type_name -> google.protobuf.Timestamp
-	10, // 17: user.common.v1.Setting.value:type_name -> google.protobuf.StringValue
-	6,  // 18: user.common.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	6,  // 19: user.common.v1.User.updated_at:type_name -> google.protobuf.Timestamp
-	6,  // 20: user.common.v1.User.deleted_at:type_name -> google.protobuf.Timestamp
-	10, // 21: user.common.v1.User.password:type_name -> google.protobuf.StringValue
-	0,  // 22: user.common.v1.User.status:type_name -> user.common.v1.User.Status
-	10, // 23: user.common.v1.User.two_factor_secret:type_name -> google.protobuf.StringValue
-	10, // 24: user.common.v1.User.avatar:type_name -> google.protobuf.StringValue
-	11, // 25: user.common.v1.User.settings:type_name -> user.common.v1.UserSetting
-	1,  // 26: user.common.v1.User.group:type_name -> user.common.v1.Group
-	2,  // 27: user.common.v1.User.passkey:type_name -> user.common.v1.Passkey
-	5,  // 28: user.common.v1.User.dav_accounts:type_name -> user.common.v1.DavAccount
-	6,  // 29: user.common.v1.DavAccount.created_at:type_name -> google.protobuf.Timestamp
-	6,  // 30: user.common.v1.DavAccount.updated_at:type_name -> google.protobuf.Timestamp
-	6,  // 31: user.common.v1.DavAccount.deleted_at:type_name -> google.protobuf.Timestamp
-	12, // 32: user.common.v1.DavAccount.props:type_name -> user.common.v1.DavAccountProps
-	33, // [33:33] is the sub-list for method output_type
-	33, // [33:33] is the sub-list for method input_type
-	33, // [33:33] is the sub-list for extension type_name
-	33, // [33:33] is the sub-list for extension extendee
-	0,  // [0:33] is the sub-list for field type_name
+	7,  // 3: user.common.v1.Group.settings:type_name -> user.common.v1.GroupSetting
+	8,  // 4: user.common.v1.Group.storage_policy_info:type_name -> common.v1.StoragePolicyInfo
+	4,  // 5: user.common.v1.Group.users:type_name -> user.common.v1.User
+	6,  // 6: user.common.v1.Passkey.created_at:type_name -> google.protobuf.Timestamp
+	6,  // 7: user.common.v1.Passkey.updated_at:type_name -> google.protobuf.Timestamp
+	6,  // 8: user.common.v1.Passkey.deleted_at:type_name -> google.protobuf.Timestamp
+	6,  // 9: user.common.v1.Passkey.used_at:type_name -> google.protobuf.Timestamp
+	4,  // 10: user.common.v1.Passkey.users:type_name -> user.common.v1.User
+	6,  // 11: user.common.v1.Setting.created_at:type_name -> google.protobuf.Timestamp
+	6,  // 12: user.common.v1.Setting.updated_at:type_name -> google.protobuf.Timestamp
+	6,  // 13: user.common.v1.Setting.deleted_at:type_name -> google.protobuf.Timestamp
+	9,  // 14: user.common.v1.Setting.value:type_name -> google.protobuf.StringValue
+	6,  // 15: user.common.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	6,  // 16: user.common.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	6,  // 17: user.common.v1.User.deleted_at:type_name -> google.protobuf.Timestamp
+	9,  // 18: user.common.v1.User.password:type_name -> google.protobuf.StringValue
+	0,  // 19: user.common.v1.User.status:type_name -> user.common.v1.User.Status
+	9,  // 20: user.common.v1.User.two_factor_secret:type_name -> google.protobuf.StringValue
+	9,  // 21: user.common.v1.User.avatar:type_name -> google.protobuf.StringValue
+	10, // 22: user.common.v1.User.settings:type_name -> user.common.v1.UserSetting
+	1,  // 23: user.common.v1.User.group:type_name -> user.common.v1.Group
+	2,  // 24: user.common.v1.User.passkey:type_name -> user.common.v1.Passkey
+	5,  // 25: user.common.v1.User.dav_accounts:type_name -> user.common.v1.DavAccount
+	6,  // 26: user.common.v1.DavAccount.created_at:type_name -> google.protobuf.Timestamp
+	6,  // 27: user.common.v1.DavAccount.updated_at:type_name -> google.protobuf.Timestamp
+	6,  // 28: user.common.v1.DavAccount.deleted_at:type_name -> google.protobuf.Timestamp
+	11, // 29: user.common.v1.DavAccount.props:type_name -> user.common.v1.DavAccountProps
+	30, // [30:30] is the sub-list for method output_type
+	30, // [30:30] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_user_common_v1_entpb_proto_init() }

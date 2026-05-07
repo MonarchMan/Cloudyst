@@ -1,8 +1,8 @@
 package data
 
 import (
-	pb "api/api/user/common/v1"
-	ftypes "api/external/data/file"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"common/cache"
 	"common/constants"
@@ -124,13 +124,13 @@ func migrateAdminGroup(l *log.Helper, client *ent.Client, ctx context.Context) e
 		SetStoragePolicyID(1).
 		SetMaxStorage(1 * constants.TB). // 1 TB default storage
 		SetPermissions(permissions).
-		SetStoragePolicyInfo(&pb.StoragePolicyInfo{
-			Id:        1,
+		SetStoragePolicyInfo(&filedata.StoragePolicyInfo{
+			ID:        1,
 			Name:      "Default",
 			Type:      "Default",
 			IsPrivate: false,
 		}).
-		SetSettings(&pb.GroupSetting{
+		SetSettings(&userdata.GroupSetting{
 			SourceBatchSize:  1000,
 			Aria2BatchSize:   50,
 			MaxWalkedFiles:   100000,
@@ -162,13 +162,13 @@ func migrateUserGroup(l *log.Helper, client *ent.Client, ctx context.Context) er
 		SetStoragePolicyID(1).
 		SetMaxStorage(1 * constants.GB). // 1 GB default storage
 		SetPermissions(permissions).
-		SetStoragePolicyInfo(&pb.StoragePolicyInfo{
-			Id:        1,
+		SetStoragePolicyInfo(&filedata.StoragePolicyInfo{
+			ID:        1,
 			Name:      "Default",
 			Type:      "Default",
 			IsPrivate: false,
 		}).
-		SetSettings(&pb.GroupSetting{
+		SetSettings(&userdata.GroupSetting{
 			SourceBatchSize:  10,
 			Aria2BatchSize:   1,
 			MaxWalkedFiles:   100000,
@@ -198,7 +198,7 @@ func migrateAnonymousGroup(l *log.Helper, client *ent.Client, ctx context.Contex
 		SetName("Anonymous").
 		SetPermissions(permissions).
 		SetStoragePolicyInfo(nil).
-		SetSettings(&pb.GroupSetting{
+		SetSettings(&userdata.GroupSetting{
 			MaxWalkedFiles:   100000,
 			RedirectedSource: true,
 		}).
@@ -228,7 +228,7 @@ var patches = []Patch{
 				return fmt.Errorf("failed to query file_viewers setting: %w", err)
 			}
 
-			var fileViewers []ftypes.ViewerGroup
+			var fileViewers []filedata.ViewerGroup
 			if err := json.Unmarshal([]byte(fileViewersSetting.Value), &fileViewers); err != nil {
 				return fmt.Errorf("failed to unmarshal file_viewers setting: %w", err)
 			}
@@ -244,7 +244,7 @@ var patches = []Patch{
 			// 2.2 If not existed, add it
 			if !fileViewerExisted {
 				// Found existing archive viewer default setting
-				var defaultArchiveViewer ftypes.Viewer
+				var defaultArchiveViewer filedata.Viewer
 				for _, viewer := range defaultFileViewers[0].Viewers {
 					if viewer.ID == "archive" {
 						defaultArchiveViewer = viewer
@@ -319,7 +319,7 @@ var patches = []Patch{
 				return fmt.Errorf("failed to query file_viewers setting: %w", err)
 			}
 
-			var fileViewers []ftypes.ViewerGroup
+			var fileViewers []filedata.ViewerGroup
 			if err := json.Unmarshal([]byte(fileViewersSetting.Value), &fileViewers); err != nil {
 				return fmt.Errorf("failed to unmarshal file_viewers setting: %w", err)
 			}
@@ -335,7 +335,7 @@ var patches = []Patch{
 			// 2.2 If not existed, add it
 			if !fileViewerExisted {
 				// Found existing excalidraw viewer default setting
-				var defaultExcalidrawViewer ftypes.Viewer
+				var defaultExcalidrawViewer filedata.Viewer
 				for _, viewer := range defaultFileViewers[0].Viewers {
 					if viewer.ID == "excalidraw" {
 						defaultExcalidrawViewer = viewer

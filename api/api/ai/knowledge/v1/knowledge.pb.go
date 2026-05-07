@@ -69,27 +69,27 @@ func (x *SimpleRequest) GetId() string {
 	return ""
 }
 
-type BatchDeleteRequest struct {
+type MultiRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ids           []string               `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *BatchDeleteRequest) Reset() {
-	*x = BatchDeleteRequest{}
+func (x *MultiRequest) Reset() {
+	*x = MultiRequest{}
 	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *BatchDeleteRequest) String() string {
+func (x *MultiRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BatchDeleteRequest) ProtoMessage() {}
+func (*MultiRequest) ProtoMessage() {}
 
-func (x *BatchDeleteRequest) ProtoReflect() protoreflect.Message {
+func (x *MultiRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -101,12 +101,12 @@ func (x *BatchDeleteRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use BatchDeleteRequest.ProtoReflect.Descriptor instead.
-func (*BatchDeleteRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use MultiRequest.ProtoReflect.Descriptor instead.
+func (*MultiRequest) Descriptor() ([]byte, []int) {
 	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *BatchDeleteRequest) GetIds() []string {
+func (x *MultiRequest) GetIds() []string {
 	if x != nil {
 		return x.Ids
 	}
@@ -287,8 +287,7 @@ type ListKnowledgeRequest struct {
 	Pagination    *v1.PaginationArgs     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Status        v1.Status              `protobuf:"varint,3,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
-	IsMaster      bool                   `protobuf:"varint,4,opt,name=is_master,json=isMaster,proto3" json:"is_master,omitempty"`
-	IsPublic      bool                   `protobuf:"varint,5,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
+	IsPublic      bool                   `protobuf:"varint,4,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -342,13 +341,6 @@ func (x *ListKnowledgeRequest) GetStatus() v1.Status {
 		return x.Status
 	}
 	return v1.Status(0)
-}
-
-func (x *ListKnowledgeRequest) GetIsMaster() bool {
-	if x != nil {
-		return x.IsMaster
-	}
-	return false
 }
 
 func (x *ListKnowledgeRequest) GetIsPublic() bool {
@@ -410,6 +402,90 @@ func (x *ListKnowledgeResponse) GetKnowledge() []*GetKnowledgeResponse {
 	return nil
 }
 
+type KnowledgeStatsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DocumentCount int32                  `protobuf:"varint,1,opt,name=document_count,json=documentCount,proto3" json:"document_count,omitempty"`
+	Ready         int32                  `protobuf:"varint,2,opt,name=ready,proto3" json:"ready,omitempty"`
+	Processing    int32                  `protobuf:"varint,3,opt,name=processing,proto3" json:"processing,omitempty"`
+	Failed        int32                  `protobuf:"varint,4,opt,name=failed,proto3" json:"failed,omitempty"`
+	SuccessRate   float64                `protobuf:"fixed64,5,opt,name=success_rate,json=successRate,proto3" json:"success_rate,omitempty"`
+	TotalTokens   int64                  `protobuf:"varint,6,opt,name=total_tokens,json=totalTokens,proto3" json:"total_tokens,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KnowledgeStatsResponse) Reset() {
+	*x = KnowledgeStatsResponse{}
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KnowledgeStatsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KnowledgeStatsResponse) ProtoMessage() {}
+
+func (x *KnowledgeStatsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KnowledgeStatsResponse.ProtoReflect.Descriptor instead.
+func (*KnowledgeStatsResponse) Descriptor() ([]byte, []int) {
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *KnowledgeStatsResponse) GetDocumentCount() int32 {
+	if x != nil {
+		return x.DocumentCount
+	}
+	return 0
+}
+
+func (x *KnowledgeStatsResponse) GetReady() int32 {
+	if x != nil {
+		return x.Ready
+	}
+	return 0
+}
+
+func (x *KnowledgeStatsResponse) GetProcessing() int32 {
+	if x != nil {
+		return x.Processing
+	}
+	return 0
+}
+
+func (x *KnowledgeStatsResponse) GetFailed() int32 {
+	if x != nil {
+		return x.Failed
+	}
+	return 0
+}
+
+func (x *KnowledgeStatsResponse) GetSuccessRate() float64 {
+	if x != nil {
+		return x.SuccessRate
+	}
+	return 0
+}
+
+func (x *KnowledgeStatsResponse) GetTotalTokens() int64 {
+	if x != nil {
+		return x.TotalTokens
+	}
+	return 0
+}
+
 // Knowledge Document
 type UpsertDocumentRequest struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
@@ -426,7 +502,7 @@ type UpsertDocumentRequest struct {
 
 func (x *UpsertDocumentRequest) Reset() {
 	*x = UpsertDocumentRequest{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[6]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -438,7 +514,7 @@ func (x *UpsertDocumentRequest) String() string {
 func (*UpsertDocumentRequest) ProtoMessage() {}
 
 func (x *UpsertDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[6]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -451,7 +527,7 @@ func (x *UpsertDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertDocumentRequest.ProtoReflect.Descriptor instead.
 func (*UpsertDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{6}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpsertDocumentRequest) GetId() string {
@@ -503,6 +579,58 @@ func (x *UpsertDocumentRequest) GetStatus() v1.Status {
 	return v1.Status(0)
 }
 
+type UpsertDocumentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Document      *GetDocumentResponse   `protobuf:"bytes,1,opt,name=document,proto3" json:"document,omitempty"`
+	TaskId        string                 `protobuf:"bytes,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpsertDocumentResponse) Reset() {
+	*x = UpsertDocumentResponse{}
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpsertDocumentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpsertDocumentResponse) ProtoMessage() {}
+
+func (x *UpsertDocumentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpsertDocumentResponse.ProtoReflect.Descriptor instead.
+func (*UpsertDocumentResponse) Descriptor() ([]byte, []int) {
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *UpsertDocumentResponse) GetDocument() *GetDocumentResponse {
+	if x != nil {
+		return x.Document
+	}
+	return nil
+}
+
+func (x *UpsertDocumentResponse) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
 type BatchCreateDocumentRequest struct {
 	state         protoimpl.MessageState   `protogen:"open.v1"`
 	Documents     []*UpsertDocumentRequest `protobuf:"bytes,1,rep,name=documents,proto3" json:"documents,omitempty"`
@@ -512,7 +640,7 @@ type BatchCreateDocumentRequest struct {
 
 func (x *BatchCreateDocumentRequest) Reset() {
 	*x = BatchCreateDocumentRequest{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[7]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -524,7 +652,7 @@ func (x *BatchCreateDocumentRequest) String() string {
 func (*BatchCreateDocumentRequest) ProtoMessage() {}
 
 func (x *BatchCreateDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[7]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -537,7 +665,7 @@ func (x *BatchCreateDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateDocumentRequest.ProtoReflect.Descriptor instead.
 func (*BatchCreateDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{7}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *BatchCreateDocumentRequest) GetDocuments() []*UpsertDocumentRequest {
@@ -551,13 +679,14 @@ type BatchCreateDocumentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Documents     []*GetDocumentResponse `protobuf:"bytes,1,rep,name=documents,proto3" json:"documents,omitempty"`
 	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	TaskId        string                 `protobuf:"bytes,3,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *BatchCreateDocumentResponse) Reset() {
 	*x = BatchCreateDocumentResponse{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[8]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -569,7 +698,7 @@ func (x *BatchCreateDocumentResponse) String() string {
 func (*BatchCreateDocumentResponse) ProtoMessage() {}
 
 func (x *BatchCreateDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[8]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -582,7 +711,7 @@ func (x *BatchCreateDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchCreateDocumentResponse.ProtoReflect.Descriptor instead.
 func (*BatchCreateDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{8}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *BatchCreateDocumentResponse) GetDocuments() []*GetDocumentResponse {
@@ -599,6 +728,125 @@ func (x *BatchCreateDocumentResponse) GetTotal() int64 {
 	return 0
 }
 
+func (x *BatchCreateDocumentResponse) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+type ReindexDocumentResponse struct {
+	state         protoimpl.MessageState       `protogen:"open.v1"`
+	Progress      *GetDocumentProgressResponse `protobuf:"bytes,1,opt,name=progress,proto3" json:"progress,omitempty"`
+	TaskId        string                       `protobuf:"bytes,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReindexDocumentResponse) Reset() {
+	*x = ReindexDocumentResponse{}
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReindexDocumentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReindexDocumentResponse) ProtoMessage() {}
+
+func (x *ReindexDocumentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReindexDocumentResponse.ProtoReflect.Descriptor instead.
+func (*ReindexDocumentResponse) Descriptor() ([]byte, []int) {
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ReindexDocumentResponse) GetProgress() *GetDocumentProgressResponse {
+	if x != nil {
+		return x.Progress
+	}
+	return nil
+}
+
+func (x *ReindexDocumentResponse) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+type BatchReindexDocumentResponse struct {
+	state         protoimpl.MessageState         `protogen:"open.v1"`
+	Progresses    []*GetDocumentProgressResponse `protobuf:"bytes,1,rep,name=progresses,proto3" json:"progresses,omitempty"`
+	Total         int64                          `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	TaskId        string                         `protobuf:"bytes,3,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BatchReindexDocumentResponse) Reset() {
+	*x = BatchReindexDocumentResponse{}
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BatchReindexDocumentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BatchReindexDocumentResponse) ProtoMessage() {}
+
+func (x *BatchReindexDocumentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BatchReindexDocumentResponse.ProtoReflect.Descriptor instead.
+func (*BatchReindexDocumentResponse) Descriptor() ([]byte, []int) {
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *BatchReindexDocumentResponse) GetProgresses() []*GetDocumentProgressResponse {
+	if x != nil {
+		return x.Progresses
+	}
+	return nil
+}
+
+func (x *BatchReindexDocumentResponse) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *BatchReindexDocumentResponse) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
 type GetDocumentResponse struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -608,17 +856,18 @@ type GetDocumentResponse struct {
 	Size             int64                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
 	Tokens           int64                  `protobuf:"varint,6,opt,name=tokens,proto3" json:"tokens,omitempty"`
 	SegmentMaxTokens int64                  `protobuf:"varint,7,opt,name=segment_max_tokens,json=segmentMaxTokens,proto3" json:"segment_max_tokens,omitempty"`
-	// int64 retrieval_count = 8;
-	Status        v1.Status              `protobuf:"varint,9,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Progress         string                 `protobuf:"bytes,8,opt,name=Progress,proto3" json:"Progress,omitempty"`
+	Status           v1.Status              `protobuf:"varint,9,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
+	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Version          string                 `protobuf:"bytes,12,opt,name=version,proto3" json:"version,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *GetDocumentResponse) Reset() {
 	*x = GetDocumentResponse{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[9]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -630,7 +879,7 @@ func (x *GetDocumentResponse) String() string {
 func (*GetDocumentResponse) ProtoMessage() {}
 
 func (x *GetDocumentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[9]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -643,7 +892,7 @@ func (x *GetDocumentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDocumentResponse.ProtoReflect.Descriptor instead.
 func (*GetDocumentResponse) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{9}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetDocumentResponse) GetId() string {
@@ -695,6 +944,13 @@ func (x *GetDocumentResponse) GetSegmentMaxTokens() int64 {
 	return 0
 }
 
+func (x *GetDocumentResponse) GetProgress() string {
+	if x != nil {
+		return x.Progress
+	}
+	return ""
+}
+
 func (x *GetDocumentResponse) GetStatus() v1.Status {
 	if x != nil {
 		return x.Status
@@ -716,19 +972,28 @@ func (x *GetDocumentResponse) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *GetDocumentResponse) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
 type ListDocumentsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Pagination    *v1.PaginationArgs     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	KnowledgeId   string                 `protobuf:"bytes,2,opt,name=knowledge_id,json=knowledgeId,proto3" json:"knowledge_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Status        v1.Status              `protobuf:"varint,4,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
+	Progress      string                 `protobuf:"bytes,5,opt,name=progress,proto3" json:"progress,omitempty"`
+	PathKeyword   string                 `protobuf:"bytes,6,opt,name=path_keyword,json=pathKeyword,proto3" json:"path_keyword,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListDocumentsRequest) Reset() {
 	*x = ListDocumentsRequest{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[10]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -740,7 +1005,7 @@ func (x *ListDocumentsRequest) String() string {
 func (*ListDocumentsRequest) ProtoMessage() {}
 
 func (x *ListDocumentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[10]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -753,7 +1018,7 @@ func (x *ListDocumentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDocumentsRequest.ProtoReflect.Descriptor instead.
 func (*ListDocumentsRequest) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{10}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListDocumentsRequest) GetPagination() *v1.PaginationArgs {
@@ -784,6 +1049,20 @@ func (x *ListDocumentsRequest) GetStatus() v1.Status {
 	return v1.Status(0)
 }
 
+func (x *ListDocumentsRequest) GetProgress() string {
+	if x != nil {
+		return x.Progress
+	}
+	return ""
+}
+
+func (x *ListDocumentsRequest) GetPathKeyword() string {
+	if x != nil {
+		return x.PathKeyword
+	}
+	return ""
+}
+
 type ListDocumentsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Pagination    *v1.PaginationResults  `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -794,7 +1073,7 @@ type ListDocumentsResponse struct {
 
 func (x *ListDocumentsResponse) Reset() {
 	*x = ListDocumentsResponse{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[11]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -806,7 +1085,7 @@ func (x *ListDocumentsResponse) String() string {
 func (*ListDocumentsResponse) ProtoMessage() {}
 
 func (x *ListDocumentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[11]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -819,7 +1098,7 @@ func (x *ListDocumentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDocumentsResponse.ProtoReflect.Descriptor instead.
 func (*ListDocumentsResponse) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{11}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListDocumentsResponse) GetPagination() *v1.PaginationResults {
@@ -836,6 +1115,66 @@ func (x *ListDocumentsResponse) GetDocuments() []*GetDocumentResponse {
 	return nil
 }
 
+type GetDocumentProgressResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Progress      string                 `protobuf:"bytes,3,opt,name=progress,proto3" json:"progress,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDocumentProgressResponse) Reset() {
+	*x = GetDocumentProgressResponse{}
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDocumentProgressResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDocumentProgressResponse) ProtoMessage() {}
+
+func (x *GetDocumentProgressResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDocumentProgressResponse.ProtoReflect.Descriptor instead.
+func (*GetDocumentProgressResponse) Descriptor() ([]byte, []int) {
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetDocumentProgressResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GetDocumentProgressResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *GetDocumentProgressResponse) GetProgress() string {
+	if x != nil {
+		return x.Progress
+	}
+	return ""
+}
+
 // rpc
 type SearchRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -847,7 +1186,7 @@ type SearchRequest struct {
 
 func (x *SearchRequest) Reset() {
 	*x = SearchRequest{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[12]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -859,7 +1198,7 @@ func (x *SearchRequest) String() string {
 func (*SearchRequest) ProtoMessage() {}
 
 func (x *SearchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[12]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -872,7 +1211,7 @@ func (x *SearchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchRequest.ProtoReflect.Descriptor instead.
 func (*SearchRequest) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{12}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *SearchRequest) GetQuery() string {
@@ -899,7 +1238,7 @@ type SearchResponse struct {
 
 func (x *SearchResponse) Reset() {
 	*x = SearchResponse{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[13]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -911,7 +1250,7 @@ func (x *SearchResponse) String() string {
 func (*SearchResponse) ProtoMessage() {}
 
 func (x *SearchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[13]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -924,7 +1263,7 @@ func (x *SearchResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResponse.ProtoReflect.Descriptor instead.
 func (*SearchResponse) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{13}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SearchResponse) GetResults() []*SearchResult {
@@ -956,7 +1295,7 @@ type SearchResult struct {
 
 func (x *SearchResult) Reset() {
 	*x = SearchResult{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[14]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -968,7 +1307,7 @@ func (x *SearchResult) String() string {
 func (*SearchResult) ProtoMessage() {}
 
 func (x *SearchResult) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[14]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -981,7 +1320,7 @@ func (x *SearchResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResult.ProtoReflect.Descriptor instead.
 func (*SearchResult) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{14}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SearchResult) GetDocId() string {
@@ -1043,7 +1382,7 @@ type CopyDocumentRequest struct {
 
 func (x *CopyDocumentRequest) Reset() {
 	*x = CopyDocumentRequest{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[15]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1055,7 +1394,7 @@ func (x *CopyDocumentRequest) String() string {
 func (*CopyDocumentRequest) ProtoMessage() {}
 
 func (x *CopyDocumentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[15]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1068,7 +1407,7 @@ func (x *CopyDocumentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CopyDocumentRequest.ProtoReflect.Descriptor instead.
 func (*CopyDocumentRequest) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{15}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CopyDocumentRequest) GetDocId() string {
@@ -1097,7 +1436,7 @@ type CreateMasterKnowledgeRequest struct {
 
 func (x *CreateMasterKnowledgeRequest) Reset() {
 	*x = CreateMasterKnowledgeRequest{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[16]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1109,7 +1448,7 @@ func (x *CreateMasterKnowledgeRequest) String() string {
 func (*CreateMasterKnowledgeRequest) ProtoMessage() {}
 
 func (x *CreateMasterKnowledgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[16]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1122,7 +1461,7 @@ func (x *CreateMasterKnowledgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMasterKnowledgeRequest.ProtoReflect.Descriptor instead.
 func (*CreateMasterKnowledgeRequest) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{16}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CreateMasterKnowledgeRequest) GetUserId() int64 {
@@ -1162,7 +1501,7 @@ type GetMasterKnowledgeRequest struct {
 
 func (x *GetMasterKnowledgeRequest) Reset() {
 	*x = GetMasterKnowledgeRequest{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[17]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1174,7 +1513,7 @@ func (x *GetMasterKnowledgeRequest) String() string {
 func (*GetMasterKnowledgeRequest) ProtoMessage() {}
 
 func (x *GetMasterKnowledgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[17]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1187,7 +1526,7 @@ func (x *GetMasterKnowledgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMasterKnowledgeRequest.ProtoReflect.Descriptor instead.
 func (*GetMasterKnowledgeRequest) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{17}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *GetMasterKnowledgeRequest) GetUserId() int64 {
@@ -1208,7 +1547,7 @@ type ChangeDocumentOwnerRequest struct {
 
 func (x *ChangeDocumentOwnerRequest) Reset() {
 	*x = ChangeDocumentOwnerRequest{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[18]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1220,7 +1559,7 @@ func (x *ChangeDocumentOwnerRequest) String() string {
 func (*ChangeDocumentOwnerRequest) ProtoMessage() {}
 
 func (x *ChangeDocumentOwnerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[18]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1233,7 +1572,7 @@ func (x *ChangeDocumentOwnerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChangeDocumentOwnerRequest.ProtoReflect.Descriptor instead.
 func (*ChangeDocumentOwnerRequest) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{18}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ChangeDocumentOwnerRequest) GetDocId() string {
@@ -1268,7 +1607,7 @@ type GetSupportTextParseResponse struct {
 
 func (x *GetSupportTextParseResponse) Reset() {
 	*x = GetSupportTextParseResponse{}
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[19]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1280,7 +1619,7 @@ func (x *GetSupportTextParseResponse) String() string {
 func (*GetSupportTextParseResponse) ProtoMessage() {}
 
 func (x *GetSupportTextParseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[19]
+	mi := &file_ai_knowledge_v1_knowledge_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1293,7 +1632,7 @@ func (x *GetSupportTextParseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSupportTextParseResponse.ProtoReflect.Descriptor instead.
 func (*GetSupportTextParseResponse) Descriptor() ([]byte, []int) {
-	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{19}
+	return file_ai_knowledge_v1_knowledge_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GetSupportTextParseResponse) GetTypes() []string {
@@ -1316,8 +1655,8 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\n" +
 	"\x1fai/knowledge/v1/knowledge.proto\x12\x0fai.knowledge.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x16common/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x1f\n" +
 	"\rSimpleRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"&\n" +
-	"\x12BatchDeleteRequest\x12\x10\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\" \n" +
+	"\fMultiRequest\x12\x10\n" +
 	"\x03ids\x18\x01 \x03(\tR\x03ids\"\xa6\x01\n" +
 	"\x16UpsertKnowledgeRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
@@ -1334,20 +1673,28 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xca\x01\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xad\x01\n" +
 	"\x14ListKnowledgeRequest\x129\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x19.common.v1.PaginationArgsR\n" +
 	"pagination\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12)\n" +
 	"\x06status\x18\x03 \x01(\x0e2\x11.common.v1.StatusR\x06status\x12\x1b\n" +
-	"\tis_master\x18\x04 \x01(\bR\bisMaster\x12\x1b\n" +
-	"\tis_public\x18\x05 \x01(\bR\bisPublic\"\x9a\x01\n" +
+	"\tis_public\x18\x04 \x01(\bR\bisPublic\"\x9a\x01\n" +
 	"\x15ListKnowledgeResponse\x12<\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
 	"pagination\x12C\n" +
-	"\tknowledge\x18\x02 \x03(\v2%.ai.knowledge.v1.GetKnowledgeResponseR\tknowledge\"\xe3\x01\n" +
+	"\tknowledge\x18\x02 \x03(\v2%.ai.knowledge.v1.GetKnowledgeResponseR\tknowledge\"\xd3\x01\n" +
+	"\x16KnowledgeStatsResponse\x12%\n" +
+	"\x0edocument_count\x18\x01 \x01(\x05R\rdocumentCount\x12\x14\n" +
+	"\x05ready\x18\x02 \x01(\x05R\x05ready\x12\x1e\n" +
+	"\n" +
+	"processing\x18\x03 \x01(\x05R\n" +
+	"processing\x12\x16\n" +
+	"\x06failed\x18\x04 \x01(\x05R\x06failed\x12!\n" +
+	"\fsuccess_rate\x18\x05 \x01(\x01R\vsuccessRate\x12!\n" +
+	"\ftotal_tokens\x18\x06 \x01(\x03R\vtotalTokens\"\xe3\x01\n" +
 	"\x15UpsertDocumentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fknowledge_id\x18\x02 \x01(\tR\vknowledgeId\x12\x12\n" +
@@ -1355,12 +1702,25 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\x03url\x18\x04 \x01(\tR\x03url\x12\x18\n" +
 	"\aversion\x18\x05 \x01(\tR\aversion\x12,\n" +
 	"\x12segment_max_tokens\x18\x06 \x01(\x01R\x10segmentMaxTokens\x12)\n" +
-	"\x06status\x18\a \x01(\x0e2\x11.common.v1.StatusR\x06status\"b\n" +
+	"\x06status\x18\a \x01(\x0e2\x11.common.v1.StatusR\x06status\"s\n" +
+	"\x16UpsertDocumentResponse\x12@\n" +
+	"\bdocument\x18\x01 \x01(\v2$.ai.knowledge.v1.GetDocumentResponseR\bdocument\x12\x17\n" +
+	"\atask_id\x18\x02 \x01(\tR\x06taskId\"b\n" +
 	"\x1aBatchCreateDocumentRequest\x12D\n" +
-	"\tdocuments\x18\x01 \x03(\v2&.ai.knowledge.v1.UpsertDocumentRequestR\tdocuments\"w\n" +
+	"\tdocuments\x18\x01 \x03(\v2&.ai.knowledge.v1.UpsertDocumentRequestR\tdocuments\"\x90\x01\n" +
 	"\x1bBatchCreateDocumentResponse\x12B\n" +
 	"\tdocuments\x18\x01 \x03(\v2$.ai.knowledge.v1.GetDocumentResponseR\tdocuments\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total\"\xe9\x02\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x17\n" +
+	"\atask_id\x18\x03 \x01(\tR\x06taskId\"|\n" +
+	"\x17ReindexDocumentResponse\x12H\n" +
+	"\bprogress\x18\x01 \x01(\v2,.ai.knowledge.v1.GetDocumentProgressResponseR\bprogress\x12\x17\n" +
+	"\atask_id\x18\x02 \x01(\tR\x06taskId\"\x9b\x01\n" +
+	"\x1cBatchReindexDocumentResponse\x12L\n" +
+	"\n" +
+	"progresses\x18\x01 \x03(\v2,.ai.knowledge.v1.GetDocumentProgressResponseR\n" +
+	"progresses\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x17\n" +
+	"\atask_id\x18\x03 \x01(\tR\x06taskId\"\x9f\x03\n" +
 	"\x13GetDocumentResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fknowledge_id\x18\x02 \x01(\tR\vknowledgeId\x12\x12\n" +
@@ -1368,25 +1728,33 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\x03url\x18\x04 \x01(\tR\x03url\x12\x12\n" +
 	"\x04size\x18\x05 \x01(\x03R\x04size\x12\x16\n" +
 	"\x06tokens\x18\x06 \x01(\x03R\x06tokens\x12,\n" +
-	"\x12segment_max_tokens\x18\a \x01(\x03R\x10segmentMaxTokens\x12)\n" +
+	"\x12segment_max_tokens\x18\a \x01(\x03R\x10segmentMaxTokens\x12\x1a\n" +
+	"\bProgress\x18\b \x01(\tR\bProgress\x12)\n" +
 	"\x06status\x18\t \x01(\x0e2\x11.common.v1.StatusR\x06status\x129\n" +
 	"\n" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb3\x01\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x18\n" +
+	"\aversion\x18\f \x01(\tR\aversion\"\xf2\x01\n" +
 	"\x14ListDocumentsRequest\x129\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x19.common.v1.PaginationArgsR\n" +
 	"pagination\x12!\n" +
 	"\fknowledge_id\x18\x02 \x01(\tR\vknowledgeId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12)\n" +
-	"\x06status\x18\x04 \x01(\x0e2\x11.common.v1.StatusR\x06status\"\x99\x01\n" +
+	"\x06status\x18\x04 \x01(\x0e2\x11.common.v1.StatusR\x06status\x12\x1a\n" +
+	"\bprogress\x18\x05 \x01(\tR\bprogress\x12!\n" +
+	"\fpath_keyword\x18\x06 \x01(\tR\vpathKeyword\"\x99\x01\n" +
 	"\x15ListDocumentsResponse\x12<\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
 	"pagination\x12B\n" +
-	"\tdocuments\x18\x02 \x03(\v2$.ai.knowledge.v1.GetDocumentResponseR\tdocuments\"=\n" +
+	"\tdocuments\x18\x02 \x03(\v2$.ai.knowledge.v1.GetDocumentResponseR\tdocuments\"]\n" +
+	"\x1bGetDocumentProgressResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
+	"\bprogress\x18\x03 \x01(\tR\bprogress\"=\n" +
 	"\rSearchRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\x12\x16\n" +
 	"\x06offset\x18\x02 \x01(\x05R\x06offset\"_\n" +
@@ -1418,20 +1786,24 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\x10new_knowledge_id\x18\x03 \x01(\tR\x0enewKnowledgeId\"W\n" +
 	"\x1bGetSupportTextParseResponse\x12\x14\n" +
 	"\x05types\x18\x01 \x03(\tR\x05types\x12\"\n" +
-	"\rmax_file_size\x18\x02 \x01(\x03R\vmaxFileSize2\xc0\x10\n" +
+	"\rmax_file_size\x18\x02 \x01(\x03R\vmaxFileSize2\xf7\x14\n" +
 	"\tKnowledge\x12{\n" +
 	"\x0fCreateKnowledge\x12'.ai.knowledge.v1.UpsertKnowledgeRequest\x1a%.ai.knowledge.v1.GetKnowledgeResponse\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/ai/knowledge\x12\x80\x01\n" +
 	"\x0fUpdateKnowledge\x12'.ai.knowledge.v1.UpsertKnowledgeRequest\x1a%.ai.knowledge.v1.GetKnowledgeResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\x1a\x12/ai/knowledge/{id}\x12q\n" +
 	"\fGetKnowledge\x12\x1e.ai.knowledge.v1.SimpleRequest\x1a%.ai.knowledge.v1.GetKnowledgeResponse\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/ai/knowledge/{id}\x12e\n" +
-	"\x0fDeleteKnowledge\x12\x1e.ai.knowledge.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1a\x82\xd3\xe4\x93\x02\x14*\x12/ai/knowledge/{id}\x12z\n" +
-	"\rListKnowledge\x12%.ai.knowledge.v1.ListKnowledgeRequest\x1a&.ai.knowledge.v1.ListKnowledgeResponse\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/ai/knowledge/list\x12\x81\x01\n" +
-	"\x0eCreateDocument\x12&.ai.knowledge.v1.UpsertDocumentRequest\x1a$.ai.knowledge.v1.GetDocumentResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/ai/knowledge/document\x12\x9b\x01\n" +
-	"\x14BatchCreateDocuments\x12+.ai.knowledge.v1.BatchCreateDocumentRequest\x1a,.ai.knowledge.v1.BatchCreateDocumentResponse\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/ai/knowledge/document/create\x12\x86\x01\n" +
-	"\x0eUpdateDocument\x12&.ai.knowledge.v1.UpsertDocumentRequest\x1a$.ai.knowledge.v1.GetDocumentResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\x1a\x1b/ai/knowledge/document/{id}\x12x\n" +
+	"\x0fDeleteKnowledge\x12\x1e.ai.knowledge.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1a\x82\xd3\xe4\x93\x02\x14*\x12/ai/knowledge/{id}\x12}\n" +
+	"\rListKnowledge\x12%.ai.knowledge.v1.ListKnowledgeRequest\x1a&.ai.knowledge.v1.ListKnowledgeResponse\"\x1d\x82\xd3\xe4\x93\x02\x17:\x01*\"\x12/ai/knowledge/list\x12{\n" +
+	"\x0eKnowledgeStats\x12\x1e.ai.knowledge.v1.SimpleRequest\x1a'.ai.knowledge.v1.KnowledgeStatsResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/ai/knowledge/{id}/stats\x12\x84\x01\n" +
+	"\x0eCreateDocument\x12&.ai.knowledge.v1.UpsertDocumentRequest\x1a'.ai.knowledge.v1.UpsertDocumentResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/ai/knowledge/document\x12\x9b\x01\n" +
+	"\x14BatchCreateDocuments\x12+.ai.knowledge.v1.BatchCreateDocumentRequest\x1a,.ai.knowledge.v1.BatchCreateDocumentResponse\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/ai/knowledge/document/create\x12\x89\x01\n" +
+	"\x0eUpdateDocument\x12&.ai.knowledge.v1.UpsertDocumentRequest\x1a'.ai.knowledge.v1.UpsertDocumentResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\x1a\x1b/ai/knowledge/document/{id}\x12x\n" +
 	"\vGetDocument\x12\x1e.ai.knowledge.v1.SimpleRequest\x1a$.ai.knowledge.v1.GetDocumentResponse\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/ai/knowledge/document/{id}\x12m\n" +
-	"\x0eDeleteDocument\x12\x1e.ai.knowledge.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"#\x82\xd3\xe4\x93\x02\x1d*\x1b/ai/knowledge/document/{id}\x12}\n" +
-	"\x14BatchDeleteDocuments\x12#.ai.knowledge.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/ai/knowledge/document/delete\x12\x83\x01\n" +
-	"\rListDocuments\x12%.ai.knowledge.v1.ListDocumentsRequest\x1a&.ai.knowledge.v1.ListDocumentsResponse\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/ai/knowledge/document/list\x12I\n" +
+	"\x0eDeleteDocument\x12\x1e.ai.knowledge.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"#\x82\xd3\xe4\x93\x02\x1d*\x1b/ai/knowledge/document/{id}\x12w\n" +
+	"\x14BatchDeleteDocuments\x12\x1d.ai.knowledge.v1.MultiRequest\x1a\x16.google.protobuf.Empty\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/ai/knowledge/document/delete\x12\x86\x01\n" +
+	"\rListDocuments\x12%.ai.knowledge.v1.ListDocumentsRequest\x1a&.ai.knowledge.v1.ListDocumentsResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/ai/knowledge/document/list\x12\x91\x01\n" +
+	"\x13GetDocumentProgress\x12\x1e.ai.knowledge.v1.SimpleRequest\x1a,.ai.knowledge.v1.GetDocumentProgressResponse\",\x82\xd3\xe4\x93\x02&\x12$/ai/knowledge/document/progress/{id}\x12\x8b\x01\n" +
+	"\x0fReindexDocument\x12\x1e.ai.knowledge.v1.SimpleRequest\x1a(.ai.knowledge.v1.ReindexDocumentResponse\".\x82\xd3\xe4\x93\x02(:\x01*\"#/ai/knowledge/document/{id}/reindex\x12\x8f\x01\n" +
+	"\x14BatchReindexDocument\x12\x1d.ai.knowledge.v1.MultiRequest\x1a-.ai.knowledge.v1.BatchReindexDocumentResponse\")\x82\xd3\xe4\x93\x02#:\x01*\"\x1e/ai/knowledge/document/reindex\x12I\n" +
 	"\x06Search\x12\x1e.ai.knowledge.v1.SearchRequest\x1a\x1f.ai.knowledge.v1.SearchResponse\x12Z\n" +
 	"\fCopyDocument\x12$.ai.knowledge.v1.CopyDocumentRequest\x1a$.ai.knowledge.v1.GetDocumentResponse\x12m\n" +
 	"\x15CreateMasterKnowledge\x12-.ai.knowledge.v1.CreateMasterKnowledgeRequest\x1a%.ai.knowledge.v1.GetKnowledgeResponse\x12g\n" +
@@ -1452,94 +1824,110 @@ func file_ai_knowledge_v1_knowledge_proto_rawDescGZIP() []byte {
 	return file_ai_knowledge_v1_knowledge_proto_rawDescData
 }
 
-var file_ai_knowledge_v1_knowledge_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_ai_knowledge_v1_knowledge_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_ai_knowledge_v1_knowledge_proto_goTypes = []any{
 	(*SimpleRequest)(nil),                // 0: ai.knowledge.v1.SimpleRequest
-	(*BatchDeleteRequest)(nil),           // 1: ai.knowledge.v1.BatchDeleteRequest
+	(*MultiRequest)(nil),                 // 1: ai.knowledge.v1.MultiRequest
 	(*UpsertKnowledgeRequest)(nil),       // 2: ai.knowledge.v1.UpsertKnowledgeRequest
 	(*GetKnowledgeResponse)(nil),         // 3: ai.knowledge.v1.GetKnowledgeResponse
 	(*ListKnowledgeRequest)(nil),         // 4: ai.knowledge.v1.ListKnowledgeRequest
 	(*ListKnowledgeResponse)(nil),        // 5: ai.knowledge.v1.ListKnowledgeResponse
-	(*UpsertDocumentRequest)(nil),        // 6: ai.knowledge.v1.UpsertDocumentRequest
-	(*BatchCreateDocumentRequest)(nil),   // 7: ai.knowledge.v1.BatchCreateDocumentRequest
-	(*BatchCreateDocumentResponse)(nil),  // 8: ai.knowledge.v1.BatchCreateDocumentResponse
-	(*GetDocumentResponse)(nil),          // 9: ai.knowledge.v1.GetDocumentResponse
-	(*ListDocumentsRequest)(nil),         // 10: ai.knowledge.v1.ListDocumentsRequest
-	(*ListDocumentsResponse)(nil),        // 11: ai.knowledge.v1.ListDocumentsResponse
-	(*SearchRequest)(nil),                // 12: ai.knowledge.v1.SearchRequest
-	(*SearchResponse)(nil),               // 13: ai.knowledge.v1.SearchResponse
-	(*SearchResult)(nil),                 // 14: ai.knowledge.v1.SearchResult
-	(*CopyDocumentRequest)(nil),          // 15: ai.knowledge.v1.CopyDocumentRequest
-	(*CreateMasterKnowledgeRequest)(nil), // 16: ai.knowledge.v1.CreateMasterKnowledgeRequest
-	(*GetMasterKnowledgeRequest)(nil),    // 17: ai.knowledge.v1.GetMasterKnowledgeRequest
-	(*ChangeDocumentOwnerRequest)(nil),   // 18: ai.knowledge.v1.ChangeDocumentOwnerRequest
-	(*GetSupportTextParseResponse)(nil),  // 19: ai.knowledge.v1.GetSupportTextParseResponse
-	(v1.Status)(0),                       // 20: common.v1.Status
-	(*timestamppb.Timestamp)(nil),        // 21: google.protobuf.Timestamp
-	(*v1.PaginationArgs)(nil),            // 22: common.v1.PaginationArgs
-	(*v1.PaginationResults)(nil),         // 23: common.v1.PaginationResults
-	(*emptypb.Empty)(nil),                // 24: google.protobuf.Empty
+	(*KnowledgeStatsResponse)(nil),       // 6: ai.knowledge.v1.KnowledgeStatsResponse
+	(*UpsertDocumentRequest)(nil),        // 7: ai.knowledge.v1.UpsertDocumentRequest
+	(*UpsertDocumentResponse)(nil),       // 8: ai.knowledge.v1.UpsertDocumentResponse
+	(*BatchCreateDocumentRequest)(nil),   // 9: ai.knowledge.v1.BatchCreateDocumentRequest
+	(*BatchCreateDocumentResponse)(nil),  // 10: ai.knowledge.v1.BatchCreateDocumentResponse
+	(*ReindexDocumentResponse)(nil),      // 11: ai.knowledge.v1.ReindexDocumentResponse
+	(*BatchReindexDocumentResponse)(nil), // 12: ai.knowledge.v1.BatchReindexDocumentResponse
+	(*GetDocumentResponse)(nil),          // 13: ai.knowledge.v1.GetDocumentResponse
+	(*ListDocumentsRequest)(nil),         // 14: ai.knowledge.v1.ListDocumentsRequest
+	(*ListDocumentsResponse)(nil),        // 15: ai.knowledge.v1.ListDocumentsResponse
+	(*GetDocumentProgressResponse)(nil),  // 16: ai.knowledge.v1.GetDocumentProgressResponse
+	(*SearchRequest)(nil),                // 17: ai.knowledge.v1.SearchRequest
+	(*SearchResponse)(nil),               // 18: ai.knowledge.v1.SearchResponse
+	(*SearchResult)(nil),                 // 19: ai.knowledge.v1.SearchResult
+	(*CopyDocumentRequest)(nil),          // 20: ai.knowledge.v1.CopyDocumentRequest
+	(*CreateMasterKnowledgeRequest)(nil), // 21: ai.knowledge.v1.CreateMasterKnowledgeRequest
+	(*GetMasterKnowledgeRequest)(nil),    // 22: ai.knowledge.v1.GetMasterKnowledgeRequest
+	(*ChangeDocumentOwnerRequest)(nil),   // 23: ai.knowledge.v1.ChangeDocumentOwnerRequest
+	(*GetSupportTextParseResponse)(nil),  // 24: ai.knowledge.v1.GetSupportTextParseResponse
+	(v1.Status)(0),                       // 25: common.v1.Status
+	(*timestamppb.Timestamp)(nil),        // 26: google.protobuf.Timestamp
+	(*v1.PaginationArgs)(nil),            // 27: common.v1.PaginationArgs
+	(*v1.PaginationResults)(nil),         // 28: common.v1.PaginationResults
+	(*emptypb.Empty)(nil),                // 29: google.protobuf.Empty
 }
 var file_ai_knowledge_v1_knowledge_proto_depIdxs = []int32{
-	20, // 0: ai.knowledge.v1.UpsertKnowledgeRequest.status:type_name -> common.v1.Status
-	21, // 1: ai.knowledge.v1.GetKnowledgeResponse.created_at:type_name -> google.protobuf.Timestamp
-	21, // 2: ai.knowledge.v1.GetKnowledgeResponse.updated_at:type_name -> google.protobuf.Timestamp
-	22, // 3: ai.knowledge.v1.ListKnowledgeRequest.pagination:type_name -> common.v1.PaginationArgs
-	20, // 4: ai.knowledge.v1.ListKnowledgeRequest.status:type_name -> common.v1.Status
-	23, // 5: ai.knowledge.v1.ListKnowledgeResponse.pagination:type_name -> common.v1.PaginationResults
+	25, // 0: ai.knowledge.v1.UpsertKnowledgeRequest.status:type_name -> common.v1.Status
+	26, // 1: ai.knowledge.v1.GetKnowledgeResponse.created_at:type_name -> google.protobuf.Timestamp
+	26, // 2: ai.knowledge.v1.GetKnowledgeResponse.updated_at:type_name -> google.protobuf.Timestamp
+	27, // 3: ai.knowledge.v1.ListKnowledgeRequest.pagination:type_name -> common.v1.PaginationArgs
+	25, // 4: ai.knowledge.v1.ListKnowledgeRequest.status:type_name -> common.v1.Status
+	28, // 5: ai.knowledge.v1.ListKnowledgeResponse.pagination:type_name -> common.v1.PaginationResults
 	3,  // 6: ai.knowledge.v1.ListKnowledgeResponse.knowledge:type_name -> ai.knowledge.v1.GetKnowledgeResponse
-	20, // 7: ai.knowledge.v1.UpsertDocumentRequest.status:type_name -> common.v1.Status
-	6,  // 8: ai.knowledge.v1.BatchCreateDocumentRequest.documents:type_name -> ai.knowledge.v1.UpsertDocumentRequest
-	9,  // 9: ai.knowledge.v1.BatchCreateDocumentResponse.documents:type_name -> ai.knowledge.v1.GetDocumentResponse
-	20, // 10: ai.knowledge.v1.GetDocumentResponse.status:type_name -> common.v1.Status
-	21, // 11: ai.knowledge.v1.GetDocumentResponse.created_at:type_name -> google.protobuf.Timestamp
-	21, // 12: ai.knowledge.v1.GetDocumentResponse.updated_at:type_name -> google.protobuf.Timestamp
-	22, // 13: ai.knowledge.v1.ListDocumentsRequest.pagination:type_name -> common.v1.PaginationArgs
-	20, // 14: ai.knowledge.v1.ListDocumentsRequest.status:type_name -> common.v1.Status
-	23, // 15: ai.knowledge.v1.ListDocumentsResponse.pagination:type_name -> common.v1.PaginationResults
-	9,  // 16: ai.knowledge.v1.ListDocumentsResponse.documents:type_name -> ai.knowledge.v1.GetDocumentResponse
-	14, // 17: ai.knowledge.v1.SearchResponse.results:type_name -> ai.knowledge.v1.SearchResult
-	2,  // 18: ai.knowledge.v1.Knowledge.CreateKnowledge:input_type -> ai.knowledge.v1.UpsertKnowledgeRequest
-	2,  // 19: ai.knowledge.v1.Knowledge.UpdateKnowledge:input_type -> ai.knowledge.v1.UpsertKnowledgeRequest
-	0,  // 20: ai.knowledge.v1.Knowledge.GetKnowledge:input_type -> ai.knowledge.v1.SimpleRequest
-	0,  // 21: ai.knowledge.v1.Knowledge.DeleteKnowledge:input_type -> ai.knowledge.v1.SimpleRequest
-	4,  // 22: ai.knowledge.v1.Knowledge.ListKnowledge:input_type -> ai.knowledge.v1.ListKnowledgeRequest
-	6,  // 23: ai.knowledge.v1.Knowledge.CreateDocument:input_type -> ai.knowledge.v1.UpsertDocumentRequest
-	7,  // 24: ai.knowledge.v1.Knowledge.BatchCreateDocuments:input_type -> ai.knowledge.v1.BatchCreateDocumentRequest
-	6,  // 25: ai.knowledge.v1.Knowledge.UpdateDocument:input_type -> ai.knowledge.v1.UpsertDocumentRequest
-	0,  // 26: ai.knowledge.v1.Knowledge.GetDocument:input_type -> ai.knowledge.v1.SimpleRequest
-	0,  // 27: ai.knowledge.v1.Knowledge.DeleteDocument:input_type -> ai.knowledge.v1.SimpleRequest
-	1,  // 28: ai.knowledge.v1.Knowledge.BatchDeleteDocuments:input_type -> ai.knowledge.v1.BatchDeleteRequest
-	10, // 29: ai.knowledge.v1.Knowledge.ListDocuments:input_type -> ai.knowledge.v1.ListDocumentsRequest
-	12, // 30: ai.knowledge.v1.Knowledge.Search:input_type -> ai.knowledge.v1.SearchRequest
-	15, // 31: ai.knowledge.v1.Knowledge.CopyDocument:input_type -> ai.knowledge.v1.CopyDocumentRequest
-	16, // 32: ai.knowledge.v1.Knowledge.CreateMasterKnowledge:input_type -> ai.knowledge.v1.CreateMasterKnowledgeRequest
-	17, // 33: ai.knowledge.v1.Knowledge.GetMasterKnowledge:input_type -> ai.knowledge.v1.GetMasterKnowledgeRequest
-	18, // 34: ai.knowledge.v1.Knowledge.ChangeDocumentOwner:input_type -> ai.knowledge.v1.ChangeDocumentOwnerRequest
-	24, // 35: ai.knowledge.v1.Knowledge.GetSupportTextParse:input_type -> google.protobuf.Empty
-	3,  // 36: ai.knowledge.v1.Knowledge.CreateKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	3,  // 37: ai.knowledge.v1.Knowledge.UpdateKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	3,  // 38: ai.knowledge.v1.Knowledge.GetKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	24, // 39: ai.knowledge.v1.Knowledge.DeleteKnowledge:output_type -> google.protobuf.Empty
-	5,  // 40: ai.knowledge.v1.Knowledge.ListKnowledge:output_type -> ai.knowledge.v1.ListKnowledgeResponse
-	9,  // 41: ai.knowledge.v1.Knowledge.CreateDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
-	8,  // 42: ai.knowledge.v1.Knowledge.BatchCreateDocuments:output_type -> ai.knowledge.v1.BatchCreateDocumentResponse
-	9,  // 43: ai.knowledge.v1.Knowledge.UpdateDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
-	9,  // 44: ai.knowledge.v1.Knowledge.GetDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
-	24, // 45: ai.knowledge.v1.Knowledge.DeleteDocument:output_type -> google.protobuf.Empty
-	24, // 46: ai.knowledge.v1.Knowledge.BatchDeleteDocuments:output_type -> google.protobuf.Empty
-	11, // 47: ai.knowledge.v1.Knowledge.ListDocuments:output_type -> ai.knowledge.v1.ListDocumentsResponse
-	13, // 48: ai.knowledge.v1.Knowledge.Search:output_type -> ai.knowledge.v1.SearchResponse
-	9,  // 49: ai.knowledge.v1.Knowledge.CopyDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
-	3,  // 50: ai.knowledge.v1.Knowledge.CreateMasterKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	3,  // 51: ai.knowledge.v1.Knowledge.GetMasterKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	9,  // 52: ai.knowledge.v1.Knowledge.ChangeDocumentOwner:output_type -> ai.knowledge.v1.GetDocumentResponse
-	19, // 53: ai.knowledge.v1.Knowledge.GetSupportTextParse:output_type -> ai.knowledge.v1.GetSupportTextParseResponse
-	36, // [36:54] is the sub-list for method output_type
-	18, // [18:36] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	25, // 7: ai.knowledge.v1.UpsertDocumentRequest.status:type_name -> common.v1.Status
+	13, // 8: ai.knowledge.v1.UpsertDocumentResponse.document:type_name -> ai.knowledge.v1.GetDocumentResponse
+	7,  // 9: ai.knowledge.v1.BatchCreateDocumentRequest.documents:type_name -> ai.knowledge.v1.UpsertDocumentRequest
+	13, // 10: ai.knowledge.v1.BatchCreateDocumentResponse.documents:type_name -> ai.knowledge.v1.GetDocumentResponse
+	16, // 11: ai.knowledge.v1.ReindexDocumentResponse.progress:type_name -> ai.knowledge.v1.GetDocumentProgressResponse
+	16, // 12: ai.knowledge.v1.BatchReindexDocumentResponse.progresses:type_name -> ai.knowledge.v1.GetDocumentProgressResponse
+	25, // 13: ai.knowledge.v1.GetDocumentResponse.status:type_name -> common.v1.Status
+	26, // 14: ai.knowledge.v1.GetDocumentResponse.created_at:type_name -> google.protobuf.Timestamp
+	26, // 15: ai.knowledge.v1.GetDocumentResponse.updated_at:type_name -> google.protobuf.Timestamp
+	27, // 16: ai.knowledge.v1.ListDocumentsRequest.pagination:type_name -> common.v1.PaginationArgs
+	25, // 17: ai.knowledge.v1.ListDocumentsRequest.status:type_name -> common.v1.Status
+	28, // 18: ai.knowledge.v1.ListDocumentsResponse.pagination:type_name -> common.v1.PaginationResults
+	13, // 19: ai.knowledge.v1.ListDocumentsResponse.documents:type_name -> ai.knowledge.v1.GetDocumentResponse
+	19, // 20: ai.knowledge.v1.SearchResponse.results:type_name -> ai.knowledge.v1.SearchResult
+	2,  // 21: ai.knowledge.v1.Knowledge.CreateKnowledge:input_type -> ai.knowledge.v1.UpsertKnowledgeRequest
+	2,  // 22: ai.knowledge.v1.Knowledge.UpdateKnowledge:input_type -> ai.knowledge.v1.UpsertKnowledgeRequest
+	0,  // 23: ai.knowledge.v1.Knowledge.GetKnowledge:input_type -> ai.knowledge.v1.SimpleRequest
+	0,  // 24: ai.knowledge.v1.Knowledge.DeleteKnowledge:input_type -> ai.knowledge.v1.SimpleRequest
+	4,  // 25: ai.knowledge.v1.Knowledge.ListKnowledge:input_type -> ai.knowledge.v1.ListKnowledgeRequest
+	0,  // 26: ai.knowledge.v1.Knowledge.KnowledgeStats:input_type -> ai.knowledge.v1.SimpleRequest
+	7,  // 27: ai.knowledge.v1.Knowledge.CreateDocument:input_type -> ai.knowledge.v1.UpsertDocumentRequest
+	9,  // 28: ai.knowledge.v1.Knowledge.BatchCreateDocuments:input_type -> ai.knowledge.v1.BatchCreateDocumentRequest
+	7,  // 29: ai.knowledge.v1.Knowledge.UpdateDocument:input_type -> ai.knowledge.v1.UpsertDocumentRequest
+	0,  // 30: ai.knowledge.v1.Knowledge.GetDocument:input_type -> ai.knowledge.v1.SimpleRequest
+	0,  // 31: ai.knowledge.v1.Knowledge.DeleteDocument:input_type -> ai.knowledge.v1.SimpleRequest
+	1,  // 32: ai.knowledge.v1.Knowledge.BatchDeleteDocuments:input_type -> ai.knowledge.v1.MultiRequest
+	14, // 33: ai.knowledge.v1.Knowledge.ListDocuments:input_type -> ai.knowledge.v1.ListDocumentsRequest
+	0,  // 34: ai.knowledge.v1.Knowledge.GetDocumentProgress:input_type -> ai.knowledge.v1.SimpleRequest
+	0,  // 35: ai.knowledge.v1.Knowledge.ReindexDocument:input_type -> ai.knowledge.v1.SimpleRequest
+	1,  // 36: ai.knowledge.v1.Knowledge.BatchReindexDocument:input_type -> ai.knowledge.v1.MultiRequest
+	17, // 37: ai.knowledge.v1.Knowledge.Search:input_type -> ai.knowledge.v1.SearchRequest
+	20, // 38: ai.knowledge.v1.Knowledge.CopyDocument:input_type -> ai.knowledge.v1.CopyDocumentRequest
+	21, // 39: ai.knowledge.v1.Knowledge.CreateMasterKnowledge:input_type -> ai.knowledge.v1.CreateMasterKnowledgeRequest
+	22, // 40: ai.knowledge.v1.Knowledge.GetMasterKnowledge:input_type -> ai.knowledge.v1.GetMasterKnowledgeRequest
+	23, // 41: ai.knowledge.v1.Knowledge.ChangeDocumentOwner:input_type -> ai.knowledge.v1.ChangeDocumentOwnerRequest
+	29, // 42: ai.knowledge.v1.Knowledge.GetSupportTextParse:input_type -> google.protobuf.Empty
+	3,  // 43: ai.knowledge.v1.Knowledge.CreateKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	3,  // 44: ai.knowledge.v1.Knowledge.UpdateKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	3,  // 45: ai.knowledge.v1.Knowledge.GetKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	29, // 46: ai.knowledge.v1.Knowledge.DeleteKnowledge:output_type -> google.protobuf.Empty
+	5,  // 47: ai.knowledge.v1.Knowledge.ListKnowledge:output_type -> ai.knowledge.v1.ListKnowledgeResponse
+	6,  // 48: ai.knowledge.v1.Knowledge.KnowledgeStats:output_type -> ai.knowledge.v1.KnowledgeStatsResponse
+	8,  // 49: ai.knowledge.v1.Knowledge.CreateDocument:output_type -> ai.knowledge.v1.UpsertDocumentResponse
+	10, // 50: ai.knowledge.v1.Knowledge.BatchCreateDocuments:output_type -> ai.knowledge.v1.BatchCreateDocumentResponse
+	8,  // 51: ai.knowledge.v1.Knowledge.UpdateDocument:output_type -> ai.knowledge.v1.UpsertDocumentResponse
+	13, // 52: ai.knowledge.v1.Knowledge.GetDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
+	29, // 53: ai.knowledge.v1.Knowledge.DeleteDocument:output_type -> google.protobuf.Empty
+	29, // 54: ai.knowledge.v1.Knowledge.BatchDeleteDocuments:output_type -> google.protobuf.Empty
+	15, // 55: ai.knowledge.v1.Knowledge.ListDocuments:output_type -> ai.knowledge.v1.ListDocumentsResponse
+	16, // 56: ai.knowledge.v1.Knowledge.GetDocumentProgress:output_type -> ai.knowledge.v1.GetDocumentProgressResponse
+	11, // 57: ai.knowledge.v1.Knowledge.ReindexDocument:output_type -> ai.knowledge.v1.ReindexDocumentResponse
+	12, // 58: ai.knowledge.v1.Knowledge.BatchReindexDocument:output_type -> ai.knowledge.v1.BatchReindexDocumentResponse
+	18, // 59: ai.knowledge.v1.Knowledge.Search:output_type -> ai.knowledge.v1.SearchResponse
+	13, // 60: ai.knowledge.v1.Knowledge.CopyDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
+	3,  // 61: ai.knowledge.v1.Knowledge.CreateMasterKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	3,  // 62: ai.knowledge.v1.Knowledge.GetMasterKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	13, // 63: ai.knowledge.v1.Knowledge.ChangeDocumentOwner:output_type -> ai.knowledge.v1.GetDocumentResponse
+	24, // 64: ai.knowledge.v1.Knowledge.GetSupportTextParse:output_type -> ai.knowledge.v1.GetSupportTextParseResponse
+	43, // [43:65] is the sub-list for method output_type
+	21, // [21:43] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_ai_knowledge_v1_knowledge_proto_init() }
@@ -1553,7 +1941,7 @@ func file_ai_knowledge_v1_knowledge_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_knowledge_v1_knowledge_proto_rawDesc), len(file_ai_knowledge_v1_knowledge_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

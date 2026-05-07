@@ -15,6 +15,7 @@ import (
 	"ai/ent/aitool"
 	"ai/ent/aiwebpage"
 	"ai/ent/schema"
+	"ai/ent/task"
 	"time"
 )
 
@@ -257,6 +258,18 @@ func init() {
 	aiknowledgedocumentDescName := aiknowledgedocumentFields[1].Descriptor()
 	// aiknowledgedocument.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	aiknowledgedocument.NameValidator = aiknowledgedocumentDescName.Validators[0].(func(string) error)
+	// aiknowledgedocumentDescChunks is the schema descriptor for chunks field.
+	aiknowledgedocumentDescChunks := aiknowledgedocumentFields[7].Descriptor()
+	// aiknowledgedocument.DefaultChunks holds the default value on creation for the chunks field.
+	aiknowledgedocument.DefaultChunks = aiknowledgedocumentDescChunks.Default.(int)
+	// aiknowledgedocumentDescParseType is the schema descriptor for parse_type field.
+	aiknowledgedocumentDescParseType := aiknowledgedocumentFields[8].Descriptor()
+	// aiknowledgedocument.DefaultParseType holds the default value on creation for the parse_type field.
+	aiknowledgedocument.DefaultParseType = aiknowledgedocumentDescParseType.Default.(string)
+	// aiknowledgedocumentDescContentHash is the schema descriptor for content_hash field.
+	aiknowledgedocumentDescContentHash := aiknowledgedocumentFields[9].Descriptor()
+	// aiknowledgedocument.DefaultContentHash holds the default value on creation for the content_hash field.
+	aiknowledgedocument.DefaultContentHash = aiknowledgedocumentDescContentHash.Default.(string)
 	aiknowledgesegmentMixin := schema.AiKnowledgeSegment{}.Mixin()
 	aiknowledgesegmentMixinHooks0 := aiknowledgesegmentMixin[0].Hooks()
 	aiknowledgesegment.Hooks[0] = aiknowledgesegmentMixinHooks0[0]
@@ -276,8 +289,24 @@ func init() {
 	aiknowledgesegment.DefaultUpdatedAt = aiknowledgesegmentDescUpdatedAt.Default.(func() time.Time)
 	// aiknowledgesegment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	aiknowledgesegment.UpdateDefaultUpdatedAt = aiknowledgesegmentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// aiknowledgesegmentDescChunkIndex is the schema descriptor for chunk_index field.
+	aiknowledgesegmentDescChunkIndex := aiknowledgesegmentFields[4].Descriptor()
+	// aiknowledgesegment.DefaultChunkIndex holds the default value on creation for the chunk_index field.
+	aiknowledgesegment.DefaultChunkIndex = aiknowledgesegmentDescChunkIndex.Default.(int)
+	// aiknowledgesegmentDescSectionPath is the schema descriptor for section_path field.
+	aiknowledgesegmentDescSectionPath := aiknowledgesegmentFields[5].Descriptor()
+	// aiknowledgesegment.DefaultSectionPath holds the default value on creation for the section_path field.
+	aiknowledgesegment.DefaultSectionPath = aiknowledgesegmentDescSectionPath.Default.(string)
+	// aiknowledgesegmentDescStartOffset is the schema descriptor for start_offset field.
+	aiknowledgesegmentDescStartOffset := aiknowledgesegmentFields[6].Descriptor()
+	// aiknowledgesegment.DefaultStartOffset holds the default value on creation for the start_offset field.
+	aiknowledgesegment.DefaultStartOffset = aiknowledgesegmentDescStartOffset.Default.(int)
+	// aiknowledgesegmentDescEndOffset is the schema descriptor for end_offset field.
+	aiknowledgesegmentDescEndOffset := aiknowledgesegmentFields[7].Descriptor()
+	// aiknowledgesegment.DefaultEndOffset holds the default value on creation for the end_offset field.
+	aiknowledgesegment.DefaultEndOffset = aiknowledgesegmentDescEndOffset.Default.(int)
 	// aiknowledgesegmentDescVectorID is the schema descriptor for vector_id field.
-	aiknowledgesegmentDescVectorID := aiknowledgesegmentFields[4].Descriptor()
+	aiknowledgesegmentDescVectorID := aiknowledgesegmentFields[9].Descriptor()
 	// aiknowledgesegment.DefaultVectorID holds the default value on creation for the vector_id field.
 	aiknowledgesegment.DefaultVectorID = aiknowledgesegmentDescVectorID.Default.(string)
 	// aiknowledgesegment.VectorIDValidator is a validator for the "vector_id" field. It is called by the builders before save.
@@ -351,6 +380,25 @@ func init() {
 	aiwebpage.DefaultUpdatedAt = aiwebpageDescUpdatedAt.Default.(func() time.Time)
 	// aiwebpage.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	aiwebpage.UpdateDefaultUpdatedAt = aiwebpageDescUpdatedAt.UpdateDefault.(func() time.Time)
+	taskMixin := schema.Task{}.Mixin()
+	taskMixinHooks0 := taskMixin[0].Hooks()
+	task.Hooks[0] = taskMixinHooks0[0]
+	taskMixinInters0 := taskMixin[0].Interceptors()
+	task.Interceptors[0] = taskMixinInters0[0]
+	taskMixinFields0 := taskMixin[0].Fields()
+	_ = taskMixinFields0
+	taskFields := schema.Task{}.Fields()
+	_ = taskFields
+	// taskDescCreatedAt is the schema descriptor for created_at field.
+	taskDescCreatedAt := taskMixinFields0[0].Descriptor()
+	// task.DefaultCreatedAt holds the default value on creation for the created_at field.
+	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
+	// taskDescUpdatedAt is the schema descriptor for updated_at field.
+	taskDescUpdatedAt := taskMixinFields0[1].Descriptor()
+	// task.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	task.DefaultUpdatedAt = taskDescUpdatedAt.Default.(func() time.Time)
+	// task.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	task.UpdateDefaultUpdatedAt = taskDescUpdatedAt.UpdateDefault.(func() time.Time)
 }
 
 const (

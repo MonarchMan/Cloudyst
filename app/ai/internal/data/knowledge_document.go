@@ -6,7 +6,7 @@ import (
 	"ai/ent/aiknowledgesegment"
 	"ai/internal/biz/types"
 	pb "api/api/common/v1"
-	"common/db"
+	"api/external/data/common"
 	"context"
 	"entmodule"
 	"fmt"
@@ -23,12 +23,15 @@ type (
 		GetByIDs(ctx context.Context, ids []int) ([]*ent.AiKnowledgeDocument, error)
 		GetActiveByKnowledgeID(ctx context.Context, knowledgeID int) ([]*ent.AiKnowledgeDocument, error)
 		List(ctx context.Context, args *ListKnowledgeDocumentArgs) (*ListKnowledgeDocumentResult, error)
+		ListIndexable(ctx context.Context, afterID, limit int) ([]*ent.AiKnowledgeDocument, error)
 		Upsert(ctx context.Context, args *UpsertDocumentArgs) (*ent.AiKnowledgeDocument, error)
 		UpdateKnowledgeID(ctx context.Context, id, knowledgeID int) (*ent.AiKnowledgeDocument, error)
 		BatchCreate(ctx context.Context, args []*UpsertDocumentArgs) ([]*ent.AiKnowledgeDocument, error)
 		UpdateStatus(ctx context.Context, id int, status entmodule.Status) (*ent.AiKnowledgeDocument, error)
-		UpdateProcess(ctx context.Context, id int, status types.DocumentStatus) (*ent.AiKnowledgeDocument, error)
-		UpdateContentLenVersionAndProcess(ctx context.Context, id int, len int, version string, status types.DocumentStatus) (*ent.AiKnowledgeDocument, error)
+		UpdateProcess(ctx context.Context, id int, status types.DocumentProgress) (*ent.AiKnowledgeDocument, error)
+		UpdateProcessByIDs(ctx context.Context, ids []int, status types.DocumentProgress) (int, error)
+		UpdateSizeVersionAndProcess(ctx context.Context, id int, size int64, version string, status types.DocumentProgress) (*ent.AiKnowledgeDocument, error)
+		UpdateIndexStats(ctx context.Context, id int, stats *DocumentIndexStats) (*ent.AiKnowledgeDocument, error)
 		Delete(ctx context.Context, kid int) error
 		BatchDelete(ctx context.Context, ids []int) (int, error)
 		UpdateRetrievalCount(ctx context.Context, id int, count int) error
@@ -59,15 +62,31 @@ type (
 		Url              string
 		Version          string
 		ContentLen       int
+		Size             int64
+		Tokens           int
+		Chunks           int
+		ParseType        string
+		ContentHash      string
+		Metadata         map[string]any
 		SegmentMaxTokens int
 		RetrievalCount   int
-		Process          types.DocumentStatus
+		Process          types.DocumentProgress
 		Status           entmodule.Status
+	}
+
+	DocumentIndexStats struct {
+		ContentLen  int
+		Tokens      int
+		Chunks      int
+		ParseType   string
+		ContentHash string
+		Metadata    map[string]any
+		Process     types.DocumentProgress
 	}
 )
 
-func NewKnowledgeDocumentClient(client *ent.Client, dbType db.DBType) KnowledgeDocumentClient {
-	return &knowledgeDocumentClient{client: client, maxSQLParam: db.SqlParamLimit(dbType)}
+func NewKnowledgeDocumentClient(client *ent.Client, dbType common.DBType) KnowledgeDocumentClient {
+	return &knowledgeDocumentClient{client: client, maxSQLParam: common.SqlParamLimit(dbType)}
 }
 
 func (c *knowledgeDocumentClient) SetClient(newClient *ent.Client) TxOperator {
@@ -132,6 +151,17 @@ func (c *knowledgeDocumentClient) List(ctx context.Context, args *ListKnowledgeD
 	}, nil
 }
 
+func (c *knowledgeDocumentClient) ListIndexable(ctx context.Context, afterID, limit int) ([]*ent.AiKnowledgeDocument, error) {
+	q := c.client.AiKnowledgeDocument.Query().
+		Where(aiknowledgedocument.StatusEQ(entmodule.StatusActive), aiknowledgedocument.ProgressEQ(types.DocumentPending)).
+		Order(aiknowledgedocument.ByID()).
+		Limit(limit)
+	if afterID > 0 {
+		q.Where(aiknowledgedocument.IDGT(afterID))
+	}
+	return q.All(ctx)
+}
+
 func (c *knowledgeDocumentClient) Upsert(ctx context.Context, args *UpsertDocumentArgs) (*ent.AiKnowledgeDocument, error) {
 	if args.ID == 0 {
 		q := c.client.AiKnowledgeDocument.Create().
@@ -139,17 +169,45 @@ func (c *knowledgeDocumentClient) Upsert(ctx context.Context, args *UpsertDocume
 			SetName(args.Name).
 			SetURL(args.Url).
 			SetVersion(args.Version).
+			SetSize(args.Size).
 			SetContentLength(args.ContentLen).
+			SetTokens(args.Tokens).
+			SetChunks(args.Chunks).
+			SetParseType(args.ParseType).
+			SetContentHash(args.ContentHash).
+			SetMetadata(nonNilMetadata(args.Metadata)).
 			SetSegmentMaxTokens(args.SegmentMaxTokens).
 			SetRetrievalCount(args.RetrievalCount).
-			SetStatus(args.Status)
+			SetProgress(defaultDocumentProgress(args.Process)).
+			SetStatus(defaultDocumentStatus(args.Status))
 		return q.Save(ctx)
 	}
 	q := c.client.AiKnowledgeDocument.UpdateOneID(args.ID).
 		SetName(args.Name).
 		SetSegmentMaxTokens(args.SegmentMaxTokens).
 		SetRetrievalCount(args.RetrievalCount).
-		SetStatus(args.Status)
+		SetStatus(defaultDocumentStatus(args.Status))
+	if args.ContentLen > 0 {
+		q.SetContentLength(args.ContentLen)
+	}
+	if args.Tokens > 0 {
+		q.SetTokens(args.Tokens)
+	}
+	if args.Chunks > 0 {
+		q.SetChunks(args.Chunks)
+	}
+	if args.ParseType != "" {
+		q.SetParseType(args.ParseType)
+	}
+	if args.ContentHash != "" {
+		q.SetContentHash(args.ContentHash)
+	}
+	if args.Metadata != nil {
+		q.SetMetadata(args.Metadata)
+	}
+	if args.Process != "" {
+		q.SetProgress(args.Process)
+	}
 	if args.KnowledgeID > 0 {
 		q.Where(aiknowledgedocument.KnowledgeID(args.KnowledgeID))
 	}
@@ -166,10 +224,17 @@ func (c *knowledgeDocumentClient) BatchCreate(ctx context.Context, args []*Upser
 			SetKnowledgeID(doc.KnowledgeID).
 			SetName(doc.Name).
 			SetURL(doc.Url).
+			SetSize(doc.Size).
 			SetContentLength(doc.ContentLen).
+			SetTokens(doc.Tokens).
+			SetChunks(doc.Chunks).
+			SetParseType(doc.ParseType).
+			SetContentHash(doc.ContentHash).
+			SetMetadata(nonNilMetadata(doc.Metadata)).
 			SetSegmentMaxTokens(doc.SegmentMaxTokens).
 			SetRetrievalCount(doc.RetrievalCount).
-			SetStatus(doc.Status)
+			SetProgress(defaultDocumentProgress(doc.Process)).
+			SetStatus(defaultDocumentStatus(doc.Status))
 	})
 	return c.client.AiKnowledgeDocument.CreateBulk(batch...).Save(ctx)
 }
@@ -178,16 +243,37 @@ func (c *knowledgeDocumentClient) UpdateStatus(ctx context.Context, id int, stat
 	return c.client.AiKnowledgeDocument.UpdateOneID(id).SetStatus(status).Save(ctx)
 }
 
-func (c *knowledgeDocumentClient) UpdateProcess(ctx context.Context, id int, status types.DocumentStatus) (*ent.AiKnowledgeDocument, error) {
-	return c.client.AiKnowledgeDocument.UpdateOneID(id).SetProcess(status).Save(ctx)
+func (c *knowledgeDocumentClient) UpdateProcess(ctx context.Context, id int, status types.DocumentProgress) (*ent.AiKnowledgeDocument, error) {
+	return c.client.AiKnowledgeDocument.UpdateOneID(id).SetProgress(status).Save(ctx)
 }
 
-func (c *knowledgeDocumentClient) UpdateContentLenVersionAndProcess(ctx context.Context, id int, len int, version string, status types.DocumentStatus) (*ent.AiKnowledgeDocument, error) {
+func (c *knowledgeDocumentClient) UpdateProcessByIDs(ctx context.Context, ids []int, status types.DocumentProgress) (int, error) {
+	return c.client.AiKnowledgeDocument.Update().Where(aiknowledgedocument.IDIn(ids...)).SetProgress(status).Save(ctx)
+}
+
+func (c *knowledgeDocumentClient) UpdateSizeVersionAndProcess(ctx context.Context, id int, size int64, version string, status types.DocumentProgress) (*ent.AiKnowledgeDocument, error) {
 	q := c.client.AiKnowledgeDocument.UpdateOneID(id).
-		SetContentLength(len).
-		SetProcess(status)
+		SetSize(size).
+		SetProgress(status)
 	if version != "" {
 		q.SetVersion(version)
+	}
+	return q.Save(ctx)
+}
+
+func (c *knowledgeDocumentClient) UpdateIndexStats(ctx context.Context, id int, stats *DocumentIndexStats) (*ent.AiKnowledgeDocument, error) {
+	if stats == nil {
+		return c.GetByID(ctx, id)
+	}
+	q := c.client.AiKnowledgeDocument.UpdateOneID(id).
+		SetContentLength(stats.ContentLen).
+		SetTokens(stats.Tokens).
+		SetChunks(stats.Chunks).
+		SetParseType(stats.ParseType).
+		SetContentHash(stats.ContentHash).
+		SetMetadata(nonNilMetadata(stats.Metadata))
+	if stats.Process != "" {
+		q.SetProgress(stats.Process)
 	}
 	return q.Save(ctx)
 }
@@ -228,7 +314,7 @@ func withKnowledgeDocumentEagerLoading(ctx context.Context, q *ent.AiKnowledgeDo
 }
 
 func getKnowledgeDocumentOrderOption(args *ListKnowledgeDocumentArgs) []aiknowledgedocument.OrderOption {
-	orderTerm := db.GetOrderTerm(db.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
 	switch args.OrderBy {
 	case aiknowledgedocument.FieldRetrievalCount:
 		return []aiknowledgedocument.OrderOption{aiknowledgedocument.ByRetrievalCount(orderTerm), aiknowledgedocument.ByID(orderTerm)}
@@ -237,4 +323,25 @@ func getKnowledgeDocumentOrderOption(args *ListKnowledgeDocumentArgs) []aiknowle
 	default:
 		return []aiknowledgedocument.OrderOption{aiknowledgedocument.ByID(orderTerm)}
 	}
+}
+
+func nonNilMetadata(metadata map[string]any) map[string]any {
+	if metadata == nil {
+		return map[string]any{}
+	}
+	return metadata
+}
+
+func defaultDocumentProgress(progress types.DocumentProgress) types.DocumentProgress {
+	if progress == "" {
+		return types.DocumentPending
+	}
+	return progress
+}
+
+func defaultDocumentStatus(status entmodule.Status) entmodule.Status {
+	if status == "" {
+		return entmodule.StatusActive
+	}
+	return status
 }

@@ -1,7 +1,7 @@
 package wopi
 
 import (
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
 	"encoding/xml"
 	"file/internal/data/types"
 	"fmt"

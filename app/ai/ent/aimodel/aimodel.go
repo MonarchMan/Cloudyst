@@ -49,7 +49,7 @@ const (
 	AiAPIKeyTable = "ai_models"
 	// AiAPIKeyInverseTable is the table name for the AiApiKey entity.
 	// It exists in this package in order to avoid circular dependency with the "aiapikey" package.
-	AiAPIKeyInverseTable = "AiApiKey"
+	AiAPIKeyInverseTable = "ai_api_keys"
 	// AiAPIKeyColumn is the table column denoting the ai_api_key relation/edge.
 	AiAPIKeyColumn = "key_id"
 )

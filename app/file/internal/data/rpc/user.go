@@ -1,9 +1,9 @@
 package rpc
 
 import (
-	pbadmin "api/api/user/admin/v1"
-	pb "api/api/user/common/v1"
+	userpb "api/api/user/common/v1"
 	pbuser "api/api/user/users/v1"
+	"api/external/data/userdata"
 	"context"
 	"file/internal/data/types"
 	"fmt"
@@ -13,13 +13,27 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/hashicorp/consul/api"
 	"github.com/samber/lo"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func NewUserClient(client *api.Client) (pbuser.UserClient, error) {
-	// 1. 创建服务发现实例
+type UserClient interface {
+	Client() pbuser.UserClient
+	GetUserInfo(ctx context.Context, uid int) (*userdata.User, error)
+	ApplyStorageDiff(ctx context.Context, diff types.StorageDiff) error
+	GetAnonymousUser(ctx context.Context) (*userdata.User, error)
+	UpdateAvatar(ctx context.Context, avatarType int) error
+	GetUserByDavAccount(ctx context.Context, username, password string) (*userpb.User, error)
+	GetActiveUserByDavAccount(ctx context.Context, username, password string) (*userpb.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*userpb.User, error)
+}
+
+type userClient struct {
+	client pbuser.UserClient
+}
+
+func NewUserClient(client *api.Client) (UserClient, error) {
 	dis := consul.New(client)
 
-	// 2. 通过服务名连接（不需要写死 IP）
 	conn, err := grpc.DialInsecure(
 		context.Background(),
 		grpc.WithEndpoint("discovery:///cloudyst-user"), // 🔑 关键格式
@@ -29,42 +43,69 @@ func NewUserClient(client *api.Client) (pbuser.UserClient, error) {
 		),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to dial user grpc: %w", err)
+		return nil, fmt.Errorf("failed to dial file grpc: %w", err)
 	}
-
-	return pbuser.NewUserClient(conn), nil
+	return &userClient{
+		client: pbuser.NewUserClient(conn),
+	}, nil
 }
 
-func NewUserAdminClient(client *api.Client) (pbadmin.AdminClient, error) {
-	// 1. 创建服务发现实例
-	dis := consul.New(client)
+func (c *userClient) Client() pbuser.UserClient {
+	return c.client
+}
 
-	// 2. 通过服务名连接（不需要写死 IP）
-	conn, err := grpc.DialInsecure(
-		context.Background(),
-		grpc.WithEndpoint("discovery:///cloudyst-user"), // 🔑 关键格式
-		grpc.WithDiscovery(dis),                         // 🔑 启用服务发现
-		grpc.WithMiddleware(
-			recovery.Recovery(),
-		),
-	)
+func (c *userClient) GetUserInfo(ctx context.Context, uid int) (*userdata.User, error) {
+	req := &pbuser.UserInfoRequest{Id: int32(uid)}
+	user, err := c.client.GetUserInfo(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to dial user grpc: %w", err)
+		return nil, err
 	}
-
-	return pbadmin.NewAdminClient(conn), nil
+	return userdata.UserFromProto(user), nil
 }
 
-func ApplyStorageDiff(ctx context.Context, diff types.StorageDiff, userClient pbuser.UserClient) error {
+func (c *userClient) ApplyStorageDiff(ctx context.Context, diff types.StorageDiff) error {
 	req := &pbuser.ApplyStorageDiffRequest{
 		StorageDiff: lo.MapKeys(diff, func(value int64, k int) int32 { return int32(k) }),
 	}
-	_, err := userClient.ApplyStorageDiff(ctx, req)
-
+	_, err := c.client.ApplyStorageDiff(ctx, req)
 	return err
 }
 
-func GetUserInfo(ctx context.Context, uid int, userClient pbuser.UserClient) (*pb.User, error) {
-	req := &pbuser.RawUserRequest{Id: int32(uid)}
-	return userClient.GetUserInfo(ctx, req)
+func (c *userClient) GetAnonymousUser(ctx context.Context) (*userdata.User, error) {
+	user, err := c.client.GetAnonymousUser(ctx, &emptypb.Empty{})
+	if err != nil {
+		return nil, err
+	}
+	return userdata.AnonymousUserFromProto(user), nil
+}
+
+func (c *userClient) UpdateAvatar(ctx context.Context, avatarType int) error {
+	req := &pbuser.UpdateAvatarRequest{
+		Type: pbuser.AvatarType_FILE_AVATAR,
+	}
+	_, err := c.client.UpdateAvatar(ctx, req)
+	return err
+}
+
+func (c *userClient) GetUserByDavAccount(ctx context.Context, username, password string) (*userpb.User, error) {
+	req := &pbuser.GetActiveUserByDavAccountRequest{
+		Username: username,
+		Password: password,
+	}
+	return c.client.GetActiveUserByDavAccount(ctx, req)
+}
+
+func (c *userClient) GetActiveUserByDavAccount(ctx context.Context, username, password string) (*userpb.User, error) {
+	req := &pbuser.GetActiveUserByDavAccountRequest{
+		Username: username,
+		Password: password,
+	}
+	return c.client.GetActiveUserByDavAccount(ctx, req)
+}
+
+func (c *userClient) GetUserByEmail(ctx context.Context, email string) (*userpb.User, error) {
+	req := &pbuser.GetUserByEmailRequest{
+		Email: email,
+	}
+	return c.client.GetUserByEmail(ctx, req)
 }

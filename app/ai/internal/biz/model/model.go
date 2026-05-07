@@ -4,7 +4,7 @@ import (
 	"ai/ent"
 	"ai/internal/biz/types"
 	"ai/internal/data"
-	model2 "ai/internal/pkg/eino/model"
+	"ai/internal/pkg/eino/model"
 	"common/hashid"
 	"context"
 	"fmt"
@@ -22,6 +22,7 @@ type (
 		DeleteModel(ctx context.Context, id int) error
 		BatchDeleteModels(ctx context.Context, ids []int) ([]int, error)
 		GetModel(ctx context.Context, id int) (*ent.AiModel, error)
+		GetDefaultModel(ctx context.Context, modelType string) (*ent.AiModel, error)
 		ListModels(ctx context.Context, args *data.ListAiModelArgs) (*data.ListAiModelResult, error)
 
 		CreateApiKey(ctx context.Context, req *ent.AiApiKey) (*ent.AiApiKey, error)
@@ -36,11 +37,11 @@ type (
 	modelBiz struct {
 		mc     data.ModelClient
 		hasher hashid.Encoder
-		mm     model2.AiModelManager
+		mm     model.AiModelManager
 	}
 )
 
-func NewModelBiz(mc data.ModelClient, hasher hashid.Encoder, mm model2.AiModelManager) ModelBiz {
+func NewModelBiz(mc data.ModelClient, hasher hashid.Encoder, mm model.AiModelManager) ModelBiz {
 	return &modelBiz{
 		mc:     mc,
 		hasher: hasher,
@@ -54,8 +55,8 @@ func (b *modelBiz) GetActiveModel(ctx context.Context, mid int) (emodel.ToolCall
 		return nil, fmt.Errorf("failed to get model: %w", err)
 	}
 
-	cfg := &model2.ModelConfig{
-		Platform: model2.Platform(m.Platform),
+	cfg := &model.ModelConfig{
+		Platform: model.Platform(m.Platform),
 		APIKey:   m.Edges.AiAPIKey.APIKey,
 		Model:    m.Type,
 	}
@@ -116,6 +117,10 @@ func (b *modelBiz) BatchDeleteModels(ctx context.Context, ids []int) ([]int, err
 
 func (b *modelBiz) GetModel(ctx context.Context, id int) (*ent.AiModel, error) {
 	return b.mc.GetModelByID(ctx, id)
+}
+
+func (b *modelBiz) GetDefaultModel(ctx context.Context, modelType string) (*ent.AiModel, error) {
+	return b.mc.GetDefaultModel(ctx, modelType)
 }
 
 func (b *modelBiz) ListModels(ctx context.Context, args *data.ListAiModelArgs) (*data.ListAiModelResult, error) {

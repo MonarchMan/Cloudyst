@@ -23,61 +23,101 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 const OperationAdminBatchDeleteApiKey = "/ai.admin.v1.Admin/BatchDeleteApiKey"
+const OperationAdminBatchDeleteChatConversation = "/ai.admin.v1.Admin/BatchDeleteChatConversation"
+const OperationAdminBatchDeleteChatMessage = "/ai.admin.v1.Admin/BatchDeleteChatMessage"
 const OperationAdminBatchDeleteImage = "/ai.admin.v1.Admin/BatchDeleteImage"
+const OperationAdminBatchDeleteKnowledge = "/ai.admin.v1.Admin/BatchDeleteKnowledge"
 const OperationAdminBatchDeleteKnowledgeDocument = "/ai.admin.v1.Admin/BatchDeleteKnowledgeDocument"
 const OperationAdminBatchDeleteModel = "/ai.admin.v1.Admin/BatchDeleteModel"
 const OperationAdminBatchDeleteRole = "/ai.admin.v1.Admin/BatchDeleteRole"
+const OperationAdminBatchDeleteTasks = "/ai.admin.v1.Admin/BatchDeleteTasks"
+const OperationAdminBatchDeleteTool = "/ai.admin.v1.Admin/BatchDeleteTool"
+const OperationAdminCleanupTask = "/ai.admin.v1.Admin/CleanupTask"
 const OperationAdminCreateApikey = "/ai.admin.v1.Admin/CreateApikey"
+const OperationAdminCreateKnowledge = "/ai.admin.v1.Admin/CreateKnowledge"
 const OperationAdminCreateModel = "/ai.admin.v1.Admin/CreateModel"
 const OperationAdminCreateRole = "/ai.admin.v1.Admin/CreateRole"
+const OperationAdminCreateTool = "/ai.admin.v1.Admin/CreateTool"
 const OperationAdminDeleteApikey = "/ai.admin.v1.Admin/DeleteApikey"
-const OperationAdminDeleteKnowledge = "/ai.admin.v1.Admin/DeleteKnowledge"
-const OperationAdminDeleteKnowledgeDocument = "/ai.admin.v1.Admin/DeleteKnowledgeDocument"
 const OperationAdminDeleteModel = "/ai.admin.v1.Admin/DeleteModel"
+const OperationAdminDeleteTool = "/ai.admin.v1.Admin/DeleteTool"
 const OperationAdminGetApikey = "/ai.admin.v1.Admin/GetApikey"
+const OperationAdminGetChatConversation = "/ai.admin.v1.Admin/GetChatConversation"
+const OperationAdminGetChatMessage = "/ai.admin.v1.Admin/GetChatMessage"
+const OperationAdminGetImage = "/ai.admin.v1.Admin/GetImage"
 const OperationAdminGetKnowledge = "/ai.admin.v1.Admin/GetKnowledge"
 const OperationAdminGetKnowledgeDocument = "/ai.admin.v1.Admin/GetKnowledgeDocument"
 const OperationAdminGetKnowledgeSegment = "/ai.admin.v1.Admin/GetKnowledgeSegment"
 const OperationAdminGetModel = "/ai.admin.v1.Admin/GetModel"
+const OperationAdminGetQueueMetrics = "/ai.admin.v1.Admin/GetQueueMetrics"
 const OperationAdminGetRole = "/ai.admin.v1.Admin/GetRole"
+const OperationAdminGetTask = "/ai.admin.v1.Admin/GetTask"
+const OperationAdminGetTool = "/ai.admin.v1.Admin/GetTool"
 const OperationAdminListApikey = "/ai.admin.v1.Admin/ListApikey"
+const OperationAdminListChatConversation = "/ai.admin.v1.Admin/ListChatConversation"
+const OperationAdminListChatMessage = "/ai.admin.v1.Admin/ListChatMessage"
 const OperationAdminListImage = "/ai.admin.v1.Admin/ListImage"
 const OperationAdminListKnowledge = "/ai.admin.v1.Admin/ListKnowledge"
 const OperationAdminListKnowledgeDocument = "/ai.admin.v1.Admin/ListKnowledgeDocument"
 const OperationAdminListKnowledgeSegments = "/ai.admin.v1.Admin/ListKnowledgeSegments"
 const OperationAdminListModel = "/ai.admin.v1.Admin/ListModel"
 const OperationAdminListRole = "/ai.admin.v1.Admin/ListRole"
+const OperationAdminListTasks = "/ai.admin.v1.Admin/ListTasks"
+const OperationAdminListTool = "/ai.admin.v1.Admin/ListTool"
 const OperationAdminUpdateApikey = "/ai.admin.v1.Admin/UpdateApikey"
 const OperationAdminUpdateDocumentStatus = "/ai.admin.v1.Admin/UpdateDocumentStatus"
-const OperationAdminUpdateImagePublicStatus = "/ai.admin.v1.Admin/UpdateImagePublicStatus"
+const OperationAdminUpdateImage = "/ai.admin.v1.Admin/UpdateImage"
+const OperationAdminUpdateKnowledge = "/ai.admin.v1.Admin/UpdateKnowledge"
+const OperationAdminUpdateKnowledgeDocument = "/ai.admin.v1.Admin/UpdateKnowledgeDocument"
 const OperationAdminUpdateModel = "/ai.admin.v1.Admin/UpdateModel"
+const OperationAdminUpdateRole = "/ai.admin.v1.Admin/UpdateRole"
+const OperationAdminUpdateTool = "/ai.admin.v1.Admin/UpdateTool"
 
 type AdminHTTPServer interface {
 	BatchDeleteApiKey(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	BatchDeleteChatConversation(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	BatchDeleteChatMessage(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
 	BatchDeleteImage(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	BatchDeleteKnowledge(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	// BatchDeleteKnowledgeDocument Knowledge Document
 	BatchDeleteKnowledgeDocument(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
 	BatchDeleteModel(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
 	BatchDeleteRole(context.Context, *BatchDeleteRoleRequest) (*emptypb.Empty, error)
+	BatchDeleteTasks(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	BatchDeleteTool(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	CleanupTask(context.Context, *v11.CleanupTaskRequest) (*emptypb.Empty, error)
 	// CreateApikey Api Key
 	CreateApikey(context.Context, *v1.AiApiKey) (*v1.AiApiKey, error)
+	CreateKnowledge(context.Context, *v1.AiKnowledge) (*Knowledge, error)
 	// CreateModel Model
 	CreateModel(context.Context, *v1.AiModel) (*v1.AiModel, error)
-	// CreateRole Role
-	CreateRole(context.Context, *v1.AiChatRole) (*v1.AiChatRole, error)
-	DeleteApikey(context.Context, *DeleteRequest) (*emptypb.Empty, error)
-	// DeleteKnowledge Knowledge
-	DeleteKnowledge(context.Context, *DeleteRequest) (*emptypb.Empty, error)
-	// DeleteKnowledgeDocument Knowledge Document
-	DeleteKnowledgeDocument(context.Context, *DeleteRequest) (*emptypb.Empty, error)
-	DeleteModel(context.Context, *DeleteRequest) (*emptypb.Empty, error)
+	CreateRole(context.Context, *v1.AiChatRole) (*Role, error)
+	CreateTool(context.Context, *v1.AiTool) (*v1.AiTool, error)
+	DeleteApikey(context.Context, *SimpleRequest) (*emptypb.Empty, error)
+	DeleteModel(context.Context, *SimpleRequest) (*emptypb.Empty, error)
+	DeleteTool(context.Context, *SimpleRequest) (*emptypb.Empty, error)
 	GetApikey(context.Context, *SimpleRequest) (*v1.AiApiKey, error)
-	GetKnowledge(context.Context, *SimpleRequest) (*v1.AiKnowledge, error)
+	// GetChatConversation Conversation
+	GetChatConversation(context.Context, *SimpleRequest) (*ChatConversation, error)
+	// GetChatMessage Chat Message
+	GetChatMessage(context.Context, *SimpleRequest) (*ChatMessage, error)
+	GetImage(context.Context, *SimpleRequest) (*Image, error)
+	// GetKnowledge Knowledge
+	GetKnowledge(context.Context, *SimpleRequest) (*Knowledge, error)
 	GetKnowledgeDocument(context.Context, *SimpleRequest) (*v1.AiKnowledgeDocument, error)
 	// GetKnowledgeSegment Knowledge Document Segment
 	GetKnowledgeSegment(context.Context, *SimpleRequest) (*v1.AiKnowledgeSegment, error)
 	GetModel(context.Context, *SimpleRequest) (*v1.AiModel, error)
-	GetRole(context.Context, *SimpleRequest) (*v1.AiChatRole, error)
+	// GetQueueMetrics Task
+	GetQueueMetrics(context.Context, *emptypb.Empty) (*v11.QueueMetricsResponse, error)
+	// GetRole Role
+	GetRole(context.Context, *SimpleRequest) (*Role, error)
+	GetTask(context.Context, *SimpleRequest) (*v11.GetTaskResponse, error)
+	// GetTool Tool
+	GetTool(context.Context, *SimpleRequest) (*v1.AiTool, error)
 	ListApikey(context.Context, *v11.ListRequest) (*ListApikeyResponse, error)
+	ListChatConversation(context.Context, *v11.ListRequest) (*ListChatConversationResponse, error)
+	ListChatMessage(context.Context, *v11.ListRequest) (*ListChatMessageResponse, error)
 	// ListImage Image
 	ListImage(context.Context, *v11.ListRequest) (*ListImageResponse, error)
 	ListKnowledge(context.Context, *v11.ListRequest) (*ListKnowledgeResponse, error)
@@ -85,10 +125,16 @@ type AdminHTTPServer interface {
 	ListKnowledgeSegments(context.Context, *v11.ListRequest) (*ListKnowledgeSegmentResponse, error)
 	ListModel(context.Context, *v11.ListRequest) (*ListModelResponse, error)
 	ListRole(context.Context, *v11.ListRequest) (*ListRoleResponse, error)
+	ListTasks(context.Context, *v11.ListRequest) (*v11.ListTaskResponse, error)
+	ListTool(context.Context, *v11.ListRequest) (*ListToolResponse, error)
 	UpdateApikey(context.Context, *v1.AiApiKey) (*v1.AiApiKey, error)
 	UpdateDocumentStatus(context.Context, *UpdateDocumentStatusRequest) (*v1.AiKnowledgeDocument, error)
-	UpdateImagePublicStatus(context.Context, *UpdateImageStatusRequest) (*v1.AiImage, error)
+	UpdateImage(context.Context, *v1.AiImage) (*Image, error)
+	UpdateKnowledge(context.Context, *v1.AiKnowledge) (*Knowledge, error)
+	UpdateKnowledgeDocument(context.Context, *v1.AiKnowledgeDocument) (*UpsertDocumentResponse, error)
 	UpdateModel(context.Context, *v1.AiModel) (*v1.AiModel, error)
+	UpdateRole(context.Context, *v1.AiChatRole) (*Role, error)
+	UpdateTool(context.Context, *v1.AiTool) (*v1.AiTool, error)
 }
 
 func RegisterAdminHTTPServer(s *http.Server, srv AdminHTTPServer) {
@@ -97,31 +143,52 @@ func RegisterAdminHTTPServer(s *http.Server, srv AdminHTTPServer) {
 	r.PUT("/admin/ai/api-key/{id}", _Admin_UpdateApikey0_HTTP_Handler(srv))
 	r.DELETE("/admin/ai/api-key/{id}", _Admin_DeleteApikey0_HTTP_Handler(srv))
 	r.GET("/admin/ai/api-key/{id}", _Admin_GetApikey0_HTTP_Handler(srv))
-	r.GET("/admin/ai/api-key/list", _Admin_ListApikey0_HTTP_Handler(srv))
-	r.POST("/admin/admin/ai/api_key/batch/delete", _Admin_BatchDeleteApiKey0_HTTP_Handler(srv))
+	r.POST("/admin/ai/api-key/list", _Admin_ListApikey0_HTTP_Handler(srv))
+	r.POST("/admin/ai/api-key/batch/delete", _Admin_BatchDeleteApiKey0_HTTP_Handler(srv))
 	r.POST("/admin/ai/model", _Admin_CreateModel0_HTTP_Handler(srv))
 	r.PUT("/admin/ai/model/{id}", _Admin_UpdateModel0_HTTP_Handler(srv))
 	r.DELETE("/admin/ai/model/{id}", _Admin_DeleteModel0_HTTP_Handler(srv))
 	r.GET("/admin/ai/model/{id}", _Admin_GetModel0_HTTP_Handler(srv))
-	r.GET("/admin/ai/model/list", _Admin_ListModel0_HTTP_Handler(srv))
+	r.POST("/admin/ai/model/list", _Admin_ListModel0_HTTP_Handler(srv))
 	r.POST("/admin/ai/model/batch/delete", _Admin_BatchDeleteModel0_HTTP_Handler(srv))
-	r.POST("/admin/ai/role", _Admin_CreateRole0_HTTP_Handler(srv))
 	r.GET("/admin/ai/role/{id}", _Admin_GetRole0_HTTP_Handler(srv))
-	r.GET("/admin/ai/role/list", _Admin_ListRole0_HTTP_Handler(srv))
-	r.POST("/admin/ai/role/batch/delete", _Admin_BatchDeleteRole0_HTTP_Handler(srv))
-	r.DELETE("/admin/ai/knowledge/{id}", _Admin_DeleteKnowledge0_HTTP_Handler(srv))
+	r.POST("/admin/ai/role/list", _Admin_ListRole0_HTTP_Handler(srv))
+	r.POST("/admin/ai/role/delete", _Admin_BatchDeleteRole0_HTTP_Handler(srv))
+	r.PUT("/admin/ai/role/{id}", _Admin_UpdateRole0_HTTP_Handler(srv))
+	r.POST("/admin/ai/role", _Admin_CreateRole0_HTTP_Handler(srv))
 	r.GET("/admin/ai/knowledge/{id}", _Admin_GetKnowledge0_HTTP_Handler(srv))
-	r.GET("/admin/ai/knowledge/list", _Admin_ListKnowledge0_HTTP_Handler(srv))
-	r.DELETE("/admin/ai/knowledge/document/{id}", _Admin_DeleteKnowledgeDocument0_HTTP_Handler(srv))
+	r.POST("/admin/ai/knowledge/list", _Admin_ListKnowledge0_HTTP_Handler(srv))
+	r.POST("/admin/ai/knowledge/delete", _Admin_BatchDeleteKnowledge0_HTTP_Handler(srv))
+	r.PUT("/admin/ai/knowledge/{id}", _Admin_UpdateKnowledge0_HTTP_Handler(srv))
+	r.POST("/admin/ai/knowledge", _Admin_CreateKnowledge0_HTTP_Handler(srv))
 	r.POST("/admin/ai/knowledge/document/delete", _Admin_BatchDeleteKnowledgeDocument0_HTTP_Handler(srv))
 	r.GET("/admin/ai/knowledge/document/{id}", _Admin_GetKnowledgeDocument0_HTTP_Handler(srv))
-	r.GET("/admin/ai/knowledge/document/list", _Admin_ListKnowledgeDocument0_HTTP_Handler(srv))
+	r.POST("/admin/ai/knowledge/document/list", _Admin_ListKnowledgeDocument0_HTTP_Handler(srv))
 	r.PUT("/admin/ai/knowledge/document/{id}/status", _Admin_UpdateDocumentStatus0_HTTP_Handler(srv))
+	r.PUT("/admin/ai/knowledge/document/{id}", _Admin_UpdateKnowledgeDocument0_HTTP_Handler(srv))
 	r.GET("/admin/ai/knowledge/segment/{id}", _Admin_GetKnowledgeSegment0_HTTP_Handler(srv))
-	r.GET("/admin/ai/knowledge/segment/list", _Admin_ListKnowledgeSegments0_HTTP_Handler(srv))
+	r.POST("/admin/ai/knowledge/segment/list", _Admin_ListKnowledgeSegments0_HTTP_Handler(srv))
 	r.GET("/admin/ai/image/list", _Admin_ListImage0_HTTP_Handler(srv))
-	r.PUT("/admin/ai/image/{id}/public", _Admin_UpdateImagePublicStatus0_HTTP_Handler(srv))
+	r.PUT("/admin/ai/image/{id}", _Admin_UpdateImage0_HTTP_Handler(srv))
 	r.POST("/admin/ai/image/delete", _Admin_BatchDeleteImage0_HTTP_Handler(srv))
+	r.GET("/admin/ai/image/{id}", _Admin_GetImage0_HTTP_Handler(srv))
+	r.GET("/admin/ai/chat/conversation/{id}", _Admin_GetChatConversation0_HTTP_Handler(srv))
+	r.POST("/admin/ai/chat/conversation/list", _Admin_ListChatConversation0_HTTP_Handler(srv))
+	r.POST("/admin/ai/chat/conversation/delete", _Admin_BatchDeleteChatConversation0_HTTP_Handler(srv))
+	r.GET("/admin/ai/chat/message/{id}", _Admin_GetChatMessage0_HTTP_Handler(srv))
+	r.POST("/admin/ai/chat/message/list", _Admin_ListChatMessage0_HTTP_Handler(srv))
+	r.POST("/admin/ai/chat/message/delete", _Admin_BatchDeleteChatMessage0_HTTP_Handler(srv))
+	r.GET("/admin/ai/tool/{id}", _Admin_GetTool0_HTTP_Handler(srv))
+	r.POST("/admin/ai/tool/list", _Admin_ListTool0_HTTP_Handler(srv))
+	r.DELETE("/admin/ai/tool/{id}", _Admin_DeleteTool0_HTTP_Handler(srv))
+	r.POST("/admin/ai/tool/delete", _Admin_BatchDeleteTool0_HTTP_Handler(srv))
+	r.POST("/admin/ai/tool", _Admin_CreateTool0_HTTP_Handler(srv))
+	r.PUT("/ai/admin/tool/{id}", _Admin_UpdateTool0_HTTP_Handler(srv))
+	r.GET("/admin/ai/queue/metrics", _Admin_GetQueueMetrics0_HTTP_Handler(srv))
+	r.POST("/admin/ai/queue", _Admin_ListTasks0_HTTP_Handler(srv))
+	r.GET("/admin/ai/queue/{id}", _Admin_GetTask0_HTTP_Handler(srv))
+	r.POST("/admin/ai/queue/batch/delete", _Admin_BatchDeleteTasks0_HTTP_Handler(srv))
+	r.POST("/admin/ai/queue/cleanup", _Admin_CleanupTask0_HTTP_Handler(srv))
 }
 
 func _Admin_CreateApikey0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
@@ -173,7 +240,7 @@ func _Admin_UpdateApikey0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Contex
 
 func _Admin_DeleteApikey0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in DeleteRequest
+		var in SimpleRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -182,7 +249,7 @@ func _Admin_DeleteApikey0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Contex
 		}
 		http.SetOperation(ctx, OperationAdminDeleteApikey)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.DeleteApikey(ctx, req.(*DeleteRequest))
+			return srv.DeleteApikey(ctx, req.(*SimpleRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
@@ -218,6 +285,9 @@ func _Admin_GetApikey0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) 
 func _Admin_ListApikey0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -305,7 +375,7 @@ func _Admin_UpdateModel0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context
 
 func _Admin_DeleteModel0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in DeleteRequest
+		var in SimpleRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -314,7 +384,7 @@ func _Admin_DeleteModel0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context
 		}
 		http.SetOperation(ctx, OperationAdminDeleteModel)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.DeleteModel(ctx, req.(*DeleteRequest))
+			return srv.DeleteModel(ctx, req.(*SimpleRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
@@ -350,6 +420,9 @@ func _Admin_GetModel0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) e
 func _Admin_ListModel0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -388,28 +461,6 @@ func _Admin_BatchDeleteModel0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Co
 	}
 }
 
-func _Admin_CreateRole0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in v1.AiChatRole
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationAdminCreateRole)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.CreateRole(ctx, req.(*v1.AiChatRole))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*v1.AiChatRole)
-		return ctx.Result(200, reply)
-	}
-}
-
 func _Admin_GetRole0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in SimpleRequest
@@ -427,7 +478,7 @@ func _Admin_GetRole0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) er
 		if err != nil {
 			return err
 		}
-		reply := out.(*v1.AiChatRole)
+		reply := out.(*Role)
 		return ctx.Result(200, reply)
 	}
 }
@@ -435,6 +486,9 @@ func _Admin_GetRole0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) er
 func _Admin_ListRole0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -473,24 +527,49 @@ func _Admin_BatchDeleteRole0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Con
 	}
 }
 
-func _Admin_DeleteKnowledge0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+func _Admin_UpdateRole0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in DeleteRequest
+		var in v1.AiChatRole
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationAdminDeleteKnowledge)
+		http.SetOperation(ctx, OperationAdminUpdateRole)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.DeleteKnowledge(ctx, req.(*DeleteRequest))
+			return srv.UpdateRole(ctx, req.(*v1.AiChatRole))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*emptypb.Empty)
+		reply := out.(*Role)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_CreateRole0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v1.AiChatRole
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminCreateRole)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateRole(ctx, req.(*v1.AiChatRole))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*Role)
 		return ctx.Result(200, reply)
 	}
 }
@@ -512,7 +591,7 @@ func _Admin_GetKnowledge0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Contex
 		if err != nil {
 			return err
 		}
-		reply := out.(*v1.AiKnowledge)
+		reply := out.(*Knowledge)
 		return ctx.Result(200, reply)
 	}
 }
@@ -520,6 +599,9 @@ func _Admin_GetKnowledge0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Contex
 func _Admin_ListKnowledge0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -536,24 +618,71 @@ func _Admin_ListKnowledge0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Conte
 	}
 }
 
-func _Admin_DeleteKnowledgeDocument0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+func _Admin_BatchDeleteKnowledge0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in DeleteRequest
+		var in BatchDeleteRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		if err := ctx.BindVars(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationAdminDeleteKnowledgeDocument)
+		http.SetOperation(ctx, OperationAdminBatchDeleteKnowledge)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.DeleteKnowledgeDocument(ctx, req.(*DeleteRequest))
+			return srv.BatchDeleteKnowledge(ctx, req.(*BatchDeleteRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
 		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_UpdateKnowledge0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v1.AiKnowledge
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminUpdateKnowledge)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateKnowledge(ctx, req.(*v1.AiKnowledge))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*Knowledge)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_CreateKnowledge0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v1.AiKnowledge
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminCreateKnowledge)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateKnowledge(ctx, req.(*v1.AiKnowledge))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*Knowledge)
 		return ctx.Result(200, reply)
 	}
 }
@@ -605,6 +734,9 @@ func _Admin_GetKnowledgeDocument0_HTTP_Handler(srv AdminHTTPServer) func(ctx htt
 func _Admin_ListKnowledgeDocument0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -646,6 +778,31 @@ func _Admin_UpdateDocumentStatus0_HTTP_Handler(srv AdminHTTPServer) func(ctx htt
 	}
 }
 
+func _Admin_UpdateKnowledgeDocument0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v1.AiKnowledgeDocument
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminUpdateKnowledgeDocument)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateKnowledgeDocument(ctx, req.(*v1.AiKnowledgeDocument))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpsertDocumentResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 func _Admin_GetKnowledgeSegment0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in SimpleRequest
@@ -671,6 +828,9 @@ func _Admin_GetKnowledgeSegment0_HTTP_Handler(srv AdminHTTPServer) func(ctx http
 func _Admin_ListKnowledgeSegments0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -706,9 +866,9 @@ func _Admin_ListImage0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) 
 	}
 }
 
-func _Admin_UpdateImagePublicStatus0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+func _Admin_UpdateImage0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in UpdateImageStatusRequest
+		var in v1.AiImage
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
@@ -718,15 +878,15 @@ func _Admin_UpdateImagePublicStatus0_HTTP_Handler(srv AdminHTTPServer) func(ctx 
 		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationAdminUpdateImagePublicStatus)
+		http.SetOperation(ctx, OperationAdminUpdateImage)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.UpdateImagePublicStatus(ctx, req.(*UpdateImageStatusRequest))
+			return srv.UpdateImage(ctx, req.(*v1.AiImage))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*v1.AiImage)
+		reply := out.(*Image)
 		return ctx.Result(200, reply)
 	}
 }
@@ -753,32 +913,447 @@ func _Admin_BatchDeleteImage0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Co
 	}
 }
 
+func _Admin_GetImage0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SimpleRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminGetImage)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetImage(ctx, req.(*SimpleRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*Image)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_GetChatConversation0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SimpleRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminGetChatConversation)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetChatConversation(ctx, req.(*SimpleRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ChatConversation)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_ListChatConversation0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminListChatConversation)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListChatConversation(ctx, req.(*v11.ListRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListChatConversationResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_BatchDeleteChatConversation0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in BatchDeleteRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminBatchDeleteChatConversation)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.BatchDeleteChatConversation(ctx, req.(*BatchDeleteRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_GetChatMessage0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SimpleRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminGetChatMessage)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetChatMessage(ctx, req.(*SimpleRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ChatMessage)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_ListChatMessage0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminListChatMessage)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListChatMessage(ctx, req.(*v11.ListRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListChatMessageResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_BatchDeleteChatMessage0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in BatchDeleteRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminBatchDeleteChatMessage)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.BatchDeleteChatMessage(ctx, req.(*BatchDeleteRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_GetTool0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SimpleRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminGetTool)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetTool(ctx, req.(*SimpleRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*v1.AiTool)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_ListTool0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminListTool)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListTool(ctx, req.(*v11.ListRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListToolResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_DeleteTool0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SimpleRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminDeleteTool)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteTool(ctx, req.(*SimpleRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_BatchDeleteTool0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in BatchDeleteRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminBatchDeleteTool)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.BatchDeleteTool(ctx, req.(*BatchDeleteRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_CreateTool0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v1.AiTool
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminCreateTool)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreateTool(ctx, req.(*v1.AiTool))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*v1.AiTool)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_UpdateTool0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v1.AiTool
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminUpdateTool)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateTool(ctx, req.(*v1.AiTool))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*v1.AiTool)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_GetQueueMetrics0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in emptypb.Empty
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminGetQueueMetrics)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetQueueMetrics(ctx, req.(*emptypb.Empty))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*v11.QueueMetricsResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_ListTasks0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v11.ListRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminListTasks)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListTasks(ctx, req.(*v11.ListRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*v11.ListTaskResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_GetTask0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SimpleRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminGetTask)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetTask(ctx, req.(*SimpleRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*v11.GetTaskResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_BatchDeleteTasks0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in BatchDeleteRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminBatchDeleteTasks)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.BatchDeleteTasks(ctx, req.(*BatchDeleteRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Admin_CleanupTask0_HTTP_Handler(srv AdminHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v11.CleanupTaskRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAdminCleanupTask)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CleanupTask(ctx, req.(*v11.CleanupTaskRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*emptypb.Empty)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AdminHTTPClient interface {
 	BatchDeleteApiKey(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	BatchDeleteChatConversation(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	BatchDeleteChatMessage(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	BatchDeleteImage(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	BatchDeleteKnowledge(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	// BatchDeleteKnowledgeDocument Knowledge Document
 	BatchDeleteKnowledgeDocument(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	BatchDeleteModel(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	BatchDeleteRole(ctx context.Context, req *BatchDeleteRoleRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	BatchDeleteTasks(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	BatchDeleteTool(ctx context.Context, req *BatchDeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	CleanupTask(ctx context.Context, req *v11.CleanupTaskRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// CreateApikey Api Key
 	CreateApikey(ctx context.Context, req *v1.AiApiKey, opts ...http.CallOption) (rsp *v1.AiApiKey, err error)
+	CreateKnowledge(ctx context.Context, req *v1.AiKnowledge, opts ...http.CallOption) (rsp *Knowledge, err error)
 	// CreateModel Model
 	CreateModel(ctx context.Context, req *v1.AiModel, opts ...http.CallOption) (rsp *v1.AiModel, err error)
-	// CreateRole Role
-	CreateRole(ctx context.Context, req *v1.AiChatRole, opts ...http.CallOption) (rsp *v1.AiChatRole, err error)
-	DeleteApikey(ctx context.Context, req *DeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
-	// DeleteKnowledge Knowledge
-	DeleteKnowledge(ctx context.Context, req *DeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
-	// DeleteKnowledgeDocument Knowledge Document
-	DeleteKnowledgeDocument(ctx context.Context, req *DeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
-	DeleteModel(ctx context.Context, req *DeleteRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	CreateRole(ctx context.Context, req *v1.AiChatRole, opts ...http.CallOption) (rsp *Role, err error)
+	CreateTool(ctx context.Context, req *v1.AiTool, opts ...http.CallOption) (rsp *v1.AiTool, err error)
+	DeleteApikey(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	DeleteModel(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	DeleteTool(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	GetApikey(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *v1.AiApiKey, err error)
-	GetKnowledge(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *v1.AiKnowledge, err error)
+	// GetChatConversation Conversation
+	GetChatConversation(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *ChatConversation, err error)
+	// GetChatMessage Chat Message
+	GetChatMessage(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *ChatMessage, err error)
+	GetImage(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *Image, err error)
+	// GetKnowledge Knowledge
+	GetKnowledge(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *Knowledge, err error)
 	GetKnowledgeDocument(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *v1.AiKnowledgeDocument, err error)
 	// GetKnowledgeSegment Knowledge Document Segment
 	GetKnowledgeSegment(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *v1.AiKnowledgeSegment, err error)
 	GetModel(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *v1.AiModel, err error)
-	GetRole(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *v1.AiChatRole, err error)
+	// GetQueueMetrics Task
+	GetQueueMetrics(ctx context.Context, req *emptypb.Empty, opts ...http.CallOption) (rsp *v11.QueueMetricsResponse, err error)
+	// GetRole Role
+	GetRole(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *Role, err error)
+	GetTask(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *v11.GetTaskResponse, err error)
+	// GetTool Tool
+	GetTool(ctx context.Context, req *SimpleRequest, opts ...http.CallOption) (rsp *v1.AiTool, err error)
 	ListApikey(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *ListApikeyResponse, err error)
+	ListChatConversation(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *ListChatConversationResponse, err error)
+	ListChatMessage(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *ListChatMessageResponse, err error)
 	// ListImage Image
 	ListImage(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *ListImageResponse, err error)
 	ListKnowledge(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *ListKnowledgeResponse, err error)
@@ -786,10 +1361,16 @@ type AdminHTTPClient interface {
 	ListKnowledgeSegments(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *ListKnowledgeSegmentResponse, err error)
 	ListModel(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *ListModelResponse, err error)
 	ListRole(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *ListRoleResponse, err error)
+	ListTasks(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *v11.ListTaskResponse, err error)
+	ListTool(ctx context.Context, req *v11.ListRequest, opts ...http.CallOption) (rsp *ListToolResponse, err error)
 	UpdateApikey(ctx context.Context, req *v1.AiApiKey, opts ...http.CallOption) (rsp *v1.AiApiKey, err error)
 	UpdateDocumentStatus(ctx context.Context, req *UpdateDocumentStatusRequest, opts ...http.CallOption) (rsp *v1.AiKnowledgeDocument, err error)
-	UpdateImagePublicStatus(ctx context.Context, req *UpdateImageStatusRequest, opts ...http.CallOption) (rsp *v1.AiImage, err error)
+	UpdateImage(ctx context.Context, req *v1.AiImage, opts ...http.CallOption) (rsp *Image, err error)
+	UpdateKnowledge(ctx context.Context, req *v1.AiKnowledge, opts ...http.CallOption) (rsp *Knowledge, err error)
+	UpdateKnowledgeDocument(ctx context.Context, req *v1.AiKnowledgeDocument, opts ...http.CallOption) (rsp *UpsertDocumentResponse, err error)
 	UpdateModel(ctx context.Context, req *v1.AiModel, opts ...http.CallOption) (rsp *v1.AiModel, err error)
+	UpdateRole(ctx context.Context, req *v1.AiChatRole, opts ...http.CallOption) (rsp *Role, err error)
+	UpdateTool(ctx context.Context, req *v1.AiTool, opts ...http.CallOption) (rsp *v1.AiTool, err error)
 }
 
 type AdminHTTPClientImpl struct {
@@ -802,9 +1383,35 @@ func NewAdminHTTPClient(client *http.Client) AdminHTTPClient {
 
 func (c *AdminHTTPClientImpl) BatchDeleteApiKey(ctx context.Context, in *BatchDeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/admin/admin/ai/api_key/batch/delete"
+	pattern := "/admin/ai/api-key/batch/delete"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminBatchDeleteApiKey))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) BatchDeleteChatConversation(ctx context.Context, in *BatchDeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/admin/ai/chat/conversation/delete"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminBatchDeleteChatConversation))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) BatchDeleteChatMessage(ctx context.Context, in *BatchDeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/admin/ai/chat/message/delete"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminBatchDeleteChatMessage))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -826,6 +1433,20 @@ func (c *AdminHTTPClientImpl) BatchDeleteImage(ctx context.Context, in *BatchDel
 	return &out, nil
 }
 
+func (c *AdminHTTPClientImpl) BatchDeleteKnowledge(ctx context.Context, in *BatchDeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/admin/ai/knowledge/delete"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminBatchDeleteKnowledge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// BatchDeleteKnowledgeDocument Knowledge Document
 func (c *AdminHTTPClientImpl) BatchDeleteKnowledgeDocument(ctx context.Context, in *BatchDeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
 	pattern := "/admin/ai/knowledge/document/delete"
@@ -854,9 +1475,48 @@ func (c *AdminHTTPClientImpl) BatchDeleteModel(ctx context.Context, in *BatchDel
 
 func (c *AdminHTTPClientImpl) BatchDeleteRole(ctx context.Context, in *BatchDeleteRoleRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/admin/ai/role/batch/delete"
+	pattern := "/admin/ai/role/delete"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminBatchDeleteRole))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) BatchDeleteTasks(ctx context.Context, in *BatchDeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/admin/ai/queue/batch/delete"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminBatchDeleteTasks))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) BatchDeleteTool(ctx context.Context, in *BatchDeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/admin/ai/tool/delete"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminBatchDeleteTool))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) CleanupTask(ctx context.Context, in *v11.CleanupTaskRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/admin/ai/queue/cleanup"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminCleanupTask))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
@@ -879,6 +1539,19 @@ func (c *AdminHTTPClientImpl) CreateApikey(ctx context.Context, in *v1.AiApiKey,
 	return &out, nil
 }
 
+func (c *AdminHTTPClientImpl) CreateKnowledge(ctx context.Context, in *v1.AiKnowledge, opts ...http.CallOption) (*Knowledge, error) {
+	var out Knowledge
+	pattern := "/admin/ai/knowledge"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminCreateKnowledge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // CreateModel Model
 func (c *AdminHTTPClientImpl) CreateModel(ctx context.Context, in *v1.AiModel, opts ...http.CallOption) (*v1.AiModel, error) {
 	var out v1.AiModel
@@ -893,9 +1566,8 @@ func (c *AdminHTTPClientImpl) CreateModel(ctx context.Context, in *v1.AiModel, o
 	return &out, nil
 }
 
-// CreateRole Role
-func (c *AdminHTTPClientImpl) CreateRole(ctx context.Context, in *v1.AiChatRole, opts ...http.CallOption) (*v1.AiChatRole, error) {
-	var out v1.AiChatRole
+func (c *AdminHTTPClientImpl) CreateRole(ctx context.Context, in *v1.AiChatRole, opts ...http.CallOption) (*Role, error) {
+	var out Role
 	pattern := "/admin/ai/role"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminCreateRole))
@@ -907,7 +1579,20 @@ func (c *AdminHTTPClientImpl) CreateRole(ctx context.Context, in *v1.AiChatRole,
 	return &out, nil
 }
 
-func (c *AdminHTTPClientImpl) DeleteApikey(ctx context.Context, in *DeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+func (c *AdminHTTPClientImpl) CreateTool(ctx context.Context, in *v1.AiTool, opts ...http.CallOption) (*v1.AiTool, error) {
+	var out v1.AiTool
+	pattern := "/admin/ai/tool"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminCreateTool))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) DeleteApikey(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
 	pattern := "/admin/ai/api-key/{id}"
 	path := binding.EncodeURL(pattern, in, true)
@@ -920,39 +1605,24 @@ func (c *AdminHTTPClientImpl) DeleteApikey(ctx context.Context, in *DeleteReques
 	return &out, nil
 }
 
-// DeleteKnowledge Knowledge
-func (c *AdminHTTPClientImpl) DeleteKnowledge(ctx context.Context, in *DeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
-	var out emptypb.Empty
-	pattern := "/admin/ai/knowledge/{id}"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationAdminDeleteKnowledge))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-// DeleteKnowledgeDocument Knowledge Document
-func (c *AdminHTTPClientImpl) DeleteKnowledgeDocument(ctx context.Context, in *DeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
-	var out emptypb.Empty
-	pattern := "/admin/ai/knowledge/document/{id}"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationAdminDeleteKnowledgeDocument))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func (c *AdminHTTPClientImpl) DeleteModel(ctx context.Context, in *DeleteRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+func (c *AdminHTTPClientImpl) DeleteModel(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
 	pattern := "/admin/ai/model/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminDeleteModel))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) DeleteTool(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
+	pattern := "/admin/ai/tool/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminDeleteTool))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
 	if err != nil {
@@ -974,8 +1644,50 @@ func (c *AdminHTTPClientImpl) GetApikey(ctx context.Context, in *SimpleRequest, 
 	return &out, nil
 }
 
-func (c *AdminHTTPClientImpl) GetKnowledge(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*v1.AiKnowledge, error) {
-	var out v1.AiKnowledge
+// GetChatConversation Conversation
+func (c *AdminHTTPClientImpl) GetChatConversation(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*ChatConversation, error) {
+	var out ChatConversation
+	pattern := "/admin/ai/chat/conversation/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminGetChatConversation))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetChatMessage Chat Message
+func (c *AdminHTTPClientImpl) GetChatMessage(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*ChatMessage, error) {
+	var out ChatMessage
+	pattern := "/admin/ai/chat/message/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminGetChatMessage))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) GetImage(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*Image, error) {
+	var out Image
+	pattern := "/admin/ai/image/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminGetImage))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetKnowledge Knowledge
+func (c *AdminHTTPClientImpl) GetKnowledge(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*Knowledge, error) {
+	var out Knowledge
 	pattern := "/admin/ai/knowledge/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminGetKnowledge))
@@ -1027,8 +1739,23 @@ func (c *AdminHTTPClientImpl) GetModel(ctx context.Context, in *SimpleRequest, o
 	return &out, nil
 }
 
-func (c *AdminHTTPClientImpl) GetRole(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*v1.AiChatRole, error) {
-	var out v1.AiChatRole
+// GetQueueMetrics Task
+func (c *AdminHTTPClientImpl) GetQueueMetrics(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*v11.QueueMetricsResponse, error) {
+	var out v11.QueueMetricsResponse
+	pattern := "/admin/ai/queue/metrics"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminGetQueueMetrics))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetRole Role
+func (c *AdminHTTPClientImpl) GetRole(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*Role, error) {
+	var out Role
 	pattern := "/admin/ai/role/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminGetRole))
@@ -1040,13 +1767,66 @@ func (c *AdminHTTPClientImpl) GetRole(ctx context.Context, in *SimpleRequest, op
 	return &out, nil
 }
 
+func (c *AdminHTTPClientImpl) GetTask(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*v11.GetTaskResponse, error) {
+	var out v11.GetTaskResponse
+	pattern := "/admin/ai/queue/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminGetTask))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// GetTool Tool
+func (c *AdminHTTPClientImpl) GetTool(ctx context.Context, in *SimpleRequest, opts ...http.CallOption) (*v1.AiTool, error) {
+	var out v1.AiTool
+	pattern := "/admin/ai/tool/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAdminGetTool))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *AdminHTTPClientImpl) ListApikey(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*ListApikeyResponse, error) {
 	var out ListApikeyResponse
 	pattern := "/admin/ai/api-key/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminListApikey))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) ListChatConversation(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*ListChatConversationResponse, error) {
+	var out ListChatConversationResponse
+	pattern := "/admin/ai/chat/conversation/list"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminListChatConversation))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) ListChatMessage(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*ListChatMessageResponse, error) {
+	var out ListChatMessageResponse
+	pattern := "/admin/ai/chat/message/list"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminListChatMessage))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1070,10 +1850,10 @@ func (c *AdminHTTPClientImpl) ListImage(ctx context.Context, in *v11.ListRequest
 func (c *AdminHTTPClientImpl) ListKnowledge(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*ListKnowledgeResponse, error) {
 	var out ListKnowledgeResponse
 	pattern := "/admin/ai/knowledge/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminListKnowledge))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1083,10 +1863,10 @@ func (c *AdminHTTPClientImpl) ListKnowledge(ctx context.Context, in *v11.ListReq
 func (c *AdminHTTPClientImpl) ListKnowledgeDocument(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*ListKnowledgeDocumentResponse, error) {
 	var out ListKnowledgeDocumentResponse
 	pattern := "/admin/ai/knowledge/document/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminListKnowledgeDocument))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1096,10 +1876,10 @@ func (c *AdminHTTPClientImpl) ListKnowledgeDocument(ctx context.Context, in *v11
 func (c *AdminHTTPClientImpl) ListKnowledgeSegments(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*ListKnowledgeSegmentResponse, error) {
 	var out ListKnowledgeSegmentResponse
 	pattern := "/admin/ai/knowledge/segment/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminListKnowledgeSegments))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1109,10 +1889,10 @@ func (c *AdminHTTPClientImpl) ListKnowledgeSegments(ctx context.Context, in *v11
 func (c *AdminHTTPClientImpl) ListModel(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*ListModelResponse, error) {
 	var out ListModelResponse
 	pattern := "/admin/ai/model/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminListModel))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1122,10 +1902,36 @@ func (c *AdminHTTPClientImpl) ListModel(ctx context.Context, in *v11.ListRequest
 func (c *AdminHTTPClientImpl) ListRole(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*ListRoleResponse, error) {
 	var out ListRoleResponse
 	pattern := "/admin/ai/role/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminListRole))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) ListTasks(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*v11.ListTaskResponse, error) {
+	var out v11.ListTaskResponse
+	pattern := "/admin/ai/queue"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminListTasks))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) ListTool(ctx context.Context, in *v11.ListRequest, opts ...http.CallOption) (*ListToolResponse, error) {
+	var out ListToolResponse
+	pattern := "/admin/ai/tool/list"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminListTool))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1158,11 +1964,37 @@ func (c *AdminHTTPClientImpl) UpdateDocumentStatus(ctx context.Context, in *Upda
 	return &out, nil
 }
 
-func (c *AdminHTTPClientImpl) UpdateImagePublicStatus(ctx context.Context, in *UpdateImageStatusRequest, opts ...http.CallOption) (*v1.AiImage, error) {
-	var out v1.AiImage
-	pattern := "/admin/ai/image/{id}/public"
+func (c *AdminHTTPClientImpl) UpdateImage(ctx context.Context, in *v1.AiImage, opts ...http.CallOption) (*Image, error) {
+	var out Image
+	pattern := "/admin/ai/image/{id}"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationAdminUpdateImagePublicStatus))
+	opts = append(opts, http.Operation(OperationAdminUpdateImage))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) UpdateKnowledge(ctx context.Context, in *v1.AiKnowledge, opts ...http.CallOption) (*Knowledge, error) {
+	var out Knowledge
+	pattern := "/admin/ai/knowledge/{id}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminUpdateKnowledge))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) UpdateKnowledgeDocument(ctx context.Context, in *v1.AiKnowledgeDocument, opts ...http.CallOption) (*UpsertDocumentResponse, error) {
+	var out UpsertDocumentResponse
+	pattern := "/admin/ai/knowledge/document/{id}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminUpdateKnowledgeDocument))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {
@@ -1176,6 +2008,32 @@ func (c *AdminHTTPClientImpl) UpdateModel(ctx context.Context, in *v1.AiModel, o
 	pattern := "/admin/ai/model/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminUpdateModel))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) UpdateRole(ctx context.Context, in *v1.AiChatRole, opts ...http.CallOption) (*Role, error) {
+	var out Role
+	pattern := "/admin/ai/role/{id}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminUpdateRole))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *AdminHTTPClientImpl) UpdateTool(ctx context.Context, in *v1.AiTool, opts ...http.CallOption) (*v1.AiTool, error) {
+	var out v1.AiTool
+	pattern := "/ai/admin/tool/{id}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAdminUpdateTool))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {

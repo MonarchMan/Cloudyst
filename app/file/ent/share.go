@@ -3,10 +3,11 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"encoding/json"
 	"file/ent/file"
 	"file/ent/share"
+	"file/internal/data/types"
 	"fmt"
 	"strings"
 	"time"
@@ -37,11 +38,11 @@ type Share struct {
 	// RemainDownloads holds the value of the "remain_downloads" field.
 	RemainDownloads *int `json:"remain_downloads,omitempty"`
 	// Props holds the value of the "props" field.
-	Props *v1.ShareProps `json:"props,omitempty"`
+	Props *types.ShareProps `json:"props,omitempty"`
 	// OwnerID holds the value of the "owner_id" field.
 	OwnerID int `json:"owner_id,omitempty"`
 	// OwnerInfo holds the value of the "owner_info" field.
-	OwnerInfo *v1.UserInfo `json:"owner_info,omitempty"`
+	OwnerInfo *userdata.UserInfo `json:"owner_info,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ShareQuery when eager-loading is set.
 	Edges        ShareEdges `json:"edges"`

@@ -14,6 +14,7 @@ import (
 	"ai/ent/aimodel"
 	"ai/ent/aitool"
 	"ai/ent/aiwebpage"
+	"ai/ent/task"
 	"context"
 	"errors"
 	"fmt"
@@ -94,6 +95,7 @@ func checkColumn(t, c string) error {
 			aimodel.Table:             aimodel.ValidColumn,
 			aitool.Table:              aitool.ValidColumn,
 			aiwebpage.Table:           aiwebpage.ValidColumn,
+			task.Table:                task.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

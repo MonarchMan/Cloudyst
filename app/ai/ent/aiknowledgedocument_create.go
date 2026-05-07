@@ -98,9 +98,63 @@ func (_c *AiKnowledgeDocumentCreate) SetContentLength(v int) *AiKnowledgeDocumen
 	return _c
 }
 
+// SetSize sets the "size" field.
+func (_c *AiKnowledgeDocumentCreate) SetSize(v int64) *AiKnowledgeDocumentCreate {
+	_c.mutation.SetSize(v)
+	return _c
+}
+
 // SetTokens sets the "tokens" field.
 func (_c *AiKnowledgeDocumentCreate) SetTokens(v int) *AiKnowledgeDocumentCreate {
 	_c.mutation.SetTokens(v)
+	return _c
+}
+
+// SetChunks sets the "chunks" field.
+func (_c *AiKnowledgeDocumentCreate) SetChunks(v int) *AiKnowledgeDocumentCreate {
+	_c.mutation.SetChunks(v)
+	return _c
+}
+
+// SetNillableChunks sets the "chunks" field if the given value is not nil.
+func (_c *AiKnowledgeDocumentCreate) SetNillableChunks(v *int) *AiKnowledgeDocumentCreate {
+	if v != nil {
+		_c.SetChunks(*v)
+	}
+	return _c
+}
+
+// SetParseType sets the "parse_type" field.
+func (_c *AiKnowledgeDocumentCreate) SetParseType(v string) *AiKnowledgeDocumentCreate {
+	_c.mutation.SetParseType(v)
+	return _c
+}
+
+// SetNillableParseType sets the "parse_type" field if the given value is not nil.
+func (_c *AiKnowledgeDocumentCreate) SetNillableParseType(v *string) *AiKnowledgeDocumentCreate {
+	if v != nil {
+		_c.SetParseType(*v)
+	}
+	return _c
+}
+
+// SetContentHash sets the "content_hash" field.
+func (_c *AiKnowledgeDocumentCreate) SetContentHash(v string) *AiKnowledgeDocumentCreate {
+	_c.mutation.SetContentHash(v)
+	return _c
+}
+
+// SetNillableContentHash sets the "content_hash" field if the given value is not nil.
+func (_c *AiKnowledgeDocumentCreate) SetNillableContentHash(v *string) *AiKnowledgeDocumentCreate {
+	if v != nil {
+		_c.SetContentHash(*v)
+	}
+	return _c
+}
+
+// SetMetadata sets the "metadata" field.
+func (_c *AiKnowledgeDocumentCreate) SetMetadata(v map[string]interface{}) *AiKnowledgeDocumentCreate {
+	_c.mutation.SetMetadata(v)
 	return _c
 }
 
@@ -116,9 +170,9 @@ func (_c *AiKnowledgeDocumentCreate) SetRetrievalCount(v int) *AiKnowledgeDocume
 	return _c
 }
 
-// SetProcess sets the "process" field.
-func (_c *AiKnowledgeDocumentCreate) SetProcess(v types.DocumentStatus) *AiKnowledgeDocumentCreate {
-	_c.mutation.SetProcess(v)
+// SetProgress sets the "progress" field.
+func (_c *AiKnowledgeDocumentCreate) SetProgress(v types.DocumentProgress) *AiKnowledgeDocumentCreate {
+	_c.mutation.SetProgress(v)
 	return _c
 }
 
@@ -205,6 +259,18 @@ func (_c *AiKnowledgeDocumentCreate) defaults() error {
 		v := aiknowledgedocument.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.Chunks(); !ok {
+		v := aiknowledgedocument.DefaultChunks
+		_c.mutation.SetChunks(v)
+	}
+	if _, ok := _c.mutation.ParseType(); !ok {
+		v := aiknowledgedocument.DefaultParseType
+		_c.mutation.SetParseType(v)
+	}
+	if _, ok := _c.mutation.ContentHash(); !ok {
+		v := aiknowledgedocument.DefaultContentHash
+		_c.mutation.SetContentHash(v)
+	}
 	return nil
 }
 
@@ -236,8 +302,14 @@ func (_c *AiKnowledgeDocumentCreate) check() error {
 	if _, ok := _c.mutation.ContentLength(); !ok {
 		return &ValidationError{Name: "content_length", err: errors.New(`ent: missing required field "AiKnowledgeDocument.content_length"`)}
 	}
+	if _, ok := _c.mutation.Size(); !ok {
+		return &ValidationError{Name: "size", err: errors.New(`ent: missing required field "AiKnowledgeDocument.size"`)}
+	}
 	if _, ok := _c.mutation.Tokens(); !ok {
 		return &ValidationError{Name: "tokens", err: errors.New(`ent: missing required field "AiKnowledgeDocument.tokens"`)}
+	}
+	if _, ok := _c.mutation.Chunks(); !ok {
+		return &ValidationError{Name: "chunks", err: errors.New(`ent: missing required field "AiKnowledgeDocument.chunks"`)}
 	}
 	if _, ok := _c.mutation.SegmentMaxTokens(); !ok {
 		return &ValidationError{Name: "segment_max_tokens", err: errors.New(`ent: missing required field "AiKnowledgeDocument.segment_max_tokens"`)}
@@ -245,12 +317,12 @@ func (_c *AiKnowledgeDocumentCreate) check() error {
 	if _, ok := _c.mutation.RetrievalCount(); !ok {
 		return &ValidationError{Name: "retrieval_count", err: errors.New(`ent: missing required field "AiKnowledgeDocument.retrieval_count"`)}
 	}
-	if _, ok := _c.mutation.Process(); !ok {
-		return &ValidationError{Name: "process", err: errors.New(`ent: missing required field "AiKnowledgeDocument.process"`)}
+	if _, ok := _c.mutation.Progress(); !ok {
+		return &ValidationError{Name: "progress", err: errors.New(`ent: missing required field "AiKnowledgeDocument.progress"`)}
 	}
-	if v, ok := _c.mutation.Process(); ok {
-		if err := aiknowledgedocument.ProcessValidator(v); err != nil {
-			return &ValidationError{Name: "process", err: fmt.Errorf(`ent: validator failed for field "AiKnowledgeDocument.process": %w`, err)}
+	if v, ok := _c.mutation.Progress(); ok {
+		if err := aiknowledgedocument.ProgressValidator(v); err != nil {
+			return &ValidationError{Name: "progress", err: fmt.Errorf(`ent: validator failed for field "AiKnowledgeDocument.progress": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Status(); !ok {
@@ -326,9 +398,29 @@ func (_c *AiKnowledgeDocumentCreate) createSpec() (*AiKnowledgeDocument, *sqlgra
 		_spec.SetField(aiknowledgedocument.FieldContentLength, field.TypeInt, value)
 		_node.ContentLength = value
 	}
+	if value, ok := _c.mutation.Size(); ok {
+		_spec.SetField(aiknowledgedocument.FieldSize, field.TypeInt64, value)
+		_node.Size = value
+	}
 	if value, ok := _c.mutation.Tokens(); ok {
 		_spec.SetField(aiknowledgedocument.FieldTokens, field.TypeInt, value)
 		_node.Tokens = value
+	}
+	if value, ok := _c.mutation.Chunks(); ok {
+		_spec.SetField(aiknowledgedocument.FieldChunks, field.TypeInt, value)
+		_node.Chunks = value
+	}
+	if value, ok := _c.mutation.ParseType(); ok {
+		_spec.SetField(aiknowledgedocument.FieldParseType, field.TypeString, value)
+		_node.ParseType = value
+	}
+	if value, ok := _c.mutation.ContentHash(); ok {
+		_spec.SetField(aiknowledgedocument.FieldContentHash, field.TypeString, value)
+		_node.ContentHash = value
+	}
+	if value, ok := _c.mutation.Metadata(); ok {
+		_spec.SetField(aiknowledgedocument.FieldMetadata, field.TypeJSON, value)
+		_node.Metadata = value
 	}
 	if value, ok := _c.mutation.SegmentMaxTokens(); ok {
 		_spec.SetField(aiknowledgedocument.FieldSegmentMaxTokens, field.TypeInt, value)
@@ -338,9 +430,9 @@ func (_c *AiKnowledgeDocumentCreate) createSpec() (*AiKnowledgeDocument, *sqlgra
 		_spec.SetField(aiknowledgedocument.FieldRetrievalCount, field.TypeInt, value)
 		_node.RetrievalCount = value
 	}
-	if value, ok := _c.mutation.Process(); ok {
-		_spec.SetField(aiknowledgedocument.FieldProcess, field.TypeEnum, value)
-		_node.Process = value
+	if value, ok := _c.mutation.Progress(); ok {
+		_spec.SetField(aiknowledgedocument.FieldProgress, field.TypeEnum, value)
+		_node.Progress = value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(aiknowledgedocument.FieldStatus, field.TypeEnum, value)
@@ -527,6 +619,24 @@ func (u *AiKnowledgeDocumentUpsert) AddContentLength(v int) *AiKnowledgeDocument
 	return u
 }
 
+// SetSize sets the "size" field.
+func (u *AiKnowledgeDocumentUpsert) SetSize(v int64) *AiKnowledgeDocumentUpsert {
+	u.Set(aiknowledgedocument.FieldSize, v)
+	return u
+}
+
+// UpdateSize sets the "size" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsert) UpdateSize() *AiKnowledgeDocumentUpsert {
+	u.SetExcluded(aiknowledgedocument.FieldSize)
+	return u
+}
+
+// AddSize adds v to the "size" field.
+func (u *AiKnowledgeDocumentUpsert) AddSize(v int64) *AiKnowledgeDocumentUpsert {
+	u.Add(aiknowledgedocument.FieldSize, v)
+	return u
+}
+
 // SetTokens sets the "tokens" field.
 func (u *AiKnowledgeDocumentUpsert) SetTokens(v int) *AiKnowledgeDocumentUpsert {
 	u.Set(aiknowledgedocument.FieldTokens, v)
@@ -542,6 +652,78 @@ func (u *AiKnowledgeDocumentUpsert) UpdateTokens() *AiKnowledgeDocumentUpsert {
 // AddTokens adds v to the "tokens" field.
 func (u *AiKnowledgeDocumentUpsert) AddTokens(v int) *AiKnowledgeDocumentUpsert {
 	u.Add(aiknowledgedocument.FieldTokens, v)
+	return u
+}
+
+// SetChunks sets the "chunks" field.
+func (u *AiKnowledgeDocumentUpsert) SetChunks(v int) *AiKnowledgeDocumentUpsert {
+	u.Set(aiknowledgedocument.FieldChunks, v)
+	return u
+}
+
+// UpdateChunks sets the "chunks" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsert) UpdateChunks() *AiKnowledgeDocumentUpsert {
+	u.SetExcluded(aiknowledgedocument.FieldChunks)
+	return u
+}
+
+// AddChunks adds v to the "chunks" field.
+func (u *AiKnowledgeDocumentUpsert) AddChunks(v int) *AiKnowledgeDocumentUpsert {
+	u.Add(aiknowledgedocument.FieldChunks, v)
+	return u
+}
+
+// SetParseType sets the "parse_type" field.
+func (u *AiKnowledgeDocumentUpsert) SetParseType(v string) *AiKnowledgeDocumentUpsert {
+	u.Set(aiknowledgedocument.FieldParseType, v)
+	return u
+}
+
+// UpdateParseType sets the "parse_type" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsert) UpdateParseType() *AiKnowledgeDocumentUpsert {
+	u.SetExcluded(aiknowledgedocument.FieldParseType)
+	return u
+}
+
+// ClearParseType clears the value of the "parse_type" field.
+func (u *AiKnowledgeDocumentUpsert) ClearParseType() *AiKnowledgeDocumentUpsert {
+	u.SetNull(aiknowledgedocument.FieldParseType)
+	return u
+}
+
+// SetContentHash sets the "content_hash" field.
+func (u *AiKnowledgeDocumentUpsert) SetContentHash(v string) *AiKnowledgeDocumentUpsert {
+	u.Set(aiknowledgedocument.FieldContentHash, v)
+	return u
+}
+
+// UpdateContentHash sets the "content_hash" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsert) UpdateContentHash() *AiKnowledgeDocumentUpsert {
+	u.SetExcluded(aiknowledgedocument.FieldContentHash)
+	return u
+}
+
+// ClearContentHash clears the value of the "content_hash" field.
+func (u *AiKnowledgeDocumentUpsert) ClearContentHash() *AiKnowledgeDocumentUpsert {
+	u.SetNull(aiknowledgedocument.FieldContentHash)
+	return u
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *AiKnowledgeDocumentUpsert) SetMetadata(v map[string]interface{}) *AiKnowledgeDocumentUpsert {
+	u.Set(aiknowledgedocument.FieldMetadata, v)
+	return u
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsert) UpdateMetadata() *AiKnowledgeDocumentUpsert {
+	u.SetExcluded(aiknowledgedocument.FieldMetadata)
+	return u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AiKnowledgeDocumentUpsert) ClearMetadata() *AiKnowledgeDocumentUpsert {
+	u.SetNull(aiknowledgedocument.FieldMetadata)
 	return u
 }
 
@@ -581,15 +763,15 @@ func (u *AiKnowledgeDocumentUpsert) AddRetrievalCount(v int) *AiKnowledgeDocumen
 	return u
 }
 
-// SetProcess sets the "process" field.
-func (u *AiKnowledgeDocumentUpsert) SetProcess(v types.DocumentStatus) *AiKnowledgeDocumentUpsert {
-	u.Set(aiknowledgedocument.FieldProcess, v)
+// SetProgress sets the "progress" field.
+func (u *AiKnowledgeDocumentUpsert) SetProgress(v types.DocumentProgress) *AiKnowledgeDocumentUpsert {
+	u.Set(aiknowledgedocument.FieldProgress, v)
 	return u
 }
 
-// UpdateProcess sets the "process" field to the value that was provided on create.
-func (u *AiKnowledgeDocumentUpsert) UpdateProcess() *AiKnowledgeDocumentUpsert {
-	u.SetExcluded(aiknowledgedocument.FieldProcess)
+// UpdateProgress sets the "progress" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsert) UpdateProgress() *AiKnowledgeDocumentUpsert {
+	u.SetExcluded(aiknowledgedocument.FieldProgress)
 	return u
 }
 
@@ -762,6 +944,27 @@ func (u *AiKnowledgeDocumentUpsertOne) UpdateContentLength() *AiKnowledgeDocumen
 	})
 }
 
+// SetSize sets the "size" field.
+func (u *AiKnowledgeDocumentUpsertOne) SetSize(v int64) *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetSize(v)
+	})
+}
+
+// AddSize adds v to the "size" field.
+func (u *AiKnowledgeDocumentUpsertOne) AddSize(v int64) *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.AddSize(v)
+	})
+}
+
+// UpdateSize sets the "size" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertOne) UpdateSize() *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateSize()
+	})
+}
+
 // SetTokens sets the "tokens" field.
 func (u *AiKnowledgeDocumentUpsertOne) SetTokens(v int) *AiKnowledgeDocumentUpsertOne {
 	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
@@ -780,6 +983,90 @@ func (u *AiKnowledgeDocumentUpsertOne) AddTokens(v int) *AiKnowledgeDocumentUpse
 func (u *AiKnowledgeDocumentUpsertOne) UpdateTokens() *AiKnowledgeDocumentUpsertOne {
 	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
 		s.UpdateTokens()
+	})
+}
+
+// SetChunks sets the "chunks" field.
+func (u *AiKnowledgeDocumentUpsertOne) SetChunks(v int) *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetChunks(v)
+	})
+}
+
+// AddChunks adds v to the "chunks" field.
+func (u *AiKnowledgeDocumentUpsertOne) AddChunks(v int) *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.AddChunks(v)
+	})
+}
+
+// UpdateChunks sets the "chunks" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertOne) UpdateChunks() *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateChunks()
+	})
+}
+
+// SetParseType sets the "parse_type" field.
+func (u *AiKnowledgeDocumentUpsertOne) SetParseType(v string) *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetParseType(v)
+	})
+}
+
+// UpdateParseType sets the "parse_type" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertOne) UpdateParseType() *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateParseType()
+	})
+}
+
+// ClearParseType clears the value of the "parse_type" field.
+func (u *AiKnowledgeDocumentUpsertOne) ClearParseType() *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.ClearParseType()
+	})
+}
+
+// SetContentHash sets the "content_hash" field.
+func (u *AiKnowledgeDocumentUpsertOne) SetContentHash(v string) *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetContentHash(v)
+	})
+}
+
+// UpdateContentHash sets the "content_hash" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertOne) UpdateContentHash() *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateContentHash()
+	})
+}
+
+// ClearContentHash clears the value of the "content_hash" field.
+func (u *AiKnowledgeDocumentUpsertOne) ClearContentHash() *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.ClearContentHash()
+	})
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *AiKnowledgeDocumentUpsertOne) SetMetadata(v map[string]interface{}) *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertOne) UpdateMetadata() *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AiKnowledgeDocumentUpsertOne) ClearMetadata() *AiKnowledgeDocumentUpsertOne {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.ClearMetadata()
 	})
 }
 
@@ -825,17 +1112,17 @@ func (u *AiKnowledgeDocumentUpsertOne) UpdateRetrievalCount() *AiKnowledgeDocume
 	})
 }
 
-// SetProcess sets the "process" field.
-func (u *AiKnowledgeDocumentUpsertOne) SetProcess(v types.DocumentStatus) *AiKnowledgeDocumentUpsertOne {
+// SetProgress sets the "progress" field.
+func (u *AiKnowledgeDocumentUpsertOne) SetProgress(v types.DocumentProgress) *AiKnowledgeDocumentUpsertOne {
 	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
-		s.SetProcess(v)
+		s.SetProgress(v)
 	})
 }
 
-// UpdateProcess sets the "process" field to the value that was provided on create.
-func (u *AiKnowledgeDocumentUpsertOne) UpdateProcess() *AiKnowledgeDocumentUpsertOne {
+// UpdateProgress sets the "progress" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertOne) UpdateProgress() *AiKnowledgeDocumentUpsertOne {
 	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
-		s.UpdateProcess()
+		s.UpdateProgress()
 	})
 }
 
@@ -1181,6 +1468,27 @@ func (u *AiKnowledgeDocumentUpsertBulk) UpdateContentLength() *AiKnowledgeDocume
 	})
 }
 
+// SetSize sets the "size" field.
+func (u *AiKnowledgeDocumentUpsertBulk) SetSize(v int64) *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetSize(v)
+	})
+}
+
+// AddSize adds v to the "size" field.
+func (u *AiKnowledgeDocumentUpsertBulk) AddSize(v int64) *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.AddSize(v)
+	})
+}
+
+// UpdateSize sets the "size" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertBulk) UpdateSize() *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateSize()
+	})
+}
+
 // SetTokens sets the "tokens" field.
 func (u *AiKnowledgeDocumentUpsertBulk) SetTokens(v int) *AiKnowledgeDocumentUpsertBulk {
 	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
@@ -1199,6 +1507,90 @@ func (u *AiKnowledgeDocumentUpsertBulk) AddTokens(v int) *AiKnowledgeDocumentUps
 func (u *AiKnowledgeDocumentUpsertBulk) UpdateTokens() *AiKnowledgeDocumentUpsertBulk {
 	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
 		s.UpdateTokens()
+	})
+}
+
+// SetChunks sets the "chunks" field.
+func (u *AiKnowledgeDocumentUpsertBulk) SetChunks(v int) *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetChunks(v)
+	})
+}
+
+// AddChunks adds v to the "chunks" field.
+func (u *AiKnowledgeDocumentUpsertBulk) AddChunks(v int) *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.AddChunks(v)
+	})
+}
+
+// UpdateChunks sets the "chunks" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertBulk) UpdateChunks() *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateChunks()
+	})
+}
+
+// SetParseType sets the "parse_type" field.
+func (u *AiKnowledgeDocumentUpsertBulk) SetParseType(v string) *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetParseType(v)
+	})
+}
+
+// UpdateParseType sets the "parse_type" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertBulk) UpdateParseType() *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateParseType()
+	})
+}
+
+// ClearParseType clears the value of the "parse_type" field.
+func (u *AiKnowledgeDocumentUpsertBulk) ClearParseType() *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.ClearParseType()
+	})
+}
+
+// SetContentHash sets the "content_hash" field.
+func (u *AiKnowledgeDocumentUpsertBulk) SetContentHash(v string) *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetContentHash(v)
+	})
+}
+
+// UpdateContentHash sets the "content_hash" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertBulk) UpdateContentHash() *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateContentHash()
+	})
+}
+
+// ClearContentHash clears the value of the "content_hash" field.
+func (u *AiKnowledgeDocumentUpsertBulk) ClearContentHash() *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.ClearContentHash()
+	})
+}
+
+// SetMetadata sets the "metadata" field.
+func (u *AiKnowledgeDocumentUpsertBulk) SetMetadata(v map[string]interface{}) *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertBulk) UpdateMetadata() *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (u *AiKnowledgeDocumentUpsertBulk) ClearMetadata() *AiKnowledgeDocumentUpsertBulk {
+	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
+		s.ClearMetadata()
 	})
 }
 
@@ -1244,17 +1636,17 @@ func (u *AiKnowledgeDocumentUpsertBulk) UpdateRetrievalCount() *AiKnowledgeDocum
 	})
 }
 
-// SetProcess sets the "process" field.
-func (u *AiKnowledgeDocumentUpsertBulk) SetProcess(v types.DocumentStatus) *AiKnowledgeDocumentUpsertBulk {
+// SetProgress sets the "progress" field.
+func (u *AiKnowledgeDocumentUpsertBulk) SetProgress(v types.DocumentProgress) *AiKnowledgeDocumentUpsertBulk {
 	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
-		s.SetProcess(v)
+		s.SetProgress(v)
 	})
 }
 
-// UpdateProcess sets the "process" field to the value that was provided on create.
-func (u *AiKnowledgeDocumentUpsertBulk) UpdateProcess() *AiKnowledgeDocumentUpsertBulk {
+// UpdateProgress sets the "progress" field to the value that was provided on create.
+func (u *AiKnowledgeDocumentUpsertBulk) UpdateProgress() *AiKnowledgeDocumentUpsertBulk {
 	return u.Update(func(s *AiKnowledgeDocumentUpsert) {
-		s.UpdateProcess()
+		s.UpdateProgress()
 	})
 }
 

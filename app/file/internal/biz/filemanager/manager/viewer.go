@@ -1,7 +1,7 @@
 package manager
 
 import (
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
 	"common/util"
 	"context"
 	"encoding/gob"
@@ -65,7 +65,7 @@ func (m *manager) CreateViewerSession(ctx context.Context, uri *fs.URI, version 
 	sessionCache := &ViewerSessionCache{
 		ID:       sessionID,
 		Uri:      file.Uri(false).String(),
-		UserID:   int(m.user.Id),
+		UserID:   m.user.ID,
 		ViewerID: viewer.ID,
 		FileID:   file.ID(),
 		Version:  version,

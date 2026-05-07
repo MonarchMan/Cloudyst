@@ -4,7 +4,7 @@ import (
 	filepb "api/api/file/common/v1"
 	userpb "api/api/user/common/v1"
 	pb "api/api/user/site/v1"
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
 	"common/cache"
 	"common/constants"
 	"common/hashid"

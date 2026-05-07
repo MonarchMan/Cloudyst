@@ -2,7 +2,6 @@ package schema
 
 import (
 	"entmodule"
-	mschema "entmodule/ent/schema"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
@@ -52,6 +51,6 @@ func (AiKnowledge) Edges() []ent.Edge {
 
 func (AiKnowledge) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
+		CommonMixin{},
 	}
 }

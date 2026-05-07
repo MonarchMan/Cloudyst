@@ -3,7 +3,8 @@ package data
 import (
 	"ai/ent"
 	"ai/ent/aichatconversation"
-	"common/db"
+	"ai/ent/aichatmessage"
+	"api/external/data/common"
 	"context"
 	"fmt"
 	"time"
@@ -29,18 +30,18 @@ type (
 	}
 
 	ListChatConversationArgs struct {
-		*db.PaginationArgs
+		*common.PaginationArgs
 		Title   string
 		Pinned  bool
 		UserID  int
 		RoleID  int
 		ModelID int
-		Start   *time.Time
-		End     *time.Time
+		Start   time.Time
+		End     time.Time
 	}
 
 	ListChatConversationResult struct {
-		*db.PaginationResults
+		*common.PaginationResults
 		Conversations []*ent.AiChatConversation
 	}
 
@@ -59,8 +60,8 @@ type (
 	}
 )
 
-func NewChatConversationClient(client *ent.Client, dbType db.DBType) ChatConversationClient {
-	return &chatConversationClient{maxSQLParam: db.SqlParamLimit(dbType), client: client}
+func NewChatConversationClient(client *ent.Client, dbType common.DBType) ChatConversationClient {
+	return &chatConversationClient{maxSQLParam: common.SqlParamLimit(dbType), client: client}
 }
 
 func (c *chatConversationClient) SetClient(newClient *ent.Client) TxOperator {
@@ -113,11 +114,11 @@ func (c *chatConversationClient) List(ctx context.Context, args *ListChatConvers
 		q.Where(aichatconversation.ModelID(args.ModelID))
 	}
 
-	if args.Start != nil {
-		q.Where(aichatconversation.CreatedAtGTE(*args.Start))
+	if !args.Start.IsZero() {
+		q.Where(aichatconversation.CreatedAtGTE(args.Start))
 	}
-	if args.End != nil {
-		q.Where(aichatconversation.CreatedAtLTE(*args.End))
+	if !args.End.IsZero() {
+		q.Where(aichatconversation.CreatedAtLTE(args.End))
 	}
 
 	total, err := q.Clone().Count(ctx)
@@ -132,7 +133,7 @@ func (c *chatConversationClient) List(ctx context.Context, args *ListChatConvers
 	}
 
 	return &ListChatConversationResult{
-		PaginationResults: &db.PaginationResults{
+		PaginationResults: &common.PaginationResults{
 			Page:       args.Page,
 			PageSize:   args.PageSize,
 			TotalItems: total,
@@ -188,6 +189,11 @@ func (c *chatConversationClient) UpdateModel(ctx context.Context, id int, modelI
 }
 
 func (c *chatConversationClient) Delete(ctx context.Context, id int) error {
+	// delete messages
+	_, err := c.client.AiChatMessage.Delete().Where(aichatmessage.ConversationID(id)).Exec(ctx)
+	if err != nil {
+		return err
+	}
 	return c.client.AiChatConversation.DeleteOneID(id).Exec(ctx)
 }
 
@@ -202,7 +208,7 @@ func (c *chatConversationClient) BatchDelete(ctx context.Context, ids []int) (in
 }
 
 func getChatConversationOrderOption(args *ListChatConversationArgs) []aichatconversation.OrderOption {
-	orderTerm := db.GetOrderTerm(args.OrderDir)
+	orderTerm := common.GetOrderTerm(args.OrderDir)
 	switch args.OrderBy {
 	case aichatconversation.FieldUpdatedAt:
 		return []aichatconversation.OrderOption{aichatconversation.ByUpdatedAt(orderTerm), aichatconversation.ByID(orderTerm)}

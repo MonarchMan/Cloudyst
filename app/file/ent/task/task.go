@@ -4,6 +4,7 @@ package task
 
 import (
 	"fmt"
+	"queue"
 	"time"
 
 	"entgo.io/ent"
@@ -77,30 +78,12 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 )
 
-// Status defines the type for the "status" enum field.
-type Status string
-
-// StatusQueued is the default value of the Status enum.
-const DefaultStatus = StatusQueued
-
-// Status values.
-const (
-	StatusQueued     Status = "queued"
-	StatusProcessing Status = "processing"
-	StatusSuspending Status = "suspending"
-	StatusError      Status = "error"
-	StatusCanceled   Status = "canceled"
-	StatusCompleted  Status = "completed"
-)
-
-func (s Status) String() string {
-	return string(s)
-}
+const DefaultStatus queue.TaskStatus = "queued"
 
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
-func StatusValidator(s Status) error {
+func StatusValidator(s queue.TaskStatus) error {
 	switch s {
-	case StatusQueued, StatusProcessing, StatusSuspending, StatusError, StatusCanceled, StatusCompleted:
+	case "queued", "processing", "suspending", "error", "canceled", "completed":
 		return nil
 	default:
 		return fmt.Errorf("task: invalid enum value for status field: %q", s)

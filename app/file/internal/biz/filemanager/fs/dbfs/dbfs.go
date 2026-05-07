@@ -3,10 +3,8 @@ package dbfs
 import (
 	commonpb "api/api/common/v1"
 	filepb "api/api/file/files/v1"
-	pbadmin "api/api/user/admin/v1"
-	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
-	"common/boolset"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/cache"
 	"common/constants"
 	"common/hashid"
@@ -22,7 +20,6 @@ import (
 	"file/internal/data"
 	"file/internal/data/rpc"
 	"file/internal/data/types"
-	"file/internal/pkg/utils"
 	"fmt"
 	"math/rand"
 	"path"
@@ -55,7 +52,7 @@ type (
 	ByPassOwnerCheckCtxKey struct{}
 )
 
-func NewDatabaseFS(user *userpb.User, dep filemanager.DbfsDep, uc pbuser.UserClient, fc data.FileClient, sc data.ShareClient,
+func NewDatabaseFS(user *userdata.User, dep filemanager.DbfsDep, uc rpc.UserClient, fc data.FileClient, sc data.ShareClient,
 	l *log.Helper, settings setting.Provider, pc data.StoragePolicyClient, hasher hashid.Encoder, kv cache.Driver,
 	encryptorFactory encrypt.CryptorFactory, eventHub eventhub.EventHub,
 ) fs.FileSystem {
@@ -63,7 +60,6 @@ func NewDatabaseFS(user *userpb.User, dep filemanager.DbfsDep, uc pbuser.UserCli
 		user:                user,
 		navigators:          make(map[string]Navigator),
 		userClient:          uc,
-		userAdminClient:     dep.UserAdmimClient(),
 		fileClient:          fc,
 		shareClient:         sc,
 		l:                   l,
@@ -80,10 +76,9 @@ func NewDatabaseFS(user *userpb.User, dep filemanager.DbfsDep, uc pbuser.UserCli
 }
 
 type DBFS struct {
-	user                *userpb.User
+	user                *userdata.User
 	navigators          map[string]Navigator
-	userClient          pbuser.UserClient
-	userAdminClient     pbadmin.AdminClient
+	userClient          rpc.UserClient
 	fileClient          data.FileClient
 	storagePolicyClient data.StoragePolicyClient
 	shareClient         data.ShareClient
@@ -107,7 +102,7 @@ func (f *DBFS) Recycle() {
 
 func (f *DBFS) GetEntity(ctx context.Context, entityID int) (fs.Entity, error) {
 	if entityID == 0 {
-		return fs.NewEmptyEntity(int(f.user.Id)), nil
+		return fs.NewEmptyEntity(f.user.ID), nil
 	}
 
 	files, _, err := f.fileClient.GetEntitiesByIDs(ctx, []int{entityID}, 0)
@@ -187,7 +182,7 @@ func (f *DBFS) List(ctx context.Context, path *fs.URI, opts ...fs.Option) (fs.Fi
 	if o.loadFilePublicMetadata {
 		ctx = context.WithValue(ctx, data.LoadFilePublicMetadata{}, true)
 	}
-	if o.loadFileShareIfOwned && parent != nil && parent.OwnerID() == int(f.user.Id) {
+	if o.loadFileShareIfOwned && parent != nil && parent.OwnerID() == f.user.ID {
 		ctx = context.WithValue(ctx, data.LoadFileShare{}, true)
 	}
 
@@ -236,11 +231,11 @@ func (f *DBFS) List(ctx context.Context, path *fs.URI, opts ...fs.Option) (fs.Fi
 		SingleFileView:        children.SingleFileView,
 		Parent:                parent,
 		StoragePolicy:         storagePolicy,
-		View:                  utils.ToProtoView(view),
+		View:                  filedata.ExplorerViewToProto(view),
 	}, nil
 }
 
-func (f *DBFS) Capacity(ctx context.Context, u *userpb.User) (*fs.Capacity, error) {
+func (f *DBFS) Capacity(ctx context.Context, u *userdata.User) (*fs.Capacity, error) {
 	// First, get userId's available storage packs
 	var (
 		res = &fs.Capacity{}
@@ -252,7 +247,7 @@ func (f *DBFS) Capacity(ctx context.Context, u *userpb.User) (*fs.Capacity, erro
 	}
 
 	res.Used = f.user.Storage
-	res.Total = requesterGroup.MaxStorage.Value
+	res.Total = requesterGroup.MaxStorage
 	return res, nil
 }
 
@@ -298,7 +293,7 @@ func (f *DBFS) CreateEntity(ctx context.Context, file fs.File, policy *ent.Stora
 	}
 
 	entity, storageDiff, err := fc.CreateEntity(ctx, fileModel, &data.EntityParameters{
-		OwnerID:         int(file.(*File).Owner().Id),
+		OwnerID:         file.(*File).Owner().ID,
 		EntityType:      entityType,
 		StoragePolicyID: policy.ID,
 		Source:          req.Props.SavePath,
@@ -429,7 +424,7 @@ func (f *DBFS) Get(ctx context.Context, path *fs.URI, opts ...fs.Option) (fs.Fil
 			EntityStoragePolicies: make(map[int]*ent.StoragePolicy),
 		}
 
-		if int(f.user.Id) == target.OwnerID() {
+		if f.user.ID == target.OwnerID() {
 			extendedInfo.DirectLinks = target.Model.Edges.DirectLinks
 		}
 
@@ -442,8 +437,7 @@ func (f *DBFS) Get(ctx context.Context, path *fs.URI, opts ...fs.Option) (fs.Fil
 		}
 
 		target.FileExtendedInfo = extendedInfo
-		permissions := boolset.BooleanSet(f.user.Group.Permissions)
-		if target.OwnerID() == int(f.user.Id) || (&permissions).Enabled(int(types.GroupPermissionIsAdmin)) {
+		if target.OwnerID() == f.user.ID || f.user.Group.Permissions.Enabled(int(types.GroupPermissionIsAdmin)) {
 			target.FileExtendedInfo.Shares = target.Model.Edges.Shares
 			if target.Model.Props != nil {
 				target.FileExtendedInfo.View = target.Model.Props.View
@@ -465,7 +459,7 @@ func (f *DBFS) Get(ctx context.Context, path *fs.URI, opts ...fs.Option) (fs.Fil
 
 	// Calculate folder summary if requested
 	if o.loadFolderSummary && target != nil && target.Type() == types.FileTypeFolder {
-		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != int(f.user.Id) {
+		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != f.user.ID {
 			return nil, fs.ErrOwnerOnly
 		}
 
@@ -560,7 +554,7 @@ func (f *DBFS) Walk(ctx context.Context, path *fs.URI, depth int, walk fs.WalkFu
 	}
 
 	// Require Read permission
-	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != int(f.user.Id) {
+	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != f.user.ID {
 		return fs.ErrOwnerOnly
 	}
 
@@ -663,7 +657,7 @@ func (f *DBFS) createFile(ctx context.Context, parent *File, name string, fileTy
 
 // getPreferredPolicy tries to get the preferred storage policy for the given files.
 func (f *DBFS) getPreferredPolicy(ctx context.Context, file *File) (*ent.StoragePolicy, error) {
-	userInfo, err := rpc.GetUserInfo(ctx, file.OwnerID(), f.userClient)
+	userInfo, err := f.userClient.GetUserInfo(ctx, file.OwnerID())
 	if err != nil {
 		return nil, err
 	}
@@ -672,7 +666,7 @@ func (f *DBFS) getPreferredPolicy(ctx context.Context, file *File) (*ent.Storage
 	}
 
 	sc, _ := data.InheritTx(ctx, f.storagePolicyClient)
-	groupPolicy, err := sc.GetPolicyByID(ctx, int(userInfo.Group.StoragePolicyId.Value))
+	groupPolicy, err := sc.GetPolicyByID(ctx, int(userInfo.Group.StoragePolicyID))
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to get available storage policies: %w", err)
 	}
@@ -684,7 +678,7 @@ func (f *DBFS) getFileByPath(ctx context.Context, navigator Navigator, path *fs.
 	file, err := navigator.To(ctx, path)
 	if err != nil && errors.Is(err, ErrFsNotInitialized) {
 		// Initialize files system for userId if root folder does not exist.
-		uid := path.ID(hashid.EncodeUserID(f.hasher, int(f.user.Id)))
+		uid := path.ID(hashid.EncodeUserID(f.hasher, f.user.ID))
 		uidInt, err := f.hasher.Decode(uid, hashid.UserID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to decode userId ID: %w", err)
@@ -705,7 +699,7 @@ func (f *DBFS) initFs(ctx context.Context, uid int) error {
 	_, err := f.fileClient.CreateFolder(ctx, nil,
 		&data.CreateFolderParameters{
 			OwnerID: uid,
-			Owner:   data.UserInfoFromPbUser(f.user),
+			Owner:   userdata.UserInfoFromUser(f.hasher, f.user),
 			Name:    data.RootFolderName,
 		})
 	if err != nil {
@@ -773,16 +767,16 @@ func (f *DBFS) getNavigator(ctx context.Context, path *fs.URI, requiredCapabilit
 }
 
 func (f *DBFS) navigatorId(path *fs.URI) string {
-	uidHashed := hashid.EncodeUserID(f.hasher, int(f.user.Id))
+	uidHashed := hashid.EncodeUserID(f.hasher, f.user.ID)
 	switch path.FileSystem() {
 	case constants.FileSystemMy:
-		return fmt.Sprintf("%s/%s/%d", constants.FileSystemMy, path.ID(uidHashed), f.user.Id)
+		return fmt.Sprintf("%s/%s/%d", constants.FileSystemMy, path.ID(uidHashed), f.user.ID)
 	case constants.FileSystemShare:
-		return fmt.Sprintf("%s/%s/%d", constants.FileSystemShare, path.ID(uidHashed), f.user.Id)
+		return fmt.Sprintf("%s/%s/%d", constants.FileSystemShare, path.ID(uidHashed), f.user.ID)
 	case constants.FileSystemTrash:
 		return fmt.Sprintf("%s/%s", constants.FileSystemTrash, path.ID(uidHashed))
 	default:
-		return fmt.Sprintf("%s/%s/%d", path.FileSystem(), path.ID(uidHashed), f.user.Id)
+		return fmt.Sprintf("%s/%s/%d", path.FileSystem(), path.ID(uidHashed), f.user.ID)
 	}
 }
 

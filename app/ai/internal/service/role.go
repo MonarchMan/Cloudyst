@@ -45,7 +45,7 @@ func (s *RoleService) CreateRole(ctx context.Context, req *pb.UpsertRoleRequest)
 		Avatar:         req.Avatar,
 		Description:    req.Description,
 		Sort:           int(req.Sort),
-		UserID:         int(u.Id),
+		UserID:         u.ID,
 		PublicStatus:   false,
 		Category:       req.Category,
 		SystemMessage:  req.SystemMessage,
@@ -119,25 +119,25 @@ func (s *RoleService) GetRole(ctx context.Context, req *pb.SimpleRoleRequest) (*
 	}
 	return buildRoleResponse(existed, s.hasher), nil
 }
-func (s *RoleService) ListRole(ctx context.Context, req *emptypb.Empty) (*pb.ListRoleResponse, error) {
+func (s *RoleService) ListRoleMe(ctx context.Context, req *emptypb.Empty) (*pb.GetMultiRolesResponse, error) {
 	u := trans.FromContext(ctx)
-	roles, err := s.rc.List(ctx, &data.ListChatRoleArgs{UserID: int(u.Id)})
+	roles, err := s.rc.List(ctx, &data.ListChatRoleArgs{UserID: u.ID})
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list roles %w", err)
 	}
-	return &pb.ListRoleResponse{
+	return &pb.GetMultiRolesResponse{
 		Roles: lo.Map(roles.Roles, func(r *ent.AiChatRole, index int) *pb.GetRoleResponse {
 			return buildRoleResponse(r, s.hasher)
 		}),
 	}, nil
 }
-func (s *RoleService) PageRole(ctx context.Context, req *pb.PageRoleRequest) (*pb.PageRoleResponse, error) {
+func (s *RoleService) ListRole(ctx context.Context, req *pb.ListRoleRequest) (*pb.ListRoleResponse, error) {
 	u := trans.FromContext(ctx)
 	// 构建分页参数
 	args := &data.ListChatRoleArgs{
 		PaginationArgs: req.Pagination,
 		Name:           req.Name,
-		UserID:         int(u.Id),
+		UserID:         u.ID,
 		PublicStatus:   req.IsPublic,
 		Category:       req.Category,
 		Status:         entmodule.StatusActive,
@@ -146,7 +146,7 @@ func (s *RoleService) PageRole(ctx context.Context, req *pb.PageRoleRequest) (*p
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list roles %w", err)
 	}
-	return &pb.PageRoleResponse{
+	return &pb.ListRoleResponse{
 		Roles: lo.Map(roles.Roles, func(r *ent.AiChatRole, index int) *pb.GetRoleResponse {
 			return buildRoleResponse(r, s.hasher)
 		}),

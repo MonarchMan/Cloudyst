@@ -2,6 +2,7 @@ package data
 
 import (
 	pb "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"common/serializer"
 	"common/util"
 	"context"
@@ -10,7 +11,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	mschema "entmodule/ent/schema"
 	"errors"
 	"fmt"
 	"hash"
@@ -59,8 +59,10 @@ type (
 		AnonymousUser(ctx context.Context) (*ent.User, error)
 		// GetLoginUserByID returns the login users by its ID. It emits some errors and fallback to anonymous users.
 		GetLoginUserByID(ctx context.Context, uid int) (*ent.User, error)
-		// GetLoginUserByEmail returns the login users by its WebDAV credentials.
+		// GetActiveByDavAccount returns the login users by its WebDAV credentials.
 		GetActiveByDavAccount(ctx context.Context, email, pwd string) (*ent.User, error)
+		// GetActiveUsers returns the active users by its IDs.
+		GetActiveUsers(ctx context.Context, ids []int) ([]*ent.User, error)
 		// SaveSettings saves users settings.
 		SaveSettings(ctx context.Context, u *ent.User) error
 		// SearchActive search active users by Email or nickname.
@@ -187,7 +189,7 @@ func (c *userClient) AddPasskey(ctx context.Context, uid int, name string, crede
 }
 
 func (c *userClient) RemovePasskey(ctx context.Context, uid int, keyId string) error {
-	ctx = mschema.SkipSoftDelete(ctx)
+	ctx = schema.SkipSoftDelete(ctx)
 	_, err := c.client.Passkey.Delete().Where(passkey.UserID(uid), passkey.CredentialID(keyId)).Exec(ctx)
 	return err
 }
@@ -275,7 +277,7 @@ func (c *userClient) Create(ctx context.Context, args *NewUserArgs) (*ent.User, 
 		nick = strings.Split(args.Email, "@")[0]
 	}
 
-	userSetting := &pb.UserSetting{VersionRetention: true, VersionRetentionMax: 10}
+	userSetting := &userdata.UserSetting{VersionRetention: true, VersionRetentionMax: 10}
 	query := c.client.User.Create().
 		SetEmail(args.Email).
 		SetNick(nick).
@@ -358,6 +360,15 @@ func (c *userClient) GetLoginUserByID(ctx context.Context, uid int) (*ent.User, 
 	return anonymous, nil
 }
 
+func (c *userClient) GetActiveUsers(ctx context.Context, ids []int) ([]*ent.User, error) {
+	return withUserEagerLoading(
+		ctx,
+		c.client.User.Query().
+			Where(user.IDIn(ids...)).
+			Where(user.StatusEQ(user.StatusActive)),
+	).All(ctx)
+}
+
 func (c *userClient) SearchActive(ctx context.Context, limit int, keyword string) ([]*ent.User, error) {
 	ctx = context.WithValue(ctx, LoadUserGroup{}, true)
 	return withUserEagerLoading(
@@ -400,7 +411,7 @@ func (c *userClient) AnonymousUser(ctx context.Context) (*ent.User, error) {
 
 	// TODO: save into cache
 	anonymous := &ent.User{
-		Settings: &pb.UserSetting{},
+		Settings: &userdata.UserSetting{},
 	}
 	anonymous.SetGroup(anonymousGroup)
 	return anonymous, nil
@@ -452,7 +463,7 @@ func (c *userClient) Upsert(ctx context.Context, u *ent.User, password, twoFa st
 			SetStatus(u.Status).
 			SetGroupID(u.GroupUsers).
 			SetPassword(u.Password).
-			SetSettings(&pb.UserSetting{})
+			SetSettings(&userdata.UserSetting{})
 
 		if password != "" {
 			pwdDigest, err := digestPassword(password)

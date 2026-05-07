@@ -5,6 +5,7 @@ import (
 	"ai/internal/biz/types"
 	aipb "api/api/ai/common/v1"
 	commonpb "api/api/common/v1"
+	"api/external/data/common"
 	"encoding/json"
 	"entmodule"
 
@@ -556,6 +557,7 @@ func EntKnowledgeDocumentToProto(document *ent.AiKnowledgeDocument) *aipb.AiKnow
 		KnowledgeId:      int64(document.KnowledgeID),
 		Name:             document.Name,
 		Url:              document.URL,
+		Size:             document.Size,
 		ContentLength:    int64(document.ContentLength),
 		Tokens:           int64(document.Tokens),
 		SegmentMaxTokens: int64(document.SegmentMaxTokens),
@@ -585,6 +587,7 @@ func ProtoKnowledgeDocumentToEnt(document *aipb.AiKnowledgeDocument) *ent.AiKnow
 		KnowledgeID:      int(document.KnowledgeId),
 		Name:             document.Name,
 		URL:              document.Url,
+		Size:             document.Size,
 		ContentLength:    int(document.ContentLength),
 		Tokens:           int(document.Tokens),
 		SegmentMaxTokens: int(document.SegmentMaxTokens),
@@ -657,6 +660,40 @@ func ProtoKnowledgeSegmentToEnt(segment *aipb.AiKnowledgeSegment) *ent.AiKnowled
 		entSegment.Edges.AiKnowledgeDocument = ProtoKnowledgeDocumentToEnt(segment.AiKnowledgeDocument)
 	}
 	return entSegment
+}
+
+func EntTaskToProto(task *ent.Task) *commonpb.Task {
+	protoTask := &commonpb.Task{
+		Id:           int64(task.ID),
+		CreatedAt:    timestamppb.New(task.CreatedAt),
+		UpdatedAt:    timestamppb.New(task.UpdatedAt),
+		DeletedAt:    nil,
+		Type:         task.Type,
+		Status:       common.TaskStatusToProto(task.Status),
+		PublicState:  common.TaskStateToProto(task.PublicState),
+		PrivateState: task.PrivateState,
+		TraceId:      task.TraceID,
+		UserId:       int64(task.UserID),
+	}
+
+	return protoTask
+}
+
+func ProtoTaskToEnt(protoTask *commonpb.Task) *ent.Task {
+	if protoTask == nil {
+		return nil
+	}
+	return &ent.Task{
+		ID:           int(protoTask.Id),
+		CreatedAt:    protoTask.CreatedAt.AsTime(),
+		UpdatedAt:    protoTask.UpdatedAt.AsTime(),
+		Type:         protoTask.Type,
+		Status:       common.TaskStatusFromProto(protoTask.Status),
+		PublicState:  common.TaskStateFromProto(protoTask.PublicState),
+		PrivateState: protoTask.PrivateState,
+		TraceID:      protoTask.TraceId,
+		UserID:       int(protoTask.UserId),
+	}
 }
 
 func StatusToProto[T ~int32](s entmodule.Status) T {

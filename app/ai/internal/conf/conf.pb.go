@@ -114,6 +114,8 @@ type Server struct {
 	Cors          *Cors                  `protobuf:"bytes,3,opt,name=cors,proto3" json:"cors,omitempty"`
 	Ssl           *Ssl                   `protobuf:"bytes,4,opt,name=ssl,proto3" json:"ssl,omitempty"`
 	Unix          *Unix                  `protobuf:"bytes,5,opt,name=unix,proto3" json:"unix,omitempty"`
+	Embedder      *EmbeddingModel        `protobuf:"bytes,6,opt,name=embedder,proto3" json:"embedder,omitempty"`
+	Retrieve      *Retrieve              `protobuf:"bytes,7,opt,name=retrieve,proto3" json:"retrieve,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -183,6 +185,20 @@ func (x *Server) GetUnix() *Unix {
 	return nil
 }
 
+func (x *Server) GetEmbedder() *EmbeddingModel {
+	if x != nil {
+		return x.Embedder
+	}
+	return nil
+}
+
+func (x *Server) GetRetrieve() *Retrieve {
+	if x != nil {
+		return x.Retrieve
+	}
+	return nil
+}
+
 type Sys struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Mode          string                 `protobuf:"bytes,1,opt,name=mode,proto3" json:"mode,omitempty"`
@@ -193,8 +209,6 @@ type Sys struct {
 	ProxyHeader   string                 `protobuf:"bytes,7,opt,name=proxy_header,json=proxyHeader,proto3" json:"proxy_header,omitempty"`
 	LogLevel      string                 `protobuf:"bytes,8,opt,name=log_level,json=logLevel,proto3" json:"log_level,omitempty"`
 	HashSalt      string                 `protobuf:"bytes,9,opt,name=hash_salt,json=hashSalt,proto3" json:"hash_salt,omitempty"`
-	Embedder      *EmbeddingModel        `protobuf:"bytes,10,opt,name=embedder,proto3" json:"embedder,omitempty"`
-	Retrieve      *Retrieve              `protobuf:"bytes,11,opt,name=retrieve,proto3" json:"retrieve,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -283,20 +297,6 @@ func (x *Sys) GetHashSalt() string {
 		return x.HashSalt
 	}
 	return ""
-}
-
-func (x *Sys) GetEmbedder() *EmbeddingModel {
-	if x != nil {
-		return x.Embedder
-	}
-	return nil
-}
-
-func (x *Sys) GetRetrieve() *Retrieve {
-	if x != nil {
-		return x.Retrieve
-	}
-	return nil
 }
 
 type GRPC struct {
@@ -1308,13 +1308,15 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\x10option_overwrite\x18\b \x03(\v2*.kratos.api.Bootstrap.OptionOverwriteEntryR\x0foptionOverwrite\x1aX\n" +
 	"\x14OptionOverwriteEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12*\n" +
-	"\x05value\x18\x02 \x01(\v2\x14.google.protobuf.AnyR\x05value:\x028\x01\"\xc0\x01\n" +
+	"\x05value\x18\x02 \x01(\v2\x14.google.protobuf.AnyR\x05value:\x028\x01\"\xaa\x02\n" +
 	"\x06Server\x12!\n" +
 	"\x03sys\x18\x01 \x01(\v2\x0f.kratos.api.SysR\x03sys\x12$\n" +
 	"\x04grpc\x18\x02 \x01(\v2\x10.kratos.api.GRPCR\x04grpc\x12$\n" +
 	"\x04cors\x18\x03 \x01(\v2\x10.kratos.api.CorsR\x04cors\x12!\n" +
 	"\x03ssl\x18\x04 \x01(\v2\x0f.kratos.api.SslR\x03ssl\x12$\n" +
-	"\x04unix\x18\x05 \x01(\v2\x10.kratos.api.UnixR\x04unix\"\xfd\x02\n" +
+	"\x04unix\x18\x05 \x01(\v2\x10.kratos.api.UnixR\x04unix\x126\n" +
+	"\bembedder\x18\x06 \x01(\v2\x1a.kratos.api.EmbeddingModelR\bembedder\x120\n" +
+	"\bretrieve\x18\a \x01(\v2\x14.kratos.api.RetrieveR\bretrieve\"\x93\x02\n" +
 	"\x03Sys\x12\x12\n" +
 	"\x04mode\x18\x01 \x01(\tR\x04mode\x12\x12\n" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x12\x14\n" +
@@ -1323,10 +1325,7 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\fgrace_period\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\vgracePeriod\x12!\n" +
 	"\fproxy_header\x18\a \x01(\tR\vproxyHeader\x12\x1b\n" +
 	"\tlog_level\x18\b \x01(\tR\blogLevel\x12\x1b\n" +
-	"\thash_salt\x18\t \x01(\tR\bhashSalt\x126\n" +
-	"\bembedder\x18\n" +
-	" \x01(\v2\x1a.kratos.api.EmbeddingModelR\bembedder\x120\n" +
-	"\bretrieve\x18\v \x01(\v2\x14.kratos.api.RetrieveR\bretrieve\"i\n" +
+	"\thash_salt\x18\t \x01(\tR\bhashSalt\"i\n" +
 	"\x04GRPC\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x123\n" +
@@ -1460,10 +1459,10 @@ var file_conf_conf_proto_depIdxs = []int32{
 	4,  // 6: kratos.api.Server.cors:type_name -> kratos.api.Cors
 	9,  // 7: kratos.api.Server.ssl:type_name -> kratos.api.Ssl
 	10, // 8: kratos.api.Server.unix:type_name -> kratos.api.Unix
-	18, // 9: kratos.api.Sys.timeout:type_name -> google.protobuf.Duration
-	18, // 10: kratos.api.Sys.grace_period:type_name -> google.protobuf.Duration
-	5,  // 11: kratos.api.Sys.embedder:type_name -> kratos.api.EmbeddingModel
-	15, // 12: kratos.api.Sys.retrieve:type_name -> kratos.api.Retrieve
+	5,  // 9: kratos.api.Server.embedder:type_name -> kratos.api.EmbeddingModel
+	15, // 10: kratos.api.Server.retrieve:type_name -> kratos.api.Retrieve
+	18, // 11: kratos.api.Sys.timeout:type_name -> google.protobuf.Duration
+	18, // 12: kratos.api.Sys.grace_period:type_name -> google.protobuf.Duration
 	18, // 13: kratos.api.GRPC.timeout:type_name -> google.protobuf.Duration
 	7,  // 14: kratos.api.Data.database:type_name -> kratos.api.Database
 	8,  // 15: kratos.api.Data.redis:type_name -> kratos.api.Redis

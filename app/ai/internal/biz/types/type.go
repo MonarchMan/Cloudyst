@@ -21,6 +21,11 @@ type (
 		Content     string           `json:"content"`
 		ContentLen  int              `json:"content_len"`
 		Tokens      int              `json:"tokens"`
+		ChunkIndex  int              `json:"chunk_index"`
+		SectionPath string           `json:"section_path"`
+		StartOffset int              `json:"start_offset"`
+		EndOffset   int              `json:"end_offset"`
+		Metadata    map[string]any   `json:"metadata"`
 		Score       float64          `json:"score"`
 		VectorID    string           `json:"vector_id"`
 		Status      entmodule.Status `json:"status"`
@@ -51,6 +56,7 @@ type ImageStatus string
 
 // Ai Image Status
 const (
+	ImageStatusPending    ImageStatus = "pending"
 	ImageStatusProcessing ImageStatus = "processing"
 	ImageStatusSuccess    ImageStatus = "success"
 	ImageStatusFailed     ImageStatus = "failed"
@@ -104,16 +110,16 @@ var ModelTypeProtoValues = map[string]int32{
 }
 
 // DocumentStatus Ai Document Status
-type DocumentStatus string
+type DocumentProgress string
 
 const (
-	DocumentPending    DocumentStatus = "pending"
-	DocumentProcessing DocumentStatus = "processing"
-	DocumentSuccess    DocumentStatus = "success"
-	DocumentFailed     DocumentStatus = "failed"
+	DocumentPending    DocumentProgress = "pending"
+	DocumentProcessing DocumentProgress = "processing"
+	DocumentSuccess    DocumentProgress = "success"
+	DocumentFailed     DocumentProgress = "failed"
 )
 
-func (DocumentStatus) Values() []string {
+func (DocumentProgress) Values() []string {
 	return []string{
 		string(DocumentProcessing),
 		string(DocumentSuccess),
@@ -206,9 +212,22 @@ type TextParseSupport struct {
 	MaxFileSize int64
 }
 type SegmentSearchArgs struct {
-	KnowledgeID  int
-	Content      string  `json:"content"       jsonschema:"description=The query text used for semantic retrieval,required"`
-	TopK         int     `json:"top_k"         jsonschema:"description=Number of most similar segments to return,minimum=1,maximum=100,required"`
-	Similarity   float64 `json:"similarity"    jsonschema:"description=Similarity threshold between 0 and 1; results below this value will be filtered out,minimum=0,maximum=1"`
-	KnowledgeIDs []int   `json:"knowledge_ids" jsonschema:"description=List of knowledge base IDs to search; searches all if empty"`
+	KnowledgeID     int
+	Content         string  `json:"content"       jsonschema:"description=The query text used for semantic retrieval,required"`
+	TopK            int     `json:"top_k"         jsonschema:"description=Number of most similar segments to return,minimum=1,maximum=100,required"`
+	Similarity      float64 `json:"similarity"    jsonschema:"description=Similarity threshold between 0 and 1; results below this value will be filtered out,minimum=0,maximum=1"`
+	KnowledgeIDs    []int   `json:"knowledge_ids" jsonschema:"description=List of knowledge base IDs to search; searches all if empty"`
+	UseRAGGraph     bool    `json:"use_rag_graph" jsonschema:"description=Enable the experimental RAGGraph retrieval path for gray validation"`
+	NeighborWindow  int     `json:"neighbor_window" jsonschema:"description=Neighbor chunk window for RAGGraph expansion,minimum=0,maximum=10"`
+	ExcludeOriginal bool    `json:"exclude_original" jsonschema:"description=Exclude original vector hits from RAGGraph neighbor expansion"`
+}
+
+// KnowledgeStats Knowledge Statistics
+type KnowledgeStats struct {
+	DocumentCount int
+	Ready         int
+	Processing    int
+	Failed        int
+	SuccessRate   float64
+	TotalTokens   int64
 }

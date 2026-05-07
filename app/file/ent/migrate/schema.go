@@ -211,7 +211,7 @@ var (
 		{Name: "expires", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "remain_downloads", Type: field.TypeInt, Nullable: true},
 		{Name: "props", Type: field.TypeJSON, Nullable: true},
-		{Name: "owner_id", Type: field.TypeInt},
+		{Name: "owner_id", Type: field.TypeInt, Nullable: true},
 		{Name: "owner_info", Type: field.TypeJSON, Nullable: true},
 		{Name: "file_shares", Type: field.TypeInt, Nullable: true},
 	}

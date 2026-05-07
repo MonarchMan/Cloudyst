@@ -34,23 +34,44 @@ const (
 	Admin_GetModel_FullMethodName                     = "/ai.admin.v1.Admin/GetModel"
 	Admin_ListModel_FullMethodName                    = "/ai.admin.v1.Admin/ListModel"
 	Admin_BatchDeleteModel_FullMethodName             = "/ai.admin.v1.Admin/BatchDeleteModel"
-	Admin_CreateRole_FullMethodName                   = "/ai.admin.v1.Admin/CreateRole"
 	Admin_GetRole_FullMethodName                      = "/ai.admin.v1.Admin/GetRole"
 	Admin_ListRole_FullMethodName                     = "/ai.admin.v1.Admin/ListRole"
 	Admin_BatchDeleteRole_FullMethodName              = "/ai.admin.v1.Admin/BatchDeleteRole"
-	Admin_DeleteKnowledge_FullMethodName              = "/ai.admin.v1.Admin/DeleteKnowledge"
+	Admin_UpdateRole_FullMethodName                   = "/ai.admin.v1.Admin/UpdateRole"
+	Admin_CreateRole_FullMethodName                   = "/ai.admin.v1.Admin/CreateRole"
 	Admin_GetKnowledge_FullMethodName                 = "/ai.admin.v1.Admin/GetKnowledge"
 	Admin_ListKnowledge_FullMethodName                = "/ai.admin.v1.Admin/ListKnowledge"
-	Admin_DeleteKnowledgeDocument_FullMethodName      = "/ai.admin.v1.Admin/DeleteKnowledgeDocument"
+	Admin_BatchDeleteKnowledge_FullMethodName         = "/ai.admin.v1.Admin/BatchDeleteKnowledge"
+	Admin_UpdateKnowledge_FullMethodName              = "/ai.admin.v1.Admin/UpdateKnowledge"
+	Admin_CreateKnowledge_FullMethodName              = "/ai.admin.v1.Admin/CreateKnowledge"
 	Admin_BatchDeleteKnowledgeDocument_FullMethodName = "/ai.admin.v1.Admin/BatchDeleteKnowledgeDocument"
 	Admin_GetKnowledgeDocument_FullMethodName         = "/ai.admin.v1.Admin/GetKnowledgeDocument"
 	Admin_ListKnowledgeDocument_FullMethodName        = "/ai.admin.v1.Admin/ListKnowledgeDocument"
 	Admin_UpdateDocumentStatus_FullMethodName         = "/ai.admin.v1.Admin/UpdateDocumentStatus"
+	Admin_UpdateKnowledgeDocument_FullMethodName      = "/ai.admin.v1.Admin/UpdateKnowledgeDocument"
 	Admin_GetKnowledgeSegment_FullMethodName          = "/ai.admin.v1.Admin/GetKnowledgeSegment"
 	Admin_ListKnowledgeSegments_FullMethodName        = "/ai.admin.v1.Admin/ListKnowledgeSegments"
 	Admin_ListImage_FullMethodName                    = "/ai.admin.v1.Admin/ListImage"
-	Admin_UpdateImagePublicStatus_FullMethodName      = "/ai.admin.v1.Admin/UpdateImagePublicStatus"
+	Admin_UpdateImage_FullMethodName                  = "/ai.admin.v1.Admin/UpdateImage"
 	Admin_BatchDeleteImage_FullMethodName             = "/ai.admin.v1.Admin/BatchDeleteImage"
+	Admin_GetImage_FullMethodName                     = "/ai.admin.v1.Admin/GetImage"
+	Admin_GetChatConversation_FullMethodName          = "/ai.admin.v1.Admin/GetChatConversation"
+	Admin_ListChatConversation_FullMethodName         = "/ai.admin.v1.Admin/ListChatConversation"
+	Admin_BatchDeleteChatConversation_FullMethodName  = "/ai.admin.v1.Admin/BatchDeleteChatConversation"
+	Admin_GetChatMessage_FullMethodName               = "/ai.admin.v1.Admin/GetChatMessage"
+	Admin_ListChatMessage_FullMethodName              = "/ai.admin.v1.Admin/ListChatMessage"
+	Admin_BatchDeleteChatMessage_FullMethodName       = "/ai.admin.v1.Admin/BatchDeleteChatMessage"
+	Admin_GetTool_FullMethodName                      = "/ai.admin.v1.Admin/GetTool"
+	Admin_ListTool_FullMethodName                     = "/ai.admin.v1.Admin/ListTool"
+	Admin_DeleteTool_FullMethodName                   = "/ai.admin.v1.Admin/DeleteTool"
+	Admin_BatchDeleteTool_FullMethodName              = "/ai.admin.v1.Admin/BatchDeleteTool"
+	Admin_CreateTool_FullMethodName                   = "/ai.admin.v1.Admin/CreateTool"
+	Admin_UpdateTool_FullMethodName                   = "/ai.admin.v1.Admin/UpdateTool"
+	Admin_GetQueueMetrics_FullMethodName              = "/ai.admin.v1.Admin/GetQueueMetrics"
+	Admin_ListTasks_FullMethodName                    = "/ai.admin.v1.Admin/ListTasks"
+	Admin_GetTask_FullMethodName                      = "/ai.admin.v1.Admin/GetTask"
+	Admin_BatchDeleteTasks_FullMethodName             = "/ai.admin.v1.Admin/BatchDeleteTasks"
+	Admin_CleanupTask_FullMethodName                  = "/ai.admin.v1.Admin/CleanupTask"
 )
 
 // AdminClient is the client API for Admin service.
@@ -60,39 +81,64 @@ type AdminClient interface {
 	// Api Key
 	CreateApikey(ctx context.Context, in *v1.AiApiKey, opts ...grpc.CallOption) (*v1.AiApiKey, error)
 	UpdateApikey(ctx context.Context, in *v1.AiApiKey, opts ...grpc.CallOption) (*v1.AiApiKey, error)
-	DeleteApikey(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteApikey(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetApikey(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiApiKey, error)
 	ListApikey(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListApikeyResponse, error)
 	BatchDeleteApiKey(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Model
 	CreateModel(ctx context.Context, in *v1.AiModel, opts ...grpc.CallOption) (*v1.AiModel, error)
 	UpdateModel(ctx context.Context, in *v1.AiModel, opts ...grpc.CallOption) (*v1.AiModel, error)
-	DeleteModel(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteModel(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetModel(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiModel, error)
 	ListModel(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListModelResponse, error)
 	BatchDeleteModel(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Role
-	CreateRole(ctx context.Context, in *v1.AiChatRole, opts ...grpc.CallOption) (*v1.AiChatRole, error)
-	GetRole(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiChatRole, error)
+	GetRole(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*Role, error)
 	ListRole(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListRoleResponse, error)
 	BatchDeleteRole(ctx context.Context, in *BatchDeleteRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UpdateRole(ctx context.Context, in *v1.AiChatRole, opts ...grpc.CallOption) (*Role, error)
+	CreateRole(ctx context.Context, in *v1.AiChatRole, opts ...grpc.CallOption) (*Role, error)
 	// Knowledge
-	DeleteKnowledge(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetKnowledge(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiKnowledge, error)
+	GetKnowledge(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*Knowledge, error)
 	ListKnowledge(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListKnowledgeResponse, error)
+	BatchDeleteKnowledge(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UpdateKnowledge(ctx context.Context, in *v1.AiKnowledge, opts ...grpc.CallOption) (*Knowledge, error)
+	CreateKnowledge(ctx context.Context, in *v1.AiKnowledge, opts ...grpc.CallOption) (*Knowledge, error)
 	// Knowledge Document
-	DeleteKnowledgeDocument(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	BatchDeleteKnowledgeDocument(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetKnowledgeDocument(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiKnowledgeDocument, error)
 	ListKnowledgeDocument(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListKnowledgeDocumentResponse, error)
 	UpdateDocumentStatus(ctx context.Context, in *UpdateDocumentStatusRequest, opts ...grpc.CallOption) (*v1.AiKnowledgeDocument, error)
+	UpdateKnowledgeDocument(ctx context.Context, in *v1.AiKnowledgeDocument, opts ...grpc.CallOption) (*UpsertDocumentResponse, error)
 	// Knowledge Document Segment
 	GetKnowledgeSegment(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiKnowledgeSegment, error)
 	ListKnowledgeSegments(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListKnowledgeSegmentResponse, error)
 	// Image
 	ListImage(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListImageResponse, error)
-	UpdateImagePublicStatus(ctx context.Context, in *UpdateImageStatusRequest, opts ...grpc.CallOption) (*v1.AiImage, error)
+	UpdateImage(ctx context.Context, in *v1.AiImage, opts ...grpc.CallOption) (*Image, error)
 	BatchDeleteImage(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetImage(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*Image, error)
+	// Conversation
+	GetChatConversation(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*ChatConversation, error)
+	ListChatConversation(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListChatConversationResponse, error)
+	BatchDeleteChatConversation(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Chat Message
+	GetChatMessage(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*ChatMessage, error)
+	ListChatMessage(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListChatMessageResponse, error)
+	BatchDeleteChatMessage(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Tool
+	GetTool(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiTool, error)
+	ListTool(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListToolResponse, error)
+	DeleteTool(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	BatchDeleteTool(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateTool(ctx context.Context, in *v1.AiTool, opts ...grpc.CallOption) (*v1.AiTool, error)
+	UpdateTool(ctx context.Context, in *v1.AiTool, opts ...grpc.CallOption) (*v1.AiTool, error)
+	// Task
+	GetQueueMetrics(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v11.QueueMetricsResponse, error)
+	ListTasks(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*v11.ListTaskResponse, error)
+	GetTask(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v11.GetTaskResponse, error)
+	BatchDeleteTasks(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CleanupTask(ctx context.Context, in *v11.CleanupTaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type adminClient struct {
@@ -123,7 +169,7 @@ func (c *adminClient) UpdateApikey(ctx context.Context, in *v1.AiApiKey, opts ..
 	return out, nil
 }
 
-func (c *adminClient) DeleteApikey(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *adminClient) DeleteApikey(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Admin_DeleteApikey_FullMethodName, in, out, cOpts...)
@@ -183,7 +229,7 @@ func (c *adminClient) UpdateModel(ctx context.Context, in *v1.AiModel, opts ...g
 	return out, nil
 }
 
-func (c *adminClient) DeleteModel(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *adminClient) DeleteModel(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Admin_DeleteModel_FullMethodName, in, out, cOpts...)
@@ -223,19 +269,9 @@ func (c *adminClient) BatchDeleteModel(ctx context.Context, in *BatchDeleteReque
 	return out, nil
 }
 
-func (c *adminClient) CreateRole(ctx context.Context, in *v1.AiChatRole, opts ...grpc.CallOption) (*v1.AiChatRole, error) {
+func (c *adminClient) GetRole(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*Role, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(v1.AiChatRole)
-	err := c.cc.Invoke(ctx, Admin_CreateRole_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *adminClient) GetRole(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiChatRole, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(v1.AiChatRole)
+	out := new(Role)
 	err := c.cc.Invoke(ctx, Admin_GetRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -263,19 +299,29 @@ func (c *adminClient) BatchDeleteRole(ctx context.Context, in *BatchDeleteRoleRe
 	return out, nil
 }
 
-func (c *adminClient) DeleteKnowledge(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *adminClient) UpdateRole(ctx context.Context, in *v1.AiChatRole, opts ...grpc.CallOption) (*Role, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Admin_DeleteKnowledge_FullMethodName, in, out, cOpts...)
+	out := new(Role)
+	err := c.cc.Invoke(ctx, Admin_UpdateRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *adminClient) GetKnowledge(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiKnowledge, error) {
+func (c *adminClient) CreateRole(ctx context.Context, in *v1.AiChatRole, opts ...grpc.CallOption) (*Role, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(v1.AiKnowledge)
+	out := new(Role)
+	err := c.cc.Invoke(ctx, Admin_CreateRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) GetKnowledge(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*Knowledge, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Knowledge)
 	err := c.cc.Invoke(ctx, Admin_GetKnowledge_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -293,10 +339,30 @@ func (c *adminClient) ListKnowledge(ctx context.Context, in *v11.ListRequest, op
 	return out, nil
 }
 
-func (c *adminClient) DeleteKnowledgeDocument(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *adminClient) BatchDeleteKnowledge(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, Admin_DeleteKnowledgeDocument_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Admin_BatchDeleteKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) UpdateKnowledge(ctx context.Context, in *v1.AiKnowledge, opts ...grpc.CallOption) (*Knowledge, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Knowledge)
+	err := c.cc.Invoke(ctx, Admin_UpdateKnowledge_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) CreateKnowledge(ctx context.Context, in *v1.AiKnowledge, opts ...grpc.CallOption) (*Knowledge, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Knowledge)
+	err := c.cc.Invoke(ctx, Admin_CreateKnowledge_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -343,6 +409,16 @@ func (c *adminClient) UpdateDocumentStatus(ctx context.Context, in *UpdateDocume
 	return out, nil
 }
 
+func (c *adminClient) UpdateKnowledgeDocument(ctx context.Context, in *v1.AiKnowledgeDocument, opts ...grpc.CallOption) (*UpsertDocumentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertDocumentResponse)
+	err := c.cc.Invoke(ctx, Admin_UpdateKnowledgeDocument_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *adminClient) GetKnowledgeSegment(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiKnowledgeSegment, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(v1.AiKnowledgeSegment)
@@ -373,10 +449,10 @@ func (c *adminClient) ListImage(ctx context.Context, in *v11.ListRequest, opts .
 	return out, nil
 }
 
-func (c *adminClient) UpdateImagePublicStatus(ctx context.Context, in *UpdateImageStatusRequest, opts ...grpc.CallOption) (*v1.AiImage, error) {
+func (c *adminClient) UpdateImage(ctx context.Context, in *v1.AiImage, opts ...grpc.CallOption) (*Image, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(v1.AiImage)
-	err := c.cc.Invoke(ctx, Admin_UpdateImagePublicStatus_FullMethodName, in, out, cOpts...)
+	out := new(Image)
+	err := c.cc.Invoke(ctx, Admin_UpdateImage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -393,6 +469,186 @@ func (c *adminClient) BatchDeleteImage(ctx context.Context, in *BatchDeleteReque
 	return out, nil
 }
 
+func (c *adminClient) GetImage(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*Image, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Image)
+	err := c.cc.Invoke(ctx, Admin_GetImage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) GetChatConversation(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*ChatConversation, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChatConversation)
+	err := c.cc.Invoke(ctx, Admin_GetChatConversation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) ListChatConversation(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListChatConversationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListChatConversationResponse)
+	err := c.cc.Invoke(ctx, Admin_ListChatConversation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) BatchDeleteChatConversation(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Admin_BatchDeleteChatConversation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) GetChatMessage(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*ChatMessage, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChatMessage)
+	err := c.cc.Invoke(ctx, Admin_GetChatMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) ListChatMessage(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListChatMessageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListChatMessageResponse)
+	err := c.cc.Invoke(ctx, Admin_ListChatMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) BatchDeleteChatMessage(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Admin_BatchDeleteChatMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) GetTool(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v1.AiTool, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(v1.AiTool)
+	err := c.cc.Invoke(ctx, Admin_GetTool_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) ListTool(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*ListToolResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListToolResponse)
+	err := c.cc.Invoke(ctx, Admin_ListTool_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) DeleteTool(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Admin_DeleteTool_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) BatchDeleteTool(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Admin_BatchDeleteTool_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) CreateTool(ctx context.Context, in *v1.AiTool, opts ...grpc.CallOption) (*v1.AiTool, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(v1.AiTool)
+	err := c.cc.Invoke(ctx, Admin_CreateTool_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) UpdateTool(ctx context.Context, in *v1.AiTool, opts ...grpc.CallOption) (*v1.AiTool, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(v1.AiTool)
+	err := c.cc.Invoke(ctx, Admin_UpdateTool_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) GetQueueMetrics(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v11.QueueMetricsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(v11.QueueMetricsResponse)
+	err := c.cc.Invoke(ctx, Admin_GetQueueMetrics_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) ListTasks(ctx context.Context, in *v11.ListRequest, opts ...grpc.CallOption) (*v11.ListTaskResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(v11.ListTaskResponse)
+	err := c.cc.Invoke(ctx, Admin_ListTasks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) GetTask(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*v11.GetTaskResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(v11.GetTaskResponse)
+	err := c.cc.Invoke(ctx, Admin_GetTask_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) BatchDeleteTasks(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Admin_BatchDeleteTasks_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminClient) CleanupTask(ctx context.Context, in *v11.CleanupTaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Admin_CleanupTask_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminServer is the server API for Admin service.
 // All implementations must embed UnimplementedAdminServer
 // for forward compatibility.
@@ -400,39 +656,64 @@ type AdminServer interface {
 	// Api Key
 	CreateApikey(context.Context, *v1.AiApiKey) (*v1.AiApiKey, error)
 	UpdateApikey(context.Context, *v1.AiApiKey) (*v1.AiApiKey, error)
-	DeleteApikey(context.Context, *DeleteRequest) (*emptypb.Empty, error)
+	DeleteApikey(context.Context, *SimpleRequest) (*emptypb.Empty, error)
 	GetApikey(context.Context, *SimpleRequest) (*v1.AiApiKey, error)
 	ListApikey(context.Context, *v11.ListRequest) (*ListApikeyResponse, error)
 	BatchDeleteApiKey(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
 	// Model
 	CreateModel(context.Context, *v1.AiModel) (*v1.AiModel, error)
 	UpdateModel(context.Context, *v1.AiModel) (*v1.AiModel, error)
-	DeleteModel(context.Context, *DeleteRequest) (*emptypb.Empty, error)
+	DeleteModel(context.Context, *SimpleRequest) (*emptypb.Empty, error)
 	GetModel(context.Context, *SimpleRequest) (*v1.AiModel, error)
 	ListModel(context.Context, *v11.ListRequest) (*ListModelResponse, error)
 	BatchDeleteModel(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
 	// Role
-	CreateRole(context.Context, *v1.AiChatRole) (*v1.AiChatRole, error)
-	GetRole(context.Context, *SimpleRequest) (*v1.AiChatRole, error)
+	GetRole(context.Context, *SimpleRequest) (*Role, error)
 	ListRole(context.Context, *v11.ListRequest) (*ListRoleResponse, error)
 	BatchDeleteRole(context.Context, *BatchDeleteRoleRequest) (*emptypb.Empty, error)
+	UpdateRole(context.Context, *v1.AiChatRole) (*Role, error)
+	CreateRole(context.Context, *v1.AiChatRole) (*Role, error)
 	// Knowledge
-	DeleteKnowledge(context.Context, *DeleteRequest) (*emptypb.Empty, error)
-	GetKnowledge(context.Context, *SimpleRequest) (*v1.AiKnowledge, error)
+	GetKnowledge(context.Context, *SimpleRequest) (*Knowledge, error)
 	ListKnowledge(context.Context, *v11.ListRequest) (*ListKnowledgeResponse, error)
+	BatchDeleteKnowledge(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	UpdateKnowledge(context.Context, *v1.AiKnowledge) (*Knowledge, error)
+	CreateKnowledge(context.Context, *v1.AiKnowledge) (*Knowledge, error)
 	// Knowledge Document
-	DeleteKnowledgeDocument(context.Context, *DeleteRequest) (*emptypb.Empty, error)
 	BatchDeleteKnowledgeDocument(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
 	GetKnowledgeDocument(context.Context, *SimpleRequest) (*v1.AiKnowledgeDocument, error)
 	ListKnowledgeDocument(context.Context, *v11.ListRequest) (*ListKnowledgeDocumentResponse, error)
 	UpdateDocumentStatus(context.Context, *UpdateDocumentStatusRequest) (*v1.AiKnowledgeDocument, error)
+	UpdateKnowledgeDocument(context.Context, *v1.AiKnowledgeDocument) (*UpsertDocumentResponse, error)
 	// Knowledge Document Segment
 	GetKnowledgeSegment(context.Context, *SimpleRequest) (*v1.AiKnowledgeSegment, error)
 	ListKnowledgeSegments(context.Context, *v11.ListRequest) (*ListKnowledgeSegmentResponse, error)
 	// Image
 	ListImage(context.Context, *v11.ListRequest) (*ListImageResponse, error)
-	UpdateImagePublicStatus(context.Context, *UpdateImageStatusRequest) (*v1.AiImage, error)
+	UpdateImage(context.Context, *v1.AiImage) (*Image, error)
 	BatchDeleteImage(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	GetImage(context.Context, *SimpleRequest) (*Image, error)
+	// Conversation
+	GetChatConversation(context.Context, *SimpleRequest) (*ChatConversation, error)
+	ListChatConversation(context.Context, *v11.ListRequest) (*ListChatConversationResponse, error)
+	BatchDeleteChatConversation(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	// Chat Message
+	GetChatMessage(context.Context, *SimpleRequest) (*ChatMessage, error)
+	ListChatMessage(context.Context, *v11.ListRequest) (*ListChatMessageResponse, error)
+	BatchDeleteChatMessage(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	// Tool
+	GetTool(context.Context, *SimpleRequest) (*v1.AiTool, error)
+	ListTool(context.Context, *v11.ListRequest) (*ListToolResponse, error)
+	DeleteTool(context.Context, *SimpleRequest) (*emptypb.Empty, error)
+	BatchDeleteTool(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	CreateTool(context.Context, *v1.AiTool) (*v1.AiTool, error)
+	UpdateTool(context.Context, *v1.AiTool) (*v1.AiTool, error)
+	// Task
+	GetQueueMetrics(context.Context, *emptypb.Empty) (*v11.QueueMetricsResponse, error)
+	ListTasks(context.Context, *v11.ListRequest) (*v11.ListTaskResponse, error)
+	GetTask(context.Context, *SimpleRequest) (*v11.GetTaskResponse, error)
+	BatchDeleteTasks(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	CleanupTask(context.Context, *v11.CleanupTaskRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAdminServer()
 }
 
@@ -449,7 +730,7 @@ func (UnimplementedAdminServer) CreateApikey(context.Context, *v1.AiApiKey) (*v1
 func (UnimplementedAdminServer) UpdateApikey(context.Context, *v1.AiApiKey) (*v1.AiApiKey, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateApikey not implemented")
 }
-func (UnimplementedAdminServer) DeleteApikey(context.Context, *DeleteRequest) (*emptypb.Empty, error) {
+func (UnimplementedAdminServer) DeleteApikey(context.Context, *SimpleRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteApikey not implemented")
 }
 func (UnimplementedAdminServer) GetApikey(context.Context, *SimpleRequest) (*v1.AiApiKey, error) {
@@ -467,7 +748,7 @@ func (UnimplementedAdminServer) CreateModel(context.Context, *v1.AiModel) (*v1.A
 func (UnimplementedAdminServer) UpdateModel(context.Context, *v1.AiModel) (*v1.AiModel, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateModel not implemented")
 }
-func (UnimplementedAdminServer) DeleteModel(context.Context, *DeleteRequest) (*emptypb.Empty, error) {
+func (UnimplementedAdminServer) DeleteModel(context.Context, *SimpleRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteModel not implemented")
 }
 func (UnimplementedAdminServer) GetModel(context.Context, *SimpleRequest) (*v1.AiModel, error) {
@@ -479,10 +760,7 @@ func (UnimplementedAdminServer) ListModel(context.Context, *v11.ListRequest) (*L
 func (UnimplementedAdminServer) BatchDeleteModel(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteModel not implemented")
 }
-func (UnimplementedAdminServer) CreateRole(context.Context, *v1.AiChatRole) (*v1.AiChatRole, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateRole not implemented")
-}
-func (UnimplementedAdminServer) GetRole(context.Context, *SimpleRequest) (*v1.AiChatRole, error) {
+func (UnimplementedAdminServer) GetRole(context.Context, *SimpleRequest) (*Role, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRole not implemented")
 }
 func (UnimplementedAdminServer) ListRole(context.Context, *v11.ListRequest) (*ListRoleResponse, error) {
@@ -491,17 +769,26 @@ func (UnimplementedAdminServer) ListRole(context.Context, *v11.ListRequest) (*Li
 func (UnimplementedAdminServer) BatchDeleteRole(context.Context, *BatchDeleteRoleRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteRole not implemented")
 }
-func (UnimplementedAdminServer) DeleteKnowledge(context.Context, *DeleteRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteKnowledge not implemented")
+func (UnimplementedAdminServer) UpdateRole(context.Context, *v1.AiChatRole) (*Role, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRole not implemented")
 }
-func (UnimplementedAdminServer) GetKnowledge(context.Context, *SimpleRequest) (*v1.AiKnowledge, error) {
+func (UnimplementedAdminServer) CreateRole(context.Context, *v1.AiChatRole) (*Role, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateRole not implemented")
+}
+func (UnimplementedAdminServer) GetKnowledge(context.Context, *SimpleRequest) (*Knowledge, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetKnowledge not implemented")
 }
 func (UnimplementedAdminServer) ListKnowledge(context.Context, *v11.ListRequest) (*ListKnowledgeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListKnowledge not implemented")
 }
-func (UnimplementedAdminServer) DeleteKnowledgeDocument(context.Context, *DeleteRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteKnowledgeDocument not implemented")
+func (UnimplementedAdminServer) BatchDeleteKnowledge(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteKnowledge not implemented")
+}
+func (UnimplementedAdminServer) UpdateKnowledge(context.Context, *v1.AiKnowledge) (*Knowledge, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateKnowledge not implemented")
+}
+func (UnimplementedAdminServer) CreateKnowledge(context.Context, *v1.AiKnowledge) (*Knowledge, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateKnowledge not implemented")
 }
 func (UnimplementedAdminServer) BatchDeleteKnowledgeDocument(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteKnowledgeDocument not implemented")
@@ -515,6 +802,9 @@ func (UnimplementedAdminServer) ListKnowledgeDocument(context.Context, *v11.List
 func (UnimplementedAdminServer) UpdateDocumentStatus(context.Context, *UpdateDocumentStatusRequest) (*v1.AiKnowledgeDocument, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDocumentStatus not implemented")
 }
+func (UnimplementedAdminServer) UpdateKnowledgeDocument(context.Context, *v1.AiKnowledgeDocument) (*UpsertDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateKnowledgeDocument not implemented")
+}
 func (UnimplementedAdminServer) GetKnowledgeSegment(context.Context, *SimpleRequest) (*v1.AiKnowledgeSegment, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetKnowledgeSegment not implemented")
 }
@@ -524,11 +814,65 @@ func (UnimplementedAdminServer) ListKnowledgeSegments(context.Context, *v11.List
 func (UnimplementedAdminServer) ListImage(context.Context, *v11.ListRequest) (*ListImageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListImage not implemented")
 }
-func (UnimplementedAdminServer) UpdateImagePublicStatus(context.Context, *UpdateImageStatusRequest) (*v1.AiImage, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateImagePublicStatus not implemented")
+func (UnimplementedAdminServer) UpdateImage(context.Context, *v1.AiImage) (*Image, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateImage not implemented")
 }
 func (UnimplementedAdminServer) BatchDeleteImage(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteImage not implemented")
+}
+func (UnimplementedAdminServer) GetImage(context.Context, *SimpleRequest) (*Image, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetImage not implemented")
+}
+func (UnimplementedAdminServer) GetChatConversation(context.Context, *SimpleRequest) (*ChatConversation, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChatConversation not implemented")
+}
+func (UnimplementedAdminServer) ListChatConversation(context.Context, *v11.ListRequest) (*ListChatConversationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListChatConversation not implemented")
+}
+func (UnimplementedAdminServer) BatchDeleteChatConversation(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteChatConversation not implemented")
+}
+func (UnimplementedAdminServer) GetChatMessage(context.Context, *SimpleRequest) (*ChatMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChatMessage not implemented")
+}
+func (UnimplementedAdminServer) ListChatMessage(context.Context, *v11.ListRequest) (*ListChatMessageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListChatMessage not implemented")
+}
+func (UnimplementedAdminServer) BatchDeleteChatMessage(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteChatMessage not implemented")
+}
+func (UnimplementedAdminServer) GetTool(context.Context, *SimpleRequest) (*v1.AiTool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTool not implemented")
+}
+func (UnimplementedAdminServer) ListTool(context.Context, *v11.ListRequest) (*ListToolResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTool not implemented")
+}
+func (UnimplementedAdminServer) DeleteTool(context.Context, *SimpleRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTool not implemented")
+}
+func (UnimplementedAdminServer) BatchDeleteTool(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteTool not implemented")
+}
+func (UnimplementedAdminServer) CreateTool(context.Context, *v1.AiTool) (*v1.AiTool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTool not implemented")
+}
+func (UnimplementedAdminServer) UpdateTool(context.Context, *v1.AiTool) (*v1.AiTool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTool not implemented")
+}
+func (UnimplementedAdminServer) GetQueueMetrics(context.Context, *emptypb.Empty) (*v11.QueueMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetQueueMetrics not implemented")
+}
+func (UnimplementedAdminServer) ListTasks(context.Context, *v11.ListRequest) (*v11.ListTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTasks not implemented")
+}
+func (UnimplementedAdminServer) GetTask(context.Context, *SimpleRequest) (*v11.GetTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTask not implemented")
+}
+func (UnimplementedAdminServer) BatchDeleteTasks(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteTasks not implemented")
+}
+func (UnimplementedAdminServer) CleanupTask(context.Context, *v11.CleanupTaskRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CleanupTask not implemented")
 }
 func (UnimplementedAdminServer) mustEmbedUnimplementedAdminServer() {}
 func (UnimplementedAdminServer) testEmbeddedByValue()               {}
@@ -588,7 +932,7 @@ func _Admin_UpdateApikey_Handler(srv interface{}, ctx context.Context, dec func(
 }
 
 func _Admin_DeleteApikey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRequest)
+	in := new(SimpleRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -600,7 +944,7 @@ func _Admin_DeleteApikey_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: Admin_DeleteApikey_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServer).DeleteApikey(ctx, req.(*DeleteRequest))
+		return srv.(AdminServer).DeleteApikey(ctx, req.(*SimpleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -696,7 +1040,7 @@ func _Admin_UpdateModel_Handler(srv interface{}, ctx context.Context, dec func(i
 }
 
 func _Admin_DeleteModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRequest)
+	in := new(SimpleRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -708,7 +1052,7 @@ func _Admin_DeleteModel_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: Admin_DeleteModel_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServer).DeleteModel(ctx, req.(*DeleteRequest))
+		return srv.(AdminServer).DeleteModel(ctx, req.(*SimpleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -767,24 +1111,6 @@ func _Admin_BatchDeleteModel_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Admin_CreateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(v1.AiChatRole)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AdminServer).CreateRole(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Admin_CreateRole_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServer).CreateRole(ctx, req.(*v1.AiChatRole))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Admin_GetRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SimpleRequest)
 	if err := dec(in); err != nil {
@@ -839,20 +1165,38 @@ func _Admin_BatchDeleteRole_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Admin_DeleteKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRequest)
+func _Admin_UpdateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.AiChatRole)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServer).DeleteKnowledge(ctx, in)
+		return srv.(AdminServer).UpdateRole(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Admin_DeleteKnowledge_FullMethodName,
+		FullMethod: Admin_UpdateRole_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServer).DeleteKnowledge(ctx, req.(*DeleteRequest))
+		return srv.(AdminServer).UpdateRole(ctx, req.(*v1.AiChatRole))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_CreateRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.AiChatRole)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).CreateRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_CreateRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).CreateRole(ctx, req.(*v1.AiChatRole))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -893,20 +1237,56 @@ func _Admin_ListKnowledge_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Admin_DeleteKnowledgeDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRequest)
+func _Admin_BatchDeleteKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchDeleteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServer).DeleteKnowledgeDocument(ctx, in)
+		return srv.(AdminServer).BatchDeleteKnowledge(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Admin_DeleteKnowledgeDocument_FullMethodName,
+		FullMethod: Admin_BatchDeleteKnowledge_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServer).DeleteKnowledgeDocument(ctx, req.(*DeleteRequest))
+		return srv.(AdminServer).BatchDeleteKnowledge(ctx, req.(*BatchDeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_UpdateKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.AiKnowledge)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).UpdateKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_UpdateKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).UpdateKnowledge(ctx, req.(*v1.AiKnowledge))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_CreateKnowledge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.AiKnowledge)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).CreateKnowledge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_CreateKnowledge_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).CreateKnowledge(ctx, req.(*v1.AiKnowledge))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -983,6 +1363,24 @@ func _Admin_UpdateDocumentStatus_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Admin_UpdateKnowledgeDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.AiKnowledgeDocument)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).UpdateKnowledgeDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_UpdateKnowledgeDocument_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).UpdateKnowledgeDocument(ctx, req.(*v1.AiKnowledgeDocument))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Admin_GetKnowledgeSegment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SimpleRequest)
 	if err := dec(in); err != nil {
@@ -1037,20 +1435,20 @@ func _Admin_ListImage_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Admin_UpdateImagePublicStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateImageStatusRequest)
+func _Admin_UpdateImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.AiImage)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminServer).UpdateImagePublicStatus(ctx, in)
+		return srv.(AdminServer).UpdateImage(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Admin_UpdateImagePublicStatus_FullMethodName,
+		FullMethod: Admin_UpdateImage_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminServer).UpdateImagePublicStatus(ctx, req.(*UpdateImageStatusRequest))
+		return srv.(AdminServer).UpdateImage(ctx, req.(*v1.AiImage))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1069,6 +1467,330 @@ func _Admin_BatchDeleteImage_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AdminServer).BatchDeleteImage(ctx, req.(*BatchDeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_GetImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).GetImage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetImage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetImage(ctx, req.(*SimpleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_GetChatConversation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).GetChatConversation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetChatConversation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetChatConversation(ctx, req.(*SimpleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_ListChatConversation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v11.ListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).ListChatConversation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_ListChatConversation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).ListChatConversation(ctx, req.(*v11.ListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_BatchDeleteChatConversation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchDeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).BatchDeleteChatConversation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_BatchDeleteChatConversation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).BatchDeleteChatConversation(ctx, req.(*BatchDeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_GetChatMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).GetChatMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetChatMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetChatMessage(ctx, req.(*SimpleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_ListChatMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v11.ListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).ListChatMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_ListChatMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).ListChatMessage(ctx, req.(*v11.ListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_BatchDeleteChatMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchDeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).BatchDeleteChatMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_BatchDeleteChatMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).BatchDeleteChatMessage(ctx, req.(*BatchDeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_GetTool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).GetTool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetTool_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetTool(ctx, req.(*SimpleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_ListTool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v11.ListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).ListTool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_ListTool_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).ListTool(ctx, req.(*v11.ListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_DeleteTool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).DeleteTool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_DeleteTool_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).DeleteTool(ctx, req.(*SimpleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_BatchDeleteTool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchDeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).BatchDeleteTool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_BatchDeleteTool_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).BatchDeleteTool(ctx, req.(*BatchDeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_CreateTool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.AiTool)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).CreateTool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_CreateTool_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).CreateTool(ctx, req.(*v1.AiTool))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_UpdateTool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.AiTool)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).UpdateTool(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_UpdateTool_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).UpdateTool(ctx, req.(*v1.AiTool))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_GetQueueMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).GetQueueMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetQueueMetrics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetQueueMetrics(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_ListTasks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v11.ListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).ListTasks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_ListTasks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).ListTasks(ctx, req.(*v11.ListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_GetTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).GetTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_GetTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).GetTask(ctx, req.(*SimpleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_BatchDeleteTasks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchDeleteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).BatchDeleteTasks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_BatchDeleteTasks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).BatchDeleteTasks(ctx, req.(*BatchDeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Admin_CleanupTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v11.CleanupTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServer).CleanupTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Admin_CleanupTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServer).CleanupTask(ctx, req.(*v11.CleanupTaskRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1129,10 +1851,6 @@ var Admin_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Admin_BatchDeleteModel_Handler,
 		},
 		{
-			MethodName: "CreateRole",
-			Handler:    _Admin_CreateRole_Handler,
-		},
-		{
 			MethodName: "GetRole",
 			Handler:    _Admin_GetRole_Handler,
 		},
@@ -1145,8 +1863,12 @@ var Admin_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Admin_BatchDeleteRole_Handler,
 		},
 		{
-			MethodName: "DeleteKnowledge",
-			Handler:    _Admin_DeleteKnowledge_Handler,
+			MethodName: "UpdateRole",
+			Handler:    _Admin_UpdateRole_Handler,
+		},
+		{
+			MethodName: "CreateRole",
+			Handler:    _Admin_CreateRole_Handler,
 		},
 		{
 			MethodName: "GetKnowledge",
@@ -1157,8 +1879,16 @@ var Admin_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Admin_ListKnowledge_Handler,
 		},
 		{
-			MethodName: "DeleteKnowledgeDocument",
-			Handler:    _Admin_DeleteKnowledgeDocument_Handler,
+			MethodName: "BatchDeleteKnowledge",
+			Handler:    _Admin_BatchDeleteKnowledge_Handler,
+		},
+		{
+			MethodName: "UpdateKnowledge",
+			Handler:    _Admin_UpdateKnowledge_Handler,
+		},
+		{
+			MethodName: "CreateKnowledge",
+			Handler:    _Admin_CreateKnowledge_Handler,
 		},
 		{
 			MethodName: "BatchDeleteKnowledgeDocument",
@@ -1177,6 +1907,10 @@ var Admin_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Admin_UpdateDocumentStatus_Handler,
 		},
 		{
+			MethodName: "UpdateKnowledgeDocument",
+			Handler:    _Admin_UpdateKnowledgeDocument_Handler,
+		},
+		{
 			MethodName: "GetKnowledgeSegment",
 			Handler:    _Admin_GetKnowledgeSegment_Handler,
 		},
@@ -1189,12 +1923,84 @@ var Admin_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Admin_ListImage_Handler,
 		},
 		{
-			MethodName: "UpdateImagePublicStatus",
-			Handler:    _Admin_UpdateImagePublicStatus_Handler,
+			MethodName: "UpdateImage",
+			Handler:    _Admin_UpdateImage_Handler,
 		},
 		{
 			MethodName: "BatchDeleteImage",
 			Handler:    _Admin_BatchDeleteImage_Handler,
+		},
+		{
+			MethodName: "GetImage",
+			Handler:    _Admin_GetImage_Handler,
+		},
+		{
+			MethodName: "GetChatConversation",
+			Handler:    _Admin_GetChatConversation_Handler,
+		},
+		{
+			MethodName: "ListChatConversation",
+			Handler:    _Admin_ListChatConversation_Handler,
+		},
+		{
+			MethodName: "BatchDeleteChatConversation",
+			Handler:    _Admin_BatchDeleteChatConversation_Handler,
+		},
+		{
+			MethodName: "GetChatMessage",
+			Handler:    _Admin_GetChatMessage_Handler,
+		},
+		{
+			MethodName: "ListChatMessage",
+			Handler:    _Admin_ListChatMessage_Handler,
+		},
+		{
+			MethodName: "BatchDeleteChatMessage",
+			Handler:    _Admin_BatchDeleteChatMessage_Handler,
+		},
+		{
+			MethodName: "GetTool",
+			Handler:    _Admin_GetTool_Handler,
+		},
+		{
+			MethodName: "ListTool",
+			Handler:    _Admin_ListTool_Handler,
+		},
+		{
+			MethodName: "DeleteTool",
+			Handler:    _Admin_DeleteTool_Handler,
+		},
+		{
+			MethodName: "BatchDeleteTool",
+			Handler:    _Admin_BatchDeleteTool_Handler,
+		},
+		{
+			MethodName: "CreateTool",
+			Handler:    _Admin_CreateTool_Handler,
+		},
+		{
+			MethodName: "UpdateTool",
+			Handler:    _Admin_UpdateTool_Handler,
+		},
+		{
+			MethodName: "GetQueueMetrics",
+			Handler:    _Admin_GetQueueMetrics_Handler,
+		},
+		{
+			MethodName: "ListTasks",
+			Handler:    _Admin_ListTasks_Handler,
+		},
+		{
+			MethodName: "GetTask",
+			Handler:    _Admin_GetTask_Handler,
+		},
+		{
+			MethodName: "BatchDeleteTasks",
+			Handler:    _Admin_BatchDeleteTasks_Handler,
+		},
+		{
+			MethodName: "CleanupTask",
+			Handler:    _Admin_CleanupTask_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

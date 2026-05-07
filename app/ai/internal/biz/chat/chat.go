@@ -7,12 +7,11 @@ import (
 	"ai/internal/conf"
 	"ai/internal/data"
 	"ai/internal/data/vector"
-	"ai/internal/pkg/eino/message"
 	"ai/internal/pkg/eino/tool/factory"
 	aimcp "ai/internal/pkg/mcp"
 	commonpb "api/api/common/v1"
+	"api/external/data/common"
 	"api/external/trans"
-	"common/db"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -23,7 +22,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cloudwego/eino-ext/components/document/loader/url"
 	"github.com/cloudwego/eino-ext/components/tool/mcp"
 	"github.com/cloudwego/eino/components/document"
 	emodel "github.com/cloudwego/eino/components/model"
@@ -48,16 +46,17 @@ type (
 		ListConversationByUser(ctx context.Context) ([]*ent.AiChatConversation, error)
 		GetConversation(ctx context.Context, id int) (*ent.AiChatConversation, error)
 		DeleteConversation(ctx context.Context, args *DeleteConversationArgs) error
-		PageConversation(ctx context.Context, args *data.ListChatConversationArgs) (*data.ListChatConversationResult, error)
+		ListConversations(ctx context.Context, args *data.ListChatConversationArgs) (*data.ListChatConversationResult, error)
+		ListMessages(ctx context.Context, args *data.ListChatMessageArgs) (*data.ListChatMessageResult, error)
+		BatchDeleteConversations(ctx context.Context, ids []int) error
+		BatchDeleteMessages(ctx context.Context, ids []int) error
+		GetMessage(ctx context.Context, id int) (*ent.AiChatMessage, error)
 
 		PrepareTemplate(ctx context.Context, args *SendMessageArgs) (map[string]any, *ent.AiChatMessage, error)
 		PrepareInput(ctx context.Context, args *SendMessageArgs) (*InputInfo, error)
 		BuildInput(info *InputInfo) []*schema.Message
-		GetToolInfosByRoleID(info *types.RoleInfo) ([]*schema.ToolInfo, error)
-		PageConversationMessage(ctx context.Context, conversationID int, pagination *db.PaginationArgs) (*data.ListChatMessageResult, error)
-		DeleteMessage(ctx context.Context, id int) error
-		DeleteMessagesByConversationID(ctx context.Context, conversationID int) error
-		ListMessagesByConversationID(ctx context.Context, conversationID int, pagination *db.PaginationArgs) (*data.ListChatMessageResult, error)
+		ListConversationMessages(ctx context.Context, conversationID int, pagination *common.PaginationArgs) (*data.ListChatMessageResult, error)
+		DeleteMessage(ctx context.Context, id int, cascade bool) error
 		SaveMessage(ctx context.Context, args *data.CreateChatMessageArgs) (*ent.AiChatMessage, error)
 		GetRoleInfo(ctx context.Context, roleID int) (*types.RoleInfo, error)
 		BuildTools(retrieve tool.InvokableTool, info *types.RoleInfo, useSearch bool, useRag bool) ([]tool.BaseTool, error)
@@ -76,10 +75,9 @@ type (
 		wc        data.WebPageClient
 		tc        data.ToolClient
 		vs        vector.VectorStore
-		urlReader url.Loader
+		urlReader document.Loader
 		l         *log.Helper
 		mcm       aimcp.MCPClientManager
-		wsm       *Searcher
 		conf      *conf.Bootstrap
 		tr        *factory.ToolRegistry
 	}
@@ -101,8 +99,9 @@ type (
 	}
 
 	SendMessageArgs struct {
-		ConversationID int
-		Content        string
+		MsgID          int    // required if it is a retry message
+		ConversationID int    // required if it is a first-send message
+		Content        string // required when first-send or patch message
 		UseContext     bool
 		UseSearch      bool
 		AttachmentUrls []string
@@ -145,8 +144,8 @@ type OnChunkFN func(chunk *schema.Message, aiMsg *ent.AiChatMessage, record *typ
 type OnFirstChunkFN func(chunk *schema.Message, userMsg, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error
 
 func NewChatBiz(cc data.ChatConversationClient, rc data.RoleClient, kc data.KnowledgeClient, mc data.ModelClient,
-	cmc data.ChatMessageClient, wc data.WebPageClient, tc data.ToolClient, loader url.Loader, mcm aimcp.MCPClientManager,
-	wsm *Searcher, vs vector.VectorStore, conf *conf.Bootstrap, tr *factory.ToolRegistry, l log.Logger) ChatBiz {
+	cmc data.ChatMessageClient, wc data.WebPageClient, tc data.ToolClient, loader document.Loader, mcm aimcp.MCPClientManager,
+	vs vector.VectorStore, conf *conf.Bootstrap, tr *factory.ToolRegistry, l log.Logger) ChatBiz {
 	return &chatBiz{
 		cc:        cc,
 		rc:        rc,
@@ -158,7 +157,6 @@ func NewChatBiz(cc data.ChatConversationClient, rc data.RoleClient, kc data.Know
 		urlReader: loader,
 		mcm:       mcm,
 		vs:        vs,
-		wsm:       wsm,
 		conf:      conf,
 		tr:        tr,
 		l:         log.NewHelper(l, log.WithMessageKey("biz-chat")),
@@ -189,10 +187,8 @@ func (b *chatBiz) SaveMessage(ctx context.Context, args *data.CreateChatMessageA
 
 	msg, err := cmc.Create(ctx, args)
 	if err != nil {
-		err := data.Rollback(tx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create message: %w", err)
-		}
+		_ = data.Rollback(tx)
+		return nil, fmt.Errorf("failed to create message: %w", err)
 	}
 
 	if err := data.Commit(tx); err != nil {
@@ -205,15 +201,15 @@ func (b *chatBiz) PrepareInput(ctx context.Context, args *SendMessageArgs) (*Inp
 	u := trans.FromContext(ctx)
 	// 1.1 校验对话存在
 	conversation, err := b.cc.GetByID(ctx, args.ConversationID)
-	if err != nil || conversation == nil || conversation.UserID != int(u.Id) {
+	if err != nil || conversation == nil || conversation.UserID != u.ID {
 		return nil, fmt.Errorf("failed to get conversation: %w", err)
 	}
 	msgList, err := b.cmc.List(ctx, &data.ListChatMessageArgs{
-		PaginationArgs: &db.PaginationArgs{
+		PaginationArgs: &common.PaginationArgs{
 			Page:     1,
 			PageSize: 20,
 			OrderBy:  aimodel.FieldUpdatedAt,
-			OrderDir: db.OrderDirectionDesc,
+			OrderDir: common.OrderDirectionDesc,
 		},
 		ConversationID: conversation.ID,
 	})
@@ -235,13 +231,13 @@ func (b *chatBiz) PrepareInput(ctx context.Context, args *SendMessageArgs) (*Inp
 	}, nil
 }
 
-func (b *chatBiz) PageConversationMessage(ctx context.Context, conversationID int, pagination *db.PaginationArgs) (*data.ListChatMessageResult, error) {
+func (b *chatBiz) ListConversationMessages(ctx context.Context, conversationID int, pagination *common.PaginationArgs) (*data.ListChatMessageResult, error) {
 	u := trans.FromContext(ctx)
 	// 构建分页参数
 	args := &data.ListChatMessageArgs{
 		PaginationArgs: pagination,
 		ConversationID: conversationID,
-		UserID:         int(u.Id),
+		UserID:         u.ID,
 	}
 	messages, err := b.cmc.List(ctx, args)
 	if err != nil {
@@ -272,45 +268,15 @@ func (b *chatBiz) PageConversationMessage(ctx context.Context, conversationID in
 	return messages, nil
 }
 
-func (b *chatBiz) DeleteMessage(ctx context.Context, id int) error {
+func (b *chatBiz) DeleteMessage(ctx context.Context, id int, cascade bool) error {
 	u := trans.FromContext(ctx)
 	// 1. 校验消息是否存在
 	existed, err := b.cmc.GetByID(ctx, id)
-	if err != nil || existed == nil || existed.UserID != int(u.Id) {
+	if err != nil || existed == nil || existed.UserID != u.ID {
 		return fmt.Errorf("failed to get message: %w", err)
 	}
 	// 2. 删除消息
-	return b.cmc.Delete(ctx, existed.ID)
-}
-
-func (b *chatBiz) DeleteMessagesByConversationID(ctx context.Context, conversationID int) error {
-	u := trans.FromContext(ctx)
-	// 1. 校验会话是否存在
-	existed, err := b.cc.GetByID(ctx, conversationID)
-	if err != nil || existed == nil || existed.UserID != int(u.Id) {
-		return fmt.Errorf("failed to get message: %w", err)
-	}
-	// 2. 删除会话下的所有消息
-	if _, err := b.cmc.DeleteByConversationID(ctx, existed.ID); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (b *chatBiz) ListMessagesByConversationID(ctx context.Context, conversationID int, pagination *db.PaginationArgs) (*data.ListChatMessageResult, error) {
-	u := trans.FromContext(ctx)
-	// 1. 校验会话是否存在
-	existed, err := b.cc.GetByID(ctx, conversationID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get conversation: %w", err)
-	}
-	// 2. 查询会话下的所有消息
-	args := &data.ListChatMessageArgs{
-		PaginationArgs: pagination,
-		ConversationID: existed.ID,
-		UserID:         int(u.Id),
-	}
-	return b.cmc.List(ctx, args)
+	return b.cmc.Delete(ctx, existed.ID, cascade)
 }
 
 func (b *chatBiz) CreateConversation(ctx context.Context, roleID int, modelID int, knowledgeID int) (*ent.AiChatConversation, error) {
@@ -337,7 +303,7 @@ func (b *chatBiz) CreateConversation(ctx context.Context, roleID int, modelID in
 	// 创建聊天会话
 	conversation := &data.UpsertChatConversationParams{
 		Pinned:      false,
-		UserID:      int(u.Id),
+		UserID:      u.ID,
 		ModelID:     model.ID,
 		Model:       model.Name,
 		Temperature: model.Temperature,
@@ -363,7 +329,7 @@ func (b *chatBiz) UpdateConversation(ctx context.Context, args *UpdateConversati
 	u := trans.FromContext(ctx)
 	// 1.1 校验对话是否存在
 	existed, err := b.cc.GetByID(ctx, args.ExistedID)
-	if err != nil || existed == nil || existed.UserID != int(u.Id) {
+	if err != nil || existed == nil || existed.UserID != u.ID {
 		return nil, fmt.Errorf("failed to get conversation: %w", err)
 	}
 	params := &data.UpsertChatConversationParams{
@@ -391,7 +357,7 @@ func (b *chatBiz) UpdateConversation(ctx context.Context, args *UpdateConversati
 
 func (b *chatBiz) ListConversationByUser(ctx context.Context) ([]*ent.AiChatConversation, error) {
 	u := trans.FromContext(ctx)
-	return b.cc.ListByUserID(ctx, int(u.Id))
+	return b.cc.ListByUserID(ctx, u.ID)
 }
 
 func (b *chatBiz) GetConversation(ctx context.Context, id int) (*ent.AiChatConversation, error) {
@@ -402,20 +368,53 @@ func (b *chatBiz) DeleteConversation(ctx context.Context, args *DeleteConversati
 	u := trans.FromContext(ctx)
 	if args.Unpinned {
 		// 删除未置顶对话
-		_, err := b.cc.DeleteUnpinnedByUserID(ctx, int(u.Id))
+		_, err := b.cc.DeleteUnpinnedByUserID(ctx, u.ID)
 		return err
 	}
 	// 1. 校验对话是否存在
 	existed, err := b.cc.GetByID(ctx, args.ID)
-	if err != nil || existed == nil || existed.UserID != int(u.Id) {
+	if err != nil || existed == nil || existed.UserID != u.ID {
 		return fmt.Errorf("failed to get conversation: %w", err)
 	}
 	// 2. 删除对话
+	cc, tx, ctx, err := data.WithTx(ctx, b.cc)
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %w", err)
+	}
+
+	err = cc.Delete(ctx, existed.ID)
+	if err != nil {
+		_ = data.Rollback(tx)
+		return fmt.Errorf("failed to delete conversation: %w", err)
+	}
+
+	if err := data.Commit(tx); err != nil {
+		return fmt.Errorf("failed to commit message creation: %w", err)
+	}
+
 	return b.cc.Delete(ctx, existed.ID)
 }
 
-func (b *chatBiz) PageConversation(ctx context.Context, args *data.ListChatConversationArgs) (*data.ListChatConversationResult, error) {
+func (b *chatBiz) ListConversations(ctx context.Context, args *data.ListChatConversationArgs) (*data.ListChatConversationResult, error) {
 	return b.cc.List(ctx, args)
+}
+
+func (b *chatBiz) ListMessages(ctx context.Context, args *data.ListChatMessageArgs) (*data.ListChatMessageResult, error) {
+	return b.cmc.List(ctx, args)
+}
+
+func (b *chatBiz) BatchDeleteConversations(ctx context.Context, ids []int) error {
+	_, err := b.cc.BatchDelete(ctx, ids)
+	return err
+}
+
+func (b *chatBiz) BatchDeleteMessages(ctx context.Context, ids []int) error {
+	_, err := b.cmc.BatchDelete(ctx, ids)
+	return err
+}
+
+func (b *chatBiz) GetMessage(ctx context.Context, id int) (*ent.AiChatMessage, error) {
+	return b.cmc.GetByID(ctx, id)
 }
 
 func (b *chatBiz) BuildInput(info *InputInfo) []*schema.Message {
@@ -548,56 +547,36 @@ func (b *chatBiz) buildAttachmentUserMessage(attachmentUrls []string) *schema.Me
 	return schema.UserMessage(fmt.Sprintf(attachmentUserMessageTemplate, attachment))
 }
 
-func (b *chatBiz) GetToolInfosByRoleID(info *types.RoleInfo) ([]*schema.ToolInfo, error) {
-	var toolCallbacks []*schema.ToolInfo
-	// 1. 通过 toolIDs 查询 tool 工具
-	if len(info.ToolIDs) != 0 {
-		tools, err := b.tc.GetByIDs(context.Background(), info.ToolIDs)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get tools: %w", err)
-		}
-		for _, t := range tools {
-			tInfo := &types.ToolInfo{
-				Name:       t.Name,
-				Desc:       t.Description,
-				Type:       t.Type,
-				Parameters: t.Parameters,
-			}
-			toolCallbacks = append(toolCallbacks, message.ToToolInfo(tInfo))
-		}
-	}
-	// 2. 通过 MCP 查询 tool 工具
-	if len(info.MCPClientNames) != 0 {
-		for _, clientName := range info.MCPClientNames {
-			c, err := b.mcm.GetClient(clientName)
-			if err != nil {
-				b.l.Errorf("failed to get mcp client %s: %v", clientName, err)
-				continue
-			}
-			ctx := context.Background()
-			tools, err := mcp.GetTools(ctx, &mcp.Config{Cli: c})
-			if err != nil {
-				b.l.Errorf("failed to get mcp %s tools: %v", clientName, err)
-				continue
-			}
-			for _, t := range tools {
-				if tInfo, err := t.Info(ctx); err == nil {
-					toolCallbacks = append(toolCallbacks, tInfo)
-				}
-			}
-		}
-	}
-	return toolCallbacks, nil
-}
-
 func (b *chatBiz) PrepareTemplate(ctx context.Context, args *SendMessageArgs) (map[string]any, *ent.AiChatMessage, error) {
 	u := trans.FromContext(ctx)
-	// 1.1 校验对话存在
+	listArgs := &data.ListChatMessageArgs{
+		PaginationArgs: &common.PaginationArgs{
+			Page:     1,
+			PageSize: 20,
+			OrderBy:  aimodel.FieldUpdatedAt,
+			OrderDir: common.OrderDirectionDesc,
+		},
+	}
+	// 1.1 如果是重试消息，则根据消息ID查询其之前的历史消息
+	if args.MsgID != 0 {
+		msg, err := b.cmc.GetByID(ctx, args.MsgID)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to get message: %w", err)
+		}
+		if args.Content == "" {
+			args.Content = msg.Content
+		}
+		args.ConversationID = msg.ConversationID
+		args.AttachmentUrls = msg.AttachmentUrls
+		listArgs.BeforeMsgID = msg.ID
+	}
+	// 1.2 校验对话存在
 	conversation, err := b.cc.GetByID(ctx, args.ConversationID)
-	if err != nil || conversation == nil || conversation.UserID != int(u.Id) {
+	if err != nil || conversation == nil || conversation.UserID != u.ID {
 		return nil, nil, fmt.Errorf("failed to get conversation: %w", err)
 	}
-	// 1.2校验对话模型是否改变，若是，则更新对话
+	listArgs.ConversationID = conversation.ID
+	// 1.3 校验对话模型是否改变，若是，则更新对话
 	if args.ModelID != conversation.ModelID {
 		_, err := b.cc.UpdateModel(ctx, conversation.ID, args.ModelID, args.Model)
 		if err != nil {
@@ -605,19 +584,11 @@ func (b *chatBiz) PrepareTemplate(ctx context.Context, args *SendMessageArgs) (m
 		}
 	}
 	args.RoleID = conversation.RoleID
-	msgList, err := b.cmc.List(ctx, &data.ListChatMessageArgs{
-		PaginationArgs: &db.PaginationArgs{
-			Page:     1,
-			PageSize: 20,
-			OrderBy:  aimodel.FieldUpdatedAt,
-			OrderDir: db.OrderDirectionDesc,
-		},
-		ConversationID: conversation.ID,
-	})
+	msgList, err := b.cmc.List(ctx, listArgs)
 	if err != nil {
 		return nil, nil, commonpb.ErrorDb("failed to list messages: %w", err)
 	}
-	// 1.3 校验模型是否存在
+	// 1.4 校验模型是否存在
 	model, err := b.mc.GetActiveModelByIDType(ctx, conversation.ModelID, types.ModelTypeChat)
 	if err != nil || model == nil {
 		return nil, nil, commonpb.ErrorParamInvalid("invalid model")
@@ -626,21 +597,37 @@ func (b *chatBiz) PrepareTemplate(ctx context.Context, args *SendMessageArgs) (m
 	history := b.filterContextMessages(msgList.ChatMessages, conversation, args)
 
 	// 3. 保存用户消息
-	saveArgs := &data.CreateChatMessageArgs{
-		CID:     conversation.ID,
-		UserID:  int(u.Id),
-		RoleID:  conversation.RoleID,
-		ModelID: conversation.ModelID,
-		Type:    string(schema.User),
-		Content: args.Content,
-	}
-	if len(args.AttachmentUrls) > 0 {
-		saveArgs.AttachUrls = args.AttachmentUrls
-	}
+	var userMsg *ent.AiChatMessage
+	if args.MsgID == 0 {
+		// 新增消息
+		saveArgs := &data.CreateChatMessageArgs{
+			CID:     conversation.ID,
+			UserID:  u.ID,
+			RoleID:  conversation.RoleID,
+			ModelID: conversation.ModelID,
+			Type:    string(schema.User),
+			Content: args.Content,
+		}
+		if len(args.AttachmentUrls) > 0 {
+			saveArgs.AttachUrls = args.AttachmentUrls
+		}
 
-	userMsg, err := b.SaveMessage(ctx, saveArgs)
-	if err != nil {
-		return nil, nil, commonpb.ErrorDb("failed to save message: %w", err)
+		userMsg, err = b.SaveMessage(ctx, saveArgs)
+		if err != nil {
+			return nil, nil, commonpb.ErrorDb("failed to save message: %w", err)
+		}
+	} else if args.Content == "" {
+		// 重发消息
+		userMsg, err = b.cmc.GetByID(ctx, args.MsgID)
+		if err != nil {
+			return nil, nil, commonpb.ErrorDb("failed to get message: %w", err)
+		}
+	} else {
+		// 更新消息内容
+		userMsg, err = b.cmc.UpdateContent(ctx, args.MsgID, args.Content, "")
+		if err != nil {
+			return nil, nil, commonpb.ErrorDb("failed to update message: %w", err)
+		}
 	}
 	return map[string]any{
 		"system_message": conversation.SystemMessage,

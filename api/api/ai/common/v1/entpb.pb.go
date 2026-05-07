@@ -29,24 +29,27 @@ type AiImage_Status int32
 
 const (
 	AiImage_STATUS_UNSPECIFIED AiImage_Status = 0
-	AiImage_STATUS_PROCESSING  AiImage_Status = 1
-	AiImage_STATUS_SUCCESS     AiImage_Status = 2
-	AiImage_STATUS_FAILED      AiImage_Status = 3
+	AiImage_STATUS_PENDING     AiImage_Status = 1
+	AiImage_STATUS_PROCESSING  AiImage_Status = 2
+	AiImage_STATUS_SUCCESS     AiImage_Status = 3
+	AiImage_STATUS_FAILED      AiImage_Status = 4
 )
 
 // Enum value maps for AiImage_Status.
 var (
 	AiImage_Status_name = map[int32]string{
 		0: "STATUS_UNSPECIFIED",
-		1: "STATUS_PROCESSING",
-		2: "STATUS_SUCCESS",
-		3: "STATUS_FAILED",
+		1: "STATUS_PENDING",
+		2: "STATUS_PROCESSING",
+		3: "STATUS_SUCCESS",
+		4: "STATUS_FAILED",
 	}
 	AiImage_Status_value = map[string]int32{
 		"STATUS_UNSPECIFIED": 0,
-		"STATUS_PROCESSING":  1,
-		"STATUS_SUCCESS":     2,
-		"STATUS_FAILED":      3,
+		"STATUS_PENDING":     1,
+		"STATUS_PROCESSING":  2,
+		"STATUS_SUCCESS":     3,
+		"STATUS_FAILED":      4,
 	}
 )
 
@@ -75,6 +78,61 @@ func (x AiImage_Status) Number() protoreflect.EnumNumber {
 // Deprecated: Use AiImage_Status.Descriptor instead.
 func (AiImage_Status) EnumDescriptor() ([]byte, []int) {
 	return file_ai_common_v1_entpb_proto_rawDescGZIP(), []int{4, 0}
+}
+
+type AiKnowledgeDocument_Progress int32
+
+const (
+	AiKnowledgeDocument_PROGRESS_UNSPECIFIED AiKnowledgeDocument_Progress = 0
+	AiKnowledgeDocument_PROGRESS_PENDING     AiKnowledgeDocument_Progress = 1
+	AiKnowledgeDocument_PROGRESS_PROCESSING  AiKnowledgeDocument_Progress = 2
+	AiKnowledgeDocument_PROGRESS_SUCCESS     AiKnowledgeDocument_Progress = 3
+	AiKnowledgeDocument_PROGRESS_FAILED      AiKnowledgeDocument_Progress = 4
+)
+
+// Enum value maps for AiKnowledgeDocument_Progress.
+var (
+	AiKnowledgeDocument_Progress_name = map[int32]string{
+		0: "PROGRESS_UNSPECIFIED",
+		1: "PROGRESS_PENDING",
+		2: "PROGRESS_PROCESSING",
+		3: "PROGRESS_SUCCESS",
+		4: "PROGRESS_FAILED",
+	}
+	AiKnowledgeDocument_Progress_value = map[string]int32{
+		"PROGRESS_UNSPECIFIED": 0,
+		"PROGRESS_PENDING":     1,
+		"PROGRESS_PROCESSING":  2,
+		"PROGRESS_SUCCESS":     3,
+		"PROGRESS_FAILED":      4,
+	}
+)
+
+func (x AiKnowledgeDocument_Progress) Enum() *AiKnowledgeDocument_Progress {
+	p := new(AiKnowledgeDocument_Progress)
+	*p = x
+	return p
+}
+
+func (x AiKnowledgeDocument_Progress) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AiKnowledgeDocument_Progress) Descriptor() protoreflect.EnumDescriptor {
+	return file_ai_common_v1_entpb_proto_enumTypes[1].Descriptor()
+}
+
+func (AiKnowledgeDocument_Progress) Type() protoreflect.EnumType {
+	return &file_ai_common_v1_entpb_proto_enumTypes[1]
+}
+
+func (x AiKnowledgeDocument_Progress) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AiKnowledgeDocument_Progress.Descriptor instead.
+func (AiKnowledgeDocument_Progress) EnumDescriptor() ([]byte, []int) {
+	return file_ai_common_v1_entpb_proto_rawDescGZIP(), []int{6, 0}
 }
 
 type AiApiKey struct {
@@ -998,22 +1056,24 @@ func (x *AiKnowledge) GetAiKnowledgeDocument() []*AiKnowledgeDocument {
 }
 
 type AiKnowledgeDocument struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	Id                 int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	DeletedAt          *timestamppb.Timestamp `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
-	KnowledgeId        int64                  `protobuf:"varint,2,opt,name=knowledge_id,json=knowledgeId,proto3" json:"knowledge_id,omitempty"`
-	Name               string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Url                string                 `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
-	Version            string                 `protobuf:"bytes,5,opt,name=version,proto3" json:"version,omitempty"`
-	ContentLength      int64                  `protobuf:"varint,6,opt,name=content_length,json=contentLength,proto3" json:"content_length,omitempty"`
-	Tokens             int64                  `protobuf:"varint,7,opt,name=tokens,proto3" json:"tokens,omitempty"`
-	SegmentMaxTokens   int64                  `protobuf:"varint,8,opt,name=segment_max_tokens,json=segmentMaxTokens,proto3" json:"segment_max_tokens,omitempty"`
-	RetrievalCount     int64                  `protobuf:"varint,9,opt,name=retrieval_count,json=retrievalCount,proto3" json:"retrieval_count,omitempty"`
-	Status             v1.Status              `protobuf:"varint,10,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
-	AiKnowledge        *AiKnowledge           `protobuf:"bytes,81,opt,name=ai_knowledge,json=aiKnowledge,proto3" json:"ai_knowledge,omitempty"`
-	AiKnowledgeSegment []*AiKnowledgeSegment  `protobuf:"bytes,82,rep,name=ai_knowledge_segment,json=aiKnowledgeSegment,proto3" json:"ai_knowledge_segment,omitempty"`
+	state              protoimpl.MessageState       `protogen:"open.v1"`
+	Id                 int64                        `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreatedAt          *timestamppb.Timestamp       `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt          *timestamppb.Timestamp       `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	DeletedAt          *timestamppb.Timestamp       `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
+	KnowledgeId        int64                        `protobuf:"varint,2,opt,name=knowledge_id,json=knowledgeId,proto3" json:"knowledge_id,omitempty"`
+	Name               string                       `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Url                string                       `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
+	Version            string                       `protobuf:"bytes,5,opt,name=version,proto3" json:"version,omitempty"`
+	Size               int64                        `protobuf:"varint,12,opt,name=size,proto3" json:"size,omitempty"`
+	ContentLength      int64                        `protobuf:"varint,6,opt,name=content_length,json=contentLength,proto3" json:"content_length,omitempty"`
+	Tokens             int64                        `protobuf:"varint,7,opt,name=tokens,proto3" json:"tokens,omitempty"`
+	SegmentMaxTokens   int64                        `protobuf:"varint,8,opt,name=segment_max_tokens,json=segmentMaxTokens,proto3" json:"segment_max_tokens,omitempty"`
+	RetrievalCount     int64                        `protobuf:"varint,9,opt,name=retrieval_count,json=retrievalCount,proto3" json:"retrieval_count,omitempty"`
+	Progress           AiKnowledgeDocument_Progress `protobuf:"varint,10,opt,name=progress,proto3,enum=ai.common.v1.AiKnowledgeDocument_Progress" json:"progress,omitempty"`
+	Status             v1.Status                    `protobuf:"varint,11,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
+	AiKnowledge        *AiKnowledge                 `protobuf:"bytes,81,opt,name=ai_knowledge,json=aiKnowledge,proto3" json:"ai_knowledge,omitempty"`
+	AiKnowledgeSegment []*AiKnowledgeSegment        `protobuf:"bytes,82,rep,name=ai_knowledge_segment,json=aiKnowledgeSegment,proto3" json:"ai_knowledge_segment,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -1104,6 +1164,13 @@ func (x *AiKnowledgeDocument) GetVersion() string {
 	return ""
 }
 
+func (x *AiKnowledgeDocument) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
 func (x *AiKnowledgeDocument) GetContentLength() int64 {
 	if x != nil {
 		return x.ContentLength
@@ -1130,6 +1197,13 @@ func (x *AiKnowledgeDocument) GetRetrievalCount() int64 {
 		return x.RetrievalCount
 	}
 	return 0
+}
+
+func (x *AiKnowledgeDocument) GetProgress() AiKnowledgeDocument_Progress {
+	if x != nil {
+		return x.Progress
+	}
+	return AiKnowledgeDocument_PROGRESS_UNSPECIFIED
 }
 
 func (x *AiKnowledgeDocument) GetStatus() v1.Status {
@@ -1160,7 +1234,6 @@ type AiKnowledgeSegment struct {
 	UpdatedAt           *timestamppb.Timestamp `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	DeletedAt           *timestamppb.Timestamp `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
 	DocumentId          int64                  `protobuf:"varint,2,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
-	Content             string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
 	ContentLength       int64                  `protobuf:"varint,4,opt,name=content_length,json=contentLength,proto3" json:"content_length,omitempty"`
 	Tokens              int64                  `protobuf:"varint,5,opt,name=tokens,proto3" json:"tokens,omitempty"`
 	VectorId            string                 `protobuf:"bytes,6,opt,name=vector_id,json=vectorId,proto3" json:"vector_id,omitempty"`
@@ -1234,13 +1307,6 @@ func (x *AiKnowledgeSegment) GetDocumentId() int64 {
 		return x.DocumentId
 	}
 	return 0
-}
-
-func (x *AiKnowledgeSegment) GetContent() string {
-	if x != nil {
-		return x.Content
-	}
-	return ""
 }
 
 func (x *AiKnowledgeSegment) GetContentLength() int64 {
@@ -1757,7 +1823,7 @@ const file_ai_common_v1_entpb_proto_rawDesc = "" +
 	" \x03(\x03R\fknowledgeIds\x12\x19\n" +
 	"\btool_ids\x18\v \x03(\x03R\atoolIds\x12(\n" +
 	"\x10mcp_client_names\x18\f \x03(\tR\x0emcpClientNames\x12)\n" +
-	"\x06status\x18\r \x01(\x0e2\x11.common.v1.StatusR\x06status\"\xf2\x04\n" +
+	"\x06status\x18\r \x01(\x0e2\x11.common.v1.StatusR\x06status\"\x86\x05\n" +
 	"\aAiImage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1778,12 +1844,13 @@ const file_ai_common_v1_entpb_proto_rawDesc = "" +
 	" \x01(\x0e2\x1c.ai.common.v1.AiImage.StatusR\x06status\x12\x17\n" +
 	"\apic_url\x18\v \x01(\tR\x06picUrl\x12\x17\n" +
 	"\atask_id\x18\f \x01(\tR\x06taskId\x12\x18\n" +
-	"\abuttons\x18\r \x01(\tR\abuttons\"^\n" +
+	"\abuttons\x18\r \x01(\tR\abuttons\"r\n" +
 	"\x06Status\x12\x16\n" +
-	"\x12STATUS_UNSPECIFIED\x10\x00\x12\x15\n" +
-	"\x11STATUS_PROCESSING\x10\x01\x12\x12\n" +
-	"\x0eSTATUS_SUCCESS\x10\x02\x12\x11\n" +
-	"\rSTATUS_FAILED\x10\x03\"\xf8\x04\n" +
+	"\x12STATUS_UNSPECIFIED\x10\x00\x12\x12\n" +
+	"\x0eSTATUS_PENDING\x10\x01\x12\x15\n" +
+	"\x11STATUS_PROCESSING\x10\x02\x12\x12\n" +
+	"\x0eSTATUS_SUCCESS\x10\x03\x12\x11\n" +
+	"\rSTATUS_FAILED\x10\x04\"\xf8\x04\n" +
 	"\vAiKnowledge\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1803,7 +1870,7 @@ const file_ai_common_v1_entpb_proto_rawDesc = "" +
 	"\tis_public\x18\n" +
 	" \x01(\bR\bisPublic\x12\x1b\n" +
 	"\tis_master\x18\v \x01(\bR\bisMaster\x12U\n" +
-	"\x15ai_knowledge_document\x18Q \x03(\v2!.ai.common.v1.AiKnowledgeDocumentR\x13aiKnowledgeDocument\"\x8c\x05\n" +
+	"\x15ai_knowledge_document\x18Q \x03(\v2!.ai.common.v1.AiKnowledgeDocumentR\x13aiKnowledgeDocument\"\xe8\x06\n" +
 	"\x13AiKnowledgeDocument\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1815,15 +1882,23 @@ const file_ai_common_v1_entpb_proto_rawDesc = "" +
 	"\fknowledge_id\x18\x02 \x01(\x03R\vknowledgeId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x10\n" +
 	"\x03url\x18\x04 \x01(\tR\x03url\x12\x18\n" +
-	"\aversion\x18\x05 \x01(\tR\aversion\x12%\n" +
+	"\aversion\x18\x05 \x01(\tR\aversion\x12\x12\n" +
+	"\x04size\x18\f \x01(\x03R\x04size\x12%\n" +
 	"\x0econtent_length\x18\x06 \x01(\x03R\rcontentLength\x12\x16\n" +
 	"\x06tokens\x18\a \x01(\x03R\x06tokens\x12,\n" +
 	"\x12segment_max_tokens\x18\b \x01(\x03R\x10segmentMaxTokens\x12'\n" +
-	"\x0fretrieval_count\x18\t \x01(\x03R\x0eretrievalCount\x12)\n" +
-	"\x06status\x18\n" +
-	" \x01(\x0e2\x11.common.v1.StatusR\x06status\x12<\n" +
+	"\x0fretrieval_count\x18\t \x01(\x03R\x0eretrievalCount\x12F\n" +
+	"\bprogress\x18\n" +
+	" \x01(\x0e2*.ai.common.v1.AiKnowledgeDocument.ProgressR\bprogress\x12)\n" +
+	"\x06status\x18\v \x01(\x0e2\x11.common.v1.StatusR\x06status\x12<\n" +
 	"\fai_knowledge\x18Q \x01(\v2\x19.ai.common.v1.AiKnowledgeR\vaiKnowledge\x12R\n" +
-	"\x14ai_knowledge_segment\x18R \x03(\v2 .ai.common.v1.AiKnowledgeSegmentR\x12aiKnowledgeSegment\"\x97\x04\n" +
+	"\x14ai_knowledge_segment\x18R \x03(\v2 .ai.common.v1.AiKnowledgeSegmentR\x12aiKnowledgeSegment\"~\n" +
+	"\bProgress\x12\x18\n" +
+	"\x14PROGRESS_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10PROGRESS_PENDING\x10\x01\x12\x17\n" +
+	"\x13PROGRESS_PROCESSING\x10\x02\x12\x14\n" +
+	"\x10PROGRESS_SUCCESS\x10\x03\x12\x13\n" +
+	"\x0fPROGRESS_FAILED\x10\x04\"\xfd\x03\n" +
 	"\x12AiKnowledgeSegment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1833,8 +1908,7 @@ const file_ai_common_v1_entpb_proto_rawDesc = "" +
 	"\n" +
 	"deleted_at\x18f \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x1f\n" +
 	"\vdocument_id\x18\x02 \x01(\x03R\n" +
-	"documentId\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\tR\acontent\x12%\n" +
+	"documentId\x12%\n" +
 	"\x0econtent_length\x18\x04 \x01(\x03R\rcontentLength\x12\x16\n" +
 	"\x06tokens\x18\x05 \x01(\x03R\x06tokens\x12\x1b\n" +
 	"\tvector_id\x18\x06 \x01(\tR\bvectorId\x12'\n" +
@@ -1908,79 +1982,81 @@ func file_ai_common_v1_entpb_proto_rawDescGZIP() []byte {
 	return file_ai_common_v1_entpb_proto_rawDescData
 }
 
-var file_ai_common_v1_entpb_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_ai_common_v1_entpb_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_ai_common_v1_entpb_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_ai_common_v1_entpb_proto_goTypes = []any{
-	(AiImage_Status)(0),           // 0: ai.common.v1.AiImage.Status
-	(*AiApiKey)(nil),              // 1: ai.common.v1.AiApiKey
-	(*AiChatConversation)(nil),    // 2: ai.common.v1.AiChatConversation
-	(*AiChatMessage)(nil),         // 3: ai.common.v1.AiChatMessage
-	(*AiChatRole)(nil),            // 4: ai.common.v1.AiChatRole
-	(*AiImage)(nil),               // 5: ai.common.v1.AiImage
-	(*AiKnowledge)(nil),           // 6: ai.common.v1.AiKnowledge
-	(*AiKnowledgeDocument)(nil),   // 7: ai.common.v1.AiKnowledgeDocument
-	(*AiKnowledgeSegment)(nil),    // 8: ai.common.v1.AiKnowledgeSegment
-	(*AiModel)(nil),               // 9: ai.common.v1.AiModel
-	(*AiTool)(nil),                // 10: ai.common.v1.AiTool
-	(*AiWebPage)(nil),             // 11: ai.common.v1.AiWebPage
-	(*timestamppb.Timestamp)(nil), // 12: google.protobuf.Timestamp
-	(v1.Status)(0),                // 13: common.v1.Status
+	(AiImage_Status)(0),               // 0: ai.common.v1.AiImage.Status
+	(AiKnowledgeDocument_Progress)(0), // 1: ai.common.v1.AiKnowledgeDocument.Progress
+	(*AiApiKey)(nil),                  // 2: ai.common.v1.AiApiKey
+	(*AiChatConversation)(nil),        // 3: ai.common.v1.AiChatConversation
+	(*AiChatMessage)(nil),             // 4: ai.common.v1.AiChatMessage
+	(*AiChatRole)(nil),                // 5: ai.common.v1.AiChatRole
+	(*AiImage)(nil),                   // 6: ai.common.v1.AiImage
+	(*AiKnowledge)(nil),               // 7: ai.common.v1.AiKnowledge
+	(*AiKnowledgeDocument)(nil),       // 8: ai.common.v1.AiKnowledgeDocument
+	(*AiKnowledgeSegment)(nil),        // 9: ai.common.v1.AiKnowledgeSegment
+	(*AiModel)(nil),                   // 10: ai.common.v1.AiModel
+	(*AiTool)(nil),                    // 11: ai.common.v1.AiTool
+	(*AiWebPage)(nil),                 // 12: ai.common.v1.AiWebPage
+	(*timestamppb.Timestamp)(nil),     // 13: google.protobuf.Timestamp
+	(v1.Status)(0),                    // 14: common.v1.Status
 }
 var file_ai_common_v1_entpb_proto_depIdxs = []int32{
-	12, // 0: ai.common.v1.AiApiKey.created_at:type_name -> google.protobuf.Timestamp
-	12, // 1: ai.common.v1.AiApiKey.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 2: ai.common.v1.AiApiKey.deleted_at:type_name -> google.protobuf.Timestamp
-	13, // 3: ai.common.v1.AiApiKey.status:type_name -> common.v1.Status
-	9,  // 4: ai.common.v1.AiApiKey.ai_model:type_name -> ai.common.v1.AiModel
-	12, // 5: ai.common.v1.AiChatConversation.created_at:type_name -> google.protobuf.Timestamp
-	12, // 6: ai.common.v1.AiChatConversation.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 7: ai.common.v1.AiChatConversation.deleted_at:type_name -> google.protobuf.Timestamp
-	12, // 8: ai.common.v1.AiChatMessage.created_at:type_name -> google.protobuf.Timestamp
-	12, // 9: ai.common.v1.AiChatMessage.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 10: ai.common.v1.AiChatMessage.deleted_at:type_name -> google.protobuf.Timestamp
-	11, // 11: ai.common.v1.AiChatMessage.ai_web_page:type_name -> ai.common.v1.AiWebPage
-	12, // 12: ai.common.v1.AiChatRole.created_at:type_name -> google.protobuf.Timestamp
-	12, // 13: ai.common.v1.AiChatRole.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 14: ai.common.v1.AiChatRole.deleted_at:type_name -> google.protobuf.Timestamp
-	13, // 15: ai.common.v1.AiChatRole.status:type_name -> common.v1.Status
-	12, // 16: ai.common.v1.AiImage.created_at:type_name -> google.protobuf.Timestamp
-	12, // 17: ai.common.v1.AiImage.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 18: ai.common.v1.AiImage.deleted_at:type_name -> google.protobuf.Timestamp
+	13, // 0: ai.common.v1.AiApiKey.created_at:type_name -> google.protobuf.Timestamp
+	13, // 1: ai.common.v1.AiApiKey.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 2: ai.common.v1.AiApiKey.deleted_at:type_name -> google.protobuf.Timestamp
+	14, // 3: ai.common.v1.AiApiKey.status:type_name -> common.v1.Status
+	10, // 4: ai.common.v1.AiApiKey.ai_model:type_name -> ai.common.v1.AiModel
+	13, // 5: ai.common.v1.AiChatConversation.created_at:type_name -> google.protobuf.Timestamp
+	13, // 6: ai.common.v1.AiChatConversation.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 7: ai.common.v1.AiChatConversation.deleted_at:type_name -> google.protobuf.Timestamp
+	13, // 8: ai.common.v1.AiChatMessage.created_at:type_name -> google.protobuf.Timestamp
+	13, // 9: ai.common.v1.AiChatMessage.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 10: ai.common.v1.AiChatMessage.deleted_at:type_name -> google.protobuf.Timestamp
+	12, // 11: ai.common.v1.AiChatMessage.ai_web_page:type_name -> ai.common.v1.AiWebPage
+	13, // 12: ai.common.v1.AiChatRole.created_at:type_name -> google.protobuf.Timestamp
+	13, // 13: ai.common.v1.AiChatRole.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 14: ai.common.v1.AiChatRole.deleted_at:type_name -> google.protobuf.Timestamp
+	14, // 15: ai.common.v1.AiChatRole.status:type_name -> common.v1.Status
+	13, // 16: ai.common.v1.AiImage.created_at:type_name -> google.protobuf.Timestamp
+	13, // 17: ai.common.v1.AiImage.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 18: ai.common.v1.AiImage.deleted_at:type_name -> google.protobuf.Timestamp
 	0,  // 19: ai.common.v1.AiImage.status:type_name -> ai.common.v1.AiImage.Status
-	12, // 20: ai.common.v1.AiKnowledge.created_at:type_name -> google.protobuf.Timestamp
-	12, // 21: ai.common.v1.AiKnowledge.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 22: ai.common.v1.AiKnowledge.deleted_at:type_name -> google.protobuf.Timestamp
-	13, // 23: ai.common.v1.AiKnowledge.status:type_name -> common.v1.Status
-	7,  // 24: ai.common.v1.AiKnowledge.ai_knowledge_document:type_name -> ai.common.v1.AiKnowledgeDocument
-	12, // 25: ai.common.v1.AiKnowledgeDocument.created_at:type_name -> google.protobuf.Timestamp
-	12, // 26: ai.common.v1.AiKnowledgeDocument.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 27: ai.common.v1.AiKnowledgeDocument.deleted_at:type_name -> google.protobuf.Timestamp
-	13, // 28: ai.common.v1.AiKnowledgeDocument.status:type_name -> common.v1.Status
-	6,  // 29: ai.common.v1.AiKnowledgeDocument.ai_knowledge:type_name -> ai.common.v1.AiKnowledge
-	8,  // 30: ai.common.v1.AiKnowledgeDocument.ai_knowledge_segment:type_name -> ai.common.v1.AiKnowledgeSegment
-	12, // 31: ai.common.v1.AiKnowledgeSegment.created_at:type_name -> google.protobuf.Timestamp
-	12, // 32: ai.common.v1.AiKnowledgeSegment.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 33: ai.common.v1.AiKnowledgeSegment.deleted_at:type_name -> google.protobuf.Timestamp
-	13, // 34: ai.common.v1.AiKnowledgeSegment.status:type_name -> common.v1.Status
-	7,  // 35: ai.common.v1.AiKnowledgeSegment.ai_knowledge_document:type_name -> ai.common.v1.AiKnowledgeDocument
-	12, // 36: ai.common.v1.AiModel.created_at:type_name -> google.protobuf.Timestamp
-	12, // 37: ai.common.v1.AiModel.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 38: ai.common.v1.AiModel.deleted_at:type_name -> google.protobuf.Timestamp
-	13, // 39: ai.common.v1.AiModel.status:type_name -> common.v1.Status
-	1,  // 40: ai.common.v1.AiModel.ai_api_key:type_name -> ai.common.v1.AiApiKey
-	12, // 41: ai.common.v1.AiTool.created_at:type_name -> google.protobuf.Timestamp
-	12, // 42: ai.common.v1.AiTool.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 43: ai.common.v1.AiTool.deleted_at:type_name -> google.protobuf.Timestamp
-	13, // 44: ai.common.v1.AiTool.status:type_name -> common.v1.Status
-	12, // 45: ai.common.v1.AiWebPage.created_at:type_name -> google.protobuf.Timestamp
-	12, // 46: ai.common.v1.AiWebPage.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 47: ai.common.v1.AiWebPage.deleted_at:type_name -> google.protobuf.Timestamp
-	3,  // 48: ai.common.v1.AiWebPage.ai_chat_message:type_name -> ai.common.v1.AiChatMessage
-	49, // [49:49] is the sub-list for method output_type
-	49, // [49:49] is the sub-list for method input_type
-	49, // [49:49] is the sub-list for extension type_name
-	49, // [49:49] is the sub-list for extension extendee
-	0,  // [0:49] is the sub-list for field type_name
+	13, // 20: ai.common.v1.AiKnowledge.created_at:type_name -> google.protobuf.Timestamp
+	13, // 21: ai.common.v1.AiKnowledge.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 22: ai.common.v1.AiKnowledge.deleted_at:type_name -> google.protobuf.Timestamp
+	14, // 23: ai.common.v1.AiKnowledge.status:type_name -> common.v1.Status
+	8,  // 24: ai.common.v1.AiKnowledge.ai_knowledge_document:type_name -> ai.common.v1.AiKnowledgeDocument
+	13, // 25: ai.common.v1.AiKnowledgeDocument.created_at:type_name -> google.protobuf.Timestamp
+	13, // 26: ai.common.v1.AiKnowledgeDocument.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 27: ai.common.v1.AiKnowledgeDocument.deleted_at:type_name -> google.protobuf.Timestamp
+	1,  // 28: ai.common.v1.AiKnowledgeDocument.progress:type_name -> ai.common.v1.AiKnowledgeDocument.Progress
+	14, // 29: ai.common.v1.AiKnowledgeDocument.status:type_name -> common.v1.Status
+	7,  // 30: ai.common.v1.AiKnowledgeDocument.ai_knowledge:type_name -> ai.common.v1.AiKnowledge
+	9,  // 31: ai.common.v1.AiKnowledgeDocument.ai_knowledge_segment:type_name -> ai.common.v1.AiKnowledgeSegment
+	13, // 32: ai.common.v1.AiKnowledgeSegment.created_at:type_name -> google.protobuf.Timestamp
+	13, // 33: ai.common.v1.AiKnowledgeSegment.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 34: ai.common.v1.AiKnowledgeSegment.deleted_at:type_name -> google.protobuf.Timestamp
+	14, // 35: ai.common.v1.AiKnowledgeSegment.status:type_name -> common.v1.Status
+	8,  // 36: ai.common.v1.AiKnowledgeSegment.ai_knowledge_document:type_name -> ai.common.v1.AiKnowledgeDocument
+	13, // 37: ai.common.v1.AiModel.created_at:type_name -> google.protobuf.Timestamp
+	13, // 38: ai.common.v1.AiModel.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 39: ai.common.v1.AiModel.deleted_at:type_name -> google.protobuf.Timestamp
+	14, // 40: ai.common.v1.AiModel.status:type_name -> common.v1.Status
+	2,  // 41: ai.common.v1.AiModel.ai_api_key:type_name -> ai.common.v1.AiApiKey
+	13, // 42: ai.common.v1.AiTool.created_at:type_name -> google.protobuf.Timestamp
+	13, // 43: ai.common.v1.AiTool.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 44: ai.common.v1.AiTool.deleted_at:type_name -> google.protobuf.Timestamp
+	14, // 45: ai.common.v1.AiTool.status:type_name -> common.v1.Status
+	13, // 46: ai.common.v1.AiWebPage.created_at:type_name -> google.protobuf.Timestamp
+	13, // 47: ai.common.v1.AiWebPage.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 48: ai.common.v1.AiWebPage.deleted_at:type_name -> google.protobuf.Timestamp
+	4,  // 49: ai.common.v1.AiWebPage.ai_chat_message:type_name -> ai.common.v1.AiChatMessage
+	50, // [50:50] is the sub-list for method output_type
+	50, // [50:50] is the sub-list for method input_type
+	50, // [50:50] is the sub-list for extension type_name
+	50, // [50:50] is the sub-list for extension extendee
+	0,  // [0:50] is the sub-list for field type_name
 }
 
 func init() { file_ai_common_v1_entpb_proto_init() }
@@ -1993,7 +2069,7 @@ func file_ai_common_v1_entpb_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_common_v1_entpb_proto_rawDesc), len(file_ai_common_v1_entpb_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      2,
 			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,

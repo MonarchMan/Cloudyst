@@ -22,6 +22,13 @@ type (
 	}
 )
 
+func NewMCPClientManager() MCPClientManager {
+	return &mcpClientManager{
+		mu:      sync.RWMutex{},
+		clients: make(map[string]client.MCPClient),
+	}
+}
+
 func (m *mcpClientManager) Register(name string, client client.MCPClient) {
 	m.mu.Lock()
 	defer m.mu.Unlock()

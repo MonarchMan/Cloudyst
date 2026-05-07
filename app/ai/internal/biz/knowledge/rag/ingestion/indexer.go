@@ -4,6 +4,7 @@ import (
 	"ai/internal/biz/types"
 	"ai/internal/conf"
 	"ai/internal/data"
+	"ai/internal/data/vector"
 	"context"
 	"fmt"
 	"sort"
@@ -63,7 +64,7 @@ func (n *IndexerNode) Store(ctx context.Context, docs []*schema.Document, opts .
 	return ids, nil
 }
 
-func NewMilvusIndexer(ksc data.KnowledgeSegmentClient, l log.Logger, emb embedding.Embedder, bs *conf.Bootstrap) (indexer.Indexer, error) {
+func NewMilvusIndexer(ksc data.KnowledgeSegmentClient, client vector.VectorStore, l log.Logger, emb embedding.Embedder, bs *conf.Bootstrap) (indexer.Indexer, error) {
 	cfg := bs.Data.Milvus
 	dmType := milvus2.MetricType(cfg.MetricType.Dense)
 	if dmType == "" {
@@ -74,6 +75,9 @@ func NewMilvusIndexer(ksc data.KnowledgeSegmentClient, l log.Logger, emb embeddi
 		smType = milvus2.BM25
 	}
 	ctx := context.Background()
+	if err := client.EnsureCollection(ctx); err != nil {
+		return nil, fmt.Errorf("failed to ensure collection to exist: %v", err)
+	}
 	// 配置向量索引
 	vecCfg := &milvus2.VectorConfig{
 		Dimension:    1024, // 与 embedding 模型维度匹配

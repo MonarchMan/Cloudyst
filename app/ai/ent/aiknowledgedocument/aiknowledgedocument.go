@@ -34,14 +34,24 @@ const (
 	FieldVersion = "version"
 	// FieldContentLength holds the string denoting the content_length field in the database.
 	FieldContentLength = "content_length"
+	// FieldSize holds the string denoting the size field in the database.
+	FieldSize = "size"
 	// FieldTokens holds the string denoting the tokens field in the database.
 	FieldTokens = "tokens"
+	// FieldChunks holds the string denoting the chunks field in the database.
+	FieldChunks = "chunks"
+	// FieldParseType holds the string denoting the parse_type field in the database.
+	FieldParseType = "parse_type"
+	// FieldContentHash holds the string denoting the content_hash field in the database.
+	FieldContentHash = "content_hash"
+	// FieldMetadata holds the string denoting the metadata field in the database.
+	FieldMetadata = "metadata"
 	// FieldSegmentMaxTokens holds the string denoting the segment_max_tokens field in the database.
 	FieldSegmentMaxTokens = "segment_max_tokens"
 	// FieldRetrievalCount holds the string denoting the retrieval_count field in the database.
 	FieldRetrievalCount = "retrieval_count"
-	// FieldProcess holds the string denoting the process field in the database.
-	FieldProcess = "process"
+	// FieldProgress holds the string denoting the progress field in the database.
+	FieldProgress = "progress"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// EdgeAiKnowledge holds the string denoting the ai_knowledge edge name in mutations.
@@ -77,10 +87,15 @@ var Columns = []string{
 	FieldURL,
 	FieldVersion,
 	FieldContentLength,
+	FieldSize,
 	FieldTokens,
+	FieldChunks,
+	FieldParseType,
+	FieldContentHash,
+	FieldMetadata,
 	FieldSegmentMaxTokens,
 	FieldRetrievalCount,
-	FieldProcess,
+	FieldProgress,
 	FieldStatus,
 }
 
@@ -110,15 +125,21 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DefaultChunks holds the default value on creation for the "chunks" field.
+	DefaultChunks int
+	// DefaultParseType holds the default value on creation for the "parse_type" field.
+	DefaultParseType string
+	// DefaultContentHash holds the default value on creation for the "content_hash" field.
+	DefaultContentHash string
 )
 
-// ProcessValidator is a validator for the "process" field enum values. It is called by the builders before save.
-func ProcessValidator(pr types.DocumentStatus) error {
+// ProgressValidator is a validator for the "progress" field enum values. It is called by the builders before save.
+func ProgressValidator(pr types.DocumentProgress) error {
 	switch pr {
 	case "processing", "success", "failed", "pending":
 		return nil
 	default:
-		return fmt.Errorf("aiknowledgedocument: invalid enum value for process field: %q", pr)
+		return fmt.Errorf("aiknowledgedocument: invalid enum value for progress field: %q", pr)
 	}
 }
 
@@ -180,9 +201,29 @@ func ByContentLength(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldContentLength, opts...).ToFunc()
 }
 
+// BySize orders the results by the size field.
+func BySize(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSize, opts...).ToFunc()
+}
+
 // ByTokens orders the results by the tokens field.
 func ByTokens(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTokens, opts...).ToFunc()
+}
+
+// ByChunks orders the results by the chunks field.
+func ByChunks(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChunks, opts...).ToFunc()
+}
+
+// ByParseType orders the results by the parse_type field.
+func ByParseType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldParseType, opts...).ToFunc()
+}
+
+// ByContentHash orders the results by the content_hash field.
+func ByContentHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldContentHash, opts...).ToFunc()
 }
 
 // BySegmentMaxTokens orders the results by the segment_max_tokens field.
@@ -195,9 +236,9 @@ func ByRetrievalCount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRetrievalCount, opts...).ToFunc()
 }
 
-// ByProcess orders the results by the process field.
-func ByProcess(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProcess, opts...).ToFunc()
+// ByProgress orders the results by the progress field.
+func ByProgress(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProgress, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

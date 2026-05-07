@@ -1,11 +1,7 @@
 package schema
 
 import (
-	mschema "entmodule/ent/schema"
-
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -19,26 +15,19 @@ type AiWebPage struct {
 func (AiWebPage) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
-			Comment("网站名称").
-			Annotations(entproto.Field(2)),
+			Comment("网站名称"),
 		field.String("icon").
-			Comment("网站图标").
-			Annotations(entproto.Field(3)),
+			Comment("网站图标"),
 		field.String("title").
-			Comment("网页标题").
-			Annotations(entproto.Field(4)),
+			Comment("网页标题"),
 		field.String("url").
-			Comment("网页URL").
-			Annotations(entproto.Field(5)),
+			Comment("网页URL"),
 		field.String("snippet").
-			Comment("网页描述").
-			Annotations(entproto.Field(6)),
+			Comment("网页描述"),
 		field.Text("summary").
-			Comment("网页摘要").
-			Annotations(entproto.Field(7)),
+			Comment("网页摘要"),
 		field.Int("message_id").
-			Comment("消息ID").
-			Annotations(entproto.Field(8)),
+			Comment("消息ID"),
 	}
 }
 
@@ -49,19 +38,12 @@ func (AiWebPage) Edges() []ent.Edge {
 			Ref("ai_web_page").
 			Field("message_id").
 			Required().
-			Unique().
-			Annotations(entproto.Field(81)),
+			Unique(),
 	}
 }
 
 func (AiWebPage) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
-	}
-}
-
-func (AiWebPage) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
+		CommonMixin{},
 	}
 }

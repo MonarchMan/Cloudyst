@@ -1,8 +1,6 @@
 package schema
 
 import (
-	mschema "entmodule/ent/schema"
-
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
@@ -52,7 +50,7 @@ func (Metadata) Indexes() []ent.Index {
 
 func (Metadata) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
+		CommonMixin{},
 	}
 }
 

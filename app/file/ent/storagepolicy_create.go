@@ -3,13 +3,13 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
 	"context"
 	"errors"
 	"file/ent/entity"
 	"file/ent/file"
 	"file/ent/node"
 	"file/ent/storagepolicy"
+	"file/internal/data/types"
 	"fmt"
 	"time"
 
@@ -193,7 +193,7 @@ func (_c *StoragePolicyCreate) SetNillableFileNameRule(v *string) *StoragePolicy
 }
 
 // SetSettings sets the "settings" field.
-func (_c *StoragePolicyCreate) SetSettings(v *v1.PolicySetting) *StoragePolicyCreate {
+func (_c *StoragePolicyCreate) SetSettings(v *types.PolicySetting) *StoragePolicyCreate {
 	_c.mutation.SetSettings(v)
 	return _c
 }
@@ -318,11 +318,6 @@ func (_c *StoragePolicyCreate) check() error {
 	}
 	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "StoragePolicy.type"`)}
-	}
-	if v, ok := _c.mutation.Settings(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "settings", err: fmt.Errorf(`ent: validator failed for field "StoragePolicy.settings": %w`, err)}
-		}
 	}
 	return nil
 }
@@ -720,7 +715,7 @@ func (u *StoragePolicyUpsert) ClearFileNameRule() *StoragePolicyUpsert {
 }
 
 // SetSettings sets the "settings" field.
-func (u *StoragePolicyUpsert) SetSettings(v *v1.PolicySetting) *StoragePolicyUpsert {
+func (u *StoragePolicyUpsert) SetSettings(v *types.PolicySetting) *StoragePolicyUpsert {
 	u.Set(storagepolicy.FieldSettings, v)
 	return u
 }
@@ -1039,7 +1034,7 @@ func (u *StoragePolicyUpsertOne) ClearFileNameRule() *StoragePolicyUpsertOne {
 }
 
 // SetSettings sets the "settings" field.
-func (u *StoragePolicyUpsertOne) SetSettings(v *v1.PolicySetting) *StoragePolicyUpsertOne {
+func (u *StoragePolicyUpsertOne) SetSettings(v *types.PolicySetting) *StoragePolicyUpsertOne {
 	return u.Update(func(s *StoragePolicyUpsert) {
 		s.SetSettings(v)
 	})
@@ -1535,7 +1530,7 @@ func (u *StoragePolicyUpsertBulk) ClearFileNameRule() *StoragePolicyUpsertBulk {
 }
 
 // SetSettings sets the "settings" field.
-func (u *StoragePolicyUpsertBulk) SetSettings(v *v1.PolicySetting) *StoragePolicyUpsertBulk {
+func (u *StoragePolicyUpsertBulk) SetSettings(v *types.PolicySetting) *StoragePolicyUpsertBulk {
 	return u.Update(func(s *StoragePolicyUpsert) {
 		s.SetSettings(v)
 	})

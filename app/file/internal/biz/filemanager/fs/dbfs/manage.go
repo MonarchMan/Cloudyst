@@ -2,16 +2,14 @@ package dbfs
 
 import (
 	commonpb "api/api/common/v1"
-	pbadmin "api/api/user/admin/v1"
-	userpb "api/api/user/common/v1"
 	"api/external/trans"
+	"common/constants"
 	"common/hashid"
 	"common/serializer"
 	"context"
 	"file/ent"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/data"
-	"file/internal/data/rpc"
 	"file/internal/data/types"
 	"fmt"
 	"path/filepath"
@@ -46,7 +44,7 @@ func (f *DBFS) Create(ctx context.Context, path *fs.URI, fileType int, opts ...f
 		}
 	}
 
-	if ancestor.Uri(false).IsSame(path, hashid.EncodeUserID(f.hasher, int(f.user.Id))) {
+	if ancestor.Uri(false).IsSame(path, hashid.EncodeUserID(f.hasher, f.user.ID)) {
 		if ancestor.Type() == fileType {
 			if o.errOnConflict {
 				return ancestor, fs.ErrFileExisted
@@ -61,13 +59,13 @@ func (f *DBFS) Create(ctx context.Context, path *fs.URI, fileType int, opts ...f
 			WithCause(fmt.Errorf("object with the same name but different type %q already exist", ancestor.Type()))
 	}
 
-	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && ancestor.OwnerID() != int(f.user.Id) {
+	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && ancestor.OwnerID() != f.user.ID {
 		return nil, fs.ErrOwnerOnly
 	}
 
 	// Lock ancestor
 	lockedPath := ancestor.RootUri().JoinRaw(path.PathTrimmed())
-	ls, err := f.acquireByPath(ctx, -1, int(f.user.Id), false, fs.LockApp(fs.ApplicationCreate),
+	ls, err := f.acquireByPath(ctx, -1, f.user.ID, false, fs.LockApp(fs.ApplicationCreate),
 		&LockByPath{lockedPath, ancestor, fileType, ""})
 	defer func() { _ = f.Release(ctx, ls) }()
 	if err != nil {
@@ -94,7 +92,7 @@ func (f *DBFS) Create(ctx context.Context, path *fs.URI, fileType int, opts ...f
 
 		if i < len(desired)-1 || fileType == types.FileTypeFolder {
 			args := &data.CreateFolderParameters{
-				OwnerID: int(f.user.Id),
+				OwnerID: f.user.ID,
 				Owner:   ancestor.Model.OwnerInfo,
 				Name:    desired[i],
 			}
@@ -165,7 +163,7 @@ func (f *DBFS) Rename(ctx context.Context, path *fs.URI, newName string) (fs.Fil
 	}
 	oldName := target.Name()
 
-	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != int(f.user.Id) {
+	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != f.user.ID {
 		return nil, fs.ErrOwnerOnly
 	}
 
@@ -196,7 +194,7 @@ func (f *DBFS) Rename(ctx context.Context, path *fs.URI, newName string) (fs.Fil
 	}
 
 	// Lock target
-	ls, err := f.acquireByPath(ctx, -1, int(f.user.Id), false, fs.LockApp(fs.ApplicationRename),
+	ls, err := f.acquireByPath(ctx, -1, f.user.ID, false, fs.LockApp(fs.ApplicationRename),
 		&LockByPath{target.Uri(true), target, target.Type(), ""})
 	defer func() { _ = f.Release(ctx, ls) }()
 	if err != nil {
@@ -251,7 +249,7 @@ func (f *DBFS) SoftDelete(ctx context.Context, path ...*fs.URI) error {
 			continue
 		}
 
-		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != int(f.user.Id) {
+		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != f.user.ID {
 			ae[p.String()] = fs.ErrOwnerOnly.WithCause(fmt.Errorf("only files ownerId can delete files without trash bin")).Error()
 			continue
 		}
@@ -272,7 +270,7 @@ func (f *DBFS) SoftDelete(ctx context.Context, path ...*fs.URI) error {
 	lockTargets := lo.Map(targets, func(value *File, key int) *LockByPath {
 		return &LockByPath{value.Uri(true), value, value.Type(), ""}
 	})
-	ls, err := f.acquireByPath(ctx, -1, int(f.user.Id), false, fs.LockApp(fs.ApplicationSoftDelete), lockTargets...)
+	ls, err := f.acquireByPath(ctx, -1, f.user.ID, false, fs.LockApp(fs.ApplicationSoftDelete), lockTargets...)
 	defer func() { _ = f.Release(ctx, ls) }()
 	if err != nil {
 		return err
@@ -347,7 +345,7 @@ func (f *DBFS) Delete(ctx context.Context, path []*fs.URI, opts ...fs.Option) ([
 			continue
 		}
 
-		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !o.SysSkipSoftDelete && !ok && target.OwnerID() != int(f.user.Id) {
+		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !o.SysSkipSoftDelete && !ok && target.OwnerID() != f.user.ID {
 			ae.Add(p.String(), fs.ErrOwnerOnly)
 			continue
 		}
@@ -372,7 +370,7 @@ func (f *DBFS) Delete(ctx context.Context, path []*fs.URI, opts ...fs.Option) ([
 	lockTargets := lo.Map(targets, func(value *File, key int) *LockByPath {
 		return &LockByPath{value.Uri(true), value, value.Type(), ""}
 	})
-	ls, err := f.acquireByPath(ctx, -1, int(f.user.Id), false, fs.LockApp(fs.ApplicationDelete), lockTargets...)
+	ls, err := f.acquireByPath(ctx, -1, f.user.ID, false, fs.LockApp(fs.ApplicationDelete), lockTargets...)
 	defer func() { _ = f.Release(ctx, ls) }()
 	if err != nil {
 		return nil, nil, err
@@ -414,7 +412,7 @@ func (f *DBFS) VersionControl(ctx context.Context, path *fs.URI, versionId int, 
 		return nil, fmt.Errorf("failed to get target files: %w", err)
 	}
 
-	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != int(f.user.Id) {
+	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != f.user.ID {
 		return nil, fs.ErrOwnerOnly
 	}
 
@@ -424,7 +422,7 @@ func (f *DBFS) VersionControl(ctx context.Context, path *fs.URI, versionId int, 
 	}
 
 	// Lock files
-	ls, err := f.acquireByPath(ctx, -1, int(f.user.Id), true, fs.LockApp(fs.ApplicationVersionControl),
+	ls, err := f.acquireByPath(ctx, -1, f.user.ID, true, fs.LockApp(fs.ApplicationVersionControl),
 		&LockByPath{target.Uri(true), target, target.Type(), ""})
 	defer func() { _ = f.Release(ctx, ls) }()
 	if err != nil {
@@ -437,7 +435,7 @@ func (f *DBFS) VersionControl(ctx context.Context, path *fs.URI, versionId int, 
 			return nil, err
 		}
 
-		if err := rpc.ApplyStorageDiff(ctx, storageDiff, f.userClient); err != nil {
+		if err := f.userClient.ApplyStorageDiff(ctx, storageDiff); err != nil {
 			f.l.WithContext(ctx).Errorf("Failed to apply storage diff after deleting version: %s", err)
 		}
 		return nil, nil
@@ -452,7 +450,7 @@ func (f *DBFS) VersionControl(ctx context.Context, path *fs.URI, versionId int, 
 					{
 						Uri:      *target.Uri(false),
 						FileID:   target.ID(),
-						OwnerID:  int(target.Owner().Id),
+						OwnerID:  target.OwnerID(),
 						EntityID: versionId,
 					},
 				},
@@ -530,7 +528,7 @@ func (f *DBFS) MoveOrCopy(ctx context.Context, path []*fs.URI, dst *fs.URI, isCo
 		return nil, fmt.Errorf("failed to get destination folder: %w", err)
 	}
 
-	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && destination.OwnerID() != int(f.user.Id) {
+	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && destination.OwnerID() != f.user.ID {
 		return nil, fs.ErrOwnerOnly
 	}
 
@@ -566,7 +564,7 @@ func (f *DBFS) MoveOrCopy(ctx context.Context, path []*fs.URI, dst *fs.URI, isCo
 			continue
 		}
 
-		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != int(f.user.Id) {
+		if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != f.user.ID {
 			ae.Add(p.String(), fs.ErrOwnerOnly)
 			continue
 		}
@@ -579,7 +577,7 @@ func (f *DBFS) MoveOrCopy(ctx context.Context, path []*fs.URI, dst *fs.URI, isCo
 
 		// Cannot move or copy folder to its descendant
 		if target.Type() == types.FileTypeFolder &&
-			dstRootPath.EqualOrIsDescendantOf(target.Uri(true), hashid.EncodeUserID(f.hasher, int(f.user.Id))) {
+			dstRootPath.EqualOrIsDescendantOf(target.Uri(true), hashid.EncodeUserID(f.hasher, f.user.ID)) {
 			ae.Add(p.String(), fs.ErrNotSupportedAction.WithCause(fmt.Errorf("cannot move or copy folder to itself or its descendant")))
 			continue
 		}
@@ -618,7 +616,7 @@ func (f *DBFS) MoveOrCopy(ctx context.Context, path []*fs.URI, dst *fs.URI, isCo
 			allLockTargets = append(allLockTargets, dstRestoreTargets...)
 		}
 		allLockTargets = append(allLockTargets, dstLockTargets...)
-		ls, err := f.acquireByPath(ctx, -1, int(f.user.Id), false, fs.LockApp(fs.ApplicationMoveCopy), allLockTargets...)
+		ls, err := f.acquireByPath(ctx, -1, f.user.ID, false, fs.LockApp(fs.ApplicationMoveCopy), allLockTargets...)
 		defer func() { _ = f.Release(ctx, ls) }()
 		if err != nil {
 			return nil, err
@@ -671,22 +669,20 @@ func (f *DBFS) GetFileFromDirectLink(ctx context.Context, dl *ent.DirectLink) (f
 		return nil, err
 	}
 
-	ownerId := fileModel.OwnerID
-	resp, err := f.userAdminClient.AdminGetUser(ctx, &pbadmin.SimpleUserRequest{Id: int32(ownerId)})
+	owner, err := f.userClient.GetUserInfo(ctx, fileModel.OwnerID)
 	if err != nil {
 		return nil, err
 	}
-	owner := resp.GetUser()
 
 	// File ownerId must be active
-	if owner.Status != userpb.User_STATUS_ACTIVE {
+	if owner.Status != constants.StatusActive {
 		return nil, fs.ErrDirectLinkInvalid.WithCause(fmt.Errorf("files owner is not active"))
 	}
 
 	file := newFile(nil, fileModel)
 
 	// Traverse to the root files
-	baseNavigator := newBaseNavigator(f.fileClient, defaultFilter, f.user.Id, f.hasher, f.settingClient.DBFS(ctx))
+	baseNavigator := newBaseNavigator(f.fileClient, defaultFilter, f.user.ID, f.hasher, f.settingClient.DBFS(ctx))
 	root, err := baseNavigator.findRoot(ctx, file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find root files: %w", err)
@@ -705,21 +701,21 @@ func (f *DBFS) TraverseFile(ctx context.Context, fileID int) (fs.File, error) {
 		return nil, err
 	}
 
-	if fileModel.OwnerID != int(f.user.Id) {
+	if fileModel.OwnerID != f.user.ID {
 		return nil, fs.ErrOwnerOnly.WithCause(fmt.Errorf("only files ownerId can traverse files's uri"))
 	}
 
 	file := newFile(nil, fileModel)
 
 	// Traverse to the root files
-	baseNavigator := newBaseNavigator(f.fileClient, defaultFilter, f.user.Id, f.hasher, f.settingClient.DBFS(ctx))
+	baseNavigator := newBaseNavigator(f.fileClient, defaultFilter, f.user.ID, f.hasher, f.settingClient.DBFS(ctx))
 	root, err := baseNavigator.findRoot(ctx, file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find root files: %w", err)
 	}
 
 	rootUri := newMyUri()
-	if fileModel.OwnerID != int(f.user.Id) {
+	if fileModel.OwnerID != f.user.ID {
 		rootUri = newMyIDUri(hashid.EncodeUserID(f.hasher, fileModel.OwnerID))
 	}
 

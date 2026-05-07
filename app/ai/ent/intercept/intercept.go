@@ -19,6 +19,7 @@ import (
 	"ai/ent/aitool"
 	"ai/ent/aiwebpage"
 	"ai/ent/predicate"
+	"ai/ent/task"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -376,6 +377,33 @@ func (f TraverseAiWebPage) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.AiWebPageQuery", q)
 }
 
+// The TaskFunc type is an adapter to allow the use of ordinary function as a Querier.
+type TaskFunc func(context.Context, *ent.TaskQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f TaskFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.TaskQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.TaskQuery", q)
+}
+
+// The TraverseTask type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseTask func(context.Context, *ent.TaskQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseTask) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseTask) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.TaskQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.TaskQuery", q)
+}
+
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
@@ -401,6 +429,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AiToolQuery, predicate.AiTool, aitool.OrderOption]{typ: ent.TypeAiTool, tq: q}, nil
 	case *ent.AiWebPageQuery:
 		return &query[*ent.AiWebPageQuery, predicate.AiWebPage, aiwebpage.OrderOption]{typ: ent.TypeAiWebPage, tq: q}, nil
+	case *ent.TaskQuery:
+		return &query[*ent.TaskQuery, predicate.Task, task.OrderOption]{typ: ent.TypeTask, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}

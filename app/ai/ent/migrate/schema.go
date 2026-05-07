@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	// AiApiKeyColumns holds the columns for the "AiApiKey" table.
-	AiApiKeyColumns = []*schema.Column{
+	// AiAPIKeysColumns holds the columns for the "ai_api_keys" table.
+	AiAPIKeysColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
@@ -21,11 +21,11 @@ var (
 		{Name: "url", Type: field.TypeString, Size: 255, Default: ""},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive"}},
 	}
-	// AiApiKeyTable holds the schema information for the "AiApiKey" table.
-	AiApiKeyTable = &schema.Table{
-		Name:       "AiApiKey",
-		Columns:    AiApiKeyColumns,
-		PrimaryKey: []*schema.Column{AiApiKeyColumns[0]},
+	// AiAPIKeysTable holds the schema information for the "ai_api_keys" table.
+	AiAPIKeysTable = &schema.Table{
+		Name:       "ai_api_keys",
+		Columns:    AiAPIKeysColumns,
+		PrimaryKey: []*schema.Column{AiAPIKeysColumns[0]},
 	}
 	// AiChatConversationsColumns holds the columns for the "ai_chat_conversations" table.
 	AiChatConversationsColumns = []*schema.Column{
@@ -158,10 +158,15 @@ var (
 		{Name: "url", Type: field.TypeString},
 		{Name: "version", Type: field.TypeString},
 		{Name: "content_length", Type: field.TypeInt},
+		{Name: "size", Type: field.TypeInt64},
 		{Name: "tokens", Type: field.TypeInt},
+		{Name: "chunks", Type: field.TypeInt, Default: 0},
+		{Name: "parse_type", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "content_hash", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
 		{Name: "segment_max_tokens", Type: field.TypeInt},
 		{Name: "retrieval_count", Type: field.TypeInt},
-		{Name: "process", Type: field.TypeEnum, Enums: []string{"processing", "success", "failed", "pending"}},
+		{Name: "progress", Type: field.TypeEnum, Enums: []string{"processing", "success", "failed", "pending"}},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive"}},
 		{Name: "knowledge_id", Type: field.TypeInt},
 	}
@@ -173,7 +178,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "ai_knowledge_documents_ai_knowledges_ai_knowledge_document",
-				Columns:    []*schema.Column{AiKnowledgeDocumentsColumns[13]},
+				Columns:    []*schema.Column{AiKnowledgeDocumentsColumns[18]},
 				RefColumns: []*schema.Column{AiKnowledgesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -188,6 +193,11 @@ var (
 		{Name: "knowledge_id", Type: field.TypeInt},
 		{Name: "content_length", Type: field.TypeInt},
 		{Name: "tokens", Type: field.TypeInt},
+		{Name: "chunk_index", Type: field.TypeInt, Default: 0},
+		{Name: "section_path", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "start_offset", Type: field.TypeInt, Default: 0},
+		{Name: "end_offset", Type: field.TypeInt, Default: 0},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
 		{Name: "vector_id", Type: field.TypeString, Size: 100, Default: ""},
 		{Name: "retrieval_count", Type: field.TypeInt},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive"}},
@@ -201,7 +211,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "ai_knowledge_segments_ai_knowledge_documents_ai_knowledge_segment",
-				Columns:    []*schema.Column{AiKnowledgeSegmentsColumns[10]},
+				Columns:    []*schema.Column{AiKnowledgeSegmentsColumns[15]},
 				RefColumns: []*schema.Column{AiKnowledgeDocumentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -230,9 +240,9 @@ var (
 		PrimaryKey: []*schema.Column{AiModelsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "ai_models_AiApiKey_ai_model",
+				Symbol:     "ai_models_ai_api_keys_ai_model",
 				Columns:    []*schema.Column{AiModelsColumns[12]},
-				RefColumns: []*schema.Column{AiApiKeyColumns[0]},
+				RefColumns: []*schema.Column{AiAPIKeysColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -283,9 +293,28 @@ var (
 			},
 		},
 	}
+	// AiTaskColumns holds the columns for the "ai_task" table.
+	AiTaskColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "type", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"queued", "processing", "suspending", "error", "canceled", "completed"}, Default: "queued"},
+		{Name: "public_state", Type: field.TypeJSON},
+		{Name: "private_state", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "trace_id", Type: field.TypeString, Nullable: true},
+		{Name: "user_id", Type: field.TypeInt, Nullable: true},
+	}
+	// AiTaskTable holds the schema information for the "ai_task" table.
+	AiTaskTable = &schema.Table{
+		Name:       "ai_task",
+		Columns:    AiTaskColumns,
+		PrimaryKey: []*schema.Column{AiTaskColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		AiApiKeyTable,
+		AiAPIKeysTable,
 		AiChatConversationsTable,
 		AiChatMessagesTable,
 		AiChatRolesTable,
@@ -296,15 +325,16 @@ var (
 		AiModelsTable,
 		AiToolsTable,
 		AiWebPagesTable,
+		AiTaskTable,
 	}
 )
 
 func init() {
-	AiApiKeyTable.Annotation = &entsql.Annotation{
-		Table: "AiApiKey",
-	}
 	AiKnowledgeDocumentsTable.ForeignKeys[0].RefTable = AiKnowledgesTable
 	AiKnowledgeSegmentsTable.ForeignKeys[0].RefTable = AiKnowledgeDocumentsTable
-	AiModelsTable.ForeignKeys[0].RefTable = AiApiKeyTable
+	AiModelsTable.ForeignKeys[0].RefTable = AiAPIKeysTable
 	AiWebPagesTable.ForeignKeys[0].RefTable = AiChatMessagesTable
+	AiTaskTable.Annotation = &entsql.Annotation{
+		Table: "ai_task",
+	}
 }

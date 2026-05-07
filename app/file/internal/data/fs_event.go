@@ -1,7 +1,7 @@
 package data
 
 import (
-	"common/db"
+	"api/external/data/common"
 	"context"
 	"entmodule/ent/schema"
 	"file/ent"
@@ -23,8 +23,8 @@ type FsEventClient interface {
 	TakeBySubscriber(ctx context.Context, subscriberId uuid.UUID, userId int) ([]*ent.FsEvent, error)
 }
 
-func NewFsEventClient(client *ent.Client, dbType db.DBType) FsEventClient {
-	return &fsEventClient{client: client, maxSQlParam: db.SqlParamLimit(dbType)}
+func NewFsEventClient(client *ent.Client, dbType common.DBType) FsEventClient {
+	return &fsEventClient{client: client, maxSQlParam: common.SqlParamLimit(dbType)}
 }
 
 type fsEventClient struct {

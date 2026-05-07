@@ -6,6 +6,7 @@ import (
 	"ai/ent/aiknowledge"
 	"ai/ent/aiknowledgedocument"
 	"ai/internal/biz/types"
+	"encoding/json"
 	"entmodule"
 	"fmt"
 	"strings"
@@ -36,14 +37,24 @@ type AiKnowledgeDocument struct {
 	Version string `json:"version,omitempty"`
 	// 文档内容长度
 	ContentLength int `json:"content_length,omitempty"`
+	// 文档大小，单位字节
+	Size int64 `json:"size,omitempty"`
 	// 文档token数
 	Tokens int `json:"tokens,omitempty"`
+	// 文档切片总数
+	Chunks int `json:"chunks,omitempty"`
+	// 解析类型，如 markdown/pdf/html/docx/txt
+	ParseType string `json:"parse_type,omitempty"`
+	// 文档内容hash，用于判断是否需要重建索引
+	ContentHash string `json:"content_hash,omitempty"`
+	// 文档级增强元信息，如标题、摘要、术语、语言、质量评分
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	// 分片最大Token数
 	SegmentMaxTokens int `json:"segment_max_tokens,omitempty"`
 	// 召回次数
 	RetrievalCount int `json:"retrieval_count,omitempty"`
 	// 文档处理进度
-	Process types.DocumentStatus `json:"process,omitempty"`
+	Progress types.DocumentProgress `json:"progress,omitempty"`
 	// 状态
 	Status entmodule.Status `json:"status,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -88,9 +99,11 @@ func (*AiKnowledgeDocument) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case aiknowledgedocument.FieldID, aiknowledgedocument.FieldKnowledgeID, aiknowledgedocument.FieldContentLength, aiknowledgedocument.FieldTokens, aiknowledgedocument.FieldSegmentMaxTokens, aiknowledgedocument.FieldRetrievalCount:
+		case aiknowledgedocument.FieldMetadata:
+			values[i] = new([]byte)
+		case aiknowledgedocument.FieldID, aiknowledgedocument.FieldKnowledgeID, aiknowledgedocument.FieldContentLength, aiknowledgedocument.FieldSize, aiknowledgedocument.FieldTokens, aiknowledgedocument.FieldChunks, aiknowledgedocument.FieldSegmentMaxTokens, aiknowledgedocument.FieldRetrievalCount:
 			values[i] = new(sql.NullInt64)
-		case aiknowledgedocument.FieldName, aiknowledgedocument.FieldURL, aiknowledgedocument.FieldVersion, aiknowledgedocument.FieldProcess, aiknowledgedocument.FieldStatus:
+		case aiknowledgedocument.FieldName, aiknowledgedocument.FieldURL, aiknowledgedocument.FieldVersion, aiknowledgedocument.FieldParseType, aiknowledgedocument.FieldContentHash, aiknowledgedocument.FieldProgress, aiknowledgedocument.FieldStatus:
 			values[i] = new(sql.NullString)
 		case aiknowledgedocument.FieldCreatedAt, aiknowledgedocument.FieldUpdatedAt, aiknowledgedocument.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -164,11 +177,43 @@ func (_m *AiKnowledgeDocument) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.ContentLength = int(value.Int64)
 			}
+		case aiknowledgedocument.FieldSize:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field size", values[i])
+			} else if value.Valid {
+				_m.Size = value.Int64
+			}
 		case aiknowledgedocument.FieldTokens:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tokens", values[i])
 			} else if value.Valid {
 				_m.Tokens = int(value.Int64)
+			}
+		case aiknowledgedocument.FieldChunks:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field chunks", values[i])
+			} else if value.Valid {
+				_m.Chunks = int(value.Int64)
+			}
+		case aiknowledgedocument.FieldParseType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field parse_type", values[i])
+			} else if value.Valid {
+				_m.ParseType = value.String
+			}
+		case aiknowledgedocument.FieldContentHash:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field content_hash", values[i])
+			} else if value.Valid {
+				_m.ContentHash = value.String
+			}
+		case aiknowledgedocument.FieldMetadata:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field metadata", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Metadata); err != nil {
+					return fmt.Errorf("unmarshal field metadata: %w", err)
+				}
 			}
 		case aiknowledgedocument.FieldSegmentMaxTokens:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -182,11 +227,11 @@ func (_m *AiKnowledgeDocument) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.RetrievalCount = int(value.Int64)
 			}
-		case aiknowledgedocument.FieldProcess:
+		case aiknowledgedocument.FieldProgress:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field process", values[i])
+				return fmt.Errorf("unexpected type %T for field progress", values[i])
 			} else if value.Valid {
-				_m.Process = types.DocumentStatus(value.String)
+				_m.Progress = types.DocumentProgress(value.String)
 			}
 		case aiknowledgedocument.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -266,8 +311,23 @@ func (_m *AiKnowledgeDocument) String() string {
 	builder.WriteString("content_length=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ContentLength))
 	builder.WriteString(", ")
+	builder.WriteString("size=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Size))
+	builder.WriteString(", ")
 	builder.WriteString("tokens=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Tokens))
+	builder.WriteString(", ")
+	builder.WriteString("chunks=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Chunks))
+	builder.WriteString(", ")
+	builder.WriteString("parse_type=")
+	builder.WriteString(_m.ParseType)
+	builder.WriteString(", ")
+	builder.WriteString("content_hash=")
+	builder.WriteString(_m.ContentHash)
+	builder.WriteString(", ")
+	builder.WriteString("metadata=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))
 	builder.WriteString(", ")
 	builder.WriteString("segment_max_tokens=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SegmentMaxTokens))
@@ -275,8 +335,8 @@ func (_m *AiKnowledgeDocument) String() string {
 	builder.WriteString("retrieval_count=")
 	builder.WriteString(fmt.Sprintf("%v", _m.RetrievalCount))
 	builder.WriteString(", ")
-	builder.WriteString("process=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Process))
+	builder.WriteString("progress=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Progress))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))

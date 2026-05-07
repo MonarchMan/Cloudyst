@@ -2,9 +2,8 @@ package manager
 
 import (
 	pbfile "api/api/file/files/v1"
-	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
-	ftypes "api/external/data/file"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/auth"
 	"common/cache"
 	"common/constants"
@@ -27,7 +26,6 @@ import (
 	"file/internal/conf"
 	"file/internal/data"
 	"file/internal/data/rpc"
-	"file/internal/data/types"
 	"io"
 	"time"
 
@@ -67,7 +65,7 @@ type (
 		// UpsertMedata update or insert metadata of given files
 		PatchMedata(ctx context.Context, path []*fs.URI, data ...*pbfile.MetadataPatch) error
 		// CreateViewerSession creates a viewer session for given files
-		CreateViewerSession(ctx context.Context, uri *fs.URI, version string, viewer *ftypes.Viewer) (*ViewerSession, error)
+		CreateViewerSession(ctx context.Context, uri *fs.URI, version string, viewer *filedata.Viewer) (*ViewerSession, error)
 		// TraverseFile traverses a files to its root files, return the files with linked root.
 		TraverseFile(ctx context.Context, fileID int) (fs.File, error)
 	}
@@ -89,7 +87,7 @@ type (
 		// GetStorageDriver gets storage driver for given policy
 		GetStorageDriver(ctx context.Context, policy *ent.StoragePolicy) (driver.Handler, error)
 		// PatchView patches the view setting of a files
-		PatchView(ctx context.Context, uri *fs.URI, view *types.ExplorerView) error
+		PatchView(ctx context.Context, uri *fs.URI, view *filedata.ExplorerView) error
 	}
 
 	ShareManagement interface {
@@ -146,7 +144,7 @@ type (
 )
 
 type manager struct {
-	user             *userpb.User
+	user             *userdata.User
 	l                *log.Helper
 	fs               fs.FileSystem
 	settings         setting.Provider
@@ -158,7 +156,7 @@ type manager struct {
 	pc               data.StoragePolicyClient
 	sc               data.ShareClient
 	fc               data.FileClient
-	uc               pbuser.UserClient
+	uc               rpc.UserClient
 	tc               data.TaskClient
 	mm               mime.MimeManager
 	credm            credmanager.CredManager
@@ -171,7 +169,7 @@ type manager struct {
 	aikc *rpc.KnowledgeClient
 }
 
-func NewFileManager(dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, user *userpb.User) FileManager {
+func NewFileManager(dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, user *userdata.User) FileManager {
 	if dep.Config().Server.Sys.Mode == constants.SlaveMode || user == nil {
 		return newStatelessFileManager(dep)
 	}

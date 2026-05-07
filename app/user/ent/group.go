@@ -3,7 +3,8 @@
 package ent
 
 import (
-	v1 "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"encoding/json"
 	"fmt"
@@ -35,11 +36,11 @@ type Group struct {
 	// Permissions holds the value of the "permissions" field.
 	Permissions *boolset.BooleanSet `json:"permissions,omitempty"`
 	// Settings holds the value of the "settings" field.
-	Settings *v1.GroupSetting `json:"settings,omitempty"`
+	Settings *userdata.GroupSetting `json:"settings,omitempty"`
 	// StoragePolicyID holds the value of the "storage_policy_id" field.
 	StoragePolicyID int `json:"storage_policy_id,omitempty"`
 	// StoragePolicyInfo holds the value of the "storage_policy_info" field.
-	StoragePolicyInfo *v1.StoragePolicyInfo `json:"storage_policy_info,omitempty"`
+	StoragePolicyInfo *filedata.StoragePolicyInfo `json:"storage_policy_info,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GroupQuery when eager-loading is set.
 	Edges        GroupEdges `json:"edges"`

@@ -1,8 +1,7 @@
 package manager
 
 import (
-	pb "api/api/file/common/v1"
-	userpb "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"common/cache"
 	"common/serializer"
@@ -11,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"file/ent"
-	"file/ent/task"
 	"file/internal/biz/crontab"
 	"file/internal/biz/filemanager"
 	"file/internal/biz/filemanager/fs"
@@ -20,6 +18,7 @@ import (
 	"file/internal/biz/setting"
 	"file/internal/data"
 	"fmt"
+	mqueue "queue"
 	"strconv"
 	"time"
 
@@ -44,9 +43,9 @@ type (
 )
 
 func init() {
-	queue.RegisterResumableTaskFactory(queue.ExplicitEntityRecycleTaskType, NewExplicitEntityRecycleTaskFromModel)
-	queue.RegisterResumableTaskFactory(queue.EntityRecycleRoutineTaskType, NewEntityRecycleRoutineTaskFromModel)
-	crontab.Register(setting.CronTypeEntityCollect, func(ctx context.Context, q queue.Queue) {
+	mqueue.RegisterResumableTaskFactory(queue.ExplicitEntityRecycleTaskType, NewExplicitEntityRecycleTaskFromModel)
+	mqueue.RegisterResumableTaskFactory(queue.EntityRecycleRoutineTaskType, NewEntityRecycleRoutineTaskFromModel)
+	crontab.Register(setting.CronTypeEntityCollect, func(ctx context.Context, q mqueue.Queue) {
 		h := log.NewHelper(log.GetLogger())
 		t, err := NewEntityRecycleRoutineTask(ctx)
 		if err != nil {
@@ -60,10 +59,14 @@ func init() {
 	crontab.Register(setting.CronTypeTrashBinCollect, CronCollectTrashBin)
 }
 
-func NewExplicitEntityRecycleTaskFromModel(task *ent.Task) queue.Task {
+func NewExplicitEntityRecycleTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := task.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &ExplicitEntityRecycleTask{
 		DBTask: &queue.DBTask{
-			Task: task,
+			Task: wrapped.Task,
 		},
 	}
 }
@@ -85,7 +88,7 @@ func newExplicitEntityRecycleTask(ctx context.Context, entities []int) (*Explici
 				Type:         queue.ExplicitEntityRecycleTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState: &pb.TaskPublicState{
+				PublicState: &mqueue.TaskPublicState{
 					ResumeTime: time.Now().Unix() - 1,
 				},
 			},
@@ -95,7 +98,7 @@ func newExplicitEntityRecycleTask(ctx context.Context, entities []int) (*Explici
 	return t, nil
 }
 
-func (m *ExplicitEntityRecycleTask) Do(ctx context.Context) (task.Status, error) {
+func (m *ExplicitEntityRecycleTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	user := trans.FromContext(ctx)
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
@@ -104,7 +107,7 @@ func (m *ExplicitEntityRecycleTask) Do(ctx context.Context) (task.Status, error)
 	// unmarshal state
 	state := &ExplicitEntityRecycleTaskState{}
 	if err := json.Unmarshal([]byte(m.State()), state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
 	}
 
 	// recycle entities
@@ -113,13 +116,13 @@ func (m *ExplicitEntityRecycleTask) Do(ctx context.Context) (task.Status, error)
 		appendAe(&state.Errors, err)
 		privateState, err := json.Marshal(state)
 		if err != nil {
-			return task.StatusError, fmt.Errorf("failed to marshal state: %w", err)
+			return mqueue.StatusError, fmt.Errorf("failed to marshal state: %w", err)
 		}
 		m.Task.PrivateState = string(privateState)
-		return task.StatusError, err
+		return mqueue.StatusError, err
 	}
 
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
 type (
@@ -132,15 +135,19 @@ type (
 	}
 )
 
-func NewEntityRecycleRoutineTaskFromModel(task *ent.Task) queue.Task {
+func NewEntityRecycleRoutineTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
+	wrapped, ok := task.(*data.TaskModel)
+	if !ok {
+		return nil
+	}
 	return &EntityRecycleRoutineTask{
 		DBTask: &queue.DBTask{
-			Task: task,
+			Task: wrapped.Task,
 		},
 	}
 }
 
-func NewEntityRecycleRoutineTask(ctx context.Context) (queue.Task, error) {
+func NewEntityRecycleRoutineTask(ctx context.Context) (mqueue.Task, error) {
 	user := trans.FromContext(ctx)
 	state := &EntityRecycleRoutineTaskState{
 		Errors: make([][]RecycleError, 0),
@@ -156,7 +163,7 @@ func NewEntityRecycleRoutineTask(ctx context.Context) (queue.Task, error) {
 				Type:         queue.EntityRecycleRoutineTaskType,
 				TraceID:      util.TraceID(ctx),
 				PrivateState: string(stateBytes),
-				PublicState: &pb.TaskPublicState{
+				PublicState: &mqueue.TaskPublicState{
 					ResumeTime: time.Now().Unix() - 1,
 				},
 			},
@@ -166,7 +173,7 @@ func NewEntityRecycleRoutineTask(ctx context.Context) (queue.Task, error) {
 	return t, nil
 }
 
-func (m *EntityRecycleRoutineTask) Do(ctx context.Context) (task.Status, error) {
+func (m *EntityRecycleRoutineTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	user := trans.FromContext(ctx)
@@ -175,7 +182,7 @@ func (m *EntityRecycleRoutineTask) Do(ctx context.Context) (task.Status, error) 
 	// unmarshal state
 	state := &EntityRecycleRoutineTaskState{}
 	if err := json.Unmarshal([]byte(m.State()), state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
 	}
 
 	// recycle entities
@@ -185,13 +192,13 @@ func (m *EntityRecycleRoutineTask) Do(ctx context.Context) (task.Status, error) 
 
 		privateState, err := json.Marshal(state)
 		if err != nil {
-			return task.StatusError, fmt.Errorf("failed to marshal state: %w", err)
+			return mqueue.StatusError, fmt.Errorf("failed to marshal state: %w", err)
 		}
 		m.Task.PrivateState = string(privateState)
-		return task.StatusError, err
+		return mqueue.StatusError, err
 	}
 
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
 // RecycleEntities delete given entities. If the ID list is empty, it will walk through
@@ -302,7 +309,7 @@ const (
 )
 
 // CronCollectTrashBin walks through all files in trash bin and delete them if they are expired.
-func CronCollectTrashBin(ctx context.Context, q queue.Queue) {
+func CronCollectTrashBin(ctx context.Context, q mqueue.Queue) {
 	user := trans.FromContext(ctx)
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
@@ -368,7 +375,7 @@ func collectTrashBin(ctx context.Context, files []fs.File, dep filemanager.Manag
 
 	for uid, expiredFiles := range fileGroup {
 		// Create a new file manager for user with only uid to delete files
-		fm := NewFileManager(dep, dbfsDep, &userpb.User{Id: int64(uid)}).(*manager)
+		fm := NewFileManager(dep, dbfsDep, &userdata.User{ID: uid}).(*manager)
 		if err := fm.Delete(ctx, lo.Map(expiredFiles, func(file fs.File, index int) *fs.URI {
 			return file.Uri(false)
 		}), fs.WithSkipSoftDelete(true)); err != nil {

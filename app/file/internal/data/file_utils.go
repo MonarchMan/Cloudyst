@@ -2,7 +2,7 @@ package data
 
 import (
 	pb "api/api/file/common/v1"
-	userpb "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"common/hashid"
 	"context"
 	"file/ent"
@@ -503,6 +503,6 @@ func getFileNextPageToken(hasher hashid.Encoder, last *ent.File, args *ListFileP
 	return token.Encode(hasher, hashid.EncodeFileID)
 }
 
-func IsAnonymousUser(u *userpb.User) bool {
-	return u.Id == 0
+func IsAnonymousUser(u *userdata.User) bool {
+	return u.ID == 0
 }

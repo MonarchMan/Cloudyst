@@ -10,7 +10,7 @@ const (
 	UserAPIPrefix  = "/api/v1/user"
 	AiAPIPrefix    = "/api/v1/ai"
 
-	AiServicePrefix = "ai"
+	AiServicePrefix = "ai_"
 	DBVersionPrefix = "db_version_"
 )
 

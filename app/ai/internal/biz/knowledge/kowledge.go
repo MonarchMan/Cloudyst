@@ -4,6 +4,8 @@ import (
 	"ai/ent"
 	"ai/internal/biz/knowledge/rag/ingestion"
 	"ai/internal/biz/knowledge/rag/retrieval"
+	"ai/internal/biz/knowledge/rag/task"
+	"ai/internal/biz/queue"
 	"ai/internal/biz/types"
 	"ai/internal/conf"
 	"ai/internal/data"
@@ -12,7 +14,6 @@ import (
 	"ai/internal/pkg/eino/doc/rerank"
 	"ai/internal/pkg/utils"
 	"api/external/trans"
-	"common/boolset"
 	"common/constants"
 	"context"
 	"entmodule"
@@ -33,21 +34,27 @@ type (
 	KnowledgeBiz interface {
 		SearchKnowledgeSegment(ctx context.Context, args *types.SegmentSearchArgs) ([]*types.KnowledgeSegment, error)
 		RecallKnowledgeSegment(ctx context.Context, content string, kids []int) ([]*types.KnowledgeSegment, error)
-		CreateKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*ent.AiKnowledgeDocument, error)
-		BatchCreateKnowledgeDocuments(ctx context.Context, args []*data.UpsertDocumentArgs) ([]*ent.AiKnowledgeDocument, error)
 		CreateKnowledge(ctx context.Context, args *data.UpsertKnowledgeArgs) (*ent.AiKnowledge, error)
 		UpdateKnowledge(ctx context.Context, args *data.UpsertKnowledgeArgs) (*ent.AiKnowledge, error)
 		DeleteKnowledge(ctx context.Context, id int) error
+		BatchDeleteKnowledges(ctx context.Context, ids []int) error
 		GetKnowledge(ctx context.Context, id int) (*ent.AiKnowledge, error)
 		GetUserMasterKnowledge(ctx context.Context, userID int) (*ent.AiKnowledge, error)
 		ListKnowledge(ctx context.Context, args *data.ListKnowledgeArgs) (*data.ListKnowledgeResult, error)
-		UpdateKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*ent.AiKnowledgeDocument, error)
+		GetKnowledgeStats(ctx context.Context, id int) (*types.KnowledgeStats, error)
+
+		CreateKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*UpsertDocumentResult, error)
+		BatchCreateKnowledgeDocuments(ctx context.Context, args []*data.UpsertDocumentArgs) ([]*ent.AiKnowledgeDocument, *task.IngestTask, error)
+		UpdateKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*ReindexDocumentResult, error)
 		DeleteKnowledgeDocument(ctx context.Context, id int) error
 		BatchDeleteKnowledgeDocuments(ctx context.Context, ids []int) error
 		GetKnowledgeDocument(ctx context.Context, id int) (*ent.AiKnowledgeDocument, error)
 		GetKnowledgeDocuments(ctx context.Context, ids []int) ([]*ent.AiKnowledgeDocument, error)
 		ListKnowledgeDocument(ctx context.Context, args *data.ListKnowledgeDocumentArgs) (*data.ListKnowledgeDocumentResult, error)
 		UpdateDocumentStatus(ctx context.Context, id int, status entmodule.Status) (*ent.AiKnowledgeDocument, error)
+		ReindexDocument(ctx context.Context, id int) (*ReindexDocumentResult, error)
+		BatchReindexDocuments(ctx context.Context, ids []int) ([]*ent.AiKnowledgeDocument, *task.ReindexTask, error)
+
 		GetKnowledgeSegments(ctx context.Context, ids []int) ([]*types.KnowledgeSegment, error)
 		GetKnowledgeSegment(ctx context.Context, id int) (*ent.AiKnowledgeSegment, error)
 		ListKnowledgeSegments(ctx context.Context, args *data.ListKnowledgeSegmentArgs) (*data.ListKnowledgeSegmentResult, error)
@@ -68,8 +75,19 @@ type (
 		ie          *ingestion.IngestEngine
 		re          *retrieval.RetrieveEngine
 		embedder    embedding.Embedder
+		qm          *queue.QueueManager
 
 		l *log.Helper
+	}
+
+	UpsertDocumentResult struct {
+		Document *ent.AiKnowledgeDocument
+		Task     *task.IngestTask
+	}
+
+	ReindexDocumentResult struct {
+		Document *ent.AiKnowledgeDocument
+		Task     *task.ReindexTask
 	}
 )
 
@@ -106,68 +124,183 @@ func (b *knowledgeBiz) RecallKnowledgeSegment(ctx context.Context, content strin
 	return res, nil
 }
 
-func (b *knowledgeBiz) CreateKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*ent.AiKnowledgeDocument, error) {
+func (b *knowledgeBiz) CreateKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*UpsertDocumentResult, error) {
 	return b.upsertKnowledgeDocument(ctx, args)
 }
 
-func (b *knowledgeBiz) upsertKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*ent.AiKnowledgeDocument, error) {
-	args.Process = types.DocumentPending
-	// 1. 获取文件下载链接
-	dUrlResp, err := b.fc.GetFileUrl(ctx, []string{args.Url})
+func (b *knowledgeBiz) UpdateKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*ReindexDocumentResult, error) {
+	// 1.1 校验文档是否存在
+	old, err := b.validateKnowledgeDocument(ctx, args.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to validate knowledge document: %w", err)
+	}
+	// 1.2 校验知识库是否存在
+	_, err = b.validateKnowledge(ctx, args.KnowledgeID)
 	if err != nil {
 		return nil, err
 	}
-	// 2. 文档信息写入数据库
+	// 2. 更新文档
 	doc, err := b.kdc.Upsert(ctx, args)
-	info := &ingestion.DocumentInfo{
-		KnowledgeID: args.KnowledgeID,
-		Name:        args.Name,
-		Url:         dUrlResp.Urls[0].Url,
-		Version:     args.Version,
-	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to upsert document: %w", err)
+		return nil, fmt.Errorf("failed to update knowledge document: %w", err)
 	}
-	info.ID = doc.ID
-	err = b.ie.Ingest(ctx, info, args.Url)
-	if err != nil {
-		return nil, fmt.Errorf("failed to update document %d status: %v", info.ID, err)
-	}
-	return doc, nil
-}
 
-func (b *knowledgeBiz) BatchCreateKnowledgeDocuments(ctx context.Context, args []*data.UpsertDocumentArgs) ([]*ent.AiKnowledgeDocument, error) {
-	uris := lo.Map(args, func(item *data.UpsertDocumentArgs, index int) string {
-		return item.Url
-	})
-	// 1. 获取文件下载链接
-	dUrlResp, err := b.fc.GetFileUrl(ctx, uris)
-	if err != nil {
-		return nil, err
+	// 3. 校验文档状态是否为活跃
+	if doc.Status != entmodule.StatusActive {
+		return nil, fmt.Errorf("knowledge document status is %s, expect active", doc.Status)
 	}
-	infos := make([]*ingestion.DocumentInfo, len(args))
-	for i, arg := range args {
-		arg.Process = types.DocumentPending
-		infos[i] = &ingestion.DocumentInfo{
-			KnowledgeID: arg.KnowledgeID,
-			Name:        arg.Name,
-			Url:         dUrlResp.Urls[i].Url,
+
+	res := &ReindexDocumentResult{
+		Document: doc,
+	}
+	// 4. 校验文档是否已被处理过，且分片最大Token数是否有变化
+	if doc.Progress == types.DocumentSuccess || doc.Progress == types.DocumentFailed {
+		if args.SegmentMaxTokens != old.SegmentMaxTokens || args.Url != old.URL || args.Version != old.Version {
+			// 5. Create reindex task
+			user := trans.FromContext(ctx)
+			t, err := task.NewReindexTask(ctx, user, doc.ID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create reindex task: %w", err)
+			}
+			if err := b.qm.ReindexQueue().QueueTask(ctx, t); err != nil {
+				return nil, fmt.Errorf("failed to queue reindex task: %w", err)
+			}
+			res.Task = t
 		}
 	}
 
-	docs, err := b.kdc.BatchCreate(ctx, args)
-	if err != nil {
-		return nil, err
-	}
-	// 2. 批量建立索引
-	err = b.ie.BatchIngest(ctx, infos, uris)
-	if err != nil {
-		return nil, err
-	}
-
-	return docs, nil
+	return res, nil
 }
 
+func (b *knowledgeBiz) upsertKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*UpsertDocumentResult, error) {
+	user := trans.FromContext(ctx)
+	args.Process = types.DocumentPending
+	// 1. 文档信息写入数据库
+	doc, err := b.kdc.Upsert(ctx, args)
+	if err != nil {
+		return nil, fmt.Errorf("failed to upsert document: %w", err)
+	}
+	// 2. Create ingestion task
+	t, err := task.NewIngestTask(ctx, user, b.l, doc.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create task: %w", err)
+	}
+	if err := b.qm.IngestQueue().QueueTask(ctx, t); err != nil {
+		return nil, fmt.Errorf("failed to queue task: %w", err)
+	}
+	return &UpsertDocumentResult{
+		Document: doc,
+		Task:     t,
+	}, nil
+}
+
+func (b *knowledgeBiz) BatchCreateKnowledgeDocuments(ctx context.Context, args []*data.UpsertDocumentArgs) ([]*ent.AiKnowledgeDocument, *task.IngestTask, error) {
+	// 1. 批量创建文档
+	docs, err := b.kdc.BatchCreate(ctx, args)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to batch create knowledge documents: %w", err)
+	}
+	//if len(docs) != len(args) || len(docs) != len(dUrlResp.Urls) {
+	//	b.l.Errorf("batch create knowledge documents failed, docs len %d, args len %d, dUrlResp len %d", len(docs), len(args), len(dUrlResp.Urls))
+	//	return nil, fmt.Errorf("batch create knowledge documents failed")
+	//}
+	docIDs := make([]int, len(docs))
+	for i, doc := range docs {
+		docIDs[i] = doc.ID
+	}
+
+	// 2. Create ingestion task
+	user := trans.FromContext(ctx)
+	t, err := task.NewIngestTask(ctx, user, b.l, docIDs...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create task: %w", err)
+	}
+	if err := b.qm.IngestQueue().QueueTask(ctx, t); err != nil {
+		return nil, nil, fmt.Errorf("failed to queue task: %w", err)
+	}
+
+	res := make([]*UpsertDocumentResult, len(docs))
+	for i, doc := range docs {
+		res[i] = &UpsertDocumentResult{
+			Document: doc,
+			Task:     t,
+		}
+	}
+
+	return docs, t, nil
+}
+
+func (b *knowledgeBiz) ReindexDocument(ctx context.Context, id int) (*ReindexDocumentResult, error) {
+	// 1. validate document
+	document, err := b.validateKnowledgeDocument(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to validate document: %w", err)
+	}
+	res := &ReindexDocumentResult{
+		Document: document,
+	}
+	if document.Status != entmodule.StatusActive {
+		return res, fmt.Errorf("document is not active")
+	}
+	// 2. Create ingestion task
+	user := trans.FromContext(ctx)
+	t, err := task.NewReindexTask(ctx, user, document.ID)
+	if err != nil {
+		return res, fmt.Errorf("failed to create task: %w", err)
+	}
+	if err := b.qm.ReindexQueue().QueueTask(ctx, t); err != nil {
+		return res, fmt.Errorf("failed to queue task: %w", err)
+	}
+	res.Task = t
+	return res, nil
+}
+
+func (b *knowledgeBiz) BatchReindexDocuments(ctx context.Context, ids []int) ([]*ent.AiKnowledgeDocument, *task.ReindexTask, error) {
+	// 1. 获取文档信息
+	docs, err := b.kdc.GetByIDs(ctx, ids)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get knowledge documents: %w", err)
+	}
+
+	// 2. 更新文档状态为 pending
+	_, err = b.kdc.UpdateProcessByIDs(ctx, ids, types.DocumentPending)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to update knowledge documents process: %w", err)
+	}
+
+	infos := make([]*ingestion.DocumentInfo, len(docs))
+	uris := make([]string, len(docs))
+	for i, doc := range docs {
+		if doc.Status != entmodule.StatusActive {
+			continue
+		}
+		infos[i] = &ingestion.DocumentInfo{
+			ID:          docs[i].ID,
+			KnowledgeID: doc.KnowledgeID,
+			Name:        doc.Name,
+			Url:         doc.URL,
+			Version:     doc.Version,
+		}
+		uris[i] = doc.URL
+	}
+	// 3. Create ingestion task
+	user := trans.FromContext(ctx)
+	t, err := task.NewReindexTask(ctx, user, ids...)
+	if err != nil {
+		return docs, nil, fmt.Errorf("failed to create task: %w", err)
+	}
+	if err := b.qm.ReindexQueue().QueueTask(ctx, t); err != nil {
+		return docs, nil, fmt.Errorf("failed to queue task: %w", err)
+	}
+	res := make([]*ReindexDocumentResult, len(infos))
+	for i, doc := range docs {
+		res[i] = &ReindexDocumentResult{
+			Document: doc,
+			Task:     t,
+		}
+	}
+	return docs, t, nil
+}
 func (b *knowledgeBiz) SearchKnowledgeSegment(ctx context.Context, args *types.SegmentSearchArgs) ([]*types.KnowledgeSegment, error) {
 	knowledge, err := b.kdc.GetActiveByID(ctx, args.KnowledgeID)
 	if err != nil || knowledge == nil {
@@ -289,6 +422,11 @@ func (b *knowledgeBiz) DeleteKnowledge(ctx context.Context, id int) error {
 	return b.kc.Delete(ctx, id)
 }
 
+func (b *knowledgeBiz) BatchDeleteKnowledges(ctx context.Context, ids []int) error {
+	_, err := b.kc.BatchDelete(ctx, ids)
+	return err
+}
+
 func (b *knowledgeBiz) GetKnowledge(ctx context.Context, id int) (*ent.AiKnowledge, error) {
 	k, err := b.kc.GetByID(ctx, id)
 	if err != nil {
@@ -326,40 +464,39 @@ func (b *knowledgeBiz) ListKnowledge(ctx context.Context, args *data.ListKnowled
 	return b.kc.List(newCtx, args)
 }
 
-func (b *knowledgeBiz) UpdateKnowledgeDocument(ctx context.Context, args *data.UpsertDocumentArgs) (*ent.AiKnowledgeDocument, error) {
-	old, err := b.validateKnowledgeDocument(ctx, args.ID)
+func (b *knowledgeBiz) GetKnowledgeStats(ctx context.Context, id int) (*types.KnowledgeStats, error) {
+	_, err := b.validateKnowledge(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	_, err = b.validateKnowledge(ctx, args.KnowledgeID)
+	docs, err := b.kdc.GetActiveByKnowledgeID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	doc, err := b.kdc.Upsert(ctx, args)
-	if err != nil {
-		return nil, err
-	}
-
-	if doc.Process == types.DocumentSuccess && args.SegmentMaxTokens != old.SegmentMaxTokens {
-		// 删除旧的文档切片
-		err = b.deleteKnowledgeSegmentsByDocID(ctx, doc.KnowledgeID, doc.ID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to delete segments by documentID: %w", err)
+	stats := &types.KnowledgeStats{}
+	for _, doc := range docs {
+		if doc.Progress == types.DocumentSuccess {
+			stats.Ready++
+		} else if doc.Progress == types.DocumentFailed {
+			stats.Failed++
+		} else {
+			stats.Processing++
 		}
-		// 重新创建文档切片
-		_, err = b.upsertKnowledgeDocument(ctx, args)
-		if err != nil {
-			return nil, fmt.Errorf("failed to rebuild knowledge document: %w", err)
-		}
+		stats.TotalTokens += int64(doc.Tokens)
 	}
-	return doc, nil
+	stats.DocumentCount = stats.Failed + stats.Ready + stats.Processing
+	stats.SuccessRate = float64(stats.Ready) / float64(stats.DocumentCount)
+	return stats, nil
 }
 
 func (b *knowledgeBiz) validateKnowledgeDocument(ctx context.Context, id int) (*ent.AiKnowledgeDocument, error) {
 	// Check if the knowledge document exists
 	d, err := b.kdc.GetByID(ctx, id)
-	if err != nil || d == nil {
+	if err != nil {
 		return nil, fmt.Errorf("failed to get knowledge: %w", err)
+	}
+	if d == nil {
+		return nil, fmt.Errorf("knowledge document not found")
 	}
 	return d, nil
 }
@@ -564,7 +701,7 @@ func (b *knowledgeBiz) ReIndexByKnowledgeID(ctx context.Context, knowledgeID int
 	if err != nil {
 		return err
 	}
-	// 2.1 查询知识库下所有启用状态的文档
+	// 2. 查询知识库下所有启用状态的文档
 	docs, err := b.kdc.GetActiveByKnowledgeID(ctx, knowledgeID)
 	if err != nil {
 		return fmt.Errorf("failed to get documents for knowledge %d: %w", knowledgeID, err)
@@ -572,38 +709,16 @@ func (b *knowledgeBiz) ReIndexByKnowledgeID(ctx context.Context, knowledgeID int
 	docIDs := lo.Map(docs, func(doc *ent.AiKnowledgeDocument, _ int) int {
 		return doc.ID
 	})
-	// 2.2 查询知识库下所有启用状态的切片
-	segs, err := b.ksc.GetActiveByDocumentIDs(ctx, docIDs)
-	if err != nil {
-		return fmt.Errorf("failed to get segments for knowledge %d: %w", knowledgeID, err)
-	}
-	if len(segs) == 0 {
-		return nil
-	}
 
-	vids := lo.Map(segs, func(seg *ent.AiKnowledgeSegment, _ int) string {
-		return seg.VectorID
-	})
-	contents, err := b.vectorStore.GetContentByIDs(ctx, vids)
+	// 3. Create reindex task
+	user := trans.FromContext(ctx)
+	t, err := task.NewReindexTask(ctx, user, docIDs...)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create task: %w", err)
 	}
-	// 3. 遍历所有切片，重新index
-	for i, seg := range segs {
-		if err := b.deleteSegmentVector(ctx, seg); err != nil {
-			return fmt.Errorf("failed to delete segment vector: %w", err)
-		}
-		// 3.1 重新向量化
-		doc := &schema.Document{
-			ID:      uuid.New().String(),
-			Content: contents[i],
-		}
-		_, err = b.indexer.Store(ctx, []*schema.Document{doc})
-		if err != nil {
-			return fmt.Errorf("failed to store document: %w", err)
-		}
+	if err := b.qm.IngestQueue().QueueTask(ctx, t); err != nil {
+		return fmt.Errorf("failed to queue task: %w", err)
 	}
-	b.l.Infof("reindex knowledge %d success: %d segments", knowledgeID, len(segs))
 	return nil
 }
 
@@ -620,21 +735,15 @@ func (b *knowledgeBiz) UpdateKnowledgeDocumentStatus(ctx context.Context, id int
 	}
 	// 3. 处理文档切片
 	if status == entmodule.StatusActive {
-		// 3.1 获取文件下载URL
-		dUrlResp, err := b.fc.GetFileUrl(ctx, []string{doc.URL})
+		// 3.1 Create reindex task
+		user := trans.FromContext(ctx)
+		t, err := task.NewReindexTask(ctx, user, doc.ID)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create task: %w", err)
 		}
-		// 3.2 重新建立索引
-		info := &ingestion.DocumentInfo{
-			KnowledgeID: id,
-			Name:        doc.Name,
-			Url:         doc.URL,
-			ID:          doc.ID,
+		if err := b.qm.IngestQueue().QueueTask(ctx, t); err != nil {
+			return fmt.Errorf("failed to queue task: %w", err)
 		}
-		go func() {
-			err = b.ie.Ingest(context.Background(), info, dUrlResp.Urls[0].Url)
-		}()
 	} else if status == entmodule.StatusInactive {
 		return b.deleteKnowledgeSegmentsByDocID(ctx, doc.KnowledgeID, doc.ID)
 	}
@@ -721,7 +830,7 @@ func (b *knowledgeBiz) CopyKnowledgeDocument(ctx context.Context, id int, versio
 		ContentLen:       existed.ContentLength,
 		SegmentMaxTokens: existed.SegmentMaxTokens,
 		RetrievalCount:   existed.RetrievalCount,
-		Process:          existed.Process,
+		Process:          existed.Progress,
 		Status:           entmodule.StatusActive,
 	})
 	if err != nil {
@@ -743,9 +852,8 @@ func (b *knowledgeBiz) ChangeKnowledgeDocumentOwner(ctx context.Context, id int,
 	if err != nil {
 		return nil, fmt.Errorf("old knowledge %d not found: %w", oldKID, err)
 	}
-	permissions := boolset.BooleanSet(u.Group.Permissions)
-	if old.UserID != int(u.Id) || !permissions.Enabled(int(constants.GroupPermissionIsAdmin)) {
-		return nil, fmt.Errorf("user %d has no permission to change knowledge %d owner", u.Id, oldKID)
+	if old.UserID != u.ID || !u.Group.Permissions.Enabled(int(constants.GroupPermissionIsAdmin)) {
+		return nil, fmt.Errorf("user %d has no permission to change knowledge %d owner", u.ID, oldKID)
 	}
 	// 2.2 校验新知识库是否存在
 	_, err = b.validateKnowledge(ctx, newKID)

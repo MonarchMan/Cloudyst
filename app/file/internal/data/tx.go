@@ -1,7 +1,6 @@
 package data
 
 import (
-	pbuser "api/api/user/users/v1"
 	"context"
 	"file/ent"
 	"file/internal/data/rpc"
@@ -103,7 +102,7 @@ func Commit(tx *Tx) error {
 }
 
 // CommitWithStorageDiff commits the transaction and applies the storage diff, only if the transaction is not inherited.
-func CommitWithStorageDiff(ctx context.Context, tx *Tx, l *log.Helper, userClient pbuser.UserClient) error {
+func CommitWithStorageDiff(ctx context.Context, tx *Tx, l *log.Helper, userClient rpc.UserClient) error {
 	commited, err := commit(tx)
 	if err != nil {
 		return err
@@ -113,7 +112,7 @@ func CommitWithStorageDiff(ctx context.Context, tx *Tx, l *log.Helper, userClien
 		return nil
 	}
 
-	if err = rpc.ApplyStorageDiff(ctx, tx.storageDiff, userClient); err != nil {
+	if err = userClient.ApplyStorageDiff(ctx, tx.storageDiff); err != nil {
 		l.WithContext(ctx).Errorf("Failed to apply storage diff", "error", err)
 	}
 

@@ -3,8 +3,7 @@ package data
 import (
 	"ai/ent"
 	"ai/ent/aitool"
-	pb "api/api/common/v1"
-	"common/db"
+	"api/external/data/common"
 	"context"
 	"entmodule"
 )
@@ -26,20 +25,20 @@ type (
 	}
 
 	ListToolArgs struct {
-		*pb.PaginationArgs
+		*common.PaginationArgs
 		Name   string
 		Type   string
 		Status entmodule.Status
 	}
 
 	ListToolResult struct {
-		*pb.PaginationResults
+		*common.PaginationResults
 		Tools []*ent.AiTool
 	}
 )
 
-func NewToolClient(client *ent.Client, dbType db.DBType) ToolClient {
-	return &toolClient{client: client, maxSQLParam: db.SqlParamLimit(dbType)}
+func NewToolClient(client *ent.Client, dbType common.DBType) ToolClient {
+	return &toolClient{client: client, maxSQLParam: common.SqlParamLimit(dbType)}
 }
 
 func (c *toolClient) SetClient(newClient *ent.Client) TxOperator {
@@ -65,7 +64,7 @@ func (c *toolClient) GetActiveByID(ctx context.Context, id int) (*ent.AiTool, er
 }
 
 func (c *toolClient) List(ctx context.Context, args *ListToolArgs) (*ListToolResult, error) {
-	pageSize := db.CapPageSize(c.maxSQLParam, int(args.PageSize), 10)
+	pageSize := common.CapPageSize(c.maxSQLParam, int(args.PageSize), 10)
 	q := c.client.AiTool.Query()
 	if args.Name != "" {
 		q.Where(aitool.NameContainsFold(args.Name))
@@ -91,10 +90,10 @@ func (c *toolClient) List(ctx context.Context, args *ListToolArgs) (*ListToolRes
 	}
 
 	return &ListToolResult{
-		PaginationResults: &pb.PaginationResults{
-			TotalItems: int32(total),
+		PaginationResults: &common.PaginationResults{
+			TotalItems: total,
 			Page:       args.Page,
-			PageSize:   int32(pageSize),
+			PageSize:   pageSize,
 		},
 		Tools: tools,
 	}, nil
@@ -137,7 +136,7 @@ func (c *toolClient) BatchDelete(ctx context.Context, ids []int) (int, error) {
 }
 
 func getToolOrderOption(args *ListToolArgs) []aitool.OrderOption {
-	orderTerm := db.GetOrderTerm(db.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(args.OrderDir)
 	switch args.OrderBy {
 	case aitool.FieldUpdatedAt:
 		return []aitool.OrderOption{aitool.ByUpdatedAt(orderTerm), aitool.ByID(orderTerm)}

@@ -166,11 +166,13 @@ message AiImage {
   enum Status {
     STATUS_UNSPECIFIED = 0;
 
-    STATUS_PROCESSING = 1;
+    STATUS_PENDING = 1;
 
-    STATUS_SUCCESS = 2;
+    STATUS_PROCESSING = 2;
 
-    STATUS_FAILED = 3;
+    STATUS_SUCCESS = 3;
+
+    STATUS_FAILED = 4;
   }
 }
 
@@ -223,6 +225,8 @@ message AiKnowledgeDocument {
 
   string version = 5;
 
+  int64 size = 12;
+
   int64 content_length = 6;
 
   int64 tokens = 7;
@@ -231,11 +235,21 @@ message AiKnowledgeDocument {
 
   int64 retrieval_count = 9;
 
-  .common.v1.Status status = 10;
+  Progress progress = 10;
+
+  .common.v1.Status status = 11;
 
   AiKnowledge ai_knowledge = 81;
 
   repeated AiKnowledgeSegment ai_knowledge_segment = 82;
+
+  enum Progress {
+    PROGRESS_UNSPECIFIED = 0;
+    PROGRESS_PENDING = 1;
+    PROGRESS_PROCESSING = 2;
+    PROGRESS_SUCCESS = 3;
+    PROGRESS_FAILED = 4;
+  }
 }
 
 message AiKnowledgeSegment {
@@ -248,8 +262,6 @@ message AiKnowledgeSegment {
   google.protobuf.Timestamp deleted_at = 102;
 
   int64 document_id = 2;
-
-  string content = 3;
 
   int64 content_length = 4;
 

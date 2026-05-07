@@ -7,7 +7,7 @@ server:
     debug: true
     log_level: debug
   grpc:
-    addr: 9002
+    addr: 0.0.0.0:9002
     timeout: 60s
   embedder:
     model: qwen3-embedding:8b

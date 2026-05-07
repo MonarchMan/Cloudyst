@@ -3,7 +3,7 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"context"
 	"errors"
 	"file/ent/directlink"
@@ -106,7 +106,7 @@ func (_u *FileUpdate) AddOwnerID(v int) *FileUpdate {
 }
 
 // SetOwnerInfo sets the "owner_info" field.
-func (_u *FileUpdate) SetOwnerInfo(v *v1.UserInfo) *FileUpdate {
+func (_u *FileUpdate) SetOwnerInfo(v *userdata.UserInfo) *FileUpdate {
 	_u.mutation.SetOwnerInfo(v)
 	return _u
 }
@@ -924,7 +924,7 @@ func (_u *FileUpdateOne) AddOwnerID(v int) *FileUpdateOne {
 }
 
 // SetOwnerInfo sets the "owner_info" field.
-func (_u *FileUpdateOne) SetOwnerInfo(v *v1.UserInfo) *FileUpdateOne {
+func (_u *FileUpdateOne) SetOwnerInfo(v *userdata.UserInfo) *FileUpdateOne {
 	_u.mutation.SetOwnerInfo(v)
 	return _u
 }

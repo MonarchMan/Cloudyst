@@ -31,6 +31,7 @@ const (
 	User_SetUserSetting_FullMethodName            = "/user.users.v1.User/SetUserSetting"
 	User_InitUser2FA_FullMethodName               = "/user.users.v1.User/InitUser2FA"
 	User_GetUserInfo_FullMethodName               = "/user.users.v1.User/GetUserInfo"
+	User_GetMultiUserInfos_FullMethodName         = "/user.users.v1.User/GetMultiUserInfos"
 	User_ApplyStorageDiff_FullMethodName          = "/user.users.v1.User/ApplyStorageDiff"
 	User_GetAnonymousUser_FullMethodName          = "/user.users.v1.User/GetAnonymousUser"
 	User_GetActiveUserByDavAccount_FullMethodName = "/user.users.v1.User/GetActiveUserByDavAccount"
@@ -52,7 +53,8 @@ type UserClient interface {
 	SetUserSetting(ctx context.Context, in *SetUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	InitUser2FA(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*InitUser2FAResponse, error)
 	// rpc
-	GetUserInfo(ctx context.Context, in *RawUserRequest, opts ...grpc.CallOption) (*v1.User, error)
+	GetUserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*v1.User, error)
+	GetMultiUserInfos(ctx context.Context, in *MultiUserRequest, opts ...grpc.CallOption) (*MultiUserResponse, error)
 	ApplyStorageDiff(ctx context.Context, in *ApplyStorageDiffRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetAnonymousUser(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*v1.User, error)
 	GetActiveUserByDavAccount(ctx context.Context, in *GetActiveUserByDavAccountRequest, opts ...grpc.CallOption) (*v1.User, error)
@@ -158,10 +160,20 @@ func (c *userClient) InitUser2FA(ctx context.Context, in *emptypb.Empty, opts ..
 	return out, nil
 }
 
-func (c *userClient) GetUserInfo(ctx context.Context, in *RawUserRequest, opts ...grpc.CallOption) (*v1.User, error) {
+func (c *userClient) GetUserInfo(ctx context.Context, in *UserInfoRequest, opts ...grpc.CallOption) (*v1.User, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(v1.User)
 	err := c.cc.Invoke(ctx, User_GetUserInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) GetMultiUserInfos(ctx context.Context, in *MultiUserRequest, opts ...grpc.CallOption) (*MultiUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MultiUserResponse)
+	err := c.cc.Invoke(ctx, User_GetMultiUserInfos_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +244,8 @@ type UserServer interface {
 	SetUserSetting(context.Context, *SetUserRequest) (*emptypb.Empty, error)
 	InitUser2FA(context.Context, *emptypb.Empty) (*InitUser2FAResponse, error)
 	// rpc
-	GetUserInfo(context.Context, *RawUserRequest) (*v1.User, error)
+	GetUserInfo(context.Context, *UserInfoRequest) (*v1.User, error)
+	GetMultiUserInfos(context.Context, *MultiUserRequest) (*MultiUserResponse, error)
 	ApplyStorageDiff(context.Context, *ApplyStorageDiffRequest) (*emptypb.Empty, error)
 	GetAnonymousUser(context.Context, *emptypb.Empty) (*v1.User, error)
 	GetActiveUserByDavAccount(context.Context, *GetActiveUserByDavAccountRequest) (*v1.User, error)
@@ -275,8 +288,11 @@ func (UnimplementedUserServer) SetUserSetting(context.Context, *SetUserRequest) 
 func (UnimplementedUserServer) InitUser2FA(context.Context, *emptypb.Empty) (*InitUser2FAResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InitUser2FA not implemented")
 }
-func (UnimplementedUserServer) GetUserInfo(context.Context, *RawUserRequest) (*v1.User, error) {
+func (UnimplementedUserServer) GetUserInfo(context.Context, *UserInfoRequest) (*v1.User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
+}
+func (UnimplementedUserServer) GetMultiUserInfos(context.Context, *MultiUserRequest) (*MultiUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMultiUserInfos not implemented")
 }
 func (UnimplementedUserServer) ApplyStorageDiff(context.Context, *ApplyStorageDiffRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApplyStorageDiff not implemented")
@@ -477,7 +493,7 @@ func _User_InitUser2FA_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _User_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RawUserRequest)
+	in := new(UserInfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -489,7 +505,25 @@ func _User_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: User_GetUserInfo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).GetUserInfo(ctx, req.(*RawUserRequest))
+		return srv.(UserServer).GetUserInfo(ctx, req.(*UserInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_GetMultiUserInfos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MultiUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetMultiUserInfos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_GetMultiUserInfos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetMultiUserInfos(ctx, req.(*MultiUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -630,6 +664,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserInfo",
 			Handler:    _User_GetUserInfo_Handler,
+		},
+		{
+			MethodName: "GetMultiUserInfos",
+			Handler:    _User_GetMultiUserInfos_Handler,
 		},
 		{
 			MethodName: "ApplyStorageDiff",

@@ -11,8 +11,8 @@ import (
 	"ai/internal/pkg/eino/tool/factory"
 	pb "api/api/ai/chat/v1"
 	commonpb "api/api/common/v1"
+	"api/external/data/common"
 	"api/external/trans"
-	"common/db"
 	"common/hashid"
 	"context"
 	"encoding/json"
@@ -93,12 +93,12 @@ func (s *ChatService) UpdateChatConversation(ctx context.Context, req *pb.Update
 	updated, err := s.cb.UpdateConversation(ctx, args)
 	return buildChatConversation(updated, s.hasher), err
 }
-func (s *ChatService) ListChatConversationMe(ctx context.Context, req *emptypb.Empty) (*pb.ListConversationResponse, error) {
+func (s *ChatService) ListChatConversationMe(ctx context.Context, req *emptypb.Empty) (*pb.GetMultiConversationsResponse, error) {
 	conversations, err := s.cb.ListConversationByUser(ctx)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list conversations: %w", err)
 	}
-	resp := &pb.ListConversationResponse{
+	resp := &pb.GetMultiConversationsResponse{
 		Conversations: lo.Map(conversations, func(c *ent.AiChatConversation, index int) *pb.GetChatConversationResponse {
 			return buildChatConversation(c, s.hasher)
 		}),
@@ -133,39 +133,47 @@ func (s *ChatService) DeleteUnpinnedChatConversations(ctx context.Context, req *
 	}
 	return &emptypb.Empty{}, nil
 }
-func (s *ChatService) PageChatConversations(ctx context.Context, req *pb.PageConversationRequest) (*pb.PageConversationResponse, error) {
+func (s *ChatService) ListChatConversations(ctx context.Context, req *pb.ListConversationRequest) (*pb.ListConversationResponse, error) {
 	u := trans.FromContext(ctx)
 	// 构建分页参数
 	args := &data.ListChatConversationArgs{
-		PaginationArgs: db.ConvertPaginationArgs(req.Pagination),
+		PaginationArgs: common.ConvertPaginationArgs(req.Pagination),
 		Title:          req.Title,
-		UserID:         int(u.Id),
+		UserID:         u.ID,
 	}
 	if req.Start != nil {
-		start := req.Start.AsTime()
-		args.Start = &start
+		args.Start = req.Start.AsTime()
 	}
 	if req.End != nil {
-		end := req.End.AsTime()
-		args.End = &end
+		args.End = req.End.AsTime()
 	}
-	conversations, err := s.cb.PageConversation(ctx, args)
+	conversations, err := s.cb.ListConversations(ctx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("list conversations failed: %w", err)
 	}
-	return &pb.PageConversationResponse{
+	return &pb.ListConversationResponse{
 		Conversations: lo.Map(conversations.Conversations, func(c *ent.AiChatConversation, index int) *pb.GetChatConversationResponse {
 			return buildChatConversation(c, s.hasher)
 		}),
-		Pagination: db.ConvertPaginationResults(conversations.PaginationResults),
+		Pagination: common.PaginationResultsToProto(conversations.PaginationResults),
 	}, nil
 }
-func (s *ChatService) PageConversationMessages(ctx context.Context, req *pb.PageConversationMessagesRequest) (*pb.PageConversationMessagesResponse, error) {
+func (s *ChatService) DeleteMessage(ctx context.Context, req *pb.DeleteMessageRequest) (*emptypb.Empty, error) {
+	mid, err := validateID(s.hasher, req.Id, hashid.ChatMessageID, false)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.cb.DeleteMessage(ctx, mid, req.Cascade); err != nil {
+		return nil, commonpb.ErrorDb("Failed to delete message: %w", err)
+	}
+	return &emptypb.Empty{}, nil
+}
+func (s *ChatService) ListConversationMessage(ctx context.Context, req *pb.ListConversationMessagesRequest) (*pb.ListConversationMessagesResponse, error) {
 	cid, err := validateID(s.hasher, req.ConversationId, hashid.ChatMessageID, false)
 	if err != nil {
 		return nil, err
 	}
-	messages, err := s.cb.PageConversationMessage(ctx, cid, db.ConvertPaginationArgs(req.Pagination))
+	messages, err := s.cb.ListConversationMessages(ctx, cid, common.ConvertPaginationArgs(req.Pagination))
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list messages: %w", err)
 	}
@@ -192,45 +200,9 @@ func (s *ChatService) PageConversationMessages(ctx context.Context, req *pb.Page
 			msgRecords[i] = buildAiChatMessage(s.hasher, m, nil, msgSegs, messages.PageMap[m.ID])
 		}
 	}
-	return &pb.PageConversationMessagesResponse{
-		Messages:   msgRecords,
-		Pagination: db.ConvertPaginationResults(messages.PaginationResults),
-	}, nil
-}
-func (s *ChatService) DeleteMessage(ctx context.Context, req *pb.SimpleMessageRequest) (*emptypb.Empty, error) {
-	mid, err := validateID(s.hasher, req.Id, hashid.ChatMessageID, false)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.cb.DeleteMessage(ctx, mid); err != nil {
-		return nil, commonpb.ErrorDb("Failed to delete message: %w", err)
-	}
-	return &emptypb.Empty{}, nil
-}
-func (s *ChatService) DeleteConversationMessages(ctx context.Context, req *pb.SimpleMessageRequest) (*emptypb.Empty, error) {
-	cid, err := validateID(s.hasher, req.Id, hashid.ChatConversationID, false)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.cb.DeleteMessagesByConversationID(ctx, cid); err != nil {
-		return nil, commonpb.ErrorDb("Failed to delete messages: %w", err)
-	}
-	return &emptypb.Empty{}, nil
-}
-func (s *ChatService) ListConversationMessage(ctx context.Context, req *pb.ListConversationMessagesRequest) (*pb.ListConversationMessagesResponse, error) {
-	cid, err := validateID(s.hasher, req.ConversationId, hashid.ChatConversationID, false)
-	if err != nil {
-		return nil, err
-	}
-	messages, err := s.cb.ListMessagesByConversationID(ctx, cid, db.ConvertPaginationArgs(req.Pagination))
-	if err != nil {
-		return nil, commonpb.ErrorDb("Failed to list messages: %w", err)
-	}
 	return &pb.ListConversationMessagesResponse{
-		Messages: lo.Map(messages.ChatMessages, func(m *ent.AiChatMessage, index int) *pb.MessageRecord {
-			return buildUserChatMessage(s.hasher, m)
-		}),
-		Pagination: db.ConvertPaginationResults(messages.PaginationResults),
+		Messages:   msgRecords,
+		Pagination: common.PaginationResultsToProto(messages.PaginationResults),
 	}, nil
 }
 
@@ -240,46 +212,29 @@ func (s *ChatService) StreamChatHandler(ctx khttp.Context) error {
 		return fmt.Errorf("failed to bind request body: %w", err)
 	}
 
-	w := ctx.Response()
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("X-Accel-Buffering", "no")
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
+	onChunk, onFirst := s.HandlerChunkFn(ctx)
+	if onChunk == nil || onFirst == nil {
 		return fmt.Errorf("streaming unsupported")
 	}
-
-	onChunk := func(chunk *schema.Message, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error {
-		resp := buildAiChatMessage(s.hasher, aiMsg, chunk, record.Segs, record.WebSearch.WebPages)
-		bytes, _ := json.Marshal(resp)
-		_, err := fmt.Fprintf(w, "data: %s\n\n", bytes)
-		flusher.Flush()
-		return err
-	}
-	onFirstChunk := func(chunk *schema.Message, userMsg, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error {
-		resp := &pb.SendMessageResponse{
-			Send:    buildUserChatMessage(s.hasher, userMsg),
-			Receive: buildAiChatMessage(s.hasher, aiMsg, chunk, record.Segs, record.WebSearch.WebPages),
-		}
-		bytes, _ := json.Marshal(resp)
-		_, err := fmt.Fprintf(w, "data: %s\n\n", bytes)
-		flusher.Flush()
-		return err
-	}
-	return s.streamChat(ctx, &req, onChunk, onFirstChunk)
+	return s.streamChat(ctx, "", req.ConversationId, req.ModelId, req.Content, req.UseContext, req.UseSearch,
+		req.AttachmentUrls, onChunk, onFirst)
 }
 
-func (s *ChatService) streamChat(ctx context.Context, req *pb.SendMessageRequest, onChunk chat.OnChunkFN, onFirstFN chat.OnFirstChunkFN) error {
-	// 1.1 校验模型id是否有效
-	mid, err := validateID(s.hasher, req.ModelId, hashid.ModelID, false)
+func (s *ChatService) streamChat(ctx context.Context, rawMsgID, rawConversationID, rawModelID, content string, useContext, useSearch bool,
+	attachmentUrls []string, onChunk chat.OnChunkFN, onFirstFN chat.OnFirstChunkFN) error {
+	// 1.1 校验消息id是否有效
+	msgID, err := validateID(s.hasher, rawMsgID, hashid.ChatMessageID, true)
+	if err != nil {
+		return err
+	}
+	// 1.2 校验对话id是否有效
+	cid, err := validateID(s.hasher, rawConversationID, hashid.ChatConversationID, true)
 	if err != nil {
 		return err
 	}
 
-	// 1.2 校验对话id是否有效
-	cid, err := validateID(s.hasher, req.ConversationId, hashid.ChatConversationID, false)
+	// 1.3 校验模型id是否有效
+	mid, err := validateID(s.hasher, rawModelID, hashid.ModelID, false)
 	if err != nil {
 		return err
 	}
@@ -290,11 +245,12 @@ func (s *ChatService) streamChat(ctx context.Context, req *pb.SendMessageRequest
 		return err
 	}
 	sendArgs := &chat.SendMessageArgs{
+		MsgID:          msgID,
 		ConversationID: cid,
-		Content:        req.Content,
-		UseContext:     req.UseContext,
-		UseSearch:      req.UseSearch,
-		AttachmentUrls: req.AttachmentUrls,
+		Content:        content,
+		UseContext:     useContext,
+		UseSearch:      useSearch,
+		AttachmentUrls: attachmentUrls,
 	}
 	// 3. 获取知识库检索工具
 	var rt tool.InvokableTool
@@ -347,7 +303,123 @@ func (s *ChatService) SendMessage(ctx context.Context, req *pb.SendMessageReques
 	}, nil
 }
 
+func (s *ChatService) RetryMessage(ctx context.Context, req *pb.RetryMessageRequest) (*pb.SendMessageResponse, error) {
+	// 1.1 校验消息id是否有效
+	msgID, err := validateID(s.hasher, req.Id, hashid.ChatMessageID, false)
+	if err != nil {
+		return nil, err
+	}
+	// 1.2 校验模型id是否有效
+	mid, err := validateID(s.hasher, req.ModelId, hashid.ModelID, false)
+	if err != nil {
+		return nil, err
+	}
+	m, err := s.mb.GetActiveModel(ctx, mid)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. 构建发送参数，重新发送消息
+	sendArgs := &chat.SendMessageArgs{
+		MsgID:      msgID,
+		UseContext: req.UseContext,
+		UseSearch:  req.UseSearch,
+	}
+
+	record, err := s.cb.Generate(ctx, sendArgs, m, nil)
+	if err != nil {
+		return nil, commonpb.ErrorInternalSetting("Failed to send message: %w", err)
+	}
+	sendRecord := buildUserChatMessage(s.hasher, record.UserMsg)
+	assistMsg := buildAiChatMessage(s.hasher, record.AiMsg, record.Output, record.InnerRecord.Segs, record.InnerRecord.WebSearch.WebPages)
+	return &pb.SendMessageResponse{
+		Send:    sendRecord,
+		Receive: assistMsg,
+	}, nil
+}
+
 func (s *ChatService) SendMessageStream(req *pb.SendMessageRequest, grpcStream grpc.ServerStreamingServer[pb.SendMessageResponse]) error {
+	onChunk, onFirst := s.streamChunkFn(grpcStream)
+
+	return s.streamChat(grpcStream.Context(), "", req.ConversationId, req.ModelId, req.Content, req.UseContext, req.UseSearch,
+		req.AttachmentUrls, onChunk, onFirst)
+}
+func (s *ChatService) RetryMessageStream(req *pb.RetryMessageRequest, grpcStream grpc.ServerStreamingServer[pb.SendMessageResponse]) error {
+	onChunk, onFirst := s.streamChunkFn(grpcStream)
+
+	return s.streamChat(grpcStream.Context(), req.Id, "", req.ModelId, "", req.UseContext, req.UseSearch,
+		nil, onChunk, onFirst)
+}
+func (s *ChatService) StreamRetryChatHandler(ctx khttp.Context) error {
+	var req pb.RetryMessageRequest
+	if err := ctx.Bind(&req); err != nil {
+		return fmt.Errorf("failed to bind request body: %w", err)
+	}
+	onChunk, onFirst := s.HandlerChunkFn(ctx)
+	if onChunk == nil || onFirst == nil {
+		return fmt.Errorf("streaming unsupported")
+	}
+
+	return s.streamChat(ctx, req.Id, "", req.ModelId, "", req.UseContext, req.UseSearch,
+		nil, onChunk, onFirst)
+}
+func (s *ChatService) PatchMessage(ctx context.Context, req *pb.PatchMessageRequest) (*pb.SendMessageResponse, error) {
+	msgID, err := validateID(s.hasher, req.Id, hashid.ChatMessageID, false)
+	if err != nil {
+		return nil, err
+	}
+	mid, err := validateID(s.hasher, req.ModelId, hashid.ModelID, false)
+	if err != nil {
+		return nil, err
+	}
+	m, err := s.mb.GetActiveModel(ctx, mid)
+	if err != nil {
+		return nil, err
+	}
+	sendArgs := &chat.SendMessageArgs{
+		MsgID:      msgID,
+		Content:    req.Content,
+		UseContext: req.UseContext,
+		UseSearch:  req.UseSearch,
+	}
+
+	record, err := s.cb.Generate(ctx, sendArgs, m, nil)
+	if err != nil {
+		return nil, commonpb.ErrorInternalSetting("Failed to send message: %w", err)
+	}
+	sendRecord := buildUserChatMessage(s.hasher, record.UserMsg)
+	assistMsg := buildAiChatMessage(s.hasher, record.AiMsg, record.Output, record.InnerRecord.Segs, record.InnerRecord.WebSearch.WebPages)
+	return &pb.SendMessageResponse{
+		Send:    sendRecord,
+		Receive: assistMsg,
+	}, nil
+}
+func (s *ChatService) PatchMessageHandler(ctx khttp.Context) error {
+	var req pb.PatchMessageRequest
+	if err := ctx.Bind(&req); err != nil {
+		return fmt.Errorf("failed to bind request body: %w", err)
+	}
+	onChunk, onFirst := s.HandlerChunkFn(ctx)
+	if onChunk == nil || onFirst == nil {
+		return fmt.Errorf("streaming unsupported")
+	}
+	return s.streamChat(ctx, req.Id, "", req.ModelId, req.Content, req.UseContext, req.UseSearch,
+		nil, onChunk, onFirst)
+}
+func validateID(hasher hashid.Encoder, rawID string, idType int, canEmpty bool) (int, error) {
+	if strings.TrimSpace(rawID) == "" {
+		if !canEmpty {
+			return 0, commonpb.ErrorParamInvalid("invalid id %s", rawID)
+		}
+		return 0, nil
+	}
+	id, err := hasher.Decode(rawID, idType)
+	if err != nil {
+		return 0, commonpb.ErrorParamInvalid("invalid id %s", rawID)
+	}
+	return id, nil
+}
+func (s *ChatService) streamChunkFn(grpcStream grpc.ServerStreamingServer[pb.SendMessageResponse]) (chat.OnChunkFN, chat.OnFirstChunkFN) {
 	// stream 调用过程中每个chunk的处理方法（不包含第一个）
 	onChunk := func(chunk *schema.Message, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error {
 		resp := &pb.SendMessageResponse{
@@ -364,19 +436,37 @@ func (s *ChatService) SendMessageStream(req *pb.SendMessageRequest, grpcStream g
 		}
 		return grpcStream.Send(resp)
 	}
-
-	return s.streamChat(grpcStream.Context(), req, onChunk, onFirst)
+	return onChunk, onFirst
 }
-func validateID(hasher hashid.Encoder, rawID string, idType int, canEmpty bool) (int, error) {
-	if strings.TrimSpace(rawID) == "" {
-		if !canEmpty {
-			return 0, commonpb.ErrorParamInvalid("invalid id %s", rawID)
+
+func (s *ChatService) HandlerChunkFn(ctx khttp.Context) (chat.OnChunkFN, chat.OnFirstChunkFN) {
+	w := ctx.Response()
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		return nil, nil
+	}
+
+	onChunk := func(chunk *schema.Message, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error {
+		resp := buildAiChatMessage(s.hasher, aiMsg, chunk, record.Segs, record.WebSearch.WebPages)
+		bytes, _ := json.Marshal(resp)
+		_, err := fmt.Fprintf(w, "data: %s\n\n", bytes)
+		flusher.Flush()
+		return err
+	}
+	onFirstChunk := func(chunk *schema.Message, userMsg, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error {
+		resp := &pb.SendMessageResponse{
+			Send:    buildUserChatMessage(s.hasher, userMsg),
+			Receive: buildAiChatMessage(s.hasher, aiMsg, chunk, record.Segs, record.WebSearch.WebPages),
 		}
-		return 0, nil
+		bytes, _ := json.Marshal(resp)
+		_, err := fmt.Fprintf(w, "data: %s\n\n", bytes)
+		flusher.Flush()
+		return err
 	}
-	id, err := hasher.Decode(rawID, idType)
-	if err != nil {
-		return 0, commonpb.ErrorParamInvalid("invalid id %s", rawID)
-	}
-	return id, nil
+	return onChunk, onFirstChunk
 }

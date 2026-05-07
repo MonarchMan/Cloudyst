@@ -1503,6 +1503,8 @@ func (m *AiKnowledgeDocument) validate(all bool) error {
 
 	// no validation rules for Version
 
+	// no validation rules for Size
+
 	// no validation rules for ContentLength
 
 	// no validation rules for Tokens
@@ -1510,6 +1512,8 @@ func (m *AiKnowledgeDocument) validate(all bool) error {
 	// no validation rules for SegmentMaxTokens
 
 	// no validation rules for RetrievalCount
+
+	// no validation rules for Progress
 
 	// no validation rules for Status
 
@@ -1768,8 +1772,6 @@ func (m *AiKnowledgeSegment) validate(all bool) error {
 	}
 
 	// no validation rules for DocumentId
-
-	// no validation rules for Content
 
 	// no validation rules for ContentLength
 

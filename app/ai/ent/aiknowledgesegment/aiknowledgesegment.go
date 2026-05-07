@@ -31,6 +31,16 @@ const (
 	FieldContentLength = "content_length"
 	// FieldTokens holds the string denoting the tokens field in the database.
 	FieldTokens = "tokens"
+	// FieldChunkIndex holds the string denoting the chunk_index field in the database.
+	FieldChunkIndex = "chunk_index"
+	// FieldSectionPath holds the string denoting the section_path field in the database.
+	FieldSectionPath = "section_path"
+	// FieldStartOffset holds the string denoting the start_offset field in the database.
+	FieldStartOffset = "start_offset"
+	// FieldEndOffset holds the string denoting the end_offset field in the database.
+	FieldEndOffset = "end_offset"
+	// FieldMetadata holds the string denoting the metadata field in the database.
+	FieldMetadata = "metadata"
 	// FieldVectorID holds the string denoting the vector_id field in the database.
 	FieldVectorID = "vector_id"
 	// FieldRetrievalCount holds the string denoting the retrieval_count field in the database.
@@ -60,6 +70,11 @@ var Columns = []string{
 	FieldKnowledgeID,
 	FieldContentLength,
 	FieldTokens,
+	FieldChunkIndex,
+	FieldSectionPath,
+	FieldStartOffset,
+	FieldEndOffset,
+	FieldMetadata,
 	FieldVectorID,
 	FieldRetrievalCount,
 	FieldStatus,
@@ -89,6 +104,14 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultChunkIndex holds the default value on creation for the "chunk_index" field.
+	DefaultChunkIndex int
+	// DefaultSectionPath holds the default value on creation for the "section_path" field.
+	DefaultSectionPath string
+	// DefaultStartOffset holds the default value on creation for the "start_offset" field.
+	DefaultStartOffset int
+	// DefaultEndOffset holds the default value on creation for the "end_offset" field.
+	DefaultEndOffset int
 	// DefaultVectorID holds the default value on creation for the "vector_id" field.
 	DefaultVectorID string
 	// VectorIDValidator is a validator for the "vector_id" field. It is called by the builders before save.
@@ -146,6 +169,26 @@ func ByContentLength(opts ...sql.OrderTermOption) OrderOption {
 // ByTokens orders the results by the tokens field.
 func ByTokens(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTokens, opts...).ToFunc()
+}
+
+// ByChunkIndex orders the results by the chunk_index field.
+func ByChunkIndex(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChunkIndex, opts...).ToFunc()
+}
+
+// BySectionPath orders the results by the section_path field.
+func BySectionPath(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSectionPath, opts...).ToFunc()
+}
+
+// ByStartOffset orders the results by the start_offset field.
+func ByStartOffset(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStartOffset, opts...).ToFunc()
+}
+
+// ByEndOffset orders the results by the end_offset field.
+func ByEndOffset(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEndOffset, opts...).ToFunc()
 }
 
 // ByVectorID orders the results by the vector_id field.

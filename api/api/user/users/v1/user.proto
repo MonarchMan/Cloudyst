@@ -70,7 +70,9 @@ service User {
   }
 
   // rpc
-  rpc GetUserInfo(RawUserRequest) returns (user.common.v1.User);
+  rpc GetUserInfo(UserInfoRequest) returns (user.common.v1.User);
+
+  rpc GetMultiUserInfos(MultiUserRequest) returns (MultiUserResponse);
 
   rpc ApplyStorageDiff(ApplyStorageDiffRequest) returns (google.protobuf.Empty);
 
@@ -209,8 +211,20 @@ message SimpleUserRequest {
   string id = 1;
 }
 
-message RawUserRequest {
+message UserInfoRequest {
   int32 id = 1;
+  bool with_passkey = 2;
+}
+
+message MultiUserRequest {
+  repeated int32 ids = 1;
+  bool with_group = 2;
+  bool with_passkey = 3;
+}
+
+message MultiUserResponse {
+  int32 total = 1;
+  repeated user.common.v1.User users = 2;
 }
 
 message SearchUsersResponse {
@@ -278,7 +292,7 @@ message SetUserRequest {
   optional bool two_fa_enabled = 9;
   string two_fa_code = 10;
   optional bool disable_view_sync = 11;
-  optional int32 share_links_in_profile = 12;
+  optional string share_links_in_profile = 12;
 }
 
 message InitUser2FAResponse{

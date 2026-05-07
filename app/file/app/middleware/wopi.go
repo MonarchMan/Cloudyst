@@ -1,8 +1,7 @@
 package middleware
 
 import (
-	pbuser "api/api/user/users/v1"
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
 	"api/external/trans"
 	"common/cache"
 	"common/hashid"
@@ -18,7 +17,7 @@ import (
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
-func ViewerSessionValidator(hasher hashid.Encoder, kv cache.Driver, uc pbuser.UserClient, settings setting.Provider) khttp.FilterFunc {
+func ViewerSessionValidator(hasher hashid.Encoder, kv cache.Driver, uc rpc.UserClient, settings setting.Provider) khttp.FilterFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// parse id
@@ -45,12 +44,12 @@ func ViewerSessionValidator(hasher hashid.Encoder, kv cache.Driver, uc pbuser.Us
 			}
 
 			session := sessionRaw.(manager.ViewerSessionCache)
-			user, err := rpc.GetUserInfo(r.Context(), session.UserID, uc)
+			user, err := uc.GetUserInfo(r.Context(), session.UserID)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Header().Set(wopi.ServerErrorHeader, "user not found")
 			}
-			ctx := context.WithValue(r.Context(), trans.UserCtx{}, user)
+			ctx := trans.WithValue(r.Context(), user)
 
 			if id != session.FileID {
 				w.WriteHeader(http.StatusForbidden)

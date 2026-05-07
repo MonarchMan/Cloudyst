@@ -3,12 +3,13 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"context"
 	"errors"
 	"file/ent/file"
 	"file/ent/predicate"
 	"file/ent/share"
+	"file/internal/data/types"
 	"fmt"
 	"time"
 
@@ -166,7 +167,7 @@ func (_u *ShareUpdate) ClearRemainDownloads() *ShareUpdate {
 }
 
 // SetProps sets the "props" field.
-func (_u *ShareUpdate) SetProps(v *v1.ShareProps) *ShareUpdate {
+func (_u *ShareUpdate) SetProps(v *types.ShareProps) *ShareUpdate {
 	_u.mutation.SetProps(v)
 	return _u
 }
@@ -198,8 +199,14 @@ func (_u *ShareUpdate) AddOwnerID(v int) *ShareUpdate {
 	return _u
 }
 
+// ClearOwnerID clears the value of the "owner_id" field.
+func (_u *ShareUpdate) ClearOwnerID() *ShareUpdate {
+	_u.mutation.ClearOwnerID()
+	return _u
+}
+
 // SetOwnerInfo sets the "owner_info" field.
-func (_u *ShareUpdate) SetOwnerInfo(v *v1.UserInfo) *ShareUpdate {
+func (_u *ShareUpdate) SetOwnerInfo(v *userdata.UserInfo) *ShareUpdate {
 	_u.mutation.SetOwnerInfo(v)
 	return _u
 }
@@ -344,6 +351,9 @@ func (_u *ShareUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedOwnerID(); ok {
 		_spec.AddField(share.FieldOwnerID, field.TypeInt, value)
+	}
+	if _u.mutation.OwnerIDCleared() {
+		_spec.ClearField(share.FieldOwnerID, field.TypeInt)
 	}
 	if value, ok := _u.mutation.OwnerInfo(); ok {
 		_spec.SetField(share.FieldOwnerInfo, field.TypeJSON, value)
@@ -536,7 +546,7 @@ func (_u *ShareUpdateOne) ClearRemainDownloads() *ShareUpdateOne {
 }
 
 // SetProps sets the "props" field.
-func (_u *ShareUpdateOne) SetProps(v *v1.ShareProps) *ShareUpdateOne {
+func (_u *ShareUpdateOne) SetProps(v *types.ShareProps) *ShareUpdateOne {
 	_u.mutation.SetProps(v)
 	return _u
 }
@@ -568,8 +578,14 @@ func (_u *ShareUpdateOne) AddOwnerID(v int) *ShareUpdateOne {
 	return _u
 }
 
+// ClearOwnerID clears the value of the "owner_id" field.
+func (_u *ShareUpdateOne) ClearOwnerID() *ShareUpdateOne {
+	_u.mutation.ClearOwnerID()
+	return _u
+}
+
 // SetOwnerInfo sets the "owner_info" field.
-func (_u *ShareUpdateOne) SetOwnerInfo(v *v1.UserInfo) *ShareUpdateOne {
+func (_u *ShareUpdateOne) SetOwnerInfo(v *userdata.UserInfo) *ShareUpdateOne {
 	_u.mutation.SetOwnerInfo(v)
 	return _u
 }
@@ -744,6 +760,9 @@ func (_u *ShareUpdateOne) sqlSave(ctx context.Context) (_node *Share, err error)
 	}
 	if value, ok := _u.mutation.AddedOwnerID(); ok {
 		_spec.AddField(share.FieldOwnerID, field.TypeInt, value)
+	}
+	if _u.mutation.OwnerIDCleared() {
+		_spec.ClearField(share.FieldOwnerID, field.TypeInt)
 	}
 	if value, ok := _u.mutation.OwnerInfo(); ok {
 		_spec.SetField(share.FieldOwnerInfo, field.TypeJSON, value)

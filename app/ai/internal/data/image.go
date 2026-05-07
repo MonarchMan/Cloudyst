@@ -5,7 +5,7 @@ import (
 	"ai/ent/aiimage"
 	"ai/internal/biz/types"
 	pb "api/api/common/v1"
-	"common/db"
+	"api/external/data/common"
 	"context"
 )
 
@@ -15,7 +15,7 @@ type (
 		GetByID(ctx context.Context, id int) (*ent.AiImage, error)
 		GetByIDs(ctx context.Context, ids []int) ([]*ent.AiImage, error)
 		List(ctx context.Context, args *ListAIImageArgs) (*ListAIImageResult, error)
-		Upsert(ctx context.Context, image *ent.AiImage) (*ent.AiImage, error)
+		Upsert(ctx context.Context, image *UpsertImageArgs) (*ent.AiImage, error)
 		UpdateStatus(ctx context.Context, id int, status types.ImageStatus) (*ent.AiImage, error)
 		Delete(ctx context.Context, id int) error
 		BatchDelete(ctx context.Context, ids []int) (int, error)
@@ -38,10 +38,26 @@ type (
 		*pb.PaginationResults
 		Images []*ent.AiImage
 	}
+
+	UpsertImageArgs struct {
+		ID       int
+		UserID   int
+		Platform string
+		ModelID  int
+		Model    string
+		Prompt   string
+		Status   types.ImageStatus
+		PicURL   string
+		Width    int
+		Height   int
+		Options  map[string]any
+		TaskID   string
+		Buttons  string
+	}
 )
 
-func NewAIImageClient(client *ent.Client, dbType db.DBType) ImageClient {
-	return &imageClient{client: client, maxSQLParam: db.SqlParamLimit(dbType)}
+func NewAIImageClient(client *ent.Client, dbType common.DBType) ImageClient {
+	return &imageClient{client: client, maxSQLParam: common.SqlParamLimit(dbType)}
 }
 
 func (c *imageClient) SetClient(newClient *ent.Client) TxOperator {
@@ -61,7 +77,7 @@ func (c *imageClient) GetByIDs(ctx context.Context, ids []int) ([]*ent.AiImage, 
 }
 
 func (c *imageClient) List(ctx context.Context, args *ListAIImageArgs) (*ListAIImageResult, error) {
-	pageSize := db.CapPageSize(c.maxSQLParam, int(args.PageSize), 10)
+	pageSize := common.CapPageSize(c.maxSQLParam, int(args.PageSize), 10)
 	q := c.client.AiImage.Query()
 	if args.Platform != "" {
 		q.Where(aiimage.Platform(args.Platform))
@@ -100,7 +116,7 @@ func (c *imageClient) List(ctx context.Context, args *ListAIImageArgs) (*ListAII
 	}, nil
 }
 
-func (c *imageClient) Upsert(ctx context.Context, image *ent.AiImage) (*ent.AiImage, error) {
+func (c *imageClient) Upsert(ctx context.Context, image *UpsertImageArgs) (*ent.AiImage, error) {
 	if image.ID == 0 {
 		q := c.client.AiImage.Create().
 			SetUserID(image.UserID).
@@ -141,7 +157,7 @@ func (c *imageClient) BatchDelete(ctx context.Context, ids []int) (int, error) {
 }
 
 func getImageOrderOption(args *ListAIImageArgs) []aiimage.OrderOption {
-	orderTerm := db.GetOrderTerm(db.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
 	switch args.OrderBy {
 	case aiimage.FieldUpdatedAt:
 		return []aiimage.OrderOption{aiimage.ByUpdatedAt(orderTerm), aiimage.ByID(orderTerm)}

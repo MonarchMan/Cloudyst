@@ -1,20 +1,19 @@
 package crontab
 
 import (
-	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"common/logging"
 	"context"
 	"file/internal/biz/filemanager"
-	"file/internal/biz/queue"
 	"file/internal/biz/setting"
+	"file/internal/data/rpc"
 	"fmt"
+	"queue"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/robfig/cron/v3"
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type (
@@ -39,9 +38,9 @@ func Register(t setting.CronType, fn CronTaskFunc) {
 }
 
 // NewCron constructs a new cron instance with given dependency.
-func NewCron(ctx context.Context, settings setting.Provider, uc pbuser.UserClient, l *log.Helper, q queue.Queue,
+func NewCron(ctx context.Context, settings setting.Provider, uc rpc.UserClient, l *log.Helper, q queue.Queue,
 	tracer trace.Tracer, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (*cron.Cron, error) {
-	anonymous, err := uc.GetAnonymousUser(context.Background(), &emptypb.Empty{})
+	anonymous, err := uc.GetAnonymousUser(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cron: faield to get anonymous users: %w", err)
 	}
@@ -59,7 +58,7 @@ func NewCron(ctx context.Context, settings setting.Provider, uc pbuser.UserClien
 	return c, nil
 }
 
-func taskWrapper(name, config string, user *userpb.User, l *log.Helper, task CronTaskFunc, q queue.Queue,
+func taskWrapper(name, config string, user *userdata.User, l *log.Helper, task CronTaskFunc, q queue.Queue,
 	tracer trace.Tracer, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) func() {
 	l.Infof("Cron task %s started with config %q", name, config)
 	return func() {
@@ -72,7 +71,7 @@ func taskWrapper(name, config string, user *userpb.User, l *log.Helper, task Cro
 		l.WithContext(ctx).Infof("Executing Cron task %q", name)
 
 		ctx = context.WithValue(ctx, logging.LoggerCtx{}, l)
-		ctx = context.WithValue(ctx, trans.UserCtx{}, user)
+		ctx = trans.WithValue(ctx, user)
 		ctx = context.WithValue(ctx, filemanager.ManagerDepCtx{}, dep)
 		ctx = context.WithValue(ctx, filemanager.DbfsDepCtx{}, dbfsDep)
 		task(ctx, q)

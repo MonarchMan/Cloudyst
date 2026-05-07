@@ -2,7 +2,8 @@ package dbfs
 
 import (
 	filepb "api/api/file/files/v1"
-	userpb "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"common/util"
 	"encoding/gob"
@@ -34,8 +35,8 @@ var (
 	}
 )
 
-func getDefaultView() *types.ExplorerView {
-	return &types.ExplorerView{
+func getDefaultView() *filedata.ExplorerView {
+	return &filedata.ExplorerView{
 		PageSize:  defaultPageSize,
 		View:      "grid",
 		Thumbnail: true,
@@ -48,7 +49,7 @@ type (
 		Children          map[string]*File
 		Parent            *File
 		Path              [2]*fs.URI
-		OwnerModel        *userpb.User
+		OwnerModel        *userdata.User
 		IsUserRoot        bool
 		CapabilitiesBs    *boolset.BooleanSet
 		FileExtendedInfo  *fs.FileExtendedInfo
@@ -140,7 +141,7 @@ func (f *File) ExtendedInfo() *fs.FileExtendedInfo {
 	return f.FileExtendedInfo
 }
 
-func (f *File) Owner() *userpb.User {
+func (f *File) Owner() *userdata.User {
 	parent := f
 	for parent != nil {
 		if parent.OwnerModel != nil {
@@ -197,7 +198,7 @@ func (f *File) Uri(isRoot bool) *fs.URI {
 }
 
 // View returns the view setting of the files, can be inherited from parent.
-func (f *File) View() *types.ExplorerView {
+func (f *File) View() *filedata.ExplorerView {
 	// If ownerId has disabled view sync, return nil
 	//ownerId := f.OwnerId()
 	//if ownerId != nil && ownerId.Settings != nil && ownerId.Settings.DisableViewSync {

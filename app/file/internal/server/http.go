@@ -8,7 +8,6 @@ import (
 	fileapi "api/api/file/files/v1"
 	shareapi "api/api/file/share/v1"
 	explorerapi "api/api/file/workflow/v1"
-	pbuser "api/api/user/users/v1"
 	cm "api/external/middlewares"
 	"api/external/middlewares/filters"
 	"common/auth"
@@ -20,6 +19,7 @@ import (
 	"file/app/response"
 	"file/internal/biz/setting"
 	"file/internal/conf"
+	"file/internal/data/rpc"
 	"file/internal/data/types"
 	"file/internal/service"
 	"file/internal/service/admin"
@@ -47,7 +47,7 @@ func init() {
 // NewHTTPServer new an khttp server.
 func NewHTTPServer(bs *conf.Bootstrap, callback *service.CallbackService, file *service.FileService, share *service.ShareService,
 	wopi *service.WopiService, workflow *service.WorkflowService, dav *webdav.WebDAVService, admin *admin.AdminService,
-	hasher hashid.Encoder, kv cache.Driver, uc pbuser.UserClient, settings setting.Provider, generalAuth auth.Auth,
+	hasher hashid.Encoder, kv cache.Driver, uc rpc.UserClient, settings setting.Provider, generalAuth auth.Auth,
 	tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator, l log.Logger) (*khttp.Server, error) {
 	h := log.NewHelper(l, log.WithMessageKey("server"))
 
@@ -104,7 +104,7 @@ func NewHTTPServer(bs *conf.Bootstrap, callback *service.CallbackService, file *
 	tracer := tracerProvider.Tracer("http-route")
 	root := srv.Route("/", filters.Trace(tracer), filters.Logger())
 	// file
-	fileRoute := root.Group("/file", filters.CurrentUser(uc), im.SignRequired(generalAuth))
+	fileRoute := root.Group("/file", filters.CurrentUser(uc.Client()), im.SignRequired(generalAuth))
 	fileRoute.GET("/content/{id}/{speed}/{name}", file.ServeEntity)
 	fileRoute.HEAD("/content/{id}/{speed}/{name}", file.ServeEntity)
 	fileRoute.PUT("/user/avatar", file.UploadAvatar)
@@ -139,7 +139,7 @@ func verifyUnixConfig(unix *conf.Unix, helper *log.Helper) error {
 	return nil
 }
 
-func initCallbackRoute(route *khttp.Router, callback *service.CallbackService, kv cache.Driver, c *conf.Bootstrap, uc pbuser.UserClient) {
+func initCallbackRoute(route *khttp.Router, callback *service.CallbackService, kv cache.Driver, c *conf.Bootstrap, uc rpc.UserClient) {
 	route.POST("/oss/{session_id}/{key}", callback.OssCallback,
 		im.UseUploadSession(types.PolicyTypeOss, kv, uc),
 		im.OssCallbackAuthFilter(kv, c))
@@ -169,7 +169,7 @@ func initWopiRoute(route *khttp.Router, wopi *service.WopiService) {
 	route.POST("/{id}", wopi.ModifyFile)
 }
 
-func getMiddlewares(kv cache.Driver, uc pbuser.UserClient, tracer trace.TracerProvider,
+func getMiddlewares(kv cache.Driver, uc rpc.UserClient, tracer trace.TracerProvider,
 	propagator propagation.TextMapPropagator) []middleware.Middleware {
 	trace := tracing.Server(
 		tracing.WithTracerProvider(tracer),

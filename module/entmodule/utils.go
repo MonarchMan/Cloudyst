@@ -1,7 +1,7 @@
 package entmodule
 
 import (
-	"common/db"
+	"api/external/data/common"
 	"common/util"
 	"fmt"
 	"time"
@@ -12,12 +12,12 @@ import (
 
 func SqlDriver(dbType string, source string, dbFilePath string, host string, username string, password string, name string,
 	port int32, charset string, unixSocket bool, l *log.Helper) (*sql.Driver, error) {
-	confDBType := db.DBType(dbType)
-	if confDBType == db.SQLite3DB || confDBType == "" {
-		confDBType = db.SQLiteDB
+	confDBType := common.DBType(dbType)
+	if confDBType == common.SQLite3DB || confDBType == "" {
+		confDBType = common.SQLiteDB
 	}
-	if confDBType == db.MariaDB {
-		confDBType = db.MySqlDB
+	if confDBType == common.MariaDB {
+		confDBType = common.MySqlDB
 	}
 
 	var (
@@ -26,7 +26,7 @@ func SqlDriver(dbType string, source string, dbFilePath string, host string, use
 	)
 
 	// Check if the database type is supported.
-	if confDBType != db.SQLiteDB && confDBType != db.MySqlDB && confDBType != db.PostgresDB {
+	if confDBType != common.SQLiteDB && confDBType != common.MySqlDB && confDBType != common.PostgresDB {
 		return nil, fmt.Errorf("unsupported database type: %s", confDBType)
 	}
 	// If Database connection string provided, use it directly.
@@ -36,11 +36,11 @@ func SqlDriver(dbType string, source string, dbFilePath string, host string, use
 	} else {
 
 		switch confDBType {
-		case db.SQLiteDB:
+		case common.SQLiteDB:
 			dbFile := util.RelativePath(dbFilePath)
 			l.Info("Connect to SQLite database %q.", dbFile)
 			client, err = sql.Open("sqlite3", util.RelativePath(dbFile))
-		case db.PostgresDB:
+		case common.PostgresDB:
 			l.Info("Connect to Postgres database %q.", host)
 			client, err = sql.Open("postgres", fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 				host,
@@ -48,7 +48,7 @@ func SqlDriver(dbType string, source string, dbFilePath string, host string, use
 				password,
 				name,
 				port))
-		case db.MySqlDB, db.MsSqlDB:
+		case common.MySqlDB, common.MsSqlDB:
 			l.Info("Connect to MySQL/SQLServer database %q.", host)
 			var host string
 			if unixSocket {

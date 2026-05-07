@@ -1,10 +1,11 @@
 package dbfs
 
 import (
-	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"common/cache"
+	"common/constants"
 	"common/hashid"
 	"context"
 	"file/internal/biz/filemanager/fs"
@@ -20,7 +21,7 @@ import (
 var myNavigatorCapability = &boolset.BooleanSet{}
 
 // NewMyNavigator creates a navigator for userId's "my" files system.
-func NewMyNavigator(u *userpb.User, fileClient data.FileClient, userClient pbuser.UserClient, l log.Logger,
+func NewMyNavigator(u *userdata.User, fileClient data.FileClient, userClient rpc.UserClient, l log.Logger,
 	config *setting.DBFS, hasher hashid.Encoder) Navigator {
 	return &myNavigator{
 		user:          u,
@@ -28,15 +29,15 @@ func NewMyNavigator(u *userpb.User, fileClient data.FileClient, userClient pbuse
 		fileClient:    fileClient,
 		userClient:    userClient,
 		config:        config,
-		baseNavigator: newBaseNavigator(fileClient, defaultFilter, u.Id, hasher, config),
+		baseNavigator: newBaseNavigator(fileClient, defaultFilter, u.ID, hasher, config),
 	}
 }
 
 type myNavigator struct {
 	l          *log.Helper
-	user       *userpb.User
+	user       *userdata.User
 	fileClient data.FileClient
-	userClient pbuser.UserClient
+	userClient rpc.UserClient
 
 	config *setting.DBFS
 	*baseNavigator
@@ -79,25 +80,24 @@ func (n *myNavigator) To(ctx context.Context, path *fs.URI) (*File, error) {
 			return nil, ErrLoginRequired
 		}
 
-		fsUid, err := n.hasher.Decode(path.ID(hashid.EncodeUserID(n.hasher, int(n.user.Id))), hashid.UserID)
+		fsUid, err := n.hasher.Decode(path.ID(hashid.EncodeUserID(n.hasher, n.user.ID)), hashid.UserID)
 		if err != nil {
 			return nil, fs.ErrPathNotExist.WithCause(fmt.Errorf("invalid userId id"))
 		}
-		if fsUid != int(n.user.Id) {
+		if fsUid != n.user.ID {
 			return nil, ErrPermissionDenied
 		}
 
-		targetUser, err := rpc.GetUserInfo(ctx, int(n.user.Id), n.userClient)
+		targetUser, err := n.userClient.GetUserInfo(ctx, n.user.ID)
 		if err != nil {
 			return nil, fs.ErrPathNotExist.WithCause(fmt.Errorf("userId not found: %w", err))
 		}
 
-		permissions := boolset.BooleanSet(n.user.Group.Permissions)
-		if targetUser.Status != userpb.User_STATUS_ACTIVE && !(&permissions).Enabled(int(types.GroupPermissionIsAdmin)) {
+		if targetUser.Status != constants.StatusActive && !n.user.Group.Permissions.Enabled(int(types.GroupPermissionIsAdmin)) {
 			return nil, fs.ErrPathNotExist.WithCause(fmt.Errorf("inactive userId"))
 		}
 
-		rootFile, err := n.fileClient.Root(ctx, int(targetUser.Id))
+		rootFile, err := n.fileClient.Root(ctx, targetUser.ID)
 		if err != nil {
 			n.l.WithContext(ctx).Infof("User's root folder not found: %s, will initialize it.", err)
 			return nil, ErrFsNotInitialized
@@ -107,7 +107,7 @@ func (n *myNavigator) To(ctx context.Context, path *fs.URI) (*File, error) {
 		rootPath := path.Root()
 		n.root.Path[pathIndexRoot], n.root.Path[pathIndexUser] = rootPath, rootPath
 		n.root.OwnerModel = targetUser
-		n.root.disableView = fsUid != int(n.user.Id)
+		n.root.disableView = fsUid != n.user.ID
 		n.root.IsUserRoot = true
 		n.root.CapabilitiesBs = n.Capabilities(false).Capability
 	}
@@ -177,6 +177,6 @@ func (n *myNavigator) ExecuteHook(ctx context.Context, hookType fs.HookType, fil
 	return nil
 }
 
-func (n *myNavigator) GetView(ctx context.Context, file *File) *types.ExplorerView {
+func (n *myNavigator) GetView(ctx context.Context, file *File) *filedata.ExplorerView {
 	return file.View()
 }

@@ -2,8 +2,8 @@ package data
 
 import (
 	pb "api/api/user/common/v1"
+	"api/external/data/common"
 	"common/cache"
-	"common/db"
 	"context"
 	"fmt"
 	"user/ent"
@@ -46,8 +46,8 @@ type (
 	}
 )
 
-func NewGroupClient(client *ent.Client, dbType db.DBType, cache cache.Driver) GroupClient {
-	return &groupClient{client: client, maxSQlParam: db.SqlParamLimit(dbType), cache: cache}
+func NewGroupClient(client *ent.Client, dbType common.DBType, cache cache.Driver) GroupClient {
+	return &groupClient{client: client, maxSQlParam: common.SqlParamLimit(dbType), cache: cache}
 }
 
 type groupClient struct {

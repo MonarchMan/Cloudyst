@@ -2,7 +2,7 @@ package data
 
 import (
 	pb "api/api/file/common/v1"
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
 	"common/boolset"
 	"common/cache"
 	"common/util"
@@ -63,7 +63,7 @@ func migrateDefaultStoragePolicy(l *log.Helper, client *ent.Client, ctx context.
 		SetType(types.PolicyTypeLocal).
 		SetDirNameRule(util.DataPath("uploads/{uid}/{path}")).
 		SetFileNameRule("{uid}_{randomkey8}_{originname}").
-		SetSettings(&pb.PolicySetting{
+		SetSettings(&types.PolicySetting{
 			ChunkSize:   25 << 20, // 25MB
 			PreAllocate: true,
 		}).

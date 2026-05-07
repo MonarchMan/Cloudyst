@@ -30,12 +30,13 @@ service Image {
   };
 	rpc ListImage (ListImageRequest) returns (ListImageResponse) {
     option (google.api.http) = {
-      get: "/ai/image/page"
+      post: "/ai/image/list"
+      body: "*"
     };
   };
-  rpc ListImageByIds (ListImageByIdsRequest) returns (ListImageResponse) {
+  rpc GetImages (GetImagesRequest) returns (GetImagesResponse) {
     option (google.api.http) = {
-      get: "/ai/image/list"
+      get: "/ai/image/some"
     };
   };
 }
@@ -82,8 +83,13 @@ message ListImageRequest {
 }
 message ListImageResponse {
   repeated GetImageResponse images = 1;
+  common.v1.PaginationResults pagination = 2;
 }
 
-message ListImageByIdsRequest {
+message GetImagesRequest {
   repeated string ids = 1;
+}
+
+message GetImagesResponse {
+  repeated GetImageResponse images = 1;
 }

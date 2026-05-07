@@ -36,10 +36,17 @@ service Knowledge {
   }
   rpc ListKnowledge (ListKnowledgeRequest) returns (ListKnowledgeResponse) {
     option (google.api.http) = {
-      get: "/ai/knowledge/list"
+      post: "/ai/knowledge/list"
+      body: "*"
     };
   }
-  rpc CreateDocument (UpsertDocumentRequest) returns (GetDocumentResponse) {
+  // get knowledge stats:
+  rpc KnowledgeStats(SimpleRequest) returns (KnowledgeStatsResponse) {
+    option (google.api.http) = {
+      get: "/ai/knowledge/{id}/stats"
+    };
+  }
+  rpc CreateDocument (UpsertDocumentRequest) returns (UpsertDocumentResponse) {
     option (google.api.http) = {
       post: "/ai/knowledge/document"
       body: "*"
@@ -51,7 +58,7 @@ service Knowledge {
       body: "*"
     };
   }
-  rpc UpdateDocument (UpsertDocumentRequest) returns (GetDocumentResponse) {
+  rpc UpdateDocument (UpsertDocumentRequest) returns (UpsertDocumentResponse) {
     option (google.api.http) = {
       put: "/ai/knowledge/document/{id}"
       body: "*"
@@ -67,7 +74,7 @@ service Knowledge {
       delete: "/ai/knowledge/document/{id}"
     };
   }
-  rpc BatchDeleteDocuments (BatchDeleteRequest) returns (google.protobuf.Empty) {
+  rpc BatchDeleteDocuments (MultiRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/ai/knowledge/document/delete",
       body: "*"
@@ -75,7 +82,27 @@ service Knowledge {
   }
   rpc ListDocuments (ListDocumentsRequest) returns (ListDocumentsResponse) {
     option (google.api.http) = {
-      get: "/ai/knowledge/document/list"
+      post: "/ai/knowledge/document/list"
+      body: "*"
+    };
+  }
+  rpc GetDocumentProgress(SimpleRequest) returns (GetDocumentProgressResponse) {
+    option (google.api.http) = {
+      get: "/ai/knowledge/document/progress/{id}"
+    };
+  };
+  rpc ReindexDocument (SimpleRequest) returns (ReindexDocumentResponse) {
+    option (google.api.http) = {
+      post: "/ai/knowledge/document/{id}/reindex"
+      body: "*"
+    };
+  }
+  // batch reindex document, return progress of each document
+  // total of documents should be no more than 500
+  rpc BatchReindexDocument (MultiRequest) returns (BatchReindexDocumentResponse) {
+    option (google.api.http) = {
+      post: "/ai/knowledge/document/reindex"
+      body: "*"
     };
   }
   // full text search
@@ -96,7 +123,7 @@ message SimpleRequest {
   string id = 1;
 }
 
-message BatchDeleteRequest {
+message MultiRequest {
   repeated string ids = 1;
 }
 
@@ -123,13 +150,21 @@ message ListKnowledgeRequest {
   .common.v1.PaginationArgs pagination = 1;
   string name = 2;
   .common.v1.Status status = 3;
-  bool is_master = 4;
-  bool is_public = 5;
+  bool is_public = 4;
 }
 
 message ListKnowledgeResponse {
   .common.v1.PaginationResults pagination = 1;
   repeated GetKnowledgeResponse knowledge = 2;
+}
+
+message KnowledgeStatsResponse {
+  int32 document_count = 1;
+  int32 ready = 2;
+  int32 processing = 3;
+  int32 failed = 4;
+  double success_rate = 5;
+  int64 total_tokens = 6;
 }
 
 // Knowledge Document
@@ -143,6 +178,11 @@ message UpsertDocumentRequest {
   .common.v1.Status status = 7;
 }
 
+message UpsertDocumentResponse {
+  GetDocumentResponse document = 1;
+  string task_id = 2;
+}
+
 message BatchCreateDocumentRequest {
   repeated UpsertDocumentRequest documents = 1;
 }
@@ -150,6 +190,18 @@ message BatchCreateDocumentRequest {
 message BatchCreateDocumentResponse {
   repeated GetDocumentResponse documents = 1;
   int64 total = 2;
+  string task_id = 3;
+}
+
+message ReindexDocumentResponse {
+  GetDocumentProgressResponse progress = 1;
+  string task_id = 2;
+}
+
+message BatchReindexDocumentResponse {
+  repeated GetDocumentProgressResponse progresses = 1;
+  int64 total = 2;
+  string task_id = 3;
 }
 
 message GetDocumentResponse {
@@ -160,10 +212,11 @@ message GetDocumentResponse {
   int64 size = 5;
   int64 tokens = 6;
   int64 segment_max_tokens = 7;
-//  int64 retrieval_count = 8;
+  string Progress = 8;
   .common.v1.Status status = 9;
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp updated_at = 11;
+  string version = 12;
 }
 
 message ListDocumentsRequest {
@@ -171,11 +224,19 @@ message ListDocumentsRequest {
   string knowledge_id = 2;
   string name = 3;
   .common.v1.Status status = 4;
+  string progress = 5;
+  string path_keyword = 6;
 }
 
 message ListDocumentsResponse {
   .common.v1.PaginationResults pagination = 1;
   repeated GetDocumentResponse documents = 2;
+}
+
+message GetDocumentProgressResponse {
+  string id = 1;
+  string name = 2;
+  string progress = 3;
 }
 
 // rpc

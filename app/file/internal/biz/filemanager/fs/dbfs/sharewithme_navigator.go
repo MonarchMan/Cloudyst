@@ -1,7 +1,8 @@
 package dbfs
 
 import (
-	userpb "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"common/cache"
 	"common/constants"
@@ -11,8 +12,6 @@ import (
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/setting"
 	"file/internal/data"
-	"file/internal/data/types"
-	"file/internal/pkg/utils"
 	"fmt"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -21,7 +20,7 @@ import (
 var sharedWithMeNavigatorCapability = &boolset.BooleanSet{}
 
 // NewSharedWithMeNavigator creates a navigator for userId's "shared with me" files system.
-func NewSharedWithMeNavigator(u *userpb.User, fileClient data.FileClient, l log.Logger,
+func NewSharedWithMeNavigator(u *userdata.User, fileClient data.FileClient, l log.Logger,
 	config *setting.DBFS, hasher hashid.Encoder) Navigator {
 	n := &sharedWithMeNavigator{
 		user:       u,
@@ -30,13 +29,13 @@ func NewSharedWithMeNavigator(u *userpb.User, fileClient data.FileClient, l log.
 		config:     config,
 		hasher:     hasher,
 	}
-	n.baseNavigator = newBaseNavigator(fileClient, defaultFilter, u.Id, hasher, config)
+	n.baseNavigator = newBaseNavigator(fileClient, defaultFilter, u.ID, hasher, config)
 	return n
 }
 
 type sharedWithMeNavigator struct {
 	l          *log.Helper
-	user       *userpb.User
+	user       *userdata.User
 	fileClient data.FileClient
 	config     *setting.DBFS
 	hasher     hashid.Encoder
@@ -70,7 +69,7 @@ func (n *sharedWithMeNavigator) To(ctx context.Context, path *fs.URI) (*File, er
 	}
 
 	if n.root == nil {
-		rootFile, err := n.fileClient.Root(ctx, int(n.user.Id))
+		rootFile, err := n.fileClient.Root(ctx, int(n.user.ID))
 		if err != nil {
 			n.l.WithContext(ctx).Infof("User's root folder not found: %s, will initialize it.", err)
 			return nil, ErrFsNotInitialized
@@ -146,9 +145,9 @@ func (n *sharedWithMeNavigator) ExecuteHook(ctx context.Context, hookType fs.Hoo
 	return nil
 }
 
-func (n *sharedWithMeNavigator) GetView(ctx context.Context, file *File) *types.ExplorerView {
+func (n *sharedWithMeNavigator) GetView(ctx context.Context, file *File) *filedata.ExplorerView {
 	if view, ok := n.user.Settings.FsViewMap[string(constants.FileSystemSharedWithMe)]; ok {
-		return utils.FromProtoView(view)
+		return &view
 	}
 	return getDefaultView()
 }

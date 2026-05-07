@@ -3,12 +3,12 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
 	"context"
 	"errors"
 	"file/ent/predicate"
 	"file/ent/task"
 	"fmt"
+	"queue"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -70,13 +70,13 @@ func (_u *TaskUpdate) SetNillableType(v *string) *TaskUpdate {
 }
 
 // SetStatus sets the "status" field.
-func (_u *TaskUpdate) SetStatus(v task.Status) *TaskUpdate {
+func (_u *TaskUpdate) SetStatus(v queue.TaskStatus) *TaskUpdate {
 	_u.mutation.SetStatus(v)
 	return _u
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *TaskUpdate) SetNillableStatus(v *task.Status) *TaskUpdate {
+func (_u *TaskUpdate) SetNillableStatus(v *queue.TaskStatus) *TaskUpdate {
 	if v != nil {
 		_u.SetStatus(*v)
 	}
@@ -84,7 +84,7 @@ func (_u *TaskUpdate) SetNillableStatus(v *task.Status) *TaskUpdate {
 }
 
 // SetPublicState sets the "public_state" field.
-func (_u *TaskUpdate) SetPublicState(v *v1.TaskPublicState) *TaskUpdate {
+func (_u *TaskUpdate) SetPublicState(v *queue.TaskPublicState) *TaskUpdate {
 	_u.mutation.SetPublicState(v)
 	return _u
 }
@@ -188,11 +188,6 @@ func (_u *TaskUpdate) check() error {
 	if v, ok := _u.mutation.Status(); ok {
 		if err := task.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.PublicState(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "public_state", err: fmt.Errorf(`ent: validator failed for field "Task.public_state": %w`, err)}
 		}
 	}
 	return nil
@@ -307,13 +302,13 @@ func (_u *TaskUpdateOne) SetNillableType(v *string) *TaskUpdateOne {
 }
 
 // SetStatus sets the "status" field.
-func (_u *TaskUpdateOne) SetStatus(v task.Status) *TaskUpdateOne {
+func (_u *TaskUpdateOne) SetStatus(v queue.TaskStatus) *TaskUpdateOne {
 	_u.mutation.SetStatus(v)
 	return _u
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (_u *TaskUpdateOne) SetNillableStatus(v *task.Status) *TaskUpdateOne {
+func (_u *TaskUpdateOne) SetNillableStatus(v *queue.TaskStatus) *TaskUpdateOne {
 	if v != nil {
 		_u.SetStatus(*v)
 	}
@@ -321,7 +316,7 @@ func (_u *TaskUpdateOne) SetNillableStatus(v *task.Status) *TaskUpdateOne {
 }
 
 // SetPublicState sets the "public_state" field.
-func (_u *TaskUpdateOne) SetPublicState(v *v1.TaskPublicState) *TaskUpdateOne {
+func (_u *TaskUpdateOne) SetPublicState(v *queue.TaskPublicState) *TaskUpdateOne {
 	_u.mutation.SetPublicState(v)
 	return _u
 }
@@ -438,11 +433,6 @@ func (_u *TaskUpdateOne) check() error {
 	if v, ok := _u.mutation.Status(); ok {
 		if err := task.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Task.status": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.PublicState(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "public_state", err: fmt.Errorf(`ent: validator failed for field "Task.public_state": %w`, err)}
 		}
 	}
 	return nil

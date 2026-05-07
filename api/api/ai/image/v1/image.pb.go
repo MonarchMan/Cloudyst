@@ -432,6 +432,7 @@ func (x *ListImageRequest) GetEnd() *timestamppb.Timestamp {
 type ListImageResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Images        []*GetImageResponse    `protobuf:"bytes,1,rep,name=images,proto3" json:"images,omitempty"`
+	Pagination    *v1.PaginationResults  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -473,27 +474,34 @@ func (x *ListImageResponse) GetImages() []*GetImageResponse {
 	return nil
 }
 
-type ListImageByIdsRequest struct {
+func (x *ListImageResponse) GetPagination() *v1.PaginationResults {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+type GetImagesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ids           []string               `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListImageByIdsRequest) Reset() {
-	*x = ListImageByIdsRequest{}
+func (x *GetImagesRequest) Reset() {
+	*x = GetImagesRequest{}
 	mi := &file_ai_image_v1_image_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListImageByIdsRequest) String() string {
+func (x *GetImagesRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListImageByIdsRequest) ProtoMessage() {}
+func (*GetImagesRequest) ProtoMessage() {}
 
-func (x *ListImageByIdsRequest) ProtoReflect() protoreflect.Message {
+func (x *GetImagesRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_ai_image_v1_image_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -505,14 +513,58 @@ func (x *ListImageByIdsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListImageByIdsRequest.ProtoReflect.Descriptor instead.
-func (*ListImageByIdsRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetImagesRequest.ProtoReflect.Descriptor instead.
+func (*GetImagesRequest) Descriptor() ([]byte, []int) {
 	return file_ai_image_v1_image_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *ListImageByIdsRequest) GetIds() []string {
+func (x *GetImagesRequest) GetIds() []string {
 	if x != nil {
 		return x.Ids
+	}
+	return nil
+}
+
+type GetImagesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Images        []*GetImageResponse    `protobuf:"bytes,1,rep,name=images,proto3" json:"images,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetImagesResponse) Reset() {
+	*x = GetImagesResponse{}
+	mi := &file_ai_image_v1_image_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetImagesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetImagesResponse) ProtoMessage() {}
+
+func (x *GetImagesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_image_v1_image_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetImagesResponse.ProtoReflect.Descriptor instead.
+func (*GetImagesResponse) Descriptor() ([]byte, []int) {
+	return file_ai_image_v1_image_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetImagesResponse) GetImages() []*GetImageResponse {
+	if x != nil {
+		return x.Images
 	}
 	return nil
 }
@@ -565,17 +617,22 @@ const file_ai_image_v1_image_proto_rawDesc = "" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1b\n" +
 	"\tis_public\x18\x06 \x01(\bR\bisPublic\x120\n" +
 	"\x05start\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\x05start\x12,\n" +
-	"\x03end\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\x03end\"J\n" +
+	"\x03end\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\x03end\"\x88\x01\n" +
 	"\x11ListImageResponse\x125\n" +
-	"\x06images\x18\x01 \x03(\v2\x1d.ai.image.v1.GetImageResponseR\x06images\")\n" +
-	"\x15ListImageByIdsRequest\x12\x10\n" +
-	"\x03ids\x18\x01 \x03(\tR\x03ids2\x84\x04\n" +
+	"\x06images\x18\x01 \x03(\v2\x1d.ai.image.v1.GetImageResponseR\x06images\x12<\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
+	"pagination\"$\n" +
+	"\x10GetImagesRequest\x12\x10\n" +
+	"\x03ids\x18\x01 \x03(\tR\x03ids\"J\n" +
+	"\x11GetImagesResponse\x125\n" +
+	"\x06images\x18\x01 \x03(\v2\x1d.ai.image.v1.GetImageResponseR\x06images2\xfd\x03\n" +
 	"\x05Image\x12e\n" +
 	"\tDrawImage\x12\x1d.ai.image.v1.DrawImageRequest\x1a\x1e.ai.image.v1.DrawImageResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/ai/image/draw\x12^\n" +
 	"\vDeleteImage\x12\x1f.ai.image.v1.SimpleImageRequest\x1a\x16.google.protobuf.Empty\"\x16\x82\xd3\xe4\x93\x02\x10*\x0e/ai/image/{id}\x12b\n" +
-	"\bGetImage\x12\x1f.ai.image.v1.SimpleImageRequest\x1a\x1d.ai.image.v1.GetImageResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/ai/image/{id}\x12b\n" +
-	"\tListImage\x12\x1d.ai.image.v1.ListImageRequest\x1a\x1e.ai.image.v1.ListImageResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/ai/image/page\x12l\n" +
-	"\x0eListImageByIds\x12\".ai.image.v1.ListImageByIdsRequest\x1a\x1e.ai.image.v1.ListImageResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/ai/image/listB'\n" +
+	"\bGetImage\x12\x1f.ai.image.v1.SimpleImageRequest\x1a\x1d.ai.image.v1.GetImageResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/ai/image/{id}\x12e\n" +
+	"\tListImage\x12\x1d.ai.image.v1.ListImageRequest\x1a\x1e.ai.image.v1.ListImageResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/ai/image/list\x12b\n" +
+	"\tGetImages\x12\x1d.ai.image.v1.GetImagesRequest\x1a\x1e.ai.image.v1.GetImagesResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/ai/image/someB'\n" +
 	"\vai.image.v1P\x01Z\x16api/api/ai/image/v1;v1b\x06proto3"
 
 var (
@@ -590,7 +647,7 @@ func file_ai_image_v1_image_proto_rawDescGZIP() []byte {
 	return file_ai_image_v1_image_proto_rawDescData
 }
 
-var file_ai_image_v1_image_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_ai_image_v1_image_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_ai_image_v1_image_proto_goTypes = []any{
 	(*DrawImageRequest)(nil),      // 0: ai.image.v1.DrawImageRequest
 	(*DrawImageResponse)(nil),     // 1: ai.image.v1.DrawImageResponse
@@ -598,37 +655,41 @@ var file_ai_image_v1_image_proto_goTypes = []any{
 	(*GetImageResponse)(nil),      // 3: ai.image.v1.GetImageResponse
 	(*ListImageRequest)(nil),      // 4: ai.image.v1.ListImageRequest
 	(*ListImageResponse)(nil),     // 5: ai.image.v1.ListImageResponse
-	(*ListImageByIdsRequest)(nil), // 6: ai.image.v1.ListImageByIdsRequest
-	nil,                           // 7: ai.image.v1.DrawImageRequest.OptionsEntry
-	nil,                           // 8: ai.image.v1.GetImageResponse.OptionsEntry
-	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
-	(*v1.PaginationArgs)(nil),     // 10: common.v1.PaginationArgs
-	(*emptypb.Empty)(nil),         // 11: google.protobuf.Empty
+	(*GetImagesRequest)(nil),      // 6: ai.image.v1.GetImagesRequest
+	(*GetImagesResponse)(nil),     // 7: ai.image.v1.GetImagesResponse
+	nil,                           // 8: ai.image.v1.DrawImageRequest.OptionsEntry
+	nil,                           // 9: ai.image.v1.GetImageResponse.OptionsEntry
+	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
+	(*v1.PaginationArgs)(nil),     // 11: common.v1.PaginationArgs
+	(*v1.PaginationResults)(nil),  // 12: common.v1.PaginationResults
+	(*emptypb.Empty)(nil),         // 13: google.protobuf.Empty
 }
 var file_ai_image_v1_image_proto_depIdxs = []int32{
-	7,  // 0: ai.image.v1.DrawImageRequest.options:type_name -> ai.image.v1.DrawImageRequest.OptionsEntry
-	8,  // 1: ai.image.v1.GetImageResponse.options:type_name -> ai.image.v1.GetImageResponse.OptionsEntry
-	9,  // 2: ai.image.v1.GetImageResponse.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 3: ai.image.v1.GetImageResponse.finished_at:type_name -> google.protobuf.Timestamp
-	10, // 4: ai.image.v1.ListImageRequest.pagination:type_name -> common.v1.PaginationArgs
-	9,  // 5: ai.image.v1.ListImageRequest.start:type_name -> google.protobuf.Timestamp
-	9,  // 6: ai.image.v1.ListImageRequest.end:type_name -> google.protobuf.Timestamp
+	8,  // 0: ai.image.v1.DrawImageRequest.options:type_name -> ai.image.v1.DrawImageRequest.OptionsEntry
+	9,  // 1: ai.image.v1.GetImageResponse.options:type_name -> ai.image.v1.GetImageResponse.OptionsEntry
+	10, // 2: ai.image.v1.GetImageResponse.created_at:type_name -> google.protobuf.Timestamp
+	10, // 3: ai.image.v1.GetImageResponse.finished_at:type_name -> google.protobuf.Timestamp
+	11, // 4: ai.image.v1.ListImageRequest.pagination:type_name -> common.v1.PaginationArgs
+	10, // 5: ai.image.v1.ListImageRequest.start:type_name -> google.protobuf.Timestamp
+	10, // 6: ai.image.v1.ListImageRequest.end:type_name -> google.protobuf.Timestamp
 	3,  // 7: ai.image.v1.ListImageResponse.images:type_name -> ai.image.v1.GetImageResponse
-	0,  // 8: ai.image.v1.Image.DrawImage:input_type -> ai.image.v1.DrawImageRequest
-	2,  // 9: ai.image.v1.Image.DeleteImage:input_type -> ai.image.v1.SimpleImageRequest
-	2,  // 10: ai.image.v1.Image.GetImage:input_type -> ai.image.v1.SimpleImageRequest
-	4,  // 11: ai.image.v1.Image.ListImage:input_type -> ai.image.v1.ListImageRequest
-	6,  // 12: ai.image.v1.Image.ListImageByIds:input_type -> ai.image.v1.ListImageByIdsRequest
-	1,  // 13: ai.image.v1.Image.DrawImage:output_type -> ai.image.v1.DrawImageResponse
-	11, // 14: ai.image.v1.Image.DeleteImage:output_type -> google.protobuf.Empty
-	3,  // 15: ai.image.v1.Image.GetImage:output_type -> ai.image.v1.GetImageResponse
-	5,  // 16: ai.image.v1.Image.ListImage:output_type -> ai.image.v1.ListImageResponse
-	5,  // 17: ai.image.v1.Image.ListImageByIds:output_type -> ai.image.v1.ListImageResponse
-	13, // [13:18] is the sub-list for method output_type
-	8,  // [8:13] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	12, // 8: ai.image.v1.ListImageResponse.pagination:type_name -> common.v1.PaginationResults
+	3,  // 9: ai.image.v1.GetImagesResponse.images:type_name -> ai.image.v1.GetImageResponse
+	0,  // 10: ai.image.v1.Image.DrawImage:input_type -> ai.image.v1.DrawImageRequest
+	2,  // 11: ai.image.v1.Image.DeleteImage:input_type -> ai.image.v1.SimpleImageRequest
+	2,  // 12: ai.image.v1.Image.GetImage:input_type -> ai.image.v1.SimpleImageRequest
+	4,  // 13: ai.image.v1.Image.ListImage:input_type -> ai.image.v1.ListImageRequest
+	6,  // 14: ai.image.v1.Image.GetImages:input_type -> ai.image.v1.GetImagesRequest
+	1,  // 15: ai.image.v1.Image.DrawImage:output_type -> ai.image.v1.DrawImageResponse
+	13, // 16: ai.image.v1.Image.DeleteImage:output_type -> google.protobuf.Empty
+	3,  // 17: ai.image.v1.Image.GetImage:output_type -> ai.image.v1.GetImageResponse
+	5,  // 18: ai.image.v1.Image.ListImage:output_type -> ai.image.v1.ListImageResponse
+	7,  // 19: ai.image.v1.Image.GetImages:output_type -> ai.image.v1.GetImagesResponse
+	15, // [15:20] is the sub-list for method output_type
+	10, // [10:15] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_ai_image_v1_image_proto_init() }
@@ -642,7 +703,7 @@ func file_ai_image_v1_image_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_image_v1_image_proto_rawDesc), len(file_ai_image_v1_image_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

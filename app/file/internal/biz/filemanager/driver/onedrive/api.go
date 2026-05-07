@@ -481,8 +481,8 @@ func (client *client) request(ctx context.Context, method string, url string, bo
 		request.WithContext(ctx),
 		request.WithTPSLimit(
 			fmt.Sprintf("policy_%d", client.policy.ID),
-			client.policy.Settings.TpsLimit,
-			int(client.policy.Settings.TpsLimitBurst),
+			client.policy.Settings.TPSLimit,
+			client.policy.Settings.TPSLimitBurst,
 		),
 	}
 

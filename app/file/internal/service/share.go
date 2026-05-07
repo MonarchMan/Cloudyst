@@ -3,10 +3,8 @@ package service
 import (
 	commonpb "api/api/common/v1"
 	pbshare "api/api/file/share/v1"
-	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
-	"common/boolset"
 	"common/hashid"
 	"context"
 	"file/ent"
@@ -28,13 +26,13 @@ import (
 type ShareService struct {
 	pbshare.UnimplementedShareServer
 	sc      data.ShareClient
-	uc      pbuser.UserClient
+	uc      rpc.UserClient
 	hasher  hashid.Encoder
 	dep     filemanager.ManagerDep
 	dbfsDep filemanager.DbfsDep
 }
 
-func NewShareService(sc data.ShareClient, uc pbuser.UserClient, hasher hashid.Encoder,
+func NewShareService(sc data.ShareClient, uc rpc.UserClient, hasher hashid.Encoder,
 	dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) *ShareService {
 	return &ShareService{
 		sc:      sc,
@@ -81,15 +79,15 @@ func (s *ShareService) GetShare(ctx context.Context, req *pbshare.GetShareReques
 
 	unlocked := true
 	// 分享需要密码
-	if share.Password != "" && req.Password != share.Password && share.OwnerID != int(user.Id) {
+	if share.Password != "" && req.Password != share.Password && share.OwnerID != user.ID {
 		unlocked = false
 	}
 
 	base := s.dep.SettingProvider().SiteURL(ctx)
-	res := buildShare(share, base, s.hasher, user.Id, int64(share.OwnerID), share.Edges.File.Name,
+	res := buildShare(share, base, s.hasher, user.ID, share.OwnerID, share.Edges.File.Name,
 		share.Edges.File.Type, unlocked, false)
 
-	if req.OwnerExtended && share.OwnerID == int(user.Id) {
+	if req.OwnerExtended && share.OwnerID == user.ID {
 		// 添加更多关于分享的信息
 		m := manager.NewFileManager(s.dep, s.dbfsDep, user)
 		defer m.Recycle()
@@ -122,7 +120,7 @@ func (s *ShareService) ListShares(ctx context.Context, req *pbshare.ListSharesRe
 			OrderBy:             req.OrderBy,
 			Order:               data.OrderDirection(req.OrderDirection),
 		},
-		UserID: int(user.Id),
+		UserID: user.ID,
 	}
 
 	newCtx := context.WithValue(ctx, data.LoadShareFile{}, true)
@@ -133,7 +131,7 @@ func (s *ShareService) ListShares(ctx context.Context, req *pbshare.ListSharesRe
 	}
 
 	base := s.dep.SettingProvider().SiteURL(ctx)
-	return buildListShareResponse(res, hasher, base, user.Id, true), nil
+	return buildListShareResponse(res, hasher, base, user.ID, true), nil
 }
 func (s *ShareService) DeleteShare(ctx context.Context, req *pbshare.DeleteShareRequest) (*emptypb.Empty, error) {
 	user := trans.FromContext(ctx)
@@ -145,11 +143,10 @@ func (s *ShareService) DeleteShare(ctx context.Context, req *pbshare.DeleteShare
 		err   error
 	)
 
-	permissions := boolset.BooleanSet(user.Group.Permissions)
-	if (&permissions).Enabled(types.GroupPermissionIsAdmin) {
+	if user.Group.Permissions.Enabled(types.GroupPermissionIsAdmin) {
 		share, err = shareClient.GetByID(newCtx, int(req.Id))
 	} else {
-		share, err = shareClient.GetByIDUser(newCtx, int(req.Id), int(user.Id))
+		share, err = shareClient.GetByIDUser(newCtx, int(req.Id), user.ID)
 	}
 	if err != nil {
 		return nil, commonpb.ErrorNotFound("Share not found: %w", err)
@@ -170,16 +167,16 @@ func (s *ShareService) ListUserPublicShare(ctx context.Context, req *pbshare.Lis
 	hasher := s.hasher
 	shareClient := s.sc
 
-	targetUser, err := rpc.GetUserInfo(ctx, uid, s.uc)
+	targetUser, err := s.uc.GetUserInfo(ctx, uid)
 	if err != nil {
 		return nil, commonpb.ErrorRpcFailed("Failed to get users: %w", err)
 	}
 
-	if targetUser.Settings != nil && targetUser.Settings.ShareLinksInProfile == userpb.ShareLinksInProfileLevel_HIDE_SHARE {
+	if targetUser.Settings != nil && targetUser.Settings.ShareLinksInProfile == userdata.ShareLinksInProfileLevelHideShare {
 		return nil, commonpb.ErrorParamInvalid("User has disabled share links in profile: %w", nil)
 	}
 
-	publicOnly := targetUser.Settings == nil || targetUser.Settings.ShareLinksInProfile == userpb.ShareLinksInProfileLevel_PUBLIC_SHARE_ONLY
+	publicOnly := targetUser.Settings == nil || targetUser.Settings.ShareLinksInProfile == userdata.ShareLinksInProfileLevelPublicShareOnly
 	args := &data.ListShareArgs{
 		PaginationArgs: &data.PaginationArgs{
 			UseCursorPagination: true,
@@ -200,7 +197,7 @@ func (s *ShareService) ListUserPublicShare(ctx context.Context, req *pbshare.Lis
 	}
 
 	base := s.dep.SettingProvider().SiteURL(ctx)
-	return buildListShareResponse(res, hasher, base, user.Id, false), nil
+	return buildListShareResponse(res, hasher, base, user.ID, false), nil
 }
 func (s *ShareService) CountByTimeRange(ctx context.Context, req *pbshare.TimeRangeRequest) (*pbshare.CountByTimeRangeResponse, error) {
 	var start, end time.Time
@@ -235,8 +232,7 @@ func (s *ShareService) UpsertShare(ctx context.Context, req *pbshare.UpsertShare
 	m := manager.NewFileManager(s.dep, s.dbfsDep, user)
 	defer m.Recycle()
 
-	permissions := boolset.BooleanSet(user.Group.Permissions)
-	if !(&permissions).Enabled(types.GroupPermissionShare) {
+	if !user.Group.Permissions.Enabled(types.GroupPermissionShare) {
 		return nil, commonpb.ErrorParamInvalid("Group permission is required")
 	}
 

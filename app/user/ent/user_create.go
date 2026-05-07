@@ -3,7 +3,7 @@
 package ent
 
 import (
-	v1 "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"context"
 	"errors"
 	"fmt"
@@ -151,7 +151,7 @@ func (_c *UserCreate) SetNillableAvatar(v *string) *UserCreate {
 }
 
 // SetSettings sets the "settings" field.
-func (_c *UserCreate) SetSettings(v *v1.UserSetting) *UserCreate {
+func (_c *UserCreate) SetSettings(v *userdata.UserSetting) *UserCreate {
 	_c.mutation.SetSettings(v)
 	return _c
 }
@@ -303,11 +303,6 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.Storage(); !ok {
 		return &ValidationError{Name: "storage", err: errors.New(`ent: missing required field "User.storage"`)}
-	}
-	if v, ok := _c.mutation.Settings(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "settings", err: fmt.Errorf(`ent: validator failed for field "User.settings": %w`, err)}
-		}
 	}
 	if _, ok := _c.mutation.GroupUsers(); !ok {
 		return &ValidationError{Name: "group_users", err: errors.New(`ent: missing required field "User.group_users"`)}
@@ -633,7 +628,7 @@ func (u *UserUpsert) ClearAvatar() *UserUpsert {
 }
 
 // SetSettings sets the "settings" field.
-func (u *UserUpsert) SetSettings(v *v1.UserSetting) *UserUpsert {
+func (u *UserUpsert) SetSettings(v *userdata.UserSetting) *UserUpsert {
 	u.Set(user.FieldSettings, v)
 	return u
 }
@@ -869,7 +864,7 @@ func (u *UserUpsertOne) ClearAvatar() *UserUpsertOne {
 }
 
 // SetSettings sets the "settings" field.
-func (u *UserUpsertOne) SetSettings(v *v1.UserSetting) *UserUpsertOne {
+func (u *UserUpsertOne) SetSettings(v *userdata.UserSetting) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.SetSettings(v)
 	})
@@ -1281,7 +1276,7 @@ func (u *UserUpsertBulk) ClearAvatar() *UserUpsertBulk {
 }
 
 // SetSettings sets the "settings" field.
-func (u *UserUpsertBulk) SetSettings(v *v1.UserSetting) *UserUpsertBulk {
+func (u *UserUpsertBulk) SetSettings(v *userdata.UserSetting) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.SetSettings(v)
 	})

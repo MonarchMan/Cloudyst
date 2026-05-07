@@ -362,15 +362,43 @@ func (s *UserService) DeletePasskey(ctx context.Context, req *v1.DeletePasskeyRe
 
 	return &emptypb.Empty{}, nil
 }
-func (s *UserService) GetUserInfo(ctx context.Context, req *v1.RawUserRequest) (*pb.User, error) {
+func (s *UserService) GetUserInfo(ctx context.Context, req *v1.UserInfoRequest) (*pb.User, error) {
 	// 从数据库中获取用户信息
 	newCtx := context.WithValue(ctx, data.LoadUserGroup{}, true)
+	if req.WithPasskey {
+		newCtx = context.WithValue(newCtx, data.LoadUserPasskey{}, true)
+	}
 	u, err := s.userClient.GetLoginUserByID(newCtx, int(req.Id))
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to get users: %w", err)
 	}
 
 	return utils.EntUserToProto(u), nil
+}
+
+func (s *UserService) GetMultiUserInfos(ctx context.Context, req *v1.MultiUserRequest) (*v1.MultiUserResponse, error) {
+	// 从数据库中获取用户信息
+	if req.WithGroup {
+		ctx = context.WithValue(ctx, data.LoadUserGroup{}, true)
+	}
+	if req.WithPasskey {
+		ctx = context.WithValue(ctx, data.LoadUserPasskey{}, true)
+	}
+
+	ids := lo.Uniq(lo.Map(req.GetIds(), func(id int32, _ int) int {
+		return int(id)
+	}))
+	users, err := s.userClient.GetActiveUsers(ctx, ids)
+	if err != nil {
+		return nil, commonpb.ErrorDb("Failed to get users: %w", err)
+	}
+
+	return &v1.MultiUserResponse{
+		Total: int32(len(users)),
+		Users: lo.Map(users, func(u *ent.User, _ int) *pb.User {
+			return utils.EntUserToProto(u)
+		}),
+	}, nil
 }
 
 func (s *UserService) ApplyStorageDiff(ctx context.Context, req *v1.ApplyStorageDiffRequest) (*emptypb.Empty, error) {
@@ -519,62 +547,62 @@ func (s *UserService) GetUserSetting(ctx context.Context, req *emptypb.Empty) (*
 
 func (s *UserService) SetUserSetting(ctx context.Context, req *v1.SetUserRequest) (*emptypb.Empty, error) {
 	saveSetting := false
-	user := utils.ProtoUserToEnt(trans.FromContext(ctx))
+	u := im.UserFromContext(ctx)
 	userClient := s.userClient
 	if req.Nick != "" {
-		if _, err := userClient.UpdateNickname(ctx, user, req.Nick); err != nil {
+		if _, err := userClient.UpdateNickname(ctx, u, req.Nick); err != nil {
 			return nil, commonpb.ErrorDb("Failed to update user nick", err)
 		}
 	}
 
 	if req.Language != "" {
-		user.Settings.Language = req.Language
+		u.Settings.Language = req.Language
 		saveSetting = true
 	}
 
 	if req.PreferredTheme != "" {
-		user.Settings.PreferredTheme = req.PreferredTheme
+		u.Settings.PreferredTheme = req.PreferredTheme
 		saveSetting = true
 	}
 
 	if req.VersionRetentionEnabled != nil {
-		user.Settings.VersionRetention = *req.VersionRetentionEnabled
+		u.Settings.VersionRetention = *req.VersionRetentionEnabled
 		saveSetting = true
 	}
 
 	if req.VersionRetentionExt != nil && len(req.VersionRetentionExt) > 0 {
-		user.Settings.VersionRetentionExt = req.VersionRetentionExt
+		u.Settings.VersionRetentionExt = req.VersionRetentionExt
 		saveSetting = true
 	}
 
 	if req.VersionRetentionMax != nil {
-		user.Settings.VersionRetentionMax = *req.VersionRetentionMax
+		u.Settings.VersionRetentionMax = int(*req.VersionRetentionMax)
 		saveSetting = true
 	}
 
 	if req.DisableViewSync != nil {
-		user.Settings.DisableViewSync = *req.DisableViewSync
+		u.Settings.DisableViewSync = *req.DisableViewSync
 		saveSetting = true
 	}
 
 	if req.ShareLinksInProfile != nil {
-		user.Settings.ShareLinksInProfile = pb.ShareLinksInProfileLevel(*req.ShareLinksInProfile)
+		u.Settings.ShareLinksInProfile = *req.ShareLinksInProfile
 		saveSetting = true
 	}
 
 	if req.CurrentPassword != "" && req.NewPassword != "" {
-		if err := data.CheckPassword(user, req.CurrentPassword); err != nil {
+		if err := data.CheckPassword(u, req.CurrentPassword); err != nil {
 			return nil, pb.ErrorInvalidPassword("Incorrect password: %w", err)
 		}
 
-		if _, err := userClient.UpdatePassword(ctx, user, req.NewPassword); err != nil {
+		if _, err := userClient.UpdatePassword(ctx, u, req.NewPassword); err != nil {
 			return nil, commonpb.ErrorDb("Failed to update user password", err)
 		}
 	}
 
 	if req.TwoFaEnabled != nil {
 		if *req.TwoFaEnabled {
-			secret, ok := s.kv.Get(fmt.Sprintf("%s%d", twoFaEnableSessionKey, user.ID))
+			secret, ok := s.kv.Get(fmt.Sprintf("%s%d", twoFaEnableSessionKey, u.ID))
 			if !ok {
 				return nil, commonpb.ErrorInternalSetting("You have not initiliazed 2FA session")
 			}
@@ -583,23 +611,23 @@ func (s *UserService) SetUserSetting(ctx context.Context, req *v1.SetUserRequest
 				return nil, pb.ErrorCode2Fa("Incorrect 2FA code")
 			}
 
-			if _, err := userClient.UpdateTwoFASecret(ctx, user, secret.(string)); err != nil {
+			if _, err := userClient.UpdateTwoFASecret(ctx, u, secret.(string)); err != nil {
 				return nil, commonpb.ErrorDb("Failed to update user 2FA", err)
 			}
 
 		} else {
-			if !totp.Validate(req.TwoFaCode, user.TwoFactorSecret) {
+			if !totp.Validate(req.TwoFaCode, u.TwoFactorSecret) {
 				return nil, pb.ErrorCode2Fa("Incorrect 2FA code")
 			}
 
-			if _, err := userClient.UpdateTwoFASecret(ctx, user, ""); err != nil {
+			if _, err := userClient.UpdateTwoFASecret(ctx, u, ""); err != nil {
 				return nil, commonpb.ErrorDb("Failed to update user 2FA", err)
 			}
 
 		}
 	}
 	if saveSetting {
-		if err := userClient.SaveSettings(ctx, user); err != nil {
+		if err := userClient.SaveSettings(ctx, u); err != nil {
 			return nil, commonpb.ErrorDb("Failed to update user settings", err)
 		}
 	}
@@ -608,17 +636,17 @@ func (s *UserService) SetUserSetting(ctx context.Context, req *v1.SetUserRequest
 }
 
 func (s *UserService) InitUser2FA(ctx context.Context, req *emptypb.Empty) (*v1.InitUser2FAResponse, error) {
-	user := trans.FromContext(ctx)
+	u := trans.FromContext(ctx)
 
 	key, err := totp.Generate(totp.GenerateOpts{
 		Issuer:      "cloudyst",
-		AccountName: user.Email,
+		AccountName: u.Email,
 	})
 	if err != nil {
 		return nil, commonpb.ErrorInternalSetting("Failed to generate TOTP secret: %w", err)
 	}
 
-	if err := s.kv.Set(fmt.Sprintf("%s%d", twoFaEnableSessionKey, user.Id), key.Secret(), 600); err != nil {
+	if err := s.kv.Set(fmt.Sprintf("%s%d", twoFaEnableSessionKey, u.ID), key.Secret(), 600); err != nil {
 		return nil, commonpb.ErrorInternalSetting("Failed to store TOTP session: %w", err)
 	}
 
@@ -628,13 +656,13 @@ func (s *UserService) InitUser2FA(ctx context.Context, req *emptypb.Empty) (*v1.
 }
 
 func (s *UserService) UpdateAvatar(ctx context.Context, req *v1.UpdateAvatarRequest) (*emptypb.Empty, error) {
-	user := trans.FromContext(ctx)
+	u := im.UserFromContext(ctx)
 	var err error
 	switch req.Type {
 	case v1.AvatarType_GRAVATAR:
-		_, err = s.userClient.UpdateAvatar(ctx, utils.ProtoUserToEnt(user), types.GravatarAvatar)
+		_, err = s.userClient.UpdateAvatar(ctx, u, types.GravatarAvatar)
 	case v1.AvatarType_FILE_AVATAR:
-		_, err = s.userClient.UpdateAvatar(ctx, utils.ProtoUserToEnt(user), types.FileAvatar)
+		_, err = s.userClient.UpdateAvatar(ctx, u, types.FileAvatar)
 	}
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to update user avatar: %w", err)

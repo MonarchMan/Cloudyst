@@ -2,6 +2,7 @@ package ingestion
 
 import (
 	biztypes "ai/internal/biz/types"
+	"ai/internal/data"
 	"context"
 )
 
@@ -16,6 +17,7 @@ type (
 		ID            int
 		SplitStrategy biztypes.Strategy
 		MaxTokens     int
+		IndexStats    *data.DocumentIndexStats
 	}
 )
 

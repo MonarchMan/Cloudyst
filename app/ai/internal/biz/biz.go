@@ -7,6 +7,7 @@ import (
 	"ai/internal/biz/knowledge/rag/ingestion"
 	"ai/internal/biz/knowledge/rag/retrieval"
 	"ai/internal/biz/model"
+	"ai/internal/biz/queue"
 
 	"github.com/google/wire"
 )
@@ -20,4 +21,5 @@ var ProviderSet = wire.NewSet(
 	ingestion.NewIngestEngine,
 	retrieval.NewRetrieveEngine,
 	ingestion.NewMilvusIndexer,
+	queue.NewQueueManager,
 )

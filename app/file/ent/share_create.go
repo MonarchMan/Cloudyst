@@ -3,11 +3,12 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"context"
 	"errors"
 	"file/ent/file"
 	"file/ent/share"
+	"file/internal/data/types"
 	"fmt"
 	"time"
 
@@ -137,7 +138,7 @@ func (_c *ShareCreate) SetNillableRemainDownloads(v *int) *ShareCreate {
 }
 
 // SetProps sets the "props" field.
-func (_c *ShareCreate) SetProps(v *v1.ShareProps) *ShareCreate {
+func (_c *ShareCreate) SetProps(v *types.ShareProps) *ShareCreate {
 	_c.mutation.SetProps(v)
 	return _c
 }
@@ -148,8 +149,16 @@ func (_c *ShareCreate) SetOwnerID(v int) *ShareCreate {
 	return _c
 }
 
+// SetNillableOwnerID sets the "owner_id" field if the given value is not nil.
+func (_c *ShareCreate) SetNillableOwnerID(v *int) *ShareCreate {
+	if v != nil {
+		_c.SetOwnerID(*v)
+	}
+	return _c
+}
+
 // SetOwnerInfo sets the "owner_info" field.
-func (_c *ShareCreate) SetOwnerInfo(v *v1.UserInfo) *ShareCreate {
+func (_c *ShareCreate) SetOwnerInfo(v *userdata.UserInfo) *ShareCreate {
 	_c.mutation.SetOwnerInfo(v)
 	return _c
 }
@@ -252,19 +261,6 @@ func (_c *ShareCreate) check() error {
 	}
 	if _, ok := _c.mutation.Downloads(); !ok {
 		return &ValidationError{Name: "downloads", err: errors.New(`ent: missing required field "Share.downloads"`)}
-	}
-	if v, ok := _c.mutation.Props(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "props", err: fmt.Errorf(`ent: validator failed for field "Share.props": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.OwnerID(); !ok {
-		return &ValidationError{Name: "owner_id", err: errors.New(`ent: missing required field "Share.owner_id"`)}
-	}
-	if v, ok := _c.mutation.OwnerInfo(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "owner_info", err: fmt.Errorf(`ent: validator failed for field "Share.owner_info": %w`, err)}
-		}
 	}
 	return nil
 }
@@ -540,7 +536,7 @@ func (u *ShareUpsert) ClearRemainDownloads() *ShareUpsert {
 }
 
 // SetProps sets the "props" field.
-func (u *ShareUpsert) SetProps(v *v1.ShareProps) *ShareUpsert {
+func (u *ShareUpsert) SetProps(v *types.ShareProps) *ShareUpsert {
 	u.Set(share.FieldProps, v)
 	return u
 }
@@ -575,8 +571,14 @@ func (u *ShareUpsert) AddOwnerID(v int) *ShareUpsert {
 	return u
 }
 
+// ClearOwnerID clears the value of the "owner_id" field.
+func (u *ShareUpsert) ClearOwnerID() *ShareUpsert {
+	u.SetNull(share.FieldOwnerID)
+	return u
+}
+
 // SetOwnerInfo sets the "owner_info" field.
-func (u *ShareUpsert) SetOwnerInfo(v *v1.UserInfo) *ShareUpsert {
+func (u *ShareUpsert) SetOwnerInfo(v *userdata.UserInfo) *ShareUpsert {
 	u.Set(share.FieldOwnerInfo, v)
 	return u
 }
@@ -786,7 +788,7 @@ func (u *ShareUpsertOne) ClearRemainDownloads() *ShareUpsertOne {
 }
 
 // SetProps sets the "props" field.
-func (u *ShareUpsertOne) SetProps(v *v1.ShareProps) *ShareUpsertOne {
+func (u *ShareUpsertOne) SetProps(v *types.ShareProps) *ShareUpsertOne {
 	return u.Update(func(s *ShareUpsert) {
 		s.SetProps(v)
 	})
@@ -827,8 +829,15 @@ func (u *ShareUpsertOne) UpdateOwnerID() *ShareUpsertOne {
 	})
 }
 
+// ClearOwnerID clears the value of the "owner_id" field.
+func (u *ShareUpsertOne) ClearOwnerID() *ShareUpsertOne {
+	return u.Update(func(s *ShareUpsert) {
+		s.ClearOwnerID()
+	})
+}
+
 // SetOwnerInfo sets the "owner_info" field.
-func (u *ShareUpsertOne) SetOwnerInfo(v *v1.UserInfo) *ShareUpsertOne {
+func (u *ShareUpsertOne) SetOwnerInfo(v *userdata.UserInfo) *ShareUpsertOne {
 	return u.Update(func(s *ShareUpsert) {
 		s.SetOwnerInfo(v)
 	})
@@ -1212,7 +1221,7 @@ func (u *ShareUpsertBulk) ClearRemainDownloads() *ShareUpsertBulk {
 }
 
 // SetProps sets the "props" field.
-func (u *ShareUpsertBulk) SetProps(v *v1.ShareProps) *ShareUpsertBulk {
+func (u *ShareUpsertBulk) SetProps(v *types.ShareProps) *ShareUpsertBulk {
 	return u.Update(func(s *ShareUpsert) {
 		s.SetProps(v)
 	})
@@ -1253,8 +1262,15 @@ func (u *ShareUpsertBulk) UpdateOwnerID() *ShareUpsertBulk {
 	})
 }
 
+// ClearOwnerID clears the value of the "owner_id" field.
+func (u *ShareUpsertBulk) ClearOwnerID() *ShareUpsertBulk {
+	return u.Update(func(s *ShareUpsert) {
+		s.ClearOwnerID()
+	})
+}
+
 // SetOwnerInfo sets the "owner_info" field.
-func (u *ShareUpsertBulk) SetOwnerInfo(v *v1.UserInfo) *ShareUpsertBulk {
+func (u *ShareUpsertBulk) SetOwnerInfo(v *userdata.UserInfo) *ShareUpsertBulk {
 	return u.Update(func(s *ShareUpsert) {
 		s.SetOwnerInfo(v)
 	})

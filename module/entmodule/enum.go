@@ -8,7 +8,7 @@ const (
 	StatusUnspecified Status = ""
 )
 
-func (Status) Values() []string {
+func (s Status) Values() []string {
 	return []string{string(StatusActive), string(StatusInactive)}
 }
 

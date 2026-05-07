@@ -3,7 +3,7 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"encoding/json"
 	"file/ent/file"
 	"file/ent/storagepolicy"
@@ -32,7 +32,7 @@ type File struct {
 	// files's owner id
 	OwnerID int `json:"owner_id,omitempty"`
 	// OwnerInfo holds the value of the "owner_info" field.
-	OwnerInfo *v1.UserInfo `json:"owner_info,omitempty"`
+	OwnerInfo *userdata.UserInfo `json:"owner_info,omitempty"`
 	// Size holds the value of the "size" field.
 	Size int64 `json:"size,omitempty"`
 	// PrimaryEntity holds the value of the "primary_entity" field.

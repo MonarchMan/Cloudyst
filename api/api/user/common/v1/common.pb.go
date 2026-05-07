@@ -76,109 +76,6 @@ func (ShareLinksInProfileLevel) EnumDescriptor() ([]byte, []int) {
 	return file_user_common_v1_common_proto_rawDescGZIP(), []int{0}
 }
 
-// 排序方向枚举
-type OrderDirection int32
-
-const (
-	OrderDirection_ORDER_DIRECTION_UNSPECIFIED OrderDirection = 0
-	OrderDirection_ORDER_DIRECTION_ASC         OrderDirection = 1
-	OrderDirection_ORDER_DIRECTION_DESC        OrderDirection = 2
-)
-
-// Enum value maps for OrderDirection.
-var (
-	OrderDirection_name = map[int32]string{
-		0: "ORDER_DIRECTION_UNSPECIFIED",
-		1: "ORDER_DIRECTION_ASC",
-		2: "ORDER_DIRECTION_DESC",
-	}
-	OrderDirection_value = map[string]int32{
-		"ORDER_DIRECTION_UNSPECIFIED": 0,
-		"ORDER_DIRECTION_ASC":         1,
-		"ORDER_DIRECTION_DESC":        2,
-	}
-)
-
-func (x OrderDirection) Enum() *OrderDirection {
-	p := new(OrderDirection)
-	*p = x
-	return p
-}
-
-func (x OrderDirection) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (OrderDirection) Descriptor() protoreflect.EnumDescriptor {
-	return file_user_common_v1_common_proto_enumTypes[1].Descriptor()
-}
-
-func (OrderDirection) Type() protoreflect.EnumType {
-	return &file_user_common_v1_common_proto_enumTypes[1]
-}
-
-func (x OrderDirection) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use OrderDirection.Descriptor instead.
-func (OrderDirection) EnumDescriptor() ([]byte, []int) {
-	return file_user_common_v1_common_proto_rawDescGZIP(), []int{1}
-}
-
-// 视图类型枚举
-type ViewType int32
-
-const (
-	ViewType_VIEW_TYPE_UNSPECIFIED ViewType = 0
-	ViewType_VIEW_TYPE_LIST        ViewType = 1
-	ViewType_VIEW_TYPE_GRID        ViewType = 2
-	ViewType_VIEW_TYPE_GALLERY     ViewType = 3
-)
-
-// Enum value maps for ViewType.
-var (
-	ViewType_name = map[int32]string{
-		0: "VIEW_TYPE_UNSPECIFIED",
-		1: "VIEW_TYPE_LIST",
-		2: "VIEW_TYPE_GRID",
-		3: "VIEW_TYPE_GALLERY",
-	}
-	ViewType_value = map[string]int32{
-		"VIEW_TYPE_UNSPECIFIED": 0,
-		"VIEW_TYPE_LIST":        1,
-		"VIEW_TYPE_GRID":        2,
-		"VIEW_TYPE_GALLERY":     3,
-	}
-)
-
-func (x ViewType) Enum() *ViewType {
-	p := new(ViewType)
-	*p = x
-	return p
-}
-
-func (x ViewType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (ViewType) Descriptor() protoreflect.EnumDescriptor {
-	return file_user_common_v1_common_proto_enumTypes[2].Descriptor()
-}
-
-func (ViewType) Type() protoreflect.EnumType {
-	return &file_user_common_v1_common_proto_enumTypes[2]
-}
-
-func (x ViewType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use ViewType.Descriptor instead.
-func (ViewType) EnumDescriptor() ([]byte, []int) {
-	return file_user_common_v1_common_proto_rawDescGZIP(), []int{2}
-}
-
 // Error Definition
 type ErrorReason int32
 
@@ -285,11 +182,11 @@ func (x ErrorReason) String() string {
 }
 
 func (ErrorReason) Descriptor() protoreflect.EnumDescriptor {
-	return file_user_common_v1_common_proto_enumTypes[3].Descriptor()
+	return file_user_common_v1_common_proto_enumTypes[1].Descriptor()
 }
 
 func (ErrorReason) Type() protoreflect.EnumType {
-	return &file_user_common_v1_common_proto_enumTypes[3]
+	return &file_user_common_v1_common_proto_enumTypes[1]
 }
 
 func (x ErrorReason) Number() protoreflect.EnumNumber {
@@ -298,7 +195,7 @@ func (x ErrorReason) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ErrorReason.Descriptor instead.
 func (ErrorReason) EnumDescriptor() ([]byte, []int) {
-	return file_user_common_v1_common_proto_rawDescGZIP(), []int{3}
+	return file_user_common_v1_common_proto_rawDescGZIP(), []int{1}
 }
 
 type ListRequest struct {
@@ -1222,74 +1119,6 @@ func (x *ColumnTypeProps) GetCustomPropsId() string {
 	return ""
 }
 
-type StoragePolicyInfo struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
-	IsPrivate     bool                   `protobuf:"varint,4,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *StoragePolicyInfo) Reset() {
-	*x = StoragePolicyInfo{}
-	mi := &file_user_common_v1_common_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *StoragePolicyInfo) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StoragePolicyInfo) ProtoMessage() {}
-
-func (x *StoragePolicyInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_user_common_v1_common_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StoragePolicyInfo.ProtoReflect.Descriptor instead.
-func (*StoragePolicyInfo) Descriptor() ([]byte, []int) {
-	return file_user_common_v1_common_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *StoragePolicyInfo) GetId() int32 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *StoragePolicyInfo) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *StoragePolicyInfo) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *StoragePolicyInfo) GetIsPrivate() bool {
-	if x != nil {
-		return x.IsPrivate
-	}
-	return false
-}
-
 type DavAccountProps struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -1298,7 +1127,7 @@ type DavAccountProps struct {
 
 func (x *DavAccountProps) Reset() {
 	*x = DavAccountProps{}
-	mi := &file_user_common_v1_common_proto_msgTypes[12]
+	mi := &file_user_common_v1_common_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1310,7 +1139,7 @@ func (x *DavAccountProps) String() string {
 func (*DavAccountProps) ProtoMessage() {}
 
 func (x *DavAccountProps) ProtoReflect() protoreflect.Message {
-	mi := &file_user_common_v1_common_proto_msgTypes[12]
+	mi := &file_user_common_v1_common_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1323,7 +1152,7 @@ func (x *DavAccountProps) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DavAccountProps.ProtoReflect.Descriptor instead.
 func (*DavAccountProps) Descriptor() ([]byte, []int) {
-	return file_user_common_v1_common_proto_rawDescGZIP(), []int{12}
+	return file_user_common_v1_common_proto_rawDescGZIP(), []int{11}
 }
 
 var File_user_common_v1_common_proto protoreflect.FileDescriptor
@@ -1427,28 +1256,13 @@ const file_user_common_v1_common_proto_rawDesc = "" +
 	"\x05width\x18\x02 \x01(\x05R\x05width\"p\n" +
 	"\x0fColumnTypeProps\x12+\n" +
 	"\fmetadata_key\x18\x01 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\vmetadataKey\x120\n" +
-	"\x0fcustom_props_id\x18\x02 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\rcustomPropsId\"\x87\x01\n" +
-	"\x11StoragePolicyInfo\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\x02id\x12\x1c\n" +
-	"\x04name\x18\x02 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\x04name\x12\x1c\n" +
-	"\x04type\x18\x03 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\x04type\x12\x1d\n" +
-	"\n" +
-	"is_private\x18\x04 \x01(\bR\tisPrivate\"\x11\n" +
+	"\x0fcustom_props_id\x18\x02 \x01(\tB\b\xfaB\x05r\x03\x18\xff\x01R\rcustomPropsId\"\x11\n" +
 	"\x0fDavAccountProps*P\n" +
 	"\x18ShareLinksInProfileLevel\x12\x15\n" +
 	"\x11PUBLIC_SHARE_ONLY\x10\x00\x12\r\n" +
 	"\tALL_SHARE\x10\x01\x12\x0e\n" +
 	"\n" +
-	"HIDE_SHARE\x10\x02*d\n" +
-	"\x0eOrderDirection\x12\x1f\n" +
-	"\x1bORDER_DIRECTION_UNSPECIFIED\x10\x00\x12\x17\n" +
-	"\x13ORDER_DIRECTION_ASC\x10\x01\x12\x18\n" +
-	"\x14ORDER_DIRECTION_DESC\x10\x02*d\n" +
-	"\bViewType\x12\x19\n" +
-	"\x15VIEW_TYPE_UNSPECIFIED\x10\x00\x12\x12\n" +
-	"\x0eVIEW_TYPE_LIST\x10\x01\x12\x12\n" +
-	"\x0eVIEW_TYPE_GRID\x10\x02\x12\x15\n" +
-	"\x11VIEW_TYPE_GALLERY\x10\x03*\xbe\x05\n" +
+	"HIDE_SHARE\x10\x02*\xbe\x05\n" +
 	"\vErrorReason\x12\x0f\n" +
 	"\vUNSPECIFIED\x10\x00\x12\x17\n" +
 	"\fUNAUTHORIZED\x10\x91\x03\x1a\x04\xa8E\x91\x03\x12\x14\n" +
@@ -1491,46 +1305,43 @@ func file_user_common_v1_common_proto_rawDescGZIP() []byte {
 	return file_user_common_v1_common_proto_rawDescData
 }
 
-var file_user_common_v1_common_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_user_common_v1_common_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_user_common_v1_common_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_user_common_v1_common_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_user_common_v1_common_proto_goTypes = []any{
 	(ShareLinksInProfileLevel)(0), // 0: user.common.v1.ShareLinksInProfileLevel
-	(OrderDirection)(0),           // 1: user.common.v1.OrderDirection
-	(ViewType)(0),                 // 2: user.common.v1.ViewType
-	(ErrorReason)(0),              // 3: user.common.v1.ErrorReason
-	(*ListRequest)(nil),           // 4: user.common.v1.ListRequest
-	(*PaginationArgs)(nil),        // 5: user.common.v1.PaginationArgs
-	(*PaginationResults)(nil),     // 6: user.common.v1.PaginationResults
-	(*PageToken)(nil),             // 7: user.common.v1.PageToken
-	(*UserResponse)(nil),          // 8: user.common.v1.UserResponse
-	(*GroupResponse)(nil),         // 9: user.common.v1.GroupResponse
-	(*PinedFile)(nil),             // 10: user.common.v1.PinedFile
-	(*UserSetting)(nil),           // 11: user.common.v1.UserSetting
-	(*GroupSetting)(nil),          // 12: user.common.v1.GroupSetting
-	(*ListViewColumn)(nil),        // 13: user.common.v1.ListViewColumn
-	(*ColumnTypeProps)(nil),       // 14: user.common.v1.ColumnTypeProps
-	(*StoragePolicyInfo)(nil),     // 15: user.common.v1.StoragePolicyInfo
-	(*DavAccountProps)(nil),       // 16: user.common.v1.DavAccountProps
-	nil,                           // 17: user.common.v1.ListRequest.ConditionsEntry
-	nil,                           // 18: user.common.v1.ListRequest.SearchesEntry
-	nil,                           // 19: user.common.v1.UserSetting.FsViewMapEntry
-	(*timestamppb.Timestamp)(nil), // 20: google.protobuf.Timestamp
-	(*structpb.Struct)(nil),       // 21: google.protobuf.Struct
-	(*v1.ExplorerView)(nil),       // 22: file.common.v1.ExplorerView
+	(ErrorReason)(0),              // 1: user.common.v1.ErrorReason
+	(*ListRequest)(nil),           // 2: user.common.v1.ListRequest
+	(*PaginationArgs)(nil),        // 3: user.common.v1.PaginationArgs
+	(*PaginationResults)(nil),     // 4: user.common.v1.PaginationResults
+	(*PageToken)(nil),             // 5: user.common.v1.PageToken
+	(*UserResponse)(nil),          // 6: user.common.v1.UserResponse
+	(*GroupResponse)(nil),         // 7: user.common.v1.GroupResponse
+	(*PinedFile)(nil),             // 8: user.common.v1.PinedFile
+	(*UserSetting)(nil),           // 9: user.common.v1.UserSetting
+	(*GroupSetting)(nil),          // 10: user.common.v1.GroupSetting
+	(*ListViewColumn)(nil),        // 11: user.common.v1.ListViewColumn
+	(*ColumnTypeProps)(nil),       // 12: user.common.v1.ColumnTypeProps
+	(*DavAccountProps)(nil),       // 13: user.common.v1.DavAccountProps
+	nil,                           // 14: user.common.v1.ListRequest.ConditionsEntry
+	nil,                           // 15: user.common.v1.ListRequest.SearchesEntry
+	nil,                           // 16: user.common.v1.UserSetting.FsViewMapEntry
+	(*timestamppb.Timestamp)(nil), // 17: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),       // 18: google.protobuf.Struct
+	(*v1.ExplorerView)(nil),       // 19: file.common.v1.ExplorerView
 }
 var file_user_common_v1_common_proto_depIdxs = []int32{
-	17, // 0: user.common.v1.ListRequest.conditions:type_name -> user.common.v1.ListRequest.ConditionsEntry
-	18, // 1: user.common.v1.ListRequest.searches:type_name -> user.common.v1.ListRequest.SearchesEntry
-	20, // 2: user.common.v1.PageToken.time:type_name -> google.protobuf.Timestamp
-	20, // 3: user.common.v1.UserResponse.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 4: user.common.v1.UserResponse.group:type_name -> user.common.v1.GroupResponse
-	10, // 5: user.common.v1.UserResponse.pined:type_name -> user.common.v1.PinedFile
+	14, // 0: user.common.v1.ListRequest.conditions:type_name -> user.common.v1.ListRequest.ConditionsEntry
+	15, // 1: user.common.v1.ListRequest.searches:type_name -> user.common.v1.ListRequest.SearchesEntry
+	17, // 2: user.common.v1.PageToken.time:type_name -> google.protobuf.Timestamp
+	17, // 3: user.common.v1.UserResponse.created_at:type_name -> google.protobuf.Timestamp
+	7,  // 4: user.common.v1.UserResponse.group:type_name -> user.common.v1.GroupResponse
+	8,  // 5: user.common.v1.UserResponse.pined:type_name -> user.common.v1.PinedFile
 	0,  // 6: user.common.v1.UserResponse.share_links_in_profile:type_name -> user.common.v1.ShareLinksInProfileLevel
-	10, // 7: user.common.v1.UserSetting.pined:type_name -> user.common.v1.PinedFile
-	19, // 8: user.common.v1.UserSetting.fs_view_map:type_name -> user.common.v1.UserSetting.FsViewMapEntry
+	8,  // 7: user.common.v1.UserSetting.pined:type_name -> user.common.v1.PinedFile
+	16, // 8: user.common.v1.UserSetting.fs_view_map:type_name -> user.common.v1.UserSetting.FsViewMapEntry
 	0,  // 9: user.common.v1.UserSetting.share_links_in_profile:type_name -> user.common.v1.ShareLinksInProfileLevel
-	21, // 10: user.common.v1.GroupSetting.remote_download_options:type_name -> google.protobuf.Struct
-	22, // 11: user.common.v1.UserSetting.FsViewMapEntry.value:type_name -> file.common.v1.ExplorerView
+	18, // 10: user.common.v1.GroupSetting.remote_download_options:type_name -> google.protobuf.Struct
+	19, // 11: user.common.v1.UserSetting.FsViewMapEntry.value:type_name -> file.common.v1.ExplorerView
 	12, // [12:12] is the sub-list for method output_type
 	12, // [12:12] is the sub-list for method input_type
 	12, // [12:12] is the sub-list for extension type_name
@@ -1550,8 +1361,8 @@ func file_user_common_v1_common_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_common_v1_common_proto_rawDesc), len(file_user_common_v1_common_proto_rawDesc)),
-			NumEnums:      4,
-			NumMessages:   16,
+			NumEnums:      2,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -3,7 +3,7 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"context"
 	"errors"
 	"file/ent/directlink"
@@ -76,7 +76,7 @@ func (_c *FileCreate) SetOwnerID(v int) *FileCreate {
 }
 
 // SetOwnerInfo sets the "owner_info" field.
-func (_c *FileCreate) SetOwnerInfo(v *v1.UserInfo) *FileCreate {
+func (_c *FileCreate) SetOwnerInfo(v *userdata.UserInfo) *FileCreate {
 	_c.mutation.SetOwnerInfo(v)
 	return _c
 }
@@ -352,11 +352,6 @@ func (_c *FileCreate) check() error {
 	}
 	if _, ok := _c.mutation.OwnerID(); !ok {
 		return &ValidationError{Name: "owner_id", err: errors.New(`ent: missing required field "File.owner_id"`)}
-	}
-	if v, ok := _c.mutation.OwnerInfo(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "owner_info", err: fmt.Errorf(`ent: validator failed for field "File.owner_info": %w`, err)}
-		}
 	}
 	if _, ok := _c.mutation.Size(); !ok {
 		return &ValidationError{Name: "size", err: errors.New(`ent: missing required field "File.size"`)}
@@ -665,7 +660,7 @@ func (u *FileUpsert) AddOwnerID(v int) *FileUpsert {
 }
 
 // SetOwnerInfo sets the "owner_info" field.
-func (u *FileUpsert) SetOwnerInfo(v *v1.UserInfo) *FileUpsert {
+func (u *FileUpsert) SetOwnerInfo(v *userdata.UserInfo) *FileUpsert {
 	u.Set(file.FieldOwnerInfo, v)
 	return u
 }
@@ -906,7 +901,7 @@ func (u *FileUpsertOne) UpdateOwnerID() *FileUpsertOne {
 }
 
 // SetOwnerInfo sets the "owner_info" field.
-func (u *FileUpsertOne) SetOwnerInfo(v *v1.UserInfo) *FileUpsertOne {
+func (u *FileUpsertOne) SetOwnerInfo(v *userdata.UserInfo) *FileUpsertOne {
 	return u.Update(func(s *FileUpsert) {
 		s.SetOwnerInfo(v)
 	})
@@ -1339,7 +1334,7 @@ func (u *FileUpsertBulk) UpdateOwnerID() *FileUpsertBulk {
 }
 
 // SetOwnerInfo sets the "owner_info" field.
-func (u *FileUpsertBulk) SetOwnerInfo(v *v1.UserInfo) *FileUpsertBulk {
+func (u *FileUpsertBulk) SetOwnerInfo(v *userdata.UserInfo) *FileUpsertBulk {
 	return u.Update(func(s *FileUpsert) {
 		s.SetOwnerInfo(v)
 	})

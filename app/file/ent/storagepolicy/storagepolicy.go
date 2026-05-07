@@ -3,7 +3,7 @@
 package storagepolicy
 
 import (
-	v1 "api/api/file/common/v1"
+	"file/internal/data/types"
 	"time"
 
 	"entgo.io/ent"
@@ -122,7 +122,7 @@ var (
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultSettings holds the default value on creation for the "settings" field.
-	DefaultSettings *v1.PolicySetting
+	DefaultSettings *types.PolicySetting
 )
 
 // OrderOption defines the ordering options for the StoragePolicy queries.

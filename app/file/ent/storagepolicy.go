@@ -3,10 +3,10 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
 	"encoding/json"
 	"file/ent/node"
 	"file/ent/storagepolicy"
+	"file/internal/data/types"
 	"fmt"
 	"strings"
 	"time"
@@ -47,7 +47,7 @@ type StoragePolicy struct {
 	// FileNameRule holds the value of the "file_name_rule" field.
 	FileNameRule string `json:"file_name_rule,omitempty"`
 	// Settings holds the value of the "settings" field.
-	Settings *v1.PolicySetting `json:"settings,omitempty"`
+	Settings *types.PolicySetting `json:"settings,omitempty"`
 	// NodeID holds the value of the "node_id" field.
 	NodeID int `json:"node_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.

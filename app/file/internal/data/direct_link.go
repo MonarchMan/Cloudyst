@@ -1,12 +1,12 @@
 package data
 
 import (
-	"common/db"
+	"api/external/data/common"
 	"common/hashid"
 	"context"
-	mschema "entmodule/ent/schema"
 	"file/ent"
 	"file/ent/directlink"
+	"file/ent/schema"
 )
 
 type (
@@ -22,11 +22,11 @@ type (
 	LoadDirectLinkFile struct{}
 )
 
-func NewDirectLinkClient(client *ent.Client, dbType db.DBType, hasher hashid.Encoder) DirectLinkClient {
+func NewDirectLinkClient(client *ent.Client, dbType common.DBType, hasher hashid.Encoder) DirectLinkClient {
 	return &directLinkClient{
 		client:      client,
 		hasher:      hasher,
-		maxSQlParam: db.SqlParamLimit(dbType),
+		maxSQlParam: common.SqlParamLimit(dbType),
 	}
 }
 
@@ -63,7 +63,7 @@ func (c *directLinkClient) GetByNameID(ctx context.Context, id int, name string)
 }
 
 func (c *directLinkClient) Delete(ctx context.Context, id int) error {
-	ctx = mschema.SkipSoftDelete(ctx)
+	ctx = schema.SkipSoftDelete(ctx)
 	_, err := c.client.DirectLink.Delete().Where(directlink.ID(id)).Exec(ctx)
 	return err
 }

@@ -5,7 +5,7 @@ import (
 	"ai/ent/aiwebpage"
 	"ai/internal/biz/types"
 	pb "api/api/file/common/v1"
-	"common/db"
+	"api/external/data/common"
 	"context"
 )
 
@@ -39,8 +39,8 @@ type (
 	}
 )
 
-func NewWebPageClient(client *ent.Client, dbType db.DBType) WebPageClient {
-	return &webPageClient{maxSQLParam: db.SqlParamLimit(dbType), client: client}
+func NewWebPageClient(client *ent.Client, dbType common.DBType) WebPageClient {
+	return &webPageClient{maxSQLParam: common.SqlParamLimit(dbType), client: client}
 }
 
 func (c *webPageClient) SetClient(newClient *ent.Client) TxOperator {
@@ -60,7 +60,7 @@ func (c *webPageClient) GetByIDs(ctx context.Context, ids []int) ([]*ent.AiWebPa
 }
 
 func (c *webPageClient) List(ctx context.Context, args *ListWebPageArgs) (*ListWebPageResult, error) {
-	pageSize := db.CapPageSize(c.maxSQLParam, int(args.PageSize), 100)
+	pageSize := common.CapPageSize(c.maxSQLParam, int(args.PageSize), 100)
 	q := c.client.AiWebPage.Query()
 	if args.name != "" {
 		q.Where(aiwebpage.NameContainsFold(args.name))
@@ -128,7 +128,7 @@ func (c *webPageClient) BatchDelete(ctx context.Context, ids []int) (int, error)
 }
 
 func getWebPageOrderOption(args *ListWebPageArgs) []aiwebpage.OrderOption {
-	orderTerm := db.GetOrderTerm(db.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
 	switch args.OrderBy {
 	case aiwebpage.FieldUpdatedAt:
 		return []aiwebpage.OrderOption{aiwebpage.ByUpdatedAt(orderTerm), aiwebpage.ByID(orderTerm)}

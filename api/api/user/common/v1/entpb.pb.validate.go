@@ -147,63 +147,9 @@ func (m *Group) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if all {
-		switch v := interface{}(m.GetMaxStorage()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, GroupValidationError{
-					field:  "MaxStorage",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, GroupValidationError{
-					field:  "MaxStorage",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetMaxStorage()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return GroupValidationError{
-				field:  "MaxStorage",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for MaxStorage
 
-	if all {
-		switch v := interface{}(m.GetSpeedLimit()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, GroupValidationError{
-					field:  "SpeedLimit",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, GroupValidationError{
-					field:  "SpeedLimit",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetSpeedLimit()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return GroupValidationError{
-				field:  "SpeedLimit",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for SpeedLimit
 
 	// no validation rules for Permissions
 
@@ -236,34 +182,7 @@ func (m *Group) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetStoragePolicyId()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, GroupValidationError{
-					field:  "StoragePolicyId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, GroupValidationError{
-					field:  "StoragePolicyId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetStoragePolicyId()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return GroupValidationError{
-				field:  "StoragePolicyId",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for StoragePolicyId
 
 	if all {
 		switch v := interface{}(m.GetStoragePolicyInfo()).(type) {

@@ -23,24 +23,24 @@ const _ = http.SupportPackageIsVersion1
 const OperationImageDeleteImage = "/ai.image.v1.Image/DeleteImage"
 const OperationImageDrawImage = "/ai.image.v1.Image/DrawImage"
 const OperationImageGetImage = "/ai.image.v1.Image/GetImage"
+const OperationImageGetImages = "/ai.image.v1.Image/GetImages"
 const OperationImageListImage = "/ai.image.v1.Image/ListImage"
-const OperationImageListImageByIds = "/ai.image.v1.Image/ListImageByIds"
 
 type ImageHTTPServer interface {
 	DeleteImage(context.Context, *SimpleImageRequest) (*emptypb.Empty, error)
 	DrawImage(context.Context, *DrawImageRequest) (*DrawImageResponse, error)
 	GetImage(context.Context, *SimpleImageRequest) (*GetImageResponse, error)
+	GetImages(context.Context, *GetImagesRequest) (*GetImagesResponse, error)
 	ListImage(context.Context, *ListImageRequest) (*ListImageResponse, error)
-	ListImageByIds(context.Context, *ListImageByIdsRequest) (*ListImageResponse, error)
 }
 
 func RegisterImageHTTPServer(s *http.Server, srv ImageHTTPServer) {
 	r := s.Route("/")
 	r.POST("/ai/image/draw", _Image_DrawImage0_HTTP_Handler(srv))
 	r.DELETE("/ai/image/{id}", _Image_DeleteImage0_HTTP_Handler(srv))
-	r.GET("/ai/image/{id}", _Image_GetImage0_HTTP_Handler(srv))
-	r.GET("/ai/image/page", _Image_ListImage1_HTTP_Handler(srv))
-	r.GET("/ai/image/list", _Image_ListImageByIds0_HTTP_Handler(srv))
+	r.GET("/ai/image/{id}", _Image_GetImage1_HTTP_Handler(srv))
+	r.POST("/ai/image/list", _Image_ListImage1_HTTP_Handler(srv))
+	r.GET("/ai/image/some", _Image_GetImages0_HTTP_Handler(srv))
 }
 
 func _Image_DrawImage0_HTTP_Handler(srv ImageHTTPServer) func(ctx http.Context) error {
@@ -87,7 +87,7 @@ func _Image_DeleteImage0_HTTP_Handler(srv ImageHTTPServer) func(ctx http.Context
 	}
 }
 
-func _Image_GetImage0_HTTP_Handler(srv ImageHTTPServer) func(ctx http.Context) error {
+func _Image_GetImage1_HTTP_Handler(srv ImageHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in SimpleImageRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -112,6 +112,9 @@ func _Image_GetImage0_HTTP_Handler(srv ImageHTTPServer) func(ctx http.Context) e
 func _Image_ListImage1_HTTP_Handler(srv ImageHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ListImageRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -128,21 +131,21 @@ func _Image_ListImage1_HTTP_Handler(srv ImageHTTPServer) func(ctx http.Context) 
 	}
 }
 
-func _Image_ListImageByIds0_HTTP_Handler(srv ImageHTTPServer) func(ctx http.Context) error {
+func _Image_GetImages0_HTTP_Handler(srv ImageHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in ListImageByIdsRequest
+		var in GetImagesRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationImageListImageByIds)
+		http.SetOperation(ctx, OperationImageGetImages)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.ListImageByIds(ctx, req.(*ListImageByIdsRequest))
+			return srv.GetImages(ctx, req.(*GetImagesRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*ListImageResponse)
+		reply := out.(*GetImagesResponse)
 		return ctx.Result(200, reply)
 	}
 }
@@ -151,8 +154,8 @@ type ImageHTTPClient interface {
 	DeleteImage(ctx context.Context, req *SimpleImageRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	DrawImage(ctx context.Context, req *DrawImageRequest, opts ...http.CallOption) (rsp *DrawImageResponse, err error)
 	GetImage(ctx context.Context, req *SimpleImageRequest, opts ...http.CallOption) (rsp *GetImageResponse, err error)
+	GetImages(ctx context.Context, req *GetImagesRequest, opts ...http.CallOption) (rsp *GetImagesResponse, err error)
 	ListImage(ctx context.Context, req *ListImageRequest, opts ...http.CallOption) (rsp *ListImageResponse, err error)
-	ListImageByIds(ctx context.Context, req *ListImageByIdsRequest, opts ...http.CallOption) (rsp *ListImageResponse, err error)
 }
 
 type ImageHTTPClientImpl struct {
@@ -202,11 +205,11 @@ func (c *ImageHTTPClientImpl) GetImage(ctx context.Context, in *SimpleImageReque
 	return &out, nil
 }
 
-func (c *ImageHTTPClientImpl) ListImage(ctx context.Context, in *ListImageRequest, opts ...http.CallOption) (*ListImageResponse, error) {
-	var out ListImageResponse
-	pattern := "/ai/image/page"
+func (c *ImageHTTPClientImpl) GetImages(ctx context.Context, in *GetImagesRequest, opts ...http.CallOption) (*GetImagesResponse, error) {
+	var out GetImagesResponse
+	pattern := "/ai/image/some"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationImageListImage))
+	opts = append(opts, http.Operation(OperationImageGetImages))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
@@ -215,13 +218,13 @@ func (c *ImageHTTPClientImpl) ListImage(ctx context.Context, in *ListImageReques
 	return &out, nil
 }
 
-func (c *ImageHTTPClientImpl) ListImageByIds(ctx context.Context, in *ListImageByIdsRequest, opts ...http.CallOption) (*ListImageResponse, error) {
+func (c *ImageHTTPClientImpl) ListImage(ctx context.Context, in *ListImageRequest, opts ...http.CallOption) (*ListImageResponse, error) {
 	var out ListImageResponse
 	pattern := "/ai/image/list"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationImageListImageByIds))
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationImageListImage))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

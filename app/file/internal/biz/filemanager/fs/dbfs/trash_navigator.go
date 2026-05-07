@@ -2,7 +2,8 @@ package dbfs
 
 import (
 	pb "api/api/file/common/v1"
-	userpb "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"common/cache"
 	"common/constants"
@@ -11,8 +12,6 @@ import (
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/setting"
 	"file/internal/data"
-	"file/internal/data/types"
-	"file/internal/pkg/utils"
 	"fmt"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -40,20 +39,20 @@ var (
 )
 
 // NewTrashNavigator creates a navigator for userId's "trash" files system.
-func NewTrashNavigator(u *userpb.User, fileClient data.FileClient, l log.Logger, config *setting.DBFS,
+func NewTrashNavigator(u *userdata.User, fileClient data.FileClient, l log.Logger, config *setting.DBFS,
 	hasher hashid.Encoder) Navigator {
 	return &trashNavigator{
 		user:          u,
 		l:             log.NewHelper(l, log.WithMessageKey("trashNavigator")),
 		fileClient:    fileClient,
 		config:        config,
-		baseNavigator: newBaseNavigator(fileClient, defaultFilter, u.Id, hasher, config),
+		baseNavigator: newBaseNavigator(fileClient, defaultFilter, u.ID, hasher, config),
 	}
 }
 
 type trashNavigator struct {
 	l          *log.Helper
-	user       *userpb.User
+	user       *userdata.User
 	fileClient data.FileClient
 	config     *setting.DBFS
 
@@ -160,9 +159,9 @@ func (n *trashNavigator) ExecuteHook(ctx context.Context, hookType fs.HookType, 
 	return nil
 }
 
-func (n *trashNavigator) GetView(ctx context.Context, file *File) *types.ExplorerView {
+func (n *trashNavigator) GetView(ctx context.Context, file *File) *filedata.ExplorerView {
 	if view, ok := n.user.Settings.FsViewMap[string(constants.FileSystemTrash)]; ok {
-		return utils.FromProtoView(view)
+		return &view
 	}
 	return getDefaultView()
 }

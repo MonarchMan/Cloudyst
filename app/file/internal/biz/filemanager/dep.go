@@ -2,7 +2,6 @@ package filemanager
 
 import (
 	pbadmin "api/api/user/admin/v1"
-	pbuser "api/api/user/users/v1"
 	"common/auth"
 	"common/cache"
 	"common/hashid"
@@ -20,13 +19,14 @@ import (
 	"file/internal/biz/thumb"
 	"file/internal/conf"
 	"file/internal/data"
+	"file/internal/data/rpc"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
 
 type (
 	ManagerDep interface {
-		UserClient() pbuser.UserClient
+		UserClient() rpc.UserClient
 		FileClient() data.FileClient
 		ShareClient() data.ShareClient
 		PolicyClient() data.StoragePolicyClient
@@ -56,7 +56,7 @@ type (
 		auth              auth.Auth
 		hasher            hashid.Encoder
 		policyClient      data.StoragePolicyClient
-		userClient        pbuser.UserClient
+		userClient        rpc.UserClient
 		fileClient        data.FileClient
 		shareClient       data.ShareClient
 		requestClient     request.Client
@@ -73,7 +73,7 @@ type (
 )
 
 func NewManagerDependency(logger log.Logger, settings setting.Provider, kv cache.Driver, au auth.Auth,
-	config *conf.Bootstrap, hasher hashid.Encoder, policyClient data.StoragePolicyClient, userClient pbuser.UserClient,
+	config *conf.Bootstrap, hasher hashid.Encoder, policyClient data.StoragePolicyClient, userClient rpc.UserClient,
 	fileClient data.FileClient, shareClient data.ShareClient, taskClient data.TaskClient, mimeManager mime.MimeManager,
 	credManager credmanager.CredManager, extractorManager mediameta.ExtractorStateManager, queueManager *queue.QueueManager,
 	thumbnailPipeline thumb.Generator, encryptorFactory encrypt.CryptorFactory, eventHub eventhub.EventHub,
@@ -129,7 +129,7 @@ func (d *managerDependency) ThumbnailPipeline() thumb.Generator {
 	return d.thumbnailPipeline
 }
 
-func (d *managerDependency) UserClient() pbuser.UserClient {
+func (d *managerDependency) UserClient() rpc.UserClient {
 	return d.userClient
 }
 
@@ -184,7 +184,6 @@ type (
 		LockSystem() lock.LockSystem
 		StateKV() cache.Driver
 		DirectLinkClient() data.DirectLinkClient
-		UserAdmimClient() pbadmin.AdminClient
 	}
 
 	dbfsDependency struct {
@@ -196,13 +195,11 @@ type (
 	DbfsDepCtx struct{}
 )
 
-func NewDBFSDependency(ls lock.LockSystem, directLinkClient data.DirectLinkClient, ac pbadmin.AdminClient,
-	encryptorFactory encrypt.CryptorFactory, eventHub eventhub.EventHub, l log.Logger) DbfsDep {
+func NewDBFSDependency(ls lock.LockSystem, directLinkClient data.DirectLinkClient, l log.Logger) DbfsDep {
 	return &dbfsDependency{
 		ls:               ls,
 		stateKv:          cache.NewMemoStore("", l),
 		directLinkClient: directLinkClient,
-		userAdmimClient:  ac,
 	}
 }
 func (d *dbfsDependency) LockSystem() lock.LockSystem {
@@ -210,9 +207,6 @@ func (d *dbfsDependency) LockSystem() lock.LockSystem {
 }
 func (d *dbfsDependency) StateKV() cache.Driver {
 	return d.stateKv
-}
-func (d *dbfsDependency) UserAdmimClient() pbadmin.AdminClient {
-	return d.userAdmimClient
 }
 func (d *dbfsDependency) DirectLinkClient() data.DirectLinkClient {
 	return d.directLinkClient

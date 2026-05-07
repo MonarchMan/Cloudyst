@@ -82,7 +82,7 @@ func (l *RemoteLoader) Load(ctx context.Context, src document.Source, opts ...do
 	if changed {
 		version = documentInfo.Version
 	}
-	_, err = l.kdc.UpdateContentLenVersionAndProcess(ctx, documentInfo.ID, int(fileInfo.Size), version, types.DocumentProcessing)
+	_, err = l.kdc.UpdateSizeVersionAndProcess(ctx, documentInfo.ID, fileInfo.Size, version, types.DocumentProcessing)
 	if err != nil {
 		return nil, err
 	}

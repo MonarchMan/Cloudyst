@@ -116,6 +116,9 @@ func OpenAIModelFactory(cfg *ModelConfig) (model.ToolCallingChatModel, error) {
 }
 
 func DeepseekModelFactory(cfg *ModelConfig) (model.ToolCallingChatModel, error) {
+	if cfg.Model == "" {
+		cfg.Model = deepseekV4Flash
+	}
 	mcfg := &deepseek.ChatModelConfig{
 		APIKey: cfg.APIKey,
 		Model:  cfg.Model,

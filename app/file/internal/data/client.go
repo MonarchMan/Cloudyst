@@ -1,8 +1,8 @@
 package data
 
 import (
+	"api/external/data/common"
 	"common/cache"
-	"common/db"
 	"common/logging"
 	"common/util"
 	"context"
@@ -66,12 +66,12 @@ func InitializeDBClient(l *log.Helper, client *ent.Client, kv cache.Driver, requ
 func NewRawEntClient(l *log.Helper, config *conf.Bootstrap) (*ent.Client, error) {
 	l.Info("Initializing database connection...")
 	dbConfig := config.GetData().GetDatabase()
-	confDBType := db.DBType(dbConfig.DbType)
-	if confDBType == db.SQLite3DB || confDBType == "" {
-		confDBType = db.SQLiteDB
+	confDBType := common.DBType(dbConfig.DbType)
+	if confDBType == common.SQLite3DB || confDBType == "" {
+		confDBType = common.SQLiteDB
 	}
-	if confDBType == db.MariaDB {
-		confDBType = db.MySqlDB
+	if confDBType == common.MariaDB {
+		confDBType = common.MySqlDB
 	}
 
 	var (
@@ -80,7 +80,7 @@ func NewRawEntClient(l *log.Helper, config *conf.Bootstrap) (*ent.Client, error)
 	)
 
 	// Check if the database type is supported.
-	if confDBType != db.SQLiteDB && confDBType != db.MySqlDB && confDBType != db.PostgresDB {
+	if confDBType != common.SQLiteDB && confDBType != common.MySqlDB && confDBType != common.PostgresDB {
 		return nil, fmt.Errorf("unsupported database type: %s", confDBType)
 	}
 	// If Database connection string provided, use it directly.
@@ -90,11 +90,11 @@ func NewRawEntClient(l *log.Helper, config *conf.Bootstrap) (*ent.Client, error)
 	} else {
 
 		switch confDBType {
-		case db.SQLiteDB:
+		case common.SQLiteDB:
 			dbFile := util.RelativePath(dbConfig.DbFile)
 			l.Info("Connect to SQLite database %q.", dbFile)
 			client, err = sql.Open("sqlite3", util.RelativePath(dbConfig.DbFile))
-		case db.PostgresDB:
+		case common.PostgresDB:
 			l.Info("Connect to Postgres database %q.", dbConfig.Host)
 			client, err = sql.Open("postgres", fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 				dbConfig.Host,
@@ -102,7 +102,7 @@ func NewRawEntClient(l *log.Helper, config *conf.Bootstrap) (*ent.Client, error)
 				dbConfig.Password,
 				dbConfig.Name,
 				dbConfig.Port))
-		case db.MySqlDB, db.MsSqlDB:
+		case common.MySqlDB, common.MsSqlDB:
 			l.Info("Connect to MySQL/SQLServer database %q.", dbConfig.Host)
 			var host string
 			if dbConfig.UnixSocket {

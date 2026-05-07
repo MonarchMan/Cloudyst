@@ -2,13 +2,13 @@ package server
 
 import (
 	"ai/internal/conf"
+	"ai/internal/data/rpc"
 	"ai/internal/service"
 	adminapi "api/api/ai/admin/v1"
 	chatapi "api/api/ai/chat/v1"
 	imageapi "api/api/ai/image/v1"
 	knowledgeapi "api/api/ai/knowledge/v1"
 	roleapi "api/api/ai/role/v1"
-	pbuser "api/api/user/users/v1"
 	cm "api/external/middlewares"
 	"api/external/middlewares/filters"
 	"crypto/tls"
@@ -27,7 +27,7 @@ import (
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(as *service.AdminService, cs *service.ChatService, ks *service.KnowledgeService, uc pbuser.UserClient,
+func NewHTTPServer(as *service.AdminService, cs *service.ChatService, ks *service.KnowledgeService, uc rpc.UserClient,
 	is *service.ImageService, rs *service.RoleService, bs *conf.Bootstrap,
 	tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator, logger log.Logger) (*khttp.Server, error) {
 	h := log.NewHelper(logger, log.WithMessageKey("server"))
@@ -71,12 +71,12 @@ func NewHTTPServer(as *service.AdminService, cs *service.ChatService, ks *servic
 	// route
 	tracer := tracerProvider.Tracer("khttp-route")
 	root := srv.Route("/", filters.Trace(tracer), filters.Logger())
-	chatRoute := root.Group("/chat", filters.CurrentUser(uc), filters.LoginRequired())
+	chatRoute := root.Group("/chat", filters.CurrentUser(uc.Client()), filters.LoginRequired())
 	chatRoute.GET("/ai/chat/message/send-stream", cs.StreamChatHandler)
 	return srv, nil
 }
 
-func getMiddlewares(uc pbuser.UserClient, tracer trace.TracerProvider, propagator propagation.TextMapPropagator) []middleware.Middleware {
+func getMiddlewares(uc rpc.UserClient, tracer trace.TracerProvider, propagator propagation.TextMapPropagator) []middleware.Middleware {
 	trace := tracing.Server(
 		tracing.WithTracerProvider(tracer),
 		tracing.WithPropagator(propagator),
@@ -85,5 +85,5 @@ func getMiddlewares(uc pbuser.UserClient, tracer trace.TracerProvider, propagato
 		Prefix("/ai.admin").
 		Build()
 
-	return []middleware.Middleware{recovery.Recovery(), trace, cm.Logger(), cm.CurrentUser(uc), cm.LoginRequired(), isAdmin}
+	return []middleware.Middleware{recovery.Recovery(), trace, cm.Logger(), cm.CurrentUser(uc.Client()), cm.LoginRequired(), isAdmin}
 }

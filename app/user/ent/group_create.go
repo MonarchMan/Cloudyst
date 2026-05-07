@@ -3,7 +3,8 @@
 package ent
 
 import (
-	v1 "api/api/user/common/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"context"
 	"errors"
@@ -108,7 +109,7 @@ func (_c *GroupCreate) SetPermissions(v *boolset.BooleanSet) *GroupCreate {
 }
 
 // SetSettings sets the "settings" field.
-func (_c *GroupCreate) SetSettings(v *v1.GroupSetting) *GroupCreate {
+func (_c *GroupCreate) SetSettings(v *userdata.GroupSetting) *GroupCreate {
 	_c.mutation.SetSettings(v)
 	return _c
 }
@@ -128,7 +129,7 @@ func (_c *GroupCreate) SetNillableStoragePolicyID(v *int) *GroupCreate {
 }
 
 // SetStoragePolicyInfo sets the "storage_policy_info" field.
-func (_c *GroupCreate) SetStoragePolicyInfo(v *v1.StoragePolicyInfo) *GroupCreate {
+func (_c *GroupCreate) SetStoragePolicyInfo(v *filedata.StoragePolicyInfo) *GroupCreate {
 	_c.mutation.SetStoragePolicyInfo(v)
 	return _c
 }
@@ -223,16 +224,6 @@ func (_c *GroupCreate) check() error {
 	}
 	if _, ok := _c.mutation.Permissions(); !ok {
 		return &ValidationError{Name: "permissions", err: errors.New(`ent: missing required field "Group.permissions"`)}
-	}
-	if v, ok := _c.mutation.Settings(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "settings", err: fmt.Errorf(`ent: validator failed for field "Group.settings": %w`, err)}
-		}
-	}
-	if v, ok := _c.mutation.StoragePolicyInfo(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "storage_policy_info", err: fmt.Errorf(`ent: validator failed for field "Group.storage_policy_info": %w`, err)}
-		}
 	}
 	return nil
 }
@@ -479,7 +470,7 @@ func (u *GroupUpsert) UpdatePermissions() *GroupUpsert {
 }
 
 // SetSettings sets the "settings" field.
-func (u *GroupUpsert) SetSettings(v *v1.GroupSetting) *GroupUpsert {
+func (u *GroupUpsert) SetSettings(v *userdata.GroupSetting) *GroupUpsert {
 	u.Set(group.FieldSettings, v)
 	return u
 }
@@ -521,7 +512,7 @@ func (u *GroupUpsert) ClearStoragePolicyID() *GroupUpsert {
 }
 
 // SetStoragePolicyInfo sets the "storage_policy_info" field.
-func (u *GroupUpsert) SetStoragePolicyInfo(v *v1.StoragePolicyInfo) *GroupUpsert {
+func (u *GroupUpsert) SetStoragePolicyInfo(v *filedata.StoragePolicyInfo) *GroupUpsert {
 	u.Set(group.FieldStoragePolicyInfo, v)
 	return u
 }
@@ -703,7 +694,7 @@ func (u *GroupUpsertOne) UpdatePermissions() *GroupUpsertOne {
 }
 
 // SetSettings sets the "settings" field.
-func (u *GroupUpsertOne) SetSettings(v *v1.GroupSetting) *GroupUpsertOne {
+func (u *GroupUpsertOne) SetSettings(v *userdata.GroupSetting) *GroupUpsertOne {
 	return u.Update(func(s *GroupUpsert) {
 		s.SetSettings(v)
 	})
@@ -752,7 +743,7 @@ func (u *GroupUpsertOne) ClearStoragePolicyID() *GroupUpsertOne {
 }
 
 // SetStoragePolicyInfo sets the "storage_policy_info" field.
-func (u *GroupUpsertOne) SetStoragePolicyInfo(v *v1.StoragePolicyInfo) *GroupUpsertOne {
+func (u *GroupUpsertOne) SetStoragePolicyInfo(v *filedata.StoragePolicyInfo) *GroupUpsertOne {
 	return u.Update(func(s *GroupUpsert) {
 		s.SetStoragePolicyInfo(v)
 	})
@@ -1108,7 +1099,7 @@ func (u *GroupUpsertBulk) UpdatePermissions() *GroupUpsertBulk {
 }
 
 // SetSettings sets the "settings" field.
-func (u *GroupUpsertBulk) SetSettings(v *v1.GroupSetting) *GroupUpsertBulk {
+func (u *GroupUpsertBulk) SetSettings(v *userdata.GroupSetting) *GroupUpsertBulk {
 	return u.Update(func(s *GroupUpsert) {
 		s.SetSettings(v)
 	})
@@ -1157,7 +1148,7 @@ func (u *GroupUpsertBulk) ClearStoragePolicyID() *GroupUpsertBulk {
 }
 
 // SetStoragePolicyInfo sets the "storage_policy_info" field.
-func (u *GroupUpsertBulk) SetStoragePolicyInfo(v *v1.StoragePolicyInfo) *GroupUpsertBulk {
+func (u *GroupUpsertBulk) SetStoragePolicyInfo(v *filedata.StoragePolicyInfo) *GroupUpsertBulk {
 	return u.Update(func(s *GroupUpsert) {
 		s.SetStoragePolicyInfo(v)
 	})

@@ -4,8 +4,8 @@ import (
 	"ai/internal/conf"
 	"ai/internal/data/rpc"
 	"ai/internal/data/vector"
+	"api/external/data/common"
 	"common/cache"
-	"common/db"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -21,10 +21,13 @@ var ProviderSet = wire.NewSet(
 	NewChatConversationClient,
 	NewChatMessageClient,
 	NewAIImageClient,
+	NewWebPageClient,
+	NewToolClient,
+	NewTaskClient,
 	vector.NewMilvusClient,
 	rpc.NewFileClient,
-	rpc.RawUserClient,
 	rpc.NewUserClient,
+	rpc.NewSettingClient,
 	NewDBClient,
 	KVWrapper,
 	DbTypeWrapper,
@@ -40,6 +43,6 @@ func KVWrapper(config *conf.Bootstrap, l log.Logger) cache.Driver {
 		redisConf.User, redisConf.Password, redisConf.UseTls, redisConf.TlsSkipVerify)
 }
 
-func DbTypeWrapper(config *conf.Bootstrap) db.DBType {
-	return db.DBType(config.Data.Database.DbType)
+func DbTypeWrapper(config *conf.Bootstrap) common.DBType {
+	return common.DBType(config.Data.Database.DbType)
 }

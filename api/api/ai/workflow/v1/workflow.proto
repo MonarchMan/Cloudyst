@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package ai.workflow.v1;
+
+option go_package = "api/api/ai/workflow/v1;v1";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "common/v1/common.proto";
+
+service Workflow {
+  rpc ListTasks(common.v1.ListTasksRequest) returns (common.v1.ListTasksResponse) {
+    option (google.api.http) = {
+      get: "/ai/workflow/list",
+    };
+  }
+
+  rpc GetTask(SimpleRequest) returns (common.v1.TaskResponse) {
+    option (google.api.http) = {
+      get: "/ai/workflow/{id}",
+    };
+  }
+
+  rpc GetTaskPhaseProgress(SimpleRequest) returns (common.v1.TaskPhaseProgressResponse) {
+    option (google.api.http) = {
+      get: "/ai/workflow/{id}/progress",
+    };
+  }
+
+  rpc CancelTasks(CancelTaskRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/ai/workflow/cancel",
+      body: "*",
+    };
+  }
+
+  rpc ResumeTasks(ResumeTaskRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/ai/workflow/resume",
+      body: "*",
+    };
+  }
+
+}
+
+message SimpleRequest {
+  string id = 1;
+}
+
+message CancelTaskRequest {
+  repeated string ids = 1;
+  bool terminate = 2;
+  string type = 3;
+}
+
+message ResumeTaskRequest {
+  repeated string ids = 1;
+  string type = 2;
+}

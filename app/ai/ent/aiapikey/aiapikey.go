@@ -36,7 +36,7 @@ const (
 	// EdgeAiModel holds the string denoting the ai_model edge name in mutations.
 	EdgeAiModel = "ai_model"
 	// Table holds the table name of the aiapikey in the database.
-	Table = "AiApiKey"
+	Table = "ai_api_keys"
 	// AiModelTable is the table that holds the ai_model relation/edge.
 	AiModelTable = "ai_models"
 	// AiModelInverseTable is the table name for the AiModel entity.

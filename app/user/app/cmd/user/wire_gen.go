@@ -55,16 +55,6 @@ func wireApp(bootstrap *conf.Bootstrap, parser *uaparser.Parser, client *api.Cli
 	dbType := data.DBTypeWrapper(bootstrap)
 	groupClient := data.NewGroupClient(entClient, dbType, driver)
 	userService := service.NewUserService(logger, provider, encoder, auth, driver, userClient, driverManager, webAuthn, parser, captchaHelper, groupClient)
-	tracerProvider, err := pkg.TracerProvider(bootstrap)
-	if err != nil {
-		cleanup2()
-		cleanup()
-		return nil, nil, err
-	}
-	textMapPropagator := pkg.Propagator()
-	grpcServer := server.NewGRPCServer(bootstrap, userService, tracerProvider, textMapPropagator)
-	tokenAuth := biz.NewTokenAuth(encoder, provider, bootstrap, userClient, logger, driver)
-	sessionService := service.NewSessionService(userClient, driver, encoder, tokenAuth, provider, captchaHelper, logger)
 	fileSysClient, err := rpc.NewFileSysClient(client)
 	if err != nil {
 		cleanup2()
@@ -90,6 +80,16 @@ func wireApp(bootstrap *conf.Bootstrap, parser *uaparser.Parser, client *api.Cli
 		return nil, nil, err
 	}
 	adminService := service.NewAdminService(driver, userClient, groupClient, settingClient, provider, fileSysClient, fileClient, shareClient, fileAdminClient, encoder, driverManager)
+	tracerProvider, err := pkg.TracerProvider(bootstrap)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	textMapPropagator := pkg.Propagator()
+	grpcServer := server.NewGRPCServer(bootstrap, userService, adminService, tracerProvider, textMapPropagator)
+	tokenAuth := biz.NewTokenAuth(encoder, provider, bootstrap, userClient, logger, driver)
+	sessionService := service.NewSessionService(userClient, driver, encoder, tokenAuth, provider, captchaHelper, logger)
 	davAccountClient := data.NewDavAccountClient(entClient, dbType, encoder)
 	deviceService := service.NewDeviceService(davAccountClient, encoder)
 	siteService := service.NewSiteService(provider, captchaHelper, encoder, driver, userClient)

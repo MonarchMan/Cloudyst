@@ -17,6 +17,8 @@ import (
 	"unicode/utf8"
 
 	"google.golang.org/protobuf/types/known/anypb"
+
+	v1 "api/api/common/v1"
 )
 
 // ensure the imports are used
@@ -33,6 +35,8 @@ var (
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
 	_ = sort.Sort
+
+	_ = v1.OrderDirection(0)
 )
 
 // Validate checks the field values on PaginationArgs with the rules defined in
@@ -1215,7 +1219,38 @@ func (m *ListViewColumn) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Width
+	if all {
+		switch v := interface{}(m.GetProps()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ListViewColumnValidationError{
+					field:  "Props",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ListViewColumnValidationError{
+					field:  "Props",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetProps()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ListViewColumnValidationError{
+				field:  "Props",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.Width != nil {
+		// no validation rules for Width
+	}
 
 	if len(errors) > 0 {
 		return ListViewColumnMultiError(errors)

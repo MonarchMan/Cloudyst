@@ -3,11 +3,11 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
 	"context"
 	"errors"
 	"file/ent/task"
 	"fmt"
+	"queue"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -72,13 +72,13 @@ func (_c *TaskCreate) SetType(v string) *TaskCreate {
 }
 
 // SetStatus sets the "status" field.
-func (_c *TaskCreate) SetStatus(v task.Status) *TaskCreate {
+func (_c *TaskCreate) SetStatus(v queue.TaskStatus) *TaskCreate {
 	_c.mutation.SetStatus(v)
 	return _c
 }
 
 // SetNillableStatus sets the "status" field if the given value is not nil.
-func (_c *TaskCreate) SetNillableStatus(v *task.Status) *TaskCreate {
+func (_c *TaskCreate) SetNillableStatus(v *queue.TaskStatus) *TaskCreate {
 	if v != nil {
 		_c.SetStatus(*v)
 	}
@@ -86,7 +86,7 @@ func (_c *TaskCreate) SetNillableStatus(v *task.Status) *TaskCreate {
 }
 
 // SetPublicState sets the "public_state" field.
-func (_c *TaskCreate) SetPublicState(v *v1.TaskPublicState) *TaskCreate {
+func (_c *TaskCreate) SetPublicState(v *queue.TaskPublicState) *TaskCreate {
 	_c.mutation.SetPublicState(v)
 	return _c
 }
@@ -212,11 +212,6 @@ func (_c *TaskCreate) check() error {
 	}
 	if _, ok := _c.mutation.PublicState(); !ok {
 		return &ValidationError{Name: "public_state", err: errors.New(`ent: missing required field "Task.public_state"`)}
-	}
-	if v, ok := _c.mutation.PublicState(); ok {
-		if err := v.Validate(); err != nil {
-			return &ValidationError{Name: "public_state", err: fmt.Errorf(`ent: validator failed for field "Task.public_state": %w`, err)}
-		}
 	}
 	return nil
 }
@@ -383,7 +378,7 @@ func (u *TaskUpsert) UpdateType() *TaskUpsert {
 }
 
 // SetStatus sets the "status" field.
-func (u *TaskUpsert) SetStatus(v task.Status) *TaskUpsert {
+func (u *TaskUpsert) SetStatus(v queue.TaskStatus) *TaskUpsert {
 	u.Set(task.FieldStatus, v)
 	return u
 }
@@ -395,7 +390,7 @@ func (u *TaskUpsert) UpdateStatus() *TaskUpsert {
 }
 
 // SetPublicState sets the "public_state" field.
-func (u *TaskUpsert) SetPublicState(v *v1.TaskPublicState) *TaskUpsert {
+func (u *TaskUpsert) SetPublicState(v *queue.TaskPublicState) *TaskUpsert {
 	u.Set(task.FieldPublicState, v)
 	return u
 }
@@ -546,7 +541,7 @@ func (u *TaskUpsertOne) UpdateType() *TaskUpsertOne {
 }
 
 // SetStatus sets the "status" field.
-func (u *TaskUpsertOne) SetStatus(v task.Status) *TaskUpsertOne {
+func (u *TaskUpsertOne) SetStatus(v queue.TaskStatus) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetStatus(v)
 	})
@@ -560,7 +555,7 @@ func (u *TaskUpsertOne) UpdateStatus() *TaskUpsertOne {
 }
 
 // SetPublicState sets the "public_state" field.
-func (u *TaskUpsertOne) SetPublicState(v *v1.TaskPublicState) *TaskUpsertOne {
+func (u *TaskUpsertOne) SetPublicState(v *queue.TaskPublicState) *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetPublicState(v)
 	})
@@ -891,7 +886,7 @@ func (u *TaskUpsertBulk) UpdateType() *TaskUpsertBulk {
 }
 
 // SetStatus sets the "status" field.
-func (u *TaskUpsertBulk) SetStatus(v task.Status) *TaskUpsertBulk {
+func (u *TaskUpsertBulk) SetStatus(v queue.TaskStatus) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetStatus(v)
 	})
@@ -905,7 +900,7 @@ func (u *TaskUpsertBulk) UpdateStatus() *TaskUpsertBulk {
 }
 
 // SetPublicState sets the "public_state" field.
-func (u *TaskUpsertBulk) SetPublicState(v *v1.TaskPublicState) *TaskUpsertBulk {
+func (u *TaskUpsertBulk) SetPublicState(v *queue.TaskPublicState) *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.SetPublicState(v)
 	})

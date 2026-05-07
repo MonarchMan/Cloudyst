@@ -33,7 +33,7 @@ func LoginRequired() khttp.FilterFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			ctx := req.Context()
-			if u := trans.FromContext(ctx); u != nil && u.Id != 0 {
+			if u := trans.FromContext(ctx); u != nil && u.ID != 0 {
 				next.ServeHTTP(w, req)
 			}
 			w.WriteHeader(http.StatusUnauthorized)

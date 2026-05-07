@@ -1,7 +1,8 @@
 package server
 
 import (
-	"api/api/user/users/v1"
+	adminapi "api/api/user/admin/v1"
+	userapi "api/api/user/users/v1"
 	im "user/app/middleware"
 	"user/internal/conf"
 	"user/internal/service"
@@ -14,8 +15,8 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Bootstrap, userService *service.UserService, tracer trace.TracerProvider,
-	propagator propagation.TextMapPropagator) *grpc.Server {
+func NewGRPCServer(c *conf.Bootstrap, userService *service.UserService, adminService *service.AdminService,
+	tracer trace.TracerProvider, propagator propagation.TextMapPropagator) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -36,6 +37,8 @@ func NewGRPCServer(c *conf.Bootstrap, userService *service.UserService, tracer t
 		opts = append(opts, grpc.Timeout(c.Server.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-	v1.RegisterUserServer(srv, userService)
+	userapi.RegisterUserServer(srv, userService)
+	adminapi.RegisterAdminServer(srv, adminService)
+
 	return srv
 }

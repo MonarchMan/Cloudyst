@@ -1,22 +1,19 @@
 package manager
 
 import (
-	pb "api/api/file/common/v1"
 	filepb "api/api/file/files/v1"
 	"common/util"
 	"context"
 	"errors"
-	"file/ent"
-	"file/ent/task"
 	"file/internal/biz/filemanager/driver/local"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/filemanager/fs/dbfs"
 	"file/internal/biz/filemanager/manager/entitysource"
-	"file/internal/biz/queue"
 	"file/internal/biz/thumb"
 	"file/internal/data/types"
 	"fmt"
 	"os"
+	mqueue "queue"
 	"runtime"
 	"time"
 
@@ -222,7 +219,7 @@ func (m *manager) generateThumb(ctx context.Context, uri *fs.URI, ext string, es
 
 type (
 	GenerateThumbTask struct {
-		*queue.InMemoryTask
+		*mqueue.InMemoryTask
 		es  entitysource.EntitySource
 		ext string
 		m   *manager
@@ -237,13 +234,10 @@ type (
 
 func newGenerateThumbTask(ctx context.Context, m *manager, uri *fs.URI, ext string, es entitysource.EntitySource) *GenerateThumbTask {
 	t := &GenerateThumbTask{
-		InMemoryTask: &queue.InMemoryTask{
-			DBTask: &queue.DBTask{
-				Task: &ent.Task{
-					TraceID:     util.TraceID(ctx),
-					PublicState: &pb.TaskPublicState{},
-					UserID:      int(m.user.Id),
-				},
+		InMemoryTask: &mqueue.InMemoryTask{
+			TaskModel: &mqueue.TaskModel{
+				ModelTraceID:     util.TraceID(ctx),
+				ModelPublicState: &mqueue.TaskPublicState{},
 			},
 		},
 		es:  es,
@@ -256,12 +250,12 @@ func newGenerateThumbTask(ctx context.Context, m *manager, uri *fs.URI, ext stri
 	return t
 }
 
-func (m *GenerateThumbTask) Do(ctx context.Context) (task.Status, error) {
+func (m *GenerateThumbTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	// Make sure users does not cancel request before we start generating thumb.
 	select {
 	case <-ctx.Done():
 		err := ctx.Err()
-		return task.StatusError, err
+		return mqueue.StatusError, err
 	default:
 	}
 
@@ -269,14 +263,14 @@ func (m *GenerateThumbTask) Do(ctx context.Context) (task.Status, error) {
 	if err != nil {
 		if errors.Is(err, thumb.ErrNotAvailable) {
 			m.sig <- &generateRes{nil, err}
-			return task.StatusCompleted, nil
+			return mqueue.StatusCompleted, nil
 		}
 
-		return task.StatusError, err
+		return mqueue.StatusError, err
 	}
 
 	m.sig <- &generateRes{res, nil}
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
 func (m *GenerateThumbTask) OnError(err error, d time.Duration) {

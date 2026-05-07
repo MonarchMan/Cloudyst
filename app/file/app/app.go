@@ -1,7 +1,6 @@
 package app
 
 import (
-	pbuser "api/api/user/users/v1"
 	"common/cache"
 	"common/constants"
 	"common/util"
@@ -16,7 +15,9 @@ import (
 	"file/internal/biz/setting"
 	"file/internal/conf"
 	"file/internal/data"
+	"file/internal/data/rpc"
 	"fmt"
+	mqueue "queue"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/trace"
@@ -34,7 +35,7 @@ type (
 		config   *conf.Bootstrap
 		kv       cache.Driver
 		pc       data.StoragePolicyClient
-		uc       pbuser.UserClient
+		uc       rpc.UserClient
 		credM    credmanager.CredManager
 		qm       *queue.QueueManager
 		settings setting.Provider
@@ -47,7 +48,7 @@ type (
 )
 
 func NewServer(logger log.Logger, config *conf.Bootstrap, kv cache.Driver, pc data.StoragePolicyClient,
-	uc pbuser.UserClient, credM credmanager.CredManager, qm *queue.QueueManager, settings setting.Provider,
+	uc rpc.UserClient, credM credmanager.CredManager, qm *queue.QueueManager, settings setting.Provider,
 	mm mime.MimeManager, em mediameta.ExtractorStateManager, tracerProvider trace.TracerProvider,
 	dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (Server, func()) {
 	s := &server{
@@ -82,7 +83,7 @@ func (s *server) Start() error {
 		if err := s.credM.Upsert(ctx, credentials...); err != nil {
 			return fmt.Errorf("failed to upsert OneDrive credentials to CredManager: %w", err)
 		}
-		crontab.Register(setting.CronTypeOauthCredRefresh, func(ctx context.Context, q queue.Queue) {
+		crontab.Register(setting.CronTypeOauthCredRefresh, func(ctx context.Context, q mqueue.Queue) {
 			s.credM.RefreshAll(ctx)
 		})
 

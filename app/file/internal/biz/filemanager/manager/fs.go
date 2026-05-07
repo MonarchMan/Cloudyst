@@ -1,7 +1,6 @@
 package manager
 
 import (
-	pb "api/api/file/common/v1"
 	"common/serializer"
 	"context"
 	"file/ent"
@@ -23,7 +22,7 @@ import (
 
 func (m *manager) LocalDriver(policy *ent.StoragePolicy) driver.Handler {
 	if policy == nil {
-		policy = &ent.StoragePolicy{Type: types.PolicyTypeLocal, Settings: &pb.PolicySetting{}}
+		policy = &ent.StoragePolicy{Type: types.PolicyTypeLocal, Settings: &types.PolicySetting{}}
 	}
 	return local.New(policy, m.l.Logger(), m.config)
 }
@@ -96,7 +95,7 @@ func (m *manager) getEntityPolicyDriver(cxt context.Context, e fs.Entity, policy
 		err    error
 	)
 	if policyID == 0 {
-		policy = &ent.StoragePolicy{Type: types.PolicyTypeLocal, Settings: &pb.PolicySetting{}}
+		policy = &ent.StoragePolicy{Type: types.PolicyTypeLocal, Settings: &types.PolicySetting{}}
 	} else {
 		if policyOverwrite != nil && policyOverwrite.ID == policyID {
 			policy = policyOverwrite

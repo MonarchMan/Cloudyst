@@ -1,41 +1,82 @@
 package data
 
 import (
-	pb "api/api/file/common/v1"
-	"common/db"
+	"api/external/data/common"
 	"common/hashid"
 	"context"
+	"errors"
 	"file/ent"
 	"file/ent/task"
 	"fmt"
+	"queue"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/samber/lo"
 )
 
-type (
-	// Ctx keys for eager loading options.
-	LoadTaskUser struct{}
+type TaskModel struct {
+	*ent.Task
+}
 
-	TaskArgs struct {
-		Status       task.Status
-		Type         string
-		PublicState  *pb.TaskPublicState
-		PrivateState string
-		OwnerID      int
-		TraceID      string
+func NewTaskModel(task *ent.Task) *TaskModel {
+	return &TaskModel{
+		Task: task,
 	}
-)
+}
+
+func (t *TaskModel) ID() int {
+	return t.Task.ID
+}
+
+func (t *TaskModel) Type() string {
+	return t.Task.Type
+}
+
+func (t *TaskModel) Status() queue.TaskStatus {
+	return t.Task.Status
+}
+
+func (t *TaskModel) OwnerID() int {
+	return t.Task.UserID
+}
+
+func (t *TaskModel) State() string {
+	return t.PrivateState
+}
+
+func (t *TaskModel) Retried() int {
+	return t.Task.PublicState.RetryCount
+}
+
+func (t *TaskModel) Error() error {
+	if t.Task != nil && t.Task.PublicState.Error != "" {
+		return errors.New(t.Task.PublicState.Error)
+	}
+	return nil
+}
+
+func (t *TaskModel) ErrorHistory() []error {
+	if t.Task != nil {
+		return lo.Map(t.Task.PublicState.ErrorHistory, func(err string, index int) error {
+			return errors.New(err)
+		})
+	}
+
+	return nil
+}
+
+func (t *TaskModel) TraceID() string {
+	return t.Task.TraceID
+}
+
+func (t *TaskModel) ResumeTime() int64 {
+	return t.Task.PublicState.ResumeTime
+}
 
 type TaskClient interface {
 	TxOperator
-	// New creates a new task with the given args.
-	New(ctx context.Context, task *TaskArgs) (*ent.Task, error)
-	// Update updates the task with the given args.
-	Update(ctx context.Context, task *ent.Task, args *TaskArgs) (*ent.Task, error)
-	// GetPendingTasks returns all pending tasks of given type.
-	GetPendingTasks(ctx context.Context, taskType ...string) ([]*ent.Task, error)
+	queue.TaskClient
 	// GetTaskByID returns the task with the given ID.
 	GetTaskByID(ctx context.Context, taskID int) (*ent.Task, error)
 	// SetCompleteByID sets the task with the given ID to complete.
@@ -52,26 +93,26 @@ type (
 	ListTaskArgs struct {
 		*PaginationArgs
 		Types   []string
-		Status  []task.Status
+		Status  []queue.TaskStatus
 		UserID  int
 		TraceID string
 	}
 
 	ListTaskResult struct {
-		*pb.PaginationResults
+		*PaginationResults
 		Tasks []*ent.Task
 	}
 
 	DeleteTaskArgs struct {
 		NotAfter time.Time
 		Types    []string
-		Status   []task.Status
+		Status   []queue.TaskStatus
 		Uids     []int
 	}
 )
 
-func NewTaskClient(client *ent.Client, dbType db.DBType, hasher hashid.Encoder) TaskClient {
-	return &taskClient{client: client, maxSQlParam: db.SqlParamLimit(dbType), hasher: hasher}
+func NewTaskClient(client *ent.Client, dbType common.DBType, hasher hashid.Encoder) TaskClient {
+	return &taskClient{client: client, maxSQlParam: common.SqlParamLimit(dbType), hasher: hasher}
 }
 
 type taskClient struct {
@@ -88,7 +129,7 @@ func (c *taskClient) GetClient() *ent.Client {
 	return c.client
 }
 
-func (c *taskClient) New(ctx context.Context, task *TaskArgs) (*ent.Task, error) {
+func (c *taskClient) New(ctx context.Context, task *queue.TaskArgs) (queue.TaskRecord, error) {
 	stm := c.client.Task.
 		Create().
 		SetType(task.Type).
@@ -114,7 +155,7 @@ func (c *taskClient) New(ctx context.Context, task *TaskArgs) (*ent.Task, error)
 		return nil, fmt.Errorf("failed to create task: %w", err)
 	}
 
-	return newTask, nil
+	return NewTaskModel(newTask), nil
 }
 
 func (c *taskClient) DeleteByIDs(ctx context.Context, ids ...int) error {
@@ -143,39 +184,47 @@ func (c *taskClient) DeleteBy(ctx context.Context, args *DeleteTaskArgs) error {
 	return err
 }
 
-func (c *taskClient) Update(ctx context.Context, task *ent.Task, args *TaskArgs) (*ent.Task, error) {
-	stm := c.client.Task.UpdateOne(task).
+func (c *taskClient) Update(ctx context.Context, taskModel queue.TaskRecord, args *queue.TaskArgs) (queue.TaskRecord, error) {
+	wrapped, ok := taskModel.(*TaskModel)
+	if !ok {
+		return nil, fmt.Errorf("taskModel is not defined as ent.Task")
+	}
+	t := wrapped.Task
+	stm := c.client.Task.UpdateOne(t).
 		SetPublicState(args.PublicState)
 
-	task.PublicState = args.PublicState
+	t.PublicState = args.PublicState
 
-	if task.PrivateState != "" {
-		stm.SetPrivateState(task.PrivateState)
-		task.PrivateState = args.PrivateState
+	if t.PrivateState != "" {
+		stm.SetPrivateState(t.PrivateState)
+		t.PrivateState = args.PrivateState
 	}
 
-	if task.Status != "" {
+	if t.Status != "" {
 		stm.SetStatus(args.Status)
-		task.Status = args.Status
+		t.Status = args.Status
 	}
 
 	if err := stm.Exec(ctx); err != nil {
 		return nil, fmt.Errorf("failed to create task: %w", err)
 	}
 
-	return task, nil
+	return taskModel, nil
 }
 
-func (c *taskClient) GetPendingTasks(ctx context.Context, taskType ...string) ([]*ent.Task, error) {
+func (c *taskClient) GetPendingTasks(ctx context.Context, taskType ...string) ([]queue.TaskRecord, error) {
 	tasks, err := c.client.Task.Query().
-		Where(task.StatusIn(task.StatusProcessing, task.StatusQueued, task.StatusSuspending)).
+		Where(task.StatusIn(queue.StatusProcessing, queue.StatusQueued, queue.StatusSuspending)).
 		Where(task.TypeIn(taskType...)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
+	records := lo.Map(tasks, func(task *ent.Task, _ int) queue.TaskRecord {
+		return NewTaskModel(task)
+	})
 
-	return tasks, nil
+	return records, nil
 }
 
 func (c *taskClient) GetTaskByID(ctx context.Context, taskID int) (*ent.Task, error) {
@@ -186,7 +235,7 @@ func (c *taskClient) GetTaskByID(ctx context.Context, taskID int) (*ent.Task, er
 
 func (c *taskClient) SetCompleteByID(ctx context.Context, taskID int) error {
 	_, err := c.client.Task.UpdateOneID(taskID).
-		SetStatus(task.StatusCompleted).
+		SetStatus(queue.StatusCompleted).
 		Save(ctx)
 	return err
 }
@@ -212,7 +261,7 @@ func (c *taskClient) List(ctx context.Context, args *ListTaskArgs) (*ListTaskRes
 	var (
 		tasks         []*ent.Task
 		err           error
-		paginationRes *pb.PaginationResults
+		paginationRes *PaginationResults
 	)
 
 	if args.UseCursorPagination {
@@ -232,7 +281,7 @@ func (c *taskClient) List(ctx context.Context, args *ListTaskArgs) (*ListTaskRes
 }
 
 func (c *taskClient) cursorPagination(ctx context.Context, query *ent.TaskQuery, args *ListTaskArgs,
-	paramMargin int) ([]*ent.Task, *pb.PaginationResults, error) {
+	paramMargin int) ([]*ent.Task, *PaginationResults, error) {
 	pageSize := capPageSize(c.maxSQlParam, args.PageSize, paramMargin)
 	query.Order(task.ByID(sql.OrderDesc()))
 
@@ -271,15 +320,15 @@ func (c *taskClient) cursorPagination(ctx context.Context, query *ent.TaskQuery,
 		nextTokenStr = nextToken
 	}
 
-	return lo.Subset(tasks, 0, uint(pageSize)), &pb.PaginationResults{
-		PageSize:      int32(pageSize),
+	return lo.Subset(tasks, 0, uint(pageSize)), &PaginationResults{
+		PageSize:      pageSize,
 		NextPageToken: nextTokenStr,
 		IsCursor:      true,
 	}, nil
 }
 
 func (c *taskClient) offsetPagination(ctx context.Context, query *ent.TaskQuery, args *ListTaskArgs,
-	paramMargin int) ([]*ent.Task, *pb.PaginationResults, error) {
+	paramMargin int) ([]*ent.Task, *PaginationResults, error) {
 	pageSize := capPageSize(c.maxSQlParam, args.PageSize, paramMargin)
 	query.Order(getTaskOrderOption(args)...)
 
@@ -297,10 +346,10 @@ func (c *taskClient) offsetPagination(ctx context.Context, query *ent.TaskQuery,
 		return nil, nil, err
 	}
 
-	return logs, &pb.PaginationResults{
-		PageSize:   int32(pageSize),
-		TotalItems: int32(total),
-		Page:       int32(args.Page),
+	return logs, &PaginationResults{
+		PageSize:   pageSize,
+		TotalItems: total,
+		Page:       args.Page,
 	}, nil
 
 }

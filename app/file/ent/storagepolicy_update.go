@@ -3,7 +3,6 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
 	"context"
 	"errors"
 	"file/ent/entity"
@@ -11,6 +10,7 @@ import (
 	"file/ent/node"
 	"file/ent/predicate"
 	"file/ent/storagepolicy"
+	"file/internal/data/types"
 	"fmt"
 	"time"
 
@@ -254,7 +254,7 @@ func (_u *StoragePolicyUpdate) ClearFileNameRule() *StoragePolicyUpdate {
 }
 
 // SetSettings sets the "settings" field.
-func (_u *StoragePolicyUpdate) SetSettings(v *v1.PolicySetting) *StoragePolicyUpdate {
+func (_u *StoragePolicyUpdate) SetSettings(v *types.PolicySetting) *StoragePolicyUpdate {
 	_u.mutation.SetSettings(v)
 	return _u
 }
@@ -857,7 +857,7 @@ func (_u *StoragePolicyUpdateOne) ClearFileNameRule() *StoragePolicyUpdateOne {
 }
 
 // SetSettings sets the "settings" field.
-func (_u *StoragePolicyUpdateOne) SetSettings(v *v1.PolicySetting) *StoragePolicyUpdateOne {
+func (_u *StoragePolicyUpdateOne) SetSettings(v *types.PolicySetting) *StoragePolicyUpdateOne {
 	_u.mutation.SetSettings(v)
 	return _u
 }

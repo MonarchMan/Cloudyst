@@ -2,8 +2,8 @@ package middlewares
 
 import (
 	pbuser "api/api/user/users/v1"
+	"api/external/data/userdata"
 	"api/external/trans"
-	"common/boolset"
 	"common/constants"
 	"context"
 	"strconv"
@@ -34,12 +34,13 @@ func CurrentUser(client pbuser.UserClient) middleware.Middleware {
 }
 
 func SetUserCtx(ctx context.Context, uid int, client pbuser.UserClient) (context.Context, error) {
-	req := &pbuser.RawUserRequest{Id: int32(uid)}
-	user, err := client.GetUserInfo(ctx, req)
+	req := &pbuser.UserInfoRequest{Id: int32(uid)}
+	protoUser, err := client.GetUserInfo(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	ctx = context.WithValue(ctx, trans.UserCtx{}, user)
+	user := userdata.UserFromProto(protoUser)
+	ctx = trans.WithValue(ctx, user)
 	return ctx, nil
 }
 
@@ -47,8 +48,7 @@ func CheckAdminPermission() middleware.Middleware {
 	return func(next middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req any) (any, error) {
 			u := trans.FromContext(ctx)
-			permission := boolset.BooleanSet(u.Group.Permissions)
-			if !(&permission).Enabled(int(constants.GroupPermissionIsAdmin)) {
+			if !u.Group.Permissions.Enabled(int(constants.GroupPermissionIsAdmin)) {
 				return nil, errors.Forbidden("admin permission required", "admin permission required")
 			}
 			return next(ctx, req)
@@ -59,7 +59,7 @@ func CheckAdminPermission() middleware.Middleware {
 func LoginRequired() middleware.Middleware {
 	return func(next middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req any) (any, error) {
-			if u := trans.FromContext(ctx); u != nil && u.Id != 0 {
+			if u := trans.FromContext(ctx); u != nil && u.ID != 0 {
 				return next(ctx, req)
 			}
 			return nil, errors.Unauthorized("login required", "login required")

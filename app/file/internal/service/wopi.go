@@ -4,9 +4,8 @@ import (
 	commonpb "api/api/common/v1"
 	pbfile "api/api/file/files/v1"
 	pb "api/api/file/wopi/v1"
-	userpb "api/api/user/common/v1"
-	pbuser "api/api/user/users/v1"
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
+	"api/external/data/userdata"
 	"api/external/trans"
 	"common/cache"
 	"common/constants"
@@ -42,11 +41,11 @@ type WopiService struct {
 	dep         filemanager.ManagerDep
 	dbfsDep     filemanager.DbfsDep
 	kv          cache.Driver
-	uc          pbuser.UserClient
+	uc          rpc.UserClient
 }
 
 func NewWopiService(fs *FileService, hasher hashid.Encoder, settings setting.Provider, dep filemanager.ManagerDep,
-	dbfsDep filemanager.DbfsDep, kv cache.Driver, uc pbuser.UserClient) *WopiService {
+	dbfsDep filemanager.DbfsDep, kv cache.Driver, uc rpc.UserClient) *WopiService {
 	return &WopiService{
 		fileService: fs,
 		hasher:      hasher,
@@ -99,7 +98,7 @@ func (s *WopiService) fileInfo(ctx khttp.Context) (*pb.WopiFileInfo, error) {
 		return nil, commonpb.ErrorNotFound("version not found: %w", err)
 	}
 
-	isSelf := file.OwnerID() == int(user.Id)
+	isSelf := file.OwnerID() == int(user.ID)
 	canEdit := file.PrimaryEntityID() == targetEntity.ID() && isSelf && uri.FileSystem() == constants.FileSystemMy
 	cantPutRelative := !canEdit
 	siteUrl := settings.SiteURL(ctx)
@@ -116,7 +115,7 @@ func (s *WopiService) fileInfo(ctx khttp.Context) (*pb.WopiFileInfo, error) {
 		FileNameMaxLength:       dbfs.MaxFileNameLength,
 		LastModifiedTime:        file.UpdatedAt().Format(time.RFC3339),
 		IsAnonymousUser:         data.IsAnonymousUser(user),
-		UserId:                  hashid.EncodeUserID(hasher, int(user.Id)),
+		UserId:                  hashid.EncodeUserID(hasher, int(user.ID)),
 		ReadOnly:                !canEdit,
 		Size:                    targetEntity.Size(),
 		OwnerId:                 hashid.EncodeUserID(hasher, file.OwnerID()),
@@ -236,7 +235,7 @@ func (s *WopiService) PutFileRelative(ctx context.Context, isPutRelative bool) (
 				Type:     string(fs.ApplicationViewer),
 				ViewerID: viewerSession.ViewerID,
 			}
-			ls, err := m.Lock(ctx, wopi.LockDuration, int(user.Id), true, app, file.Uri(false), lockToken)
+			ls, err := m.Lock(ctx, wopi.LockDuration, int(user.ID), true, app, file.Uri(false), lockToken)
 			if err != nil {
 				return "", err
 			}
@@ -284,7 +283,7 @@ func (s *WopiService) PutFileRelative(ctx context.Context, isPutRelative bool) (
 	return "", nil
 }
 
-func (s *WopiService) prepareFs(ctx context.Context) (*fs.URI, manager.FileManager, *userpb.User, *manager.ViewerSessionCache, error) {
+func (s *WopiService) prepareFs(ctx context.Context) (*fs.URI, manager.FileManager, *userdata.User, *manager.ViewerSessionCache, error) {
 	user := trans.FromContext(ctx)
 	m := manager.NewFileManager(s.dep, s.dbfsDep, user)
 	defer m.Recycle()
@@ -320,7 +319,7 @@ func (s *WopiService) Lock(ctx context.Context) error {
 			Type:     string(fs.ApplicationViewer),
 			ViewerID: viewerSession.ViewerID,
 		}
-		_, err = m.Lock(ctx, wopi.LockDuration, int(user.Id), true, app, file.Uri(false), lockToken)
+		_, err = m.Lock(ctx, wopi.LockDuration, int(user.ID), true, app, file.Uri(false), lockToken)
 		if err != nil {
 			return err
 		}
@@ -358,11 +357,11 @@ func (s *WopiService) ValidateViewerSession(ctx context.Context, fileId int, tok
 	}
 
 	session := sessionRaw.(manager.ViewerSessionCache)
-	user, err := rpc.GetUserInfo(ctx, session.UserID, s.uc)
+	user, err := s.uc.GetUserInfo(ctx, session.UserID)
 	if err != nil {
 		return nil, err
 	}
-	ctx = context.WithValue(ctx, trans.UserCtx{}, user)
+	ctx = trans.WithValue(ctx, user)
 
 	if fileId != session.FileID {
 		return nil, commonpb.ErrorForbidden("invalid file")

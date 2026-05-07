@@ -25,6 +25,7 @@ const (
 	Knowledge_GetKnowledge_FullMethodName          = "/ai.knowledge.v1.Knowledge/GetKnowledge"
 	Knowledge_DeleteKnowledge_FullMethodName       = "/ai.knowledge.v1.Knowledge/DeleteKnowledge"
 	Knowledge_ListKnowledge_FullMethodName         = "/ai.knowledge.v1.Knowledge/ListKnowledge"
+	Knowledge_KnowledgeStats_FullMethodName        = "/ai.knowledge.v1.Knowledge/KnowledgeStats"
 	Knowledge_CreateDocument_FullMethodName        = "/ai.knowledge.v1.Knowledge/CreateDocument"
 	Knowledge_BatchCreateDocuments_FullMethodName  = "/ai.knowledge.v1.Knowledge/BatchCreateDocuments"
 	Knowledge_UpdateDocument_FullMethodName        = "/ai.knowledge.v1.Knowledge/UpdateDocument"
@@ -32,6 +33,9 @@ const (
 	Knowledge_DeleteDocument_FullMethodName        = "/ai.knowledge.v1.Knowledge/DeleteDocument"
 	Knowledge_BatchDeleteDocuments_FullMethodName  = "/ai.knowledge.v1.Knowledge/BatchDeleteDocuments"
 	Knowledge_ListDocuments_FullMethodName         = "/ai.knowledge.v1.Knowledge/ListDocuments"
+	Knowledge_GetDocumentProgress_FullMethodName   = "/ai.knowledge.v1.Knowledge/GetDocumentProgress"
+	Knowledge_ReindexDocument_FullMethodName       = "/ai.knowledge.v1.Knowledge/ReindexDocument"
+	Knowledge_BatchReindexDocument_FullMethodName  = "/ai.knowledge.v1.Knowledge/BatchReindexDocument"
 	Knowledge_Search_FullMethodName                = "/ai.knowledge.v1.Knowledge/Search"
 	Knowledge_CopyDocument_FullMethodName          = "/ai.knowledge.v1.Knowledge/CopyDocument"
 	Knowledge_CreateMasterKnowledge_FullMethodName = "/ai.knowledge.v1.Knowledge/CreateMasterKnowledge"
@@ -49,13 +53,20 @@ type KnowledgeClient interface {
 	GetKnowledge(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*GetKnowledgeResponse, error)
 	DeleteKnowledge(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListKnowledge(ctx context.Context, in *ListKnowledgeRequest, opts ...grpc.CallOption) (*ListKnowledgeResponse, error)
-	CreateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...grpc.CallOption) (*GetDocumentResponse, error)
+	// get knowledge stats:
+	KnowledgeStats(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*KnowledgeStatsResponse, error)
+	CreateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...grpc.CallOption) (*UpsertDocumentResponse, error)
 	BatchCreateDocuments(ctx context.Context, in *BatchCreateDocumentRequest, opts ...grpc.CallOption) (*BatchCreateDocumentResponse, error)
-	UpdateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...grpc.CallOption) (*GetDocumentResponse, error)
+	UpdateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...grpc.CallOption) (*UpsertDocumentResponse, error)
 	GetDocument(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*GetDocumentResponse, error)
 	DeleteDocument(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	BatchDeleteDocuments(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	BatchDeleteDocuments(ctx context.Context, in *MultiRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListDocuments(ctx context.Context, in *ListDocumentsRequest, opts ...grpc.CallOption) (*ListDocumentsResponse, error)
+	GetDocumentProgress(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*GetDocumentProgressResponse, error)
+	ReindexDocument(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*ReindexDocumentResponse, error)
+	// batch reindex document, return progress of each document
+	// total of documents should be no more than 500
+	BatchReindexDocument(ctx context.Context, in *MultiRequest, opts ...grpc.CallOption) (*BatchReindexDocumentResponse, error)
 	// full text search
 	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error)
 	// copy document
@@ -128,9 +139,19 @@ func (c *knowledgeClient) ListKnowledge(ctx context.Context, in *ListKnowledgeRe
 	return out, nil
 }
 
-func (c *knowledgeClient) CreateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...grpc.CallOption) (*GetDocumentResponse, error) {
+func (c *knowledgeClient) KnowledgeStats(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*KnowledgeStatsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetDocumentResponse)
+	out := new(KnowledgeStatsResponse)
+	err := c.cc.Invoke(ctx, Knowledge_KnowledgeStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *knowledgeClient) CreateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...grpc.CallOption) (*UpsertDocumentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpsertDocumentResponse)
 	err := c.cc.Invoke(ctx, Knowledge_CreateDocument_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -148,9 +169,9 @@ func (c *knowledgeClient) BatchCreateDocuments(ctx context.Context, in *BatchCre
 	return out, nil
 }
 
-func (c *knowledgeClient) UpdateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...grpc.CallOption) (*GetDocumentResponse, error) {
+func (c *knowledgeClient) UpdateDocument(ctx context.Context, in *UpsertDocumentRequest, opts ...grpc.CallOption) (*UpsertDocumentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetDocumentResponse)
+	out := new(UpsertDocumentResponse)
 	err := c.cc.Invoke(ctx, Knowledge_UpdateDocument_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -178,7 +199,7 @@ func (c *knowledgeClient) DeleteDocument(ctx context.Context, in *SimpleRequest,
 	return out, nil
 }
 
-func (c *knowledgeClient) BatchDeleteDocuments(ctx context.Context, in *BatchDeleteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *knowledgeClient) BatchDeleteDocuments(ctx context.Context, in *MultiRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Knowledge_BatchDeleteDocuments_FullMethodName, in, out, cOpts...)
@@ -192,6 +213,36 @@ func (c *knowledgeClient) ListDocuments(ctx context.Context, in *ListDocumentsRe
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListDocumentsResponse)
 	err := c.cc.Invoke(ctx, Knowledge_ListDocuments_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *knowledgeClient) GetDocumentProgress(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*GetDocumentProgressResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDocumentProgressResponse)
+	err := c.cc.Invoke(ctx, Knowledge_GetDocumentProgress_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *knowledgeClient) ReindexDocument(ctx context.Context, in *SimpleRequest, opts ...grpc.CallOption) (*ReindexDocumentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReindexDocumentResponse)
+	err := c.cc.Invoke(ctx, Knowledge_ReindexDocument_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *knowledgeClient) BatchReindexDocument(ctx context.Context, in *MultiRequest, opts ...grpc.CallOption) (*BatchReindexDocumentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BatchReindexDocumentResponse)
+	err := c.cc.Invoke(ctx, Knowledge_BatchReindexDocument_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -267,13 +318,20 @@ type KnowledgeServer interface {
 	GetKnowledge(context.Context, *SimpleRequest) (*GetKnowledgeResponse, error)
 	DeleteKnowledge(context.Context, *SimpleRequest) (*emptypb.Empty, error)
 	ListKnowledge(context.Context, *ListKnowledgeRequest) (*ListKnowledgeResponse, error)
-	CreateDocument(context.Context, *UpsertDocumentRequest) (*GetDocumentResponse, error)
+	// get knowledge stats:
+	KnowledgeStats(context.Context, *SimpleRequest) (*KnowledgeStatsResponse, error)
+	CreateDocument(context.Context, *UpsertDocumentRequest) (*UpsertDocumentResponse, error)
 	BatchCreateDocuments(context.Context, *BatchCreateDocumentRequest) (*BatchCreateDocumentResponse, error)
-	UpdateDocument(context.Context, *UpsertDocumentRequest) (*GetDocumentResponse, error)
+	UpdateDocument(context.Context, *UpsertDocumentRequest) (*UpsertDocumentResponse, error)
 	GetDocument(context.Context, *SimpleRequest) (*GetDocumentResponse, error)
 	DeleteDocument(context.Context, *SimpleRequest) (*emptypb.Empty, error)
-	BatchDeleteDocuments(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error)
+	BatchDeleteDocuments(context.Context, *MultiRequest) (*emptypb.Empty, error)
 	ListDocuments(context.Context, *ListDocumentsRequest) (*ListDocumentsResponse, error)
+	GetDocumentProgress(context.Context, *SimpleRequest) (*GetDocumentProgressResponse, error)
+	ReindexDocument(context.Context, *SimpleRequest) (*ReindexDocumentResponse, error)
+	// batch reindex document, return progress of each document
+	// total of documents should be no more than 500
+	BatchReindexDocument(context.Context, *MultiRequest) (*BatchReindexDocumentResponse, error)
 	// full text search
 	Search(context.Context, *SearchRequest) (*SearchResponse, error)
 	// copy document
@@ -311,13 +369,16 @@ func (UnimplementedKnowledgeServer) DeleteKnowledge(context.Context, *SimpleRequ
 func (UnimplementedKnowledgeServer) ListKnowledge(context.Context, *ListKnowledgeRequest) (*ListKnowledgeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListKnowledge not implemented")
 }
-func (UnimplementedKnowledgeServer) CreateDocument(context.Context, *UpsertDocumentRequest) (*GetDocumentResponse, error) {
+func (UnimplementedKnowledgeServer) KnowledgeStats(context.Context, *SimpleRequest) (*KnowledgeStatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method KnowledgeStats not implemented")
+}
+func (UnimplementedKnowledgeServer) CreateDocument(context.Context, *UpsertDocumentRequest) (*UpsertDocumentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateDocument not implemented")
 }
 func (UnimplementedKnowledgeServer) BatchCreateDocuments(context.Context, *BatchCreateDocumentRequest) (*BatchCreateDocumentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchCreateDocuments not implemented")
 }
-func (UnimplementedKnowledgeServer) UpdateDocument(context.Context, *UpsertDocumentRequest) (*GetDocumentResponse, error) {
+func (UnimplementedKnowledgeServer) UpdateDocument(context.Context, *UpsertDocumentRequest) (*UpsertDocumentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateDocument not implemented")
 }
 func (UnimplementedKnowledgeServer) GetDocument(context.Context, *SimpleRequest) (*GetDocumentResponse, error) {
@@ -326,11 +387,20 @@ func (UnimplementedKnowledgeServer) GetDocument(context.Context, *SimpleRequest)
 func (UnimplementedKnowledgeServer) DeleteDocument(context.Context, *SimpleRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDocument not implemented")
 }
-func (UnimplementedKnowledgeServer) BatchDeleteDocuments(context.Context, *BatchDeleteRequest) (*emptypb.Empty, error) {
+func (UnimplementedKnowledgeServer) BatchDeleteDocuments(context.Context, *MultiRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchDeleteDocuments not implemented")
 }
 func (UnimplementedKnowledgeServer) ListDocuments(context.Context, *ListDocumentsRequest) (*ListDocumentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListDocuments not implemented")
+}
+func (UnimplementedKnowledgeServer) GetDocumentProgress(context.Context, *SimpleRequest) (*GetDocumentProgressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentProgress not implemented")
+}
+func (UnimplementedKnowledgeServer) ReindexDocument(context.Context, *SimpleRequest) (*ReindexDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReindexDocument not implemented")
+}
+func (UnimplementedKnowledgeServer) BatchReindexDocument(context.Context, *MultiRequest) (*BatchReindexDocumentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchReindexDocument not implemented")
 }
 func (UnimplementedKnowledgeServer) Search(context.Context, *SearchRequest) (*SearchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
@@ -461,6 +531,24 @@ func _Knowledge_ListKnowledge_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Knowledge_KnowledgeStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KnowledgeServer).KnowledgeStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Knowledge_KnowledgeStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KnowledgeServer).KnowledgeStats(ctx, req.(*SimpleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Knowledge_CreateDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpsertDocumentRequest)
 	if err := dec(in); err != nil {
@@ -552,7 +640,7 @@ func _Knowledge_DeleteDocument_Handler(srv interface{}, ctx context.Context, dec
 }
 
 func _Knowledge_BatchDeleteDocuments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BatchDeleteRequest)
+	in := new(MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -564,7 +652,7 @@ func _Knowledge_BatchDeleteDocuments_Handler(srv interface{}, ctx context.Contex
 		FullMethod: Knowledge_BatchDeleteDocuments_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KnowledgeServer).BatchDeleteDocuments(ctx, req.(*BatchDeleteRequest))
+		return srv.(KnowledgeServer).BatchDeleteDocuments(ctx, req.(*MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -583,6 +671,60 @@ func _Knowledge_ListDocuments_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(KnowledgeServer).ListDocuments(ctx, req.(*ListDocumentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Knowledge_GetDocumentProgress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KnowledgeServer).GetDocumentProgress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Knowledge_GetDocumentProgress_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KnowledgeServer).GetDocumentProgress(ctx, req.(*SimpleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Knowledge_ReindexDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KnowledgeServer).ReindexDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Knowledge_ReindexDocument_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KnowledgeServer).ReindexDocument(ctx, req.(*SimpleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Knowledge_BatchReindexDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MultiRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KnowledgeServer).BatchReindexDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Knowledge_BatchReindexDocument_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KnowledgeServer).BatchReindexDocument(ctx, req.(*MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -723,6 +865,10 @@ var Knowledge_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Knowledge_ListKnowledge_Handler,
 		},
 		{
+			MethodName: "KnowledgeStats",
+			Handler:    _Knowledge_KnowledgeStats_Handler,
+		},
+		{
 			MethodName: "CreateDocument",
 			Handler:    _Knowledge_CreateDocument_Handler,
 		},
@@ -749,6 +895,18 @@ var Knowledge_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListDocuments",
 			Handler:    _Knowledge_ListDocuments_Handler,
+		},
+		{
+			MethodName: "GetDocumentProgress",
+			Handler:    _Knowledge_GetDocumentProgress_Handler,
+		},
+		{
+			MethodName: "ReindexDocument",
+			Handler:    _Knowledge_ReindexDocument_Handler,
+		},
+		{
+			MethodName: "BatchReindexDocument",
+			Handler:    _Knowledge_BatchReindexDocument_Handler,
 		},
 		{
 			MethodName: "Search",

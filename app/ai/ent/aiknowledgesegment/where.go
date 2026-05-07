@@ -91,6 +91,26 @@ func Tokens(v int) predicate.AiKnowledgeSegment {
 	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldTokens, v))
 }
 
+// ChunkIndex applies equality check predicate on the "chunk_index" field. It's identical to ChunkIndexEQ.
+func ChunkIndex(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldChunkIndex, v))
+}
+
+// SectionPath applies equality check predicate on the "section_path" field. It's identical to SectionPathEQ.
+func SectionPath(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldSectionPath, v))
+}
+
+// StartOffset applies equality check predicate on the "start_offset" field. It's identical to StartOffsetEQ.
+func StartOffset(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldStartOffset, v))
+}
+
+// EndOffset applies equality check predicate on the "end_offset" field. It's identical to EndOffsetEQ.
+func EndOffset(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldEndOffset, v))
+}
+
 // VectorID applies equality check predicate on the "vector_id" field. It's identical to VectorIDEQ.
 func VectorID(v string) predicate.AiKnowledgeSegment {
 	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldVectorID, v))
@@ -369,6 +389,211 @@ func TokensLT(v int) predicate.AiKnowledgeSegment {
 // TokensLTE applies the LTE predicate on the "tokens" field.
 func TokensLTE(v int) predicate.AiKnowledgeSegment {
 	return predicate.AiKnowledgeSegment(sql.FieldLTE(FieldTokens, v))
+}
+
+// ChunkIndexEQ applies the EQ predicate on the "chunk_index" field.
+func ChunkIndexEQ(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldChunkIndex, v))
+}
+
+// ChunkIndexNEQ applies the NEQ predicate on the "chunk_index" field.
+func ChunkIndexNEQ(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNEQ(FieldChunkIndex, v))
+}
+
+// ChunkIndexIn applies the In predicate on the "chunk_index" field.
+func ChunkIndexIn(vs ...int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldIn(FieldChunkIndex, vs...))
+}
+
+// ChunkIndexNotIn applies the NotIn predicate on the "chunk_index" field.
+func ChunkIndexNotIn(vs ...int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNotIn(FieldChunkIndex, vs...))
+}
+
+// ChunkIndexGT applies the GT predicate on the "chunk_index" field.
+func ChunkIndexGT(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldGT(FieldChunkIndex, v))
+}
+
+// ChunkIndexGTE applies the GTE predicate on the "chunk_index" field.
+func ChunkIndexGTE(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldGTE(FieldChunkIndex, v))
+}
+
+// ChunkIndexLT applies the LT predicate on the "chunk_index" field.
+func ChunkIndexLT(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldLT(FieldChunkIndex, v))
+}
+
+// ChunkIndexLTE applies the LTE predicate on the "chunk_index" field.
+func ChunkIndexLTE(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldLTE(FieldChunkIndex, v))
+}
+
+// SectionPathEQ applies the EQ predicate on the "section_path" field.
+func SectionPathEQ(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldSectionPath, v))
+}
+
+// SectionPathNEQ applies the NEQ predicate on the "section_path" field.
+func SectionPathNEQ(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNEQ(FieldSectionPath, v))
+}
+
+// SectionPathIn applies the In predicate on the "section_path" field.
+func SectionPathIn(vs ...string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldIn(FieldSectionPath, vs...))
+}
+
+// SectionPathNotIn applies the NotIn predicate on the "section_path" field.
+func SectionPathNotIn(vs ...string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNotIn(FieldSectionPath, vs...))
+}
+
+// SectionPathGT applies the GT predicate on the "section_path" field.
+func SectionPathGT(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldGT(FieldSectionPath, v))
+}
+
+// SectionPathGTE applies the GTE predicate on the "section_path" field.
+func SectionPathGTE(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldGTE(FieldSectionPath, v))
+}
+
+// SectionPathLT applies the LT predicate on the "section_path" field.
+func SectionPathLT(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldLT(FieldSectionPath, v))
+}
+
+// SectionPathLTE applies the LTE predicate on the "section_path" field.
+func SectionPathLTE(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldLTE(FieldSectionPath, v))
+}
+
+// SectionPathContains applies the Contains predicate on the "section_path" field.
+func SectionPathContains(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldContains(FieldSectionPath, v))
+}
+
+// SectionPathHasPrefix applies the HasPrefix predicate on the "section_path" field.
+func SectionPathHasPrefix(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldHasPrefix(FieldSectionPath, v))
+}
+
+// SectionPathHasSuffix applies the HasSuffix predicate on the "section_path" field.
+func SectionPathHasSuffix(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldHasSuffix(FieldSectionPath, v))
+}
+
+// SectionPathIsNil applies the IsNil predicate on the "section_path" field.
+func SectionPathIsNil() predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldIsNull(FieldSectionPath))
+}
+
+// SectionPathNotNil applies the NotNil predicate on the "section_path" field.
+func SectionPathNotNil() predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNotNull(FieldSectionPath))
+}
+
+// SectionPathEqualFold applies the EqualFold predicate on the "section_path" field.
+func SectionPathEqualFold(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldEqualFold(FieldSectionPath, v))
+}
+
+// SectionPathContainsFold applies the ContainsFold predicate on the "section_path" field.
+func SectionPathContainsFold(v string) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldContainsFold(FieldSectionPath, v))
+}
+
+// StartOffsetEQ applies the EQ predicate on the "start_offset" field.
+func StartOffsetEQ(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldStartOffset, v))
+}
+
+// StartOffsetNEQ applies the NEQ predicate on the "start_offset" field.
+func StartOffsetNEQ(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNEQ(FieldStartOffset, v))
+}
+
+// StartOffsetIn applies the In predicate on the "start_offset" field.
+func StartOffsetIn(vs ...int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldIn(FieldStartOffset, vs...))
+}
+
+// StartOffsetNotIn applies the NotIn predicate on the "start_offset" field.
+func StartOffsetNotIn(vs ...int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNotIn(FieldStartOffset, vs...))
+}
+
+// StartOffsetGT applies the GT predicate on the "start_offset" field.
+func StartOffsetGT(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldGT(FieldStartOffset, v))
+}
+
+// StartOffsetGTE applies the GTE predicate on the "start_offset" field.
+func StartOffsetGTE(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldGTE(FieldStartOffset, v))
+}
+
+// StartOffsetLT applies the LT predicate on the "start_offset" field.
+func StartOffsetLT(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldLT(FieldStartOffset, v))
+}
+
+// StartOffsetLTE applies the LTE predicate on the "start_offset" field.
+func StartOffsetLTE(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldLTE(FieldStartOffset, v))
+}
+
+// EndOffsetEQ applies the EQ predicate on the "end_offset" field.
+func EndOffsetEQ(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldEQ(FieldEndOffset, v))
+}
+
+// EndOffsetNEQ applies the NEQ predicate on the "end_offset" field.
+func EndOffsetNEQ(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNEQ(FieldEndOffset, v))
+}
+
+// EndOffsetIn applies the In predicate on the "end_offset" field.
+func EndOffsetIn(vs ...int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldIn(FieldEndOffset, vs...))
+}
+
+// EndOffsetNotIn applies the NotIn predicate on the "end_offset" field.
+func EndOffsetNotIn(vs ...int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNotIn(FieldEndOffset, vs...))
+}
+
+// EndOffsetGT applies the GT predicate on the "end_offset" field.
+func EndOffsetGT(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldGT(FieldEndOffset, v))
+}
+
+// EndOffsetGTE applies the GTE predicate on the "end_offset" field.
+func EndOffsetGTE(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldGTE(FieldEndOffset, v))
+}
+
+// EndOffsetLT applies the LT predicate on the "end_offset" field.
+func EndOffsetLT(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldLT(FieldEndOffset, v))
+}
+
+// EndOffsetLTE applies the LTE predicate on the "end_offset" field.
+func EndOffsetLTE(v int) predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldLTE(FieldEndOffset, v))
+}
+
+// MetadataIsNil applies the IsNil predicate on the "metadata" field.
+func MetadataIsNil() predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldIsNull(FieldMetadata))
+}
+
+// MetadataNotNil applies the NotNil predicate on the "metadata" field.
+func MetadataNotNil() predicate.AiKnowledgeSegment {
+	return predicate.AiKnowledgeSegment(sql.FieldNotNull(FieldMetadata))
 }
 
 // VectorIDEQ applies the EQ predicate on the "vector_id" field.

@@ -35,7 +35,7 @@ type (
 func (f *DBFS) ConfirmLock(ctx context.Context, ancestor fs.File, uri *fs.URI, token ...string) (func(), fs.LockSession, error) {
 	session := LockSessionFromCtx(ctx)
 	lockUri := ancestor.RootUri().JoinRaw(uri.PathTrimmed())
-	ns, root, lKey := lockTupleFromUri(lockUri, f.user.Id, f.hasher)
+	ns, root, lKey := lockTupleFromUri(lockUri, f.user.ID, f.hasher)
 	lc := lock.LockInfo{
 		Ns:    ns,
 		Root:  root,
@@ -71,7 +71,7 @@ func (f *DBFS) Lock(ctx context.Context, d time.Duration, requester int, zeroDep
 		return nil, fmt.Errorf("failed to get ancestor: %w", err)
 	}
 
-	if ancestor.IsRootFolder() && ancestor.Uri(false).IsSame(uri, hashid.EncodeUserID(f.hasher, int(f.user.Id))) {
+	if ancestor.IsRootFolder() && ancestor.Uri(false).IsSame(uri, hashid.EncodeUserID(f.hasher, f.user.ID)) {
 		return nil, fs.ErrNotSupportedAction.WithCause(fmt.Errorf("cannot lock root folder"))
 	}
 
@@ -81,7 +81,7 @@ func (f *DBFS) Lock(ctx context.Context, d time.Duration, requester int, zeroDep
 	}
 
 	t := types.FileTypeFile
-	if ancestor.Uri(false).IsSame(uri, hashid.EncodeUserID(f.hasher, int(f.user.Id))) {
+	if ancestor.Uri(false).IsSame(uri, hashid.EncodeUserID(f.hasher, f.user.ID)) {
 		t = ancestor.Type()
 	}
 	lr := &LockByPath{
@@ -114,7 +114,7 @@ func (f *DBFS) acquireByPath(ctx context.Context, duration time.Duration,
 	lockDetails := make([]lock.LockDetails, 0, len(locks))
 	lockedRequest := make([]*LockByPath, 0, len(locks))
 	for _, l := range locks {
-		ns, root, lKey := lockTupleFromUri(l.Uri, f.user.Id, f.hasher)
+		ns, root, lKey := lockTupleFromUri(l.Uri, f.user.ID, f.hasher)
 		ld := lock.LockDetails{
 			Owner: lock.Owner{
 				Application: application,
@@ -280,7 +280,7 @@ func LockSessionFromCtx(ctx context.Context) *LockSession {
 }
 
 // Exclude removes lock from session, so that it won't be released.
-func (l *LockSession) Exclude(lock *LockByPath, uid int64, hasher hashid.Encoder) string {
+func (l *LockSession) Exclude(lock *LockByPath, uid int, hasher hashid.Encoder) string {
 	_, _, lKey := lockTupleFromUri(lock.Uri, uid, hasher)
 	foundInCurrentStack := false
 	token, found := l.Tokens[lKey]
@@ -314,11 +314,10 @@ func WithAlwaysIncludeToken(ctx context.Context) context.Context {
 	return context.WithValue(ctx, AlwaysIncludeTokenCtx{}, true)
 }
 
-func lockTupleFromUri(uri *fs.URI, uid int64, hasher hashid.Encoder) (string, string, string) {
-	userId := int(uid)
-	id := uri.ID(hashid.EncodeUserID(hasher, userId))
+func lockTupleFromUri(uri *fs.URI, uid int, hasher hashid.Encoder) (string, string, string) {
+	id := uri.ID(hashid.EncodeUserID(hasher, uid))
 	if id == "" {
-		id = strconv.Itoa(userId)
+		id = strconv.Itoa(uid)
 	}
 	ns := fmt.Sprintf(id + "/" + string(uri.FileSystem()))
 	root := uri.Path()

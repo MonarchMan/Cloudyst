@@ -394,7 +394,7 @@ func (s *WebDAVService) findETag(ctx context.Context, fm manager.FileManager, fi
 
 func (s *WebDAVService) findQuotaUsedBytes(ctx context.Context, fm manager.FileManager, file fs.File) (string, error) {
 	requester := trans.FromContext(ctx)
-	if file.Owner().Id != requester.Id {
+	if file.Owner().ID != requester.ID {
 		return "", ErrNotImplemented
 	}
 	capacity, err := fm.Capacity(ctx)
@@ -406,7 +406,7 @@ func (s *WebDAVService) findQuotaUsedBytes(ctx context.Context, fm manager.FileM
 
 func (s *WebDAVService) findQuotaAvailableBytes(ctx context.Context, fm manager.FileManager, file fs.File) (string, error) {
 	requester := trans.FromContext(ctx)
-	if file.Owner().Id != requester.Id {
+	if file.Owner().ID != requester.ID {
 		return "", ErrNotImplemented
 	}
 	capacity, err := fm.Capacity(ctx)

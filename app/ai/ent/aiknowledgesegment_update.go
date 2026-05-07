@@ -133,6 +133,101 @@ func (_u *AiKnowledgeSegmentUpdate) AddTokens(v int) *AiKnowledgeSegmentUpdate {
 	return _u
 }
 
+// SetChunkIndex sets the "chunk_index" field.
+func (_u *AiKnowledgeSegmentUpdate) SetChunkIndex(v int) *AiKnowledgeSegmentUpdate {
+	_u.mutation.ResetChunkIndex()
+	_u.mutation.SetChunkIndex(v)
+	return _u
+}
+
+// SetNillableChunkIndex sets the "chunk_index" field if the given value is not nil.
+func (_u *AiKnowledgeSegmentUpdate) SetNillableChunkIndex(v *int) *AiKnowledgeSegmentUpdate {
+	if v != nil {
+		_u.SetChunkIndex(*v)
+	}
+	return _u
+}
+
+// AddChunkIndex adds value to the "chunk_index" field.
+func (_u *AiKnowledgeSegmentUpdate) AddChunkIndex(v int) *AiKnowledgeSegmentUpdate {
+	_u.mutation.AddChunkIndex(v)
+	return _u
+}
+
+// SetSectionPath sets the "section_path" field.
+func (_u *AiKnowledgeSegmentUpdate) SetSectionPath(v string) *AiKnowledgeSegmentUpdate {
+	_u.mutation.SetSectionPath(v)
+	return _u
+}
+
+// SetNillableSectionPath sets the "section_path" field if the given value is not nil.
+func (_u *AiKnowledgeSegmentUpdate) SetNillableSectionPath(v *string) *AiKnowledgeSegmentUpdate {
+	if v != nil {
+		_u.SetSectionPath(*v)
+	}
+	return _u
+}
+
+// ClearSectionPath clears the value of the "section_path" field.
+func (_u *AiKnowledgeSegmentUpdate) ClearSectionPath() *AiKnowledgeSegmentUpdate {
+	_u.mutation.ClearSectionPath()
+	return _u
+}
+
+// SetStartOffset sets the "start_offset" field.
+func (_u *AiKnowledgeSegmentUpdate) SetStartOffset(v int) *AiKnowledgeSegmentUpdate {
+	_u.mutation.ResetStartOffset()
+	_u.mutation.SetStartOffset(v)
+	return _u
+}
+
+// SetNillableStartOffset sets the "start_offset" field if the given value is not nil.
+func (_u *AiKnowledgeSegmentUpdate) SetNillableStartOffset(v *int) *AiKnowledgeSegmentUpdate {
+	if v != nil {
+		_u.SetStartOffset(*v)
+	}
+	return _u
+}
+
+// AddStartOffset adds value to the "start_offset" field.
+func (_u *AiKnowledgeSegmentUpdate) AddStartOffset(v int) *AiKnowledgeSegmentUpdate {
+	_u.mutation.AddStartOffset(v)
+	return _u
+}
+
+// SetEndOffset sets the "end_offset" field.
+func (_u *AiKnowledgeSegmentUpdate) SetEndOffset(v int) *AiKnowledgeSegmentUpdate {
+	_u.mutation.ResetEndOffset()
+	_u.mutation.SetEndOffset(v)
+	return _u
+}
+
+// SetNillableEndOffset sets the "end_offset" field if the given value is not nil.
+func (_u *AiKnowledgeSegmentUpdate) SetNillableEndOffset(v *int) *AiKnowledgeSegmentUpdate {
+	if v != nil {
+		_u.SetEndOffset(*v)
+	}
+	return _u
+}
+
+// AddEndOffset adds value to the "end_offset" field.
+func (_u *AiKnowledgeSegmentUpdate) AddEndOffset(v int) *AiKnowledgeSegmentUpdate {
+	_u.mutation.AddEndOffset(v)
+	return _u
+}
+
+// SetMetadata sets the "metadata" field.
+func (_u *AiKnowledgeSegmentUpdate) SetMetadata(v map[string]interface{}) *AiKnowledgeSegmentUpdate {
+	_u.mutation.SetMetadata(v)
+	return _u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AiKnowledgeSegmentUpdate) ClearMetadata() *AiKnowledgeSegmentUpdate {
+	_u.mutation.ClearMetadata()
+	return _u
+}
+
 // SetVectorID sets the "vector_id" field.
 func (_u *AiKnowledgeSegmentUpdate) SetVectorID(v string) *AiKnowledgeSegmentUpdate {
 	_u.mutation.SetVectorID(v)
@@ -303,6 +398,36 @@ func (_u *AiKnowledgeSegmentUpdate) sqlSave(ctx context.Context) (_node int, err
 	if value, ok := _u.mutation.AddedTokens(); ok {
 		_spec.AddField(aiknowledgesegment.FieldTokens, field.TypeInt, value)
 	}
+	if value, ok := _u.mutation.ChunkIndex(); ok {
+		_spec.SetField(aiknowledgesegment.FieldChunkIndex, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChunkIndex(); ok {
+		_spec.AddField(aiknowledgesegment.FieldChunkIndex, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.SectionPath(); ok {
+		_spec.SetField(aiknowledgesegment.FieldSectionPath, field.TypeString, value)
+	}
+	if _u.mutation.SectionPathCleared() {
+		_spec.ClearField(aiknowledgesegment.FieldSectionPath, field.TypeString)
+	}
+	if value, ok := _u.mutation.StartOffset(); ok {
+		_spec.SetField(aiknowledgesegment.FieldStartOffset, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedStartOffset(); ok {
+		_spec.AddField(aiknowledgesegment.FieldStartOffset, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.EndOffset(); ok {
+		_spec.SetField(aiknowledgesegment.FieldEndOffset, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedEndOffset(); ok {
+		_spec.AddField(aiknowledgesegment.FieldEndOffset, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(aiknowledgesegment.FieldMetadata, field.TypeJSON, value)
+	}
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(aiknowledgesegment.FieldMetadata, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.VectorID(); ok {
 		_spec.SetField(aiknowledgesegment.FieldVectorID, field.TypeString, value)
 	}
@@ -464,6 +589,101 @@ func (_u *AiKnowledgeSegmentUpdateOne) SetNillableTokens(v *int) *AiKnowledgeSeg
 // AddTokens adds value to the "tokens" field.
 func (_u *AiKnowledgeSegmentUpdateOne) AddTokens(v int) *AiKnowledgeSegmentUpdateOne {
 	_u.mutation.AddTokens(v)
+	return _u
+}
+
+// SetChunkIndex sets the "chunk_index" field.
+func (_u *AiKnowledgeSegmentUpdateOne) SetChunkIndex(v int) *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.ResetChunkIndex()
+	_u.mutation.SetChunkIndex(v)
+	return _u
+}
+
+// SetNillableChunkIndex sets the "chunk_index" field if the given value is not nil.
+func (_u *AiKnowledgeSegmentUpdateOne) SetNillableChunkIndex(v *int) *AiKnowledgeSegmentUpdateOne {
+	if v != nil {
+		_u.SetChunkIndex(*v)
+	}
+	return _u
+}
+
+// AddChunkIndex adds value to the "chunk_index" field.
+func (_u *AiKnowledgeSegmentUpdateOne) AddChunkIndex(v int) *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.AddChunkIndex(v)
+	return _u
+}
+
+// SetSectionPath sets the "section_path" field.
+func (_u *AiKnowledgeSegmentUpdateOne) SetSectionPath(v string) *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.SetSectionPath(v)
+	return _u
+}
+
+// SetNillableSectionPath sets the "section_path" field if the given value is not nil.
+func (_u *AiKnowledgeSegmentUpdateOne) SetNillableSectionPath(v *string) *AiKnowledgeSegmentUpdateOne {
+	if v != nil {
+		_u.SetSectionPath(*v)
+	}
+	return _u
+}
+
+// ClearSectionPath clears the value of the "section_path" field.
+func (_u *AiKnowledgeSegmentUpdateOne) ClearSectionPath() *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.ClearSectionPath()
+	return _u
+}
+
+// SetStartOffset sets the "start_offset" field.
+func (_u *AiKnowledgeSegmentUpdateOne) SetStartOffset(v int) *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.ResetStartOffset()
+	_u.mutation.SetStartOffset(v)
+	return _u
+}
+
+// SetNillableStartOffset sets the "start_offset" field if the given value is not nil.
+func (_u *AiKnowledgeSegmentUpdateOne) SetNillableStartOffset(v *int) *AiKnowledgeSegmentUpdateOne {
+	if v != nil {
+		_u.SetStartOffset(*v)
+	}
+	return _u
+}
+
+// AddStartOffset adds value to the "start_offset" field.
+func (_u *AiKnowledgeSegmentUpdateOne) AddStartOffset(v int) *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.AddStartOffset(v)
+	return _u
+}
+
+// SetEndOffset sets the "end_offset" field.
+func (_u *AiKnowledgeSegmentUpdateOne) SetEndOffset(v int) *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.ResetEndOffset()
+	_u.mutation.SetEndOffset(v)
+	return _u
+}
+
+// SetNillableEndOffset sets the "end_offset" field if the given value is not nil.
+func (_u *AiKnowledgeSegmentUpdateOne) SetNillableEndOffset(v *int) *AiKnowledgeSegmentUpdateOne {
+	if v != nil {
+		_u.SetEndOffset(*v)
+	}
+	return _u
+}
+
+// AddEndOffset adds value to the "end_offset" field.
+func (_u *AiKnowledgeSegmentUpdateOne) AddEndOffset(v int) *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.AddEndOffset(v)
+	return _u
+}
+
+// SetMetadata sets the "metadata" field.
+func (_u *AiKnowledgeSegmentUpdateOne) SetMetadata(v map[string]interface{}) *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.SetMetadata(v)
+	return _u
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *AiKnowledgeSegmentUpdateOne) ClearMetadata() *AiKnowledgeSegmentUpdateOne {
+	_u.mutation.ClearMetadata()
 	return _u
 }
 
@@ -666,6 +886,36 @@ func (_u *AiKnowledgeSegmentUpdateOne) sqlSave(ctx context.Context) (_node *AiKn
 	}
 	if value, ok := _u.mutation.AddedTokens(); ok {
 		_spec.AddField(aiknowledgesegment.FieldTokens, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.ChunkIndex(); ok {
+		_spec.SetField(aiknowledgesegment.FieldChunkIndex, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedChunkIndex(); ok {
+		_spec.AddField(aiknowledgesegment.FieldChunkIndex, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.SectionPath(); ok {
+		_spec.SetField(aiknowledgesegment.FieldSectionPath, field.TypeString, value)
+	}
+	if _u.mutation.SectionPathCleared() {
+		_spec.ClearField(aiknowledgesegment.FieldSectionPath, field.TypeString)
+	}
+	if value, ok := _u.mutation.StartOffset(); ok {
+		_spec.SetField(aiknowledgesegment.FieldStartOffset, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedStartOffset(); ok {
+		_spec.AddField(aiknowledgesegment.FieldStartOffset, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.EndOffset(); ok {
+		_spec.SetField(aiknowledgesegment.FieldEndOffset, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedEndOffset(); ok {
+		_spec.AddField(aiknowledgesegment.FieldEndOffset, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(aiknowledgesegment.FieldMetadata, field.TypeJSON, value)
+	}
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(aiknowledgesegment.FieldMetadata, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.VectorID(); ok {
 		_spec.SetField(aiknowledgesegment.FieldVectorID, field.TypeString, value)

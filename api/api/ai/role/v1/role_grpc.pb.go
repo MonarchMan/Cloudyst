@@ -24,8 +24,8 @@ const (
 	Role_UpdateRole_FullMethodName = "/ai.role.v1.Role/UpdateRole"
 	Role_DeleteRole_FullMethodName = "/ai.role.v1.Role/DeleteRole"
 	Role_GetRole_FullMethodName    = "/ai.role.v1.Role/GetRole"
+	Role_ListRoleMe_FullMethodName = "/ai.role.v1.Role/ListRoleMe"
 	Role_ListRole_FullMethodName   = "/ai.role.v1.Role/ListRole"
-	Role_PageRole_FullMethodName   = "/ai.role.v1.Role/PageRole"
 )
 
 // RoleClient is the client API for Role service.
@@ -36,8 +36,8 @@ type RoleClient interface {
 	UpdateRole(ctx context.Context, in *UpsertRoleRequest, opts ...grpc.CallOption) (*GetRoleResponse, error)
 	DeleteRole(ctx context.Context, in *SimpleRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetRole(ctx context.Context, in *SimpleRoleRequest, opts ...grpc.CallOption) (*GetRoleResponse, error)
-	ListRole(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListRoleResponse, error)
-	PageRole(ctx context.Context, in *PageRoleRequest, opts ...grpc.CallOption) (*PageRoleResponse, error)
+	ListRoleMe(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetMultiRolesResponse, error)
+	ListRole(ctx context.Context, in *ListRoleRequest, opts ...grpc.CallOption) (*ListRoleResponse, error)
 }
 
 type roleClient struct {
@@ -88,20 +88,20 @@ func (c *roleClient) GetRole(ctx context.Context, in *SimpleRoleRequest, opts ..
 	return out, nil
 }
 
-func (c *roleClient) ListRole(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListRoleResponse, error) {
+func (c *roleClient) ListRoleMe(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetMultiRolesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListRoleResponse)
-	err := c.cc.Invoke(ctx, Role_ListRole_FullMethodName, in, out, cOpts...)
+	out := new(GetMultiRolesResponse)
+	err := c.cc.Invoke(ctx, Role_ListRoleMe_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *roleClient) PageRole(ctx context.Context, in *PageRoleRequest, opts ...grpc.CallOption) (*PageRoleResponse, error) {
+func (c *roleClient) ListRole(ctx context.Context, in *ListRoleRequest, opts ...grpc.CallOption) (*ListRoleResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PageRoleResponse)
-	err := c.cc.Invoke(ctx, Role_PageRole_FullMethodName, in, out, cOpts...)
+	out := new(ListRoleResponse)
+	err := c.cc.Invoke(ctx, Role_ListRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +116,8 @@ type RoleServer interface {
 	UpdateRole(context.Context, *UpsertRoleRequest) (*GetRoleResponse, error)
 	DeleteRole(context.Context, *SimpleRoleRequest) (*emptypb.Empty, error)
 	GetRole(context.Context, *SimpleRoleRequest) (*GetRoleResponse, error)
-	ListRole(context.Context, *emptypb.Empty) (*ListRoleResponse, error)
-	PageRole(context.Context, *PageRoleRequest) (*PageRoleResponse, error)
+	ListRoleMe(context.Context, *emptypb.Empty) (*GetMultiRolesResponse, error)
+	ListRole(context.Context, *ListRoleRequest) (*ListRoleResponse, error)
 	mustEmbedUnimplementedRoleServer()
 }
 
@@ -140,11 +140,11 @@ func (UnimplementedRoleServer) DeleteRole(context.Context, *SimpleRoleRequest) (
 func (UnimplementedRoleServer) GetRole(context.Context, *SimpleRoleRequest) (*GetRoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRole not implemented")
 }
-func (UnimplementedRoleServer) ListRole(context.Context, *emptypb.Empty) (*ListRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListRole not implemented")
+func (UnimplementedRoleServer) ListRoleMe(context.Context, *emptypb.Empty) (*GetMultiRolesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRoleMe not implemented")
 }
-func (UnimplementedRoleServer) PageRole(context.Context, *PageRoleRequest) (*PageRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PageRole not implemented")
+func (UnimplementedRoleServer) ListRole(context.Context, *ListRoleRequest) (*ListRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRole not implemented")
 }
 func (UnimplementedRoleServer) mustEmbedUnimplementedRoleServer() {}
 func (UnimplementedRoleServer) testEmbeddedByValue()              {}
@@ -239,8 +239,26 @@ func _Role_GetRole_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Role_ListRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Role_ListRoleMe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoleServer).ListRoleMe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Role_ListRoleMe_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoleServer).ListRoleMe(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Role_ListRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRoleRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -252,25 +270,7 @@ func _Role_ListRole_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: Role_ListRole_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoleServer).ListRole(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Role_PageRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PageRoleRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RoleServer).PageRole(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Role_PageRole_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RoleServer).PageRole(ctx, req.(*PageRoleRequest))
+		return srv.(RoleServer).ListRole(ctx, req.(*ListRoleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -299,12 +299,12 @@ var Role_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Role_GetRole_Handler,
 		},
 		{
-			MethodName: "ListRole",
-			Handler:    _Role_ListRole_Handler,
+			MethodName: "ListRoleMe",
+			Handler:    _Role_ListRoleMe_Handler,
 		},
 		{
-			MethodName: "PageRole",
-			Handler:    _Role_PageRole_Handler,
+			MethodName: "ListRole",
+			Handler:    _Role_ListRole_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

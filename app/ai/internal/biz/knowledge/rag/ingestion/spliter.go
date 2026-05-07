@@ -3,6 +3,7 @@ package ingestion
 import (
 	biztypes "ai/internal/biz/types"
 	"ai/internal/data"
+	"ai/internal/pkg/eino/doc/enhance"
 	"ai/internal/pkg/utils"
 	"context"
 	"strconv"
@@ -123,18 +124,37 @@ func (n *DynamicSplitter) Transform(ctx context.Context, src []*schema.Document,
 
 func storeSegments(ctx context.Context, ksc data.KnowledgeSegmentClient, docs []*schema.Document, docID int) error {
 	// 切片记录入库
+	docInfo := GetDocumentInfo(ctx)
+	prepareChunkMetadata(docs)
 	segs := make([]*biztypes.KnowledgeSegment, 0, len(docs))
-	for _, doc := range docs {
+	totalContentLen := 0
+	totalTokens := 0
+	for i, doc := range docs {
 		tokens, err := utils.CountTokens(doc.Content, "")
 		if err != nil {
 			return err
 		}
+		totalContentLen += len(doc.Content)
+		totalTokens += tokens
+		knowledgeID := 0
+		if docInfo != nil {
+			knowledgeID = docInfo.KnowledgeID
+		}
 		segs = append(segs, &biztypes.KnowledgeSegment{
-			DocumentID: docID,
-			Content:    doc.Content,
-			ContentLen: len(doc.Content),
-			Tokens:     tokens,
+			DocumentID:  docID,
+			KnowledgeID: knowledgeID,
+			Content:     doc.Content,
+			ContentLen:  len(doc.Content),
+			Tokens:      tokens,
+			ChunkIndex:  chunkIndex(doc.MetaData, i),
+			SectionPath: segmentSectionPath(doc.MetaData),
+			StartOffset: intMetaValue(doc.MetaData, enhance.MetaChunkStartOffset),
+			EndOffset:   intMetaValue(doc.MetaData, enhance.MetaChunkEndOffset),
+			Metadata:    doc.MetaData,
 		})
+	}
+	if docInfo != nil {
+		docInfo.IndexStats = buildDocumentIndexStats(docInfo, docs, totalContentLen, totalTokens)
 	}
 	segsRes, err := ksc.BatchCreate(ctx, segs)
 	if err != nil {
@@ -144,6 +164,47 @@ func storeSegments(ctx context.Context, ksc data.KnowledgeSegmentClient, docs []
 		docs[i].ID = strconv.Itoa(seg.ID)
 	}
 	return nil
+}
+
+func chunkIndex(meta map[string]any, fallback int) int {
+	if meta == nil {
+		return fallback
+	}
+	if index := intMetaValue(meta, enhance.MetaChunkIndex); index > 0 {
+		return index
+	}
+	return fallback
+}
+
+func segmentSectionPath(meta map[string]any) string {
+	if meta == nil {
+		return ""
+	}
+	if section, ok := meta[enhance.MetaChunkSection].(string); ok {
+		return section
+	}
+	if title, ok := meta[enhance.MetaTitle].(string); ok {
+		return title
+	}
+	return ""
+}
+
+func intMetaValue(meta map[string]any, key string) int {
+	if meta == nil {
+		return 0
+	}
+	switch v := meta[key].(type) {
+	case int:
+		return v
+	case int32:
+		return int(v)
+	case int64:
+		return int(v)
+	case float64:
+		return int(v)
+	default:
+		return 0
+	}
 }
 
 func defaultSplitter() (document.Transformer, error) {

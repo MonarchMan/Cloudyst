@@ -3,17 +3,21 @@ package utils
 import (
 	pb "api/api/file/common/v1"
 	pbslave "api/api/file/slave/v1"
+	"api/external/data/filedata"
+	"api/external/data/userdata"
 	"common/boolset"
 	"file/ent"
 	nodeent "file/ent/node"
-	taskent "file/ent/task"
 	"file/internal/biz/filemanager/fs"
+	"file/internal/data"
 	"file/internal/data/types"
+	"queue"
 
 	"github.com/gofrs/uuid"
 	"github.com/samber/lo"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 func EntFileToProto(file *ent.File) *pb.File {
@@ -21,27 +25,21 @@ func EntFileToProto(file *ent.File) *pb.File {
 		return nil
 	}
 	protoFile := &pb.File{
-		Id:        int64(file.ID),
-		CreatedAt: timestamppb.New(file.CreatedAt),
-		UpdatedAt: timestamppb.New(file.UpdatedAt),
-		Type:      int64(file.Type),
-		Name:      file.Name,
-		OwnerId:   int64(file.OwnerID),
-		OwnerInfo: file.OwnerInfo,
-		Size:      file.Size,
-		PrimaryEntity: &wrapperspb.Int64Value{
-			Value: int64(file.PrimaryEntity),
-		},
-		FileParentId: &wrapperspb.Int64Value{
-			Value: int64(file.FileParentID),
-		},
-		IsSymbolic: file.IsSymbolic,
+		Id:            int64(file.ID),
+		CreatedAt:     timestamppb.New(file.CreatedAt),
+		UpdatedAt:     timestamppb.New(file.UpdatedAt),
+		Type:          int64(file.Type),
+		Name:          file.Name,
+		OwnerId:       int64(file.OwnerID),
+		OwnerInfo:     userdata.UserInfoToProto(file.OwnerInfo),
+		Size:          file.Size,
+		PrimaryEntity: int64(file.PrimaryEntity),
+		FileParentId:  int64(file.FileParentID),
+		IsSymbolic:    file.IsSymbolic,
 		Props: &pb.FileProps{
-			View: ToProtoView(file.Props.View),
+			View: filedata.ExplorerViewToProto(file.Props.View),
 		},
-		StoragePolicyFiles: &wrapperspb.Int64Value{
-			Value: int64(file.StoragePolicyFiles),
-		},
+		StoragePolicyFiles: int64(file.StoragePolicyFiles),
 	}
 	if file.Edges.StoragePolicies != nil {
 		protoFile.StoragePolicies = EntPolicyToProto(file.Edges.StoragePolicies)
@@ -95,24 +93,15 @@ func ProtoFileToEnt(protoFile *pb.File) *ent.File {
 		Type:       int(protoFile.Type),
 		Name:       protoFile.Name,
 		OwnerID:    int(protoFile.OwnerId),
-		OwnerInfo:  protoFile.OwnerInfo,
+		OwnerInfo:  userdata.UserInfoFromProto(protoFile.OwnerInfo),
 		Size:       protoFile.Size,
 		IsSymbolic: protoFile.IsSymbolic,
 		Props: &types.FileProps{
-			View: FromProtoView(protoFile.Props.View),
+			View: filedata.ExplorerViewFromProto(protoFile.Props.View),
 		},
-	}
-
-	if protoFile.PrimaryEntity != nil {
-		entFile.PrimaryEntity = int(protoFile.PrimaryEntity.Value)
-	}
-
-	if protoFile.FileParentId != nil {
-		entFile.FileParentID = int(protoFile.FileParentId.Value)
-	}
-
-	if protoFile.StoragePolicyFiles != nil {
-		entFile.StoragePolicyFiles = int(protoFile.StoragePolicyFiles.Value)
+		PrimaryEntity:      int(protoFile.PrimaryEntity),
+		FileParentID:       int(protoFile.FileParentId),
+		StoragePolicyFiles: int(protoFile.StoragePolicyFiles),
 	}
 
 	entFile.Edges = ent.FileEdges{}
@@ -157,98 +146,6 @@ func ProtoFileToEnt(protoFile *pb.File) *ent.File {
 	return entFile
 }
 
-func FromProtoView(protoView *pb.ExplorerView) *types.ExplorerView {
-	if protoView == nil {
-		return nil
-	}
-	return &types.ExplorerView{
-		PageSize:       int(protoView.PageSize),
-		Order:          protoView.Order,
-		OrderDirection: FromProtoOrderDirection(protoView.OrderDirection),
-		View:           fromProtoViewType(protoView.View),
-		Thumbnail:      protoView.Thumbnail,
-		GalleryWidth:   int(protoView.GalleryWidth),
-		Columns: lo.Map(protoView.Columns, func(item *pb.ListViewColumn, index int) types.ListViewColumn {
-			width := int(item.Width)
-			return types.ListViewColumn{
-				Type:  int(item.Type),
-				Width: &width,
-			}
-		}),
-	}
-}
-
-func fromProtoViewType(viewType pb.ViewType) string {
-	switch viewType {
-	case pb.ViewType_VIEW_TYPE_LIST:
-		return "list"
-	case pb.ViewType_VIEW_TYPE_GRID:
-		return "grid"
-	case pb.ViewType_VIEW_TYPE_GALLERY:
-		return "gallery"
-	default:
-		return ""
-	}
-}
-
-func FromProtoOrderDirection(direction pb.OrderDirection) string {
-	switch direction {
-	case pb.OrderDirection_ORDER_DIRECTION_ASC:
-		return "ASC"
-	case pb.OrderDirection_ORDER_DIRECTION_DESC:
-		return "DESC"
-	default:
-		return ""
-	}
-}
-
-func ToProtoView(view *types.ExplorerView) *pb.ExplorerView {
-	if view == nil {
-		return nil
-	}
-	return &pb.ExplorerView{
-		PageSize:       int32(view.PageSize),
-		Order:          view.Order,
-		OrderDirection: toProtoOrderDirection(view.OrderDirection),
-		View:           toProtoViewType(view.View),
-		Thumbnail:      view.Thumbnail,
-		GalleryWidth:   int32(view.GalleryWidth),
-		Columns: lo.Map(view.Columns, func(item types.ListViewColumn, index int) *pb.ListViewColumn {
-			column := &pb.ListViewColumn{
-				Type: int32(item.Type),
-			}
-			if item.Width != nil {
-				column.Width = int32(*item.Width)
-			}
-			return column
-		}),
-	}
-}
-
-func toProtoViewType(view string) pb.ViewType {
-	switch view {
-	case "list":
-		return pb.ViewType_VIEW_TYPE_LIST
-	case "grid":
-		return pb.ViewType_VIEW_TYPE_GRID
-	case "gallery":
-		return pb.ViewType_VIEW_TYPE_GALLERY
-	default:
-		return pb.ViewType_VIEW_TYPE_UNSPECIFIED
-	}
-}
-
-func toProtoOrderDirection(direction string) pb.OrderDirection {
-	switch direction {
-	case "ASC":
-		return pb.OrderDirection_ORDER_DIRECTION_ASC
-	case "DESC":
-		return pb.OrderDirection_ORDER_DIRECTION_DESC
-	default:
-		return pb.OrderDirection_ORDER_DIRECTION_UNSPECIFIED
-	}
-}
-
 func EntDirectLinkToProto(directLink *ent.DirectLink) *pb.DirectLink {
 	if directLink == nil {
 		return nil
@@ -281,20 +178,17 @@ func EntShareToProto(share *ent.Share) *pb.Share {
 		Id:        int64(share.ID),
 		CreatedAt: timestamppb.New(share.CreatedAt),
 		UpdatedAt: timestamppb.New(share.UpdatedAt),
-		Password: &wrapperspb.StringValue{
-			Value: share.Password,
-		},
+		Password:  share.Password,
 		Views:     int64(share.Views),
 		Downloads: int64(share.Downloads),
-		Props:     share.Props,
+		Props:     SharePropsToProto(share.Props),
 		OwnerId:   int64(share.OwnerID),
-		OwnerInfo: share.OwnerInfo,
+		OwnerInfo: userdata.UserInfoToProto(share.OwnerInfo),
 	}
 
 	if share.RemainDownloads != nil {
-		protoShare.RemainDownloads = &wrapperspb.Int64Value{
-			Value: int64(*share.RemainDownloads),
-		}
+		remainDownloads := int64(*share.RemainDownloads)
+		protoShare.RemainDownloads = &remainDownloads
 	}
 
 	if share.Expires != nil {
@@ -318,14 +212,14 @@ func ProtoShareToEnt(share *pb.Share) *ent.Share {
 	}
 	entShare := &ent.Share{
 		ID:        int(share.GetId()),
-		CreatedAt: share.GetCreatedAt().AsTime(),
-		UpdatedAt: share.GetUpdatedAt().AsTime(),
-		Password:  share.GetPassword().GetValue(),
+		CreatedAt: share.CreatedAt.AsTime(),
+		UpdatedAt: share.UpdatedAt.AsTime(),
+		Password:  share.GetPassword(),
 		Views:     int(share.GetViews()),
 		Downloads: int(share.GetDownloads()),
-		Props:     share.GetProps(),
+		Props:     SharePropsFromProto(share.GetProps()),
 		OwnerID:   int(share.GetOwnerId()),
-		OwnerInfo: share.GetOwnerInfo(),
+		OwnerInfo: userdata.UserInfoFromProto(share.GetOwnerInfo()),
 	}
 
 	// Handle Expires field
@@ -335,8 +229,8 @@ func ProtoShareToEnt(share *pb.Share) *ent.Share {
 	}
 
 	// Handle RemainDownloads field
-	if share.GetRemainDownloads() != nil {
-		remainDownloads := int(share.GetRemainDownloads().GetValue())
+	if share.RemainDownloads != nil {
+		remainDownloads := int(share.GetRemainDownloads())
 		entShare.RemainDownloads = &remainDownloads
 	}
 
@@ -351,6 +245,26 @@ func ProtoShareToEnt(share *pb.Share) *ent.Share {
 	}
 
 	return entShare
+}
+
+func SharePropsToProto(props *types.ShareProps) *pb.ShareProps {
+	if props == nil {
+		return nil
+	}
+	return &pb.ShareProps{
+		ShareView:  props.ShareView,
+		ShowReadMe: props.ShowReadMe,
+	}
+}
+
+func SharePropsFromProto(props *pb.ShareProps) *types.ShareProps {
+	if props == nil {
+		return nil
+	}
+	return &types.ShareProps{
+		ShareView:  props.ShareView,
+		ShowReadMe: props.ShowReadMe,
+	}
 }
 
 func EntMetadataToProto(metadata *ent.Metadata) *pb.Metadata {
@@ -383,39 +297,21 @@ func EntPolicyToProto(storagePolicy *ent.StoragePolicy) *pb.StoragePolicy {
 		return nil
 	}
 	protoStoragePolicy := &pb.StoragePolicy{
-		Id:        int64(storagePolicy.ID),
-		CreatedAt: timestamppb.New(storagePolicy.CreatedAt),
-		UpdatedAt: timestamppb.New(storagePolicy.UpdatedAt),
-		Name:      storagePolicy.Name,
-		Type:      storagePolicy.Type,
-		Server: &wrapperspb.StringValue{
-			Value: storagePolicy.Server,
-		},
-		BucketName: &wrapperspb.StringValue{
-			Value: storagePolicy.BucketName,
-		},
-		IsPrivate: &wrapperspb.BoolValue{
-			Value: storagePolicy.IsPrivate,
-		},
-		AccessKey: &wrapperspb.StringValue{
-			Value: storagePolicy.AccessKey,
-		},
-		SecretKey: &wrapperspb.StringValue{
-			Value: storagePolicy.SecretKey,
-		},
-		MaxSize: &wrapperspb.Int64Value{
-			Value: storagePolicy.MaxSize,
-		},
-		DirNameRule: &wrapperspb.StringValue{
-			Value: storagePolicy.DirNameRule,
-		},
-		FileNameRule: &wrapperspb.StringValue{
-			Value: storagePolicy.FileNameRule,
-		},
-		Settings: storagePolicy.Settings,
-		NodeId: &wrapperspb.Int64Value{
-			Value: int64(storagePolicy.NodeID),
-		},
+		Id:           int64(storagePolicy.ID),
+		CreatedAt:    timestamppb.New(storagePolicy.CreatedAt),
+		UpdatedAt:    timestamppb.New(storagePolicy.UpdatedAt),
+		Name:         storagePolicy.Name,
+		Type:         storagePolicy.Type,
+		Server:       storagePolicy.Server,
+		BucketName:   storagePolicy.BucketName,
+		IsPrivate:    storagePolicy.IsPrivate,
+		AccessKey:    storagePolicy.AccessKey,
+		SecretKey:    storagePolicy.SecretKey,
+		MaxSize:      storagePolicy.MaxSize,
+		DirNameRule:  storagePolicy.DirNameRule,
+		FileNameRule: storagePolicy.FileNameRule,
+		Settings:     PolicySettingToProto(storagePolicy.Settings),
+		NodeId:       int64(storagePolicy.NodeID),
 	}
 
 	if storagePolicy.Edges.Files != nil {
@@ -437,23 +333,147 @@ func EntPolicyToProto(storagePolicy *ent.StoragePolicy) *pb.StoragePolicy {
 	return protoStoragePolicy
 }
 
+func PolicySettingToProto(settings *types.PolicySetting) *pb.PolicySetting {
+	if settings == nil {
+		return nil
+	}
+	return &pb.PolicySetting{
+		Token:                   settings.Token,
+		FileType:                settings.FileType,
+		IsFileTypeDenyList:      settings.IsFileTypeDenyList,
+		NameRegexp:              settings.NameRegexp,
+		IsNameRegexpDenyList:    settings.IsNameRegexpDenyList,
+		OauthRedirect:           settings.OauthRedirect,
+		CustomProxy:             settings.CustomProxy,
+		ProxyServer:             settings.ProxyServer,
+		InternalProxy:           settings.InternalProxy,
+		OdDriver:                settings.OdDriver,
+		Region:                  settings.Region,
+		ServerSideEndpoint:      settings.ServerSideEndpoint,
+		ChunkSize:               settings.ChunkSize,
+		TpsLimit:                settings.TPSLimit,
+		TpsLimitBurst:           int32(settings.TPSLimitBurst),
+		S3ForcePathStyle:        settings.S3ForcePathStyle,
+		ThumbExts:               settings.ThumbExts,
+		ThumbSupportAllExts:     settings.ThumbSupportAllExts,
+		ThumbMaxSize:            settings.ThumbMaxSize,
+		Relay:                   settings.Relay,
+		PreAllocate:             settings.PreAllocate,
+		MediaMetaExts:           settings.MediaMetaExts,
+		MediaMetaGeneratorProxy: settings.MediaMetaGeneratorProxy,
+		ThumbGeneratorProxy:     settings.ThumbGeneratorProxy,
+		NativeMediaProcessing:   settings.NativeMediaProcessing,
+		S3DeleteBatchSize:       int32(settings.S3DeleteBatchSize),
+		StreamSaver:             settings.StreamSaver,
+		UseCname:                settings.UseCname,
+		SourceAuth:              settings.SourceAuth,
+		QiniuUploadCdn:          settings.QiniuUploadCdn,
+		ChunkConcurrency:        int32(settings.ChunkConcurrency),
+	}
+}
+
+func PolicySettingFromProto(settings *pb.PolicySetting) *types.PolicySetting {
+	if settings == nil {
+		return nil
+	}
+	return &types.PolicySetting{
+		Token:                   settings.Token,
+		FileType:                settings.FileType,
+		IsFileTypeDenyList:      settings.IsFileTypeDenyList,
+		NameRegexp:              settings.NameRegexp,
+		IsNameRegexpDenyList:    settings.IsNameRegexpDenyList,
+		OauthRedirect:           settings.OauthRedirect,
+		CustomProxy:             settings.CustomProxy,
+		ProxyServer:             settings.ProxyServer,
+		InternalProxy:           settings.InternalProxy,
+		OdDriver:                settings.OdDriver,
+		Region:                  settings.Region,
+		ServerSideEndpoint:      settings.ServerSideEndpoint,
+		ChunkSize:               settings.ChunkSize,
+		TPSLimit:                settings.TpsLimit,
+		TPSLimitBurst:           int(settings.TpsLimitBurst),
+		S3ForcePathStyle:        settings.S3ForcePathStyle,
+		ThumbExts:               settings.ThumbExts,
+		ThumbSupportAllExts:     settings.ThumbSupportAllExts,
+		ThumbMaxSize:            settings.ThumbMaxSize,
+		Relay:                   settings.Relay,
+		PreAllocate:             settings.PreAllocate,
+		MediaMetaExts:           settings.MediaMetaExts,
+		MediaMetaGeneratorProxy: settings.MediaMetaGeneratorProxy,
+		ThumbGeneratorProxy:     settings.ThumbGeneratorProxy,
+		NativeMediaProcessing:   settings.NativeMediaProcessing,
+		S3DeleteBatchSize:       int(settings.S3DeleteBatchSize),
+		StreamSaver:             settings.StreamSaver,
+		UseCname:                settings.UseCname,
+		SourceAuth:              settings.SourceAuth,
+		QiniuUploadCdn:          settings.QiniuUploadCdn,
+		ChunkConcurrency:        int(settings.ChunkConcurrency),
+	}
+}
+
+func NodeSettingToProto(settings *types.NodeSetting) *pb.NodeSetting {
+	if settings == nil {
+		return nil
+	}
+	return &pb.NodeSetting{
+		Provider:       DownloaderProviderToProto(settings.Provider),
+		Qbittorrent:    QBittorrentSettingToProto(settings.QBittorrentSetting),
+		Aria2:          Aria2SettingToProto(settings.Aria2Setting),
+		Interval:       int32(settings.Interval),
+		WaitForSeeding: settings.WaitForSeeding,
+	}
+}
+
+func DownloaderProviderToProto(provider types.DownloaderProvider) pb.DownloaderProvider {
+	switch provider {
+	case types.DownloaderProviderQBittorrent:
+		return pb.DownloaderProvider_DOWNLOADER_PROVIDER_QBITTORRENT
+	case types.DownloaderProviderAria2:
+		return pb.DownloaderProvider_DOWNLOADER_PROVIDER_ARIA2
+	default:
+		return pb.DownloaderProvider_DOWNLOADER_PROVIDER_UNSPECIFIED
+	}
+}
+
+func QBittorrentSettingToProto(settings *types.QBittorrentSetting) *pb.QBittorrentSetting {
+	if settings == nil {
+		return nil
+	}
+	qbs := &pb.QBittorrentSetting{
+		Server:   settings.Server,
+		User:     settings.User,
+		TempPath: settings.TempPath,
+	}
+	qbs.Options, _ = structpb.NewStruct(settings.Options)
+	return qbs
+}
+
+func Aria2SettingToProto(settings *types.Aria2Setting) *pb.Aria2Setting {
+	if settings == nil {
+		return nil
+	}
+	a2s := &pb.Aria2Setting{
+		Server:   settings.Server,
+		Token:    settings.Token,
+		TempPath: settings.TempPath,
+	}
+	a2s.Options, _ = structpb.NewStruct(settings.Options)
+	return a2s
+}
+
 func EntNodeToProto(node *ent.Node) *pb.Node {
 	if node == nil {
 		return nil
 	}
 	protoNode := &pb.Node{
-		Id:        int64(node.ID),
-		CreatedAt: timestamppb.New(node.CreatedAt),
-		UpdatedAt: timestamppb.New(node.UpdatedAt),
-		Status:    getNodeStatus(node),
-		Name:      node.Name,
-		Type:      getNodeType(node),
-		Server: &wrapperspb.StringValue{
-			Value: node.Server,
-		},
-		SlaveKey: &wrapperspb.StringValue{
-			Value: node.SlaveKey,
-		},
+		Id:           int64(node.ID),
+		CreatedAt:    timestamppb.New(node.CreatedAt),
+		UpdatedAt:    timestamppb.New(node.UpdatedAt),
+		Status:       getNodeStatus(node),
+		Name:         node.Name,
+		Type:         getNodeType(node),
+		Server:       node.Server,
+		SlaveKey:     node.SlaveKey,
 		Capabilities: []byte(*node.Capabilities),
 		Settings:     node.Settings,
 		Weight:       int64(node.Weight),
@@ -505,9 +525,7 @@ func EntEntityToProto(entity *ent.Entity) *pb.Entity {
 		Size:                  entity.Size,
 		ReferenceCount:        int64(entity.ReferenceCount),
 		StoragePolicyEntities: int64(entity.StoragePolicyEntities),
-		CreatedBy: &wrapperspb.Int64Value{
-			Value: int64(entity.CreatedBy),
-		},
+		CreatedBy:             int64(entity.CreatedBy),
 	}
 
 	if entity.Props != nil {
@@ -525,9 +543,7 @@ func EntEntityToProto(entity *ent.Entity) *pb.Entity {
 	}
 
 	if entity.UploadSessionID != nil {
-		protoEntity.UploadSessionId = &wrapperspb.BytesValue{
-			Value: entity.UploadSessionID.Bytes(),
-		}
+		protoEntity.UploadSessionId = entity.UploadSessionID.Bytes()
 	}
 
 	if entity.Edges.File != nil {
@@ -549,9 +565,7 @@ func EntSettingToProto(setting *ent.Setting) *pb.Setting {
 		CreatedAt: timestamppb.New(setting.CreatedAt),
 		UpdatedAt: timestamppb.New(setting.UpdatedAt),
 		Name:      setting.Name,
-		Value: &wrapperspb.StringValue{
-			Value: setting.Value,
-		},
+		Value:     setting.Value,
 	}
 
 	if setting.DeletedAt != nil {
@@ -563,20 +577,16 @@ func EntSettingToProto(setting *ent.Setting) *pb.Setting {
 
 func EntTaskToProto(task *ent.Task) *pb.Task {
 	protoTask := &pb.Task{
-		Id:          int64(task.ID),
-		CreatedAt:   timestamppb.New(task.CreatedAt),
-		UpdatedAt:   timestamppb.New(task.UpdatedAt),
-		DeletedAt:   nil,
-		Type:        task.Type,
-		Status:      getTaskStatus(task),
-		PublicState: EntTaskStateToProto(task.PublicState),
-		PrivateState: &wrapperspb.StringValue{
-			Value: task.PrivateState,
-		},
-		TraceId: task.TraceID,
-		UserId: &wrapperspb.Int64Value{
-			Value: int64(task.UserID),
-		},
+		Id:           int64(task.ID),
+		CreatedAt:    timestamppb.New(task.CreatedAt),
+		UpdatedAt:    timestamppb.New(task.UpdatedAt),
+		DeletedAt:    nil,
+		Type:         task.Type,
+		Status:       getTaskStatus(task),
+		PublicState:  TaskStateToProto(task.PublicState),
+		PrivateState: task.PrivateState,
+		TraceId:      task.TraceID,
+		UserId:       int64(task.UserID),
 	}
 
 	return protoTask
@@ -584,32 +594,56 @@ func EntTaskToProto(task *ent.Task) *pb.Task {
 
 func getTaskStatus(task *ent.Task) pb.Task_Status {
 	switch task.Status {
-	case taskent.StatusSuspending:
+	case queue.StatusSuspending:
 		return pb.Task_STATUS_SUSPENDING
-	case taskent.StatusProcessing:
+	case queue.StatusProcessing:
 		return pb.Task_STATUS_PROCESSING
-	case taskent.StatusCompleted:
+	case queue.StatusCompleted:
 		return pb.Task_STATUS_COMPLETED
-	case taskent.StatusCanceled:
+	case queue.StatusCanceled:
 		return pb.Task_STATUS_CANCELED
-	case taskent.StatusError:
+	case queue.StatusError:
 		return pb.Task_STATUS_ERROR
 	default:
 		return pb.Task_STATUS_QUEUED
 	}
 }
 
-func EntTaskStateToProto(publicState *pb.TaskPublicState) *pb.TaskPublicState {
+func TaskStateToProto(publicState *queue.TaskPublicState) *pb.TaskPublicState {
 	if publicState == nil {
 		return nil
 	}
 	return &pb.TaskPublicState{
 		Error:            publicState.Error,
 		ErrorHistory:     publicState.ErrorHistory,
-		ExecutedDuration: publicState.ExecutedDuration,
-		RetryCount:       publicState.RetryCount,
+		ExecutedDuration: durationpb.New(publicState.ExecutedDuration),
+		RetryCount:       int32(publicState.RetryCount),
 		ResumeTime:       publicState.ResumeTime,
-		SlaveTaskProps:   publicState.SlaveTaskProps,
+		SlaveTaskProps:   SlaveTaskPropsToProto(publicState.SlaveTaskProps),
+	}
+}
+
+func SlaveTaskPropsToProto(props *queue.SlaveTaskProps) *pb.SlaveTaskProps {
+	if props == nil {
+		return nil
+	}
+	return &pb.SlaveTaskProps{
+		NodeId:            int32(props.NodeID),
+		MasterSiteUrl:     props.MasterSiteURl,
+		MasterSiteId:      props.MasterSiteID,
+		MasterSiteVersion: props.MasterSiteVersion,
+	}
+}
+
+func SlaveTaskPropsFromProto(props *pb.SlaveTaskProps) *queue.SlaveTaskProps {
+	if props == nil {
+		return nil
+	}
+	return &queue.SlaveTaskProps{
+		NodeID:            int(props.NodeId),
+		MasterSiteURl:     props.MasterSiteUrl,
+		MasterSiteID:      props.MasterSiteId,
+		MasterSiteVersion: props.MasterSiteVersion,
 	}
 }
 
@@ -619,50 +653,21 @@ func ProtoPolicyToEnt(policy *pb.StoragePolicy) *ent.StoragePolicy {
 		return nil
 	}
 	entPolicy := &ent.StoragePolicy{
-		ID:        int(policy.GetId()),
-		CreatedAt: policy.GetCreatedAt().AsTime(),
-		UpdatedAt: policy.GetUpdatedAt().AsTime(),
-		Name:      policy.GetName(),
-		Type:      policy.GetType(),
-	}
-
-	// Handle optional fields
-	if policy.GetServer() != nil {
-		entPolicy.Server = policy.GetServer().GetValue()
-	}
-
-	if policy.GetBucketName() != nil {
-		entPolicy.BucketName = policy.GetBucketName().GetValue()
-	}
-
-	if policy.GetIsPrivate() != nil {
-		entPolicy.IsPrivate = policy.GetIsPrivate().GetValue()
-	}
-
-	if policy.GetAccessKey() != nil {
-		entPolicy.AccessKey = policy.GetAccessKey().GetValue()
-	}
-
-	if policy.GetSecretKey() != nil {
-		entPolicy.SecretKey = policy.GetSecretKey().GetValue()
-	}
-
-	if policy.GetMaxSize() != nil {
-		entPolicy.MaxSize = policy.GetMaxSize().GetValue()
-	}
-
-	if policy.GetDirNameRule() != nil {
-		entPolicy.DirNameRule = policy.GetDirNameRule().GetValue()
-	}
-
-	if policy.GetFileNameRule() != nil {
-		entPolicy.FileNameRule = policy.GetFileNameRule().GetValue()
-	}
-
-	entPolicy.Settings = policy.GetSettings()
-
-	if policy.GetNodeId() != nil {
-		entPolicy.NodeID = int(policy.GetNodeId().GetValue())
+		ID:           int(policy.Id),
+		CreatedAt:    policy.CreatedAt.AsTime(),
+		UpdatedAt:    policy.UpdatedAt.AsTime(),
+		Name:         policy.Name,
+		Type:         policy.Type,
+		Server:       policy.Server,
+		BucketName:   policy.BucketName,
+		IsPrivate:    policy.IsPrivate,
+		AccessKey:    policy.AccessKey,
+		SecretKey:    policy.SecretKey,
+		MaxSize:      policy.MaxSize,
+		DirNameRule:  policy.DirNameRule,
+		FileNameRule: policy.FileNameRule,
+		NodeID:       int(policy.NodeId),
+		Settings:     PolicySettingFromProto(policy.Settings),
 	}
 
 	// Handle DeletedAt field
@@ -699,10 +704,10 @@ func ProtoMetadataToEnt(metadata *pb.Metadata) *ent.Metadata {
 	}
 	entMetadata := &ent.Metadata{
 		ID:        int(metadata.GetId()),
-		CreatedAt: metadata.GetCreatedAt().AsTime(),
-		UpdatedAt: metadata.GetUpdatedAt().AsTime(),
-		Name:      metadata.GetName(),
-		Value:     metadata.GetValue(),
+		CreatedAt: metadata.CreatedAt.AsTime(),
+		UpdatedAt: metadata.UpdatedAt.AsTime(),
+		Name:      metadata.Name,
+		Value:     metadata.Value,
 		FileID:    int(metadata.GetFileId()),
 		IsPublic:  metadata.GetIsPublic(),
 	}
@@ -728,23 +733,20 @@ func ProtoEntityToEnt(entity *pb.Entity) *ent.Entity {
 		return nil
 	}
 	entEntity := &ent.Entity{
-		ID:                    int(entity.GetId()),
-		CreatedAt:             entity.GetCreatedAt().AsTime(),
-		UpdatedAt:             entity.GetUpdatedAt().AsTime(),
-		Type:                  int(entity.GetType()),
-		Source:                entity.GetSource(),
-		Size:                  entity.GetSize(),
-		ReferenceCount:        int(entity.GetReferenceCount()),
-		StoragePolicyEntities: int(entity.GetStoragePolicyEntities()),
+		ID:                    int(entity.Id),
+		CreatedAt:             entity.CreatedAt.AsTime(),
+		UpdatedAt:             entity.UpdatedAt.AsTime(),
+		Type:                  int(entity.Type),
+		Source:                entity.Source,
+		Size:                  entity.Size,
+		ReferenceCount:        int(entity.ReferenceCount),
+		StoragePolicyEntities: int(entity.StoragePolicyEntities),
+		CreatedBy:             int(entity.CreatedBy),
 	}
 
 	// Handle optional fields
-	if entity.GetCreatedBy() != nil {
-		entEntity.CreatedBy = int(entity.GetCreatedBy().GetValue())
-	}
-
-	if entity.GetUploadSessionId() != nil {
-		uploadSessionID, _ := uuid.FromBytes(entity.GetUploadSessionId().GetValue())
+	if entity.UploadSessionId != nil {
+		uploadSessionID, _ := uuid.FromBytes(entity.UploadSessionId)
 		entEntity.UploadSessionID = &uploadSessionID
 	}
 
@@ -795,9 +797,9 @@ func ProtoDirectLinkToEnt(directLink *pb.DirectLink) *ent.DirectLink {
 	}
 	entDirectLink := &ent.DirectLink{
 		ID:        int(directLink.GetId()),
-		CreatedAt: directLink.GetCreatedAt().AsTime(),
-		UpdatedAt: directLink.GetUpdatedAt().AsTime(),
-		Name:      directLink.GetName(),
+		CreatedAt: directLink.CreatedAt.AsTime(),
+		UpdatedAt: directLink.UpdatedAt.AsTime(),
+		Name:      directLink.Name,
 		Downloads: int(directLink.GetDownloads()),
 		FileID:    int(directLink.GetFileId()),
 		Speed:     int(directLink.GetSpeed()),
@@ -825,14 +827,10 @@ func ProtoSettingToEnt(setting *pb.Setting) *ent.Setting {
 	}
 	entSetting := &ent.Setting{
 		ID:        int(setting.GetId()),
-		CreatedAt: setting.GetCreatedAt().AsTime(),
-		UpdatedAt: setting.GetUpdatedAt().AsTime(),
-		Name:      setting.GetName(),
-	}
-
-	// Handle optional fields
-	if setting.GetValue() != nil {
-		entSetting.Value = setting.GetValue().GetValue()
+		CreatedAt: setting.CreatedAt.AsTime(),
+		UpdatedAt: setting.UpdatedAt.AsTime(),
+		Name:      setting.Name,
+		Value:     setting.Value,
 	}
 
 	// Handle DeletedAt field
@@ -850,57 +848,51 @@ func ProtoTaskToEnt(task *pb.Task) *ent.Task {
 		return nil
 	}
 	entTask := &ent.Task{
-		ID:        int(task.GetId()),
-		CreatedAt: task.GetCreatedAt().AsTime(),
-		UpdatedAt: task.GetUpdatedAt().AsTime(),
-		Type:      task.GetType(),
-		Status:    getEntTaskStatus(task.GetStatus()),
-		TraceID:   task.GetTraceId(),
+		ID:           int(task.Id),
+		CreatedAt:    task.CreatedAt.AsTime(),
+		UpdatedAt:    task.UpdatedAt.AsTime(),
+		Type:         task.Type,
+		Status:       getEntTaskStatus(task.Status),
+		TraceID:      task.TraceId,
+		PrivateState: task.PrivateState,
+		UserID:       int(task.UserId),
 	}
 
 	// Handle optional fields
 	if task.GetPublicState() != nil {
-		entTask.PublicState = &pb.TaskPublicState{
-			Error:            task.GetPublicState().GetError(),
-			ErrorHistory:     task.GetPublicState().GetErrorHistory(),
-			ExecutedDuration: task.GetPublicState().GetExecutedDuration(),
-			RetryCount:       task.GetPublicState().GetRetryCount(),
-			ResumeTime:       task.GetPublicState().GetResumeTime(),
-			SlaveTaskProps:   task.GetPublicState().GetSlaveTaskProps(),
+		entTask.PublicState = &queue.TaskPublicState{
+			Error:            task.PublicState.Error,
+			ErrorHistory:     task.PublicState.ErrorHistory,
+			ExecutedDuration: task.PublicState.ExecutedDuration.AsDuration(),
+			RetryCount:       int(task.PublicState.RetryCount),
+			ResumeTime:       task.PublicState.ResumeTime,
+			SlaveTaskProps:   SlaveTaskPropsFromProto(task.PublicState.SlaveTaskProps),
 		}
 	}
 
-	if task.GetPrivateState() != nil {
-		entTask.PrivateState = task.GetPrivateState().GetValue()
-	}
-
-	if task.GetUserId() != nil {
-		entTask.UserID = int(task.GetUserId().GetValue())
-	}
-
 	// Handle DeletedAt field
-	if task.GetDeletedAt() != nil {
-		deletedAt := task.GetDeletedAt().AsTime()
+	if task.DeletedAt != nil {
+		deletedAt := task.DeletedAt.AsTime()
 		entTask.DeletedAt = &deletedAt
 	}
 
 	return entTask
 }
 
-func getEntTaskStatus(status pb.Task_Status) taskent.Status {
+func getEntTaskStatus(status pb.Task_Status) queue.TaskStatus {
 	switch status {
 	case pb.Task_STATUS_SUSPENDING:
-		return taskent.StatusSuspending
+		return queue.StatusSuspending
 	case pb.Task_STATUS_PROCESSING:
-		return taskent.StatusProcessing
+		return queue.StatusProcessing
 	case pb.Task_STATUS_COMPLETED:
-		return taskent.StatusCompleted
+		return queue.StatusCompleted
 	case pb.Task_STATUS_CANCELED:
-		return taskent.StatusCanceled
+		return queue.StatusCanceled
 	case pb.Task_STATUS_ERROR:
-		return taskent.StatusError
+		return queue.StatusError
 	default:
-		return taskent.StatusQueued
+		return queue.StatusQueued
 	}
 }
 
@@ -911,33 +903,33 @@ func ProtoNodeToEnt(node *pb.Node) *ent.Node {
 	}
 	entNode := &ent.Node{
 		ID:        int(node.GetId()),
-		CreatedAt: node.GetCreatedAt().AsTime(),
-		UpdatedAt: node.GetUpdatedAt().AsTime(),
-		Name:      node.GetName(),
-		Server:    node.GetServer().GetValue(),
-		SlaveKey:  node.GetSlaveKey().GetValue(),
-		Settings:  node.GetSettings(),
-		Weight:    int(node.GetWeight()),
-		Type:      getEntNodeType(node.GetType()),
-		Status:    getEntNodeStatus(node.GetStatus()),
+		CreatedAt: node.CreatedAt.AsTime(),
+		UpdatedAt: node.UpdatedAt.AsTime(),
+		Name:      node.Name,
+		Server:    node.Server,
+		SlaveKey:  node.SlaveKey,
+		Settings:  node.Settings,
+		Weight:    int(node.Weight),
+		Type:      getEntNodeType(node.Type),
+		Status:    getEntNodeStatus(node.Status),
 	}
 
 	// Handle optional fields
-	if node.GetCapabilities() != nil {
-		capabilities := boolset.BooleanSet(node.GetCapabilities())
+	if node.Capabilities != nil {
+		capabilities := boolset.BooleanSet(node.Capabilities)
 		entNode.Capabilities = &capabilities
 	}
 
 	// Handle DeletedAt field
-	if node.GetDeletedAt() != nil {
-		deletedAt := node.GetDeletedAt().AsTime()
+	if node.DeletedAt != nil {
+		deletedAt := node.DeletedAt.AsTime()
 		entNode.DeletedAt = &deletedAt
 	}
 
 	// Handle Edges
 	entNode.Edges = ent.NodeEdges{}
-	if node.GetStoragePolicy() != nil {
-		entNode.Edges.StoragePolicy = lo.Map(node.GetStoragePolicy(), func(item *pb.StoragePolicy, index int) *ent.StoragePolicy {
+	if node.StoragePolicy != nil {
+		entNode.Edges.StoragePolicy = lo.Map(node.StoragePolicy, func(item *pb.StoragePolicy, index int) *ent.StoragePolicy {
 			return ProtoPolicyToEnt(item)
 		})
 	}
@@ -1133,5 +1125,43 @@ func FromFsPhysicalObject(obj *fs.PhysicalObject) *pbslave.PhysicalObject {
 		Size:         obj.Size,
 		IsDir:        obj.IsDir,
 		LastModify:   timestamppb.New(obj.LastModify),
+	}
+}
+
+func PaginationResultsToProto(res *data.PaginationResults) *pb.PaginationResults {
+	if res == nil {
+		return nil
+	}
+	return &pb.PaginationResults{
+		Page:          int32(res.Page),
+		PageSize:      int32(res.PageSize),
+		TotalItems:    int32(res.TotalItems),
+		NextPageToken: res.NextPageToken,
+		IsCursor:      res.IsCursor,
+	}
+}
+
+func PaginationArgsFromProto(args *pb.PaginationArgs) *data.PaginationArgs {
+	if args == nil {
+		return nil
+	}
+	return &data.PaginationArgs{
+		UseCursorPagination: args.UseCursorPagination,
+		Page:                int(args.Page),
+		PageToken:           args.PageToken,
+		PageSize:            int(args.PageSize),
+		OrderBy:             args.OrderBy,
+		Order:               OrderDirectionFromProto(args.OrderDirection),
+	}
+}
+
+func OrderDirectionFromProto(orderDirection string) data.OrderDirection {
+	switch orderDirection {
+	case "asc":
+		return data.OrderDirectionAsc
+	case "desc":
+		return data.OrderDirectionDesc
+	default:
+		return ""
 	}
 }

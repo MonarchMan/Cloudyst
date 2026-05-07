@@ -1,7 +1,7 @@
 package dbfs
 
 import (
-	userpb "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"common/util"
 	"context"
 	"file/ent"
@@ -93,7 +93,7 @@ func validateNewFile(fileName string, size int64, policy *ent.StoragePolicy) err
 	return nil
 }
 
-func (f *DBFS) validateUserCapacity(ctx context.Context, size int64, u *userpb.User) error {
+func (f *DBFS) validateUserCapacity(ctx context.Context, size int64, u *userdata.User) error {
 	capacity, err := f.Capacity(ctx, u)
 	if err != nil {
 		return fmt.Errorf("failed to get userId capacity: %s", err)

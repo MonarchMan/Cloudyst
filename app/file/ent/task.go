@@ -3,10 +3,10 @@
 package ent
 
 import (
-	v1 "api/api/file/common/v1"
 	"encoding/json"
 	"file/ent/task"
 	"fmt"
+	"queue"
 	"strings"
 	"time"
 
@@ -28,9 +28,9 @@ type Task struct {
 	// Type holds the value of the "type" field.
 	Type string `json:"type,omitempty"`
 	// Status holds the value of the "status" field.
-	Status task.Status `json:"status,omitempty"`
+	Status queue.TaskStatus `json:"status,omitempty"`
 	// PublicState holds the value of the "public_state" field.
-	PublicState *v1.TaskPublicState `json:"public_state,omitempty"`
+	PublicState *queue.TaskPublicState `json:"public_state,omitempty"`
 	// PrivateState holds the value of the "private_state" field.
 	PrivateState string `json:"private_state,omitempty"`
 	// TraceID holds the value of the "trace_id" field.
@@ -103,7 +103,7 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				_m.Status = task.Status(value.String)
+				_m.Status = queue.TaskStatus(value.String)
 			}
 		case task.FieldPublicState:
 			if value, ok := values[i].(*[]byte); !ok {

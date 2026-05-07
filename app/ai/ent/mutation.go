@@ -15,11 +15,13 @@ import (
 	"ai/ent/aitool"
 	"ai/ent/aiwebpage"
 	"ai/ent/predicate"
+	"ai/ent/task"
 	"ai/internal/biz/types"
 	"context"
 	"entmodule"
 	"errors"
 	"fmt"
+	"queue"
 	"sync"
 	"time"
 
@@ -47,6 +49,7 @@ const (
 	TypeAiModel             = "AiModel"
 	TypeAiTool              = "AiTool"
 	TypeAiWebPage           = "AiWebPage"
+	TypeTask                = "Task"
 )
 
 // AiApiKeyMutation represents an operation that mutates the AiApiKey nodes in the graph.
@@ -7160,13 +7163,20 @@ type AiKnowledgeDocumentMutation struct {
 	version                     *string
 	content_length              *int
 	addcontent_length           *int
+	size                        *int64
+	addsize                     *int64
 	tokens                      *int
 	addtokens                   *int
+	chunks                      *int
+	addchunks                   *int
+	parse_type                  *string
+	content_hash                *string
+	metadata                    *map[string]interface{}
 	segment_max_tokens          *int
 	addsegment_max_tokens       *int
 	retrieval_count             *int
 	addretrieval_count          *int
-	process                     *types.DocumentStatus
+	progress                    *types.DocumentProgress
 	status                      *entmodule.Status
 	clearedFields               map[string]struct{}
 	ai_knowledge                *int
@@ -7598,6 +7608,62 @@ func (m *AiKnowledgeDocumentMutation) ResetContentLength() {
 	m.addcontent_length = nil
 }
 
+// SetSize sets the "size" field.
+func (m *AiKnowledgeDocumentMutation) SetSize(i int64) {
+	m.size = &i
+	m.addsize = nil
+}
+
+// Size returns the value of the "size" field in the mutation.
+func (m *AiKnowledgeDocumentMutation) Size() (r int64, exists bool) {
+	v := m.size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSize returns the old "size" field's value of the AiKnowledgeDocument entity.
+// If the AiKnowledgeDocument object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeDocumentMutation) OldSize(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSize is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSize: %w", err)
+	}
+	return oldValue.Size, nil
+}
+
+// AddSize adds i to the "size" field.
+func (m *AiKnowledgeDocumentMutation) AddSize(i int64) {
+	if m.addsize != nil {
+		*m.addsize += i
+	} else {
+		m.addsize = &i
+	}
+}
+
+// AddedSize returns the value that was added to the "size" field in this mutation.
+func (m *AiKnowledgeDocumentMutation) AddedSize() (r int64, exists bool) {
+	v := m.addsize
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSize resets all changes to the "size" field.
+func (m *AiKnowledgeDocumentMutation) ResetSize() {
+	m.size = nil
+	m.addsize = nil
+}
+
 // SetTokens sets the "tokens" field.
 func (m *AiKnowledgeDocumentMutation) SetTokens(i int) {
 	m.tokens = &i
@@ -7652,6 +7718,209 @@ func (m *AiKnowledgeDocumentMutation) AddedTokens() (r int, exists bool) {
 func (m *AiKnowledgeDocumentMutation) ResetTokens() {
 	m.tokens = nil
 	m.addtokens = nil
+}
+
+// SetChunks sets the "chunks" field.
+func (m *AiKnowledgeDocumentMutation) SetChunks(i int) {
+	m.chunks = &i
+	m.addchunks = nil
+}
+
+// Chunks returns the value of the "chunks" field in the mutation.
+func (m *AiKnowledgeDocumentMutation) Chunks() (r int, exists bool) {
+	v := m.chunks
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChunks returns the old "chunks" field's value of the AiKnowledgeDocument entity.
+// If the AiKnowledgeDocument object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeDocumentMutation) OldChunks(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChunks is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChunks requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChunks: %w", err)
+	}
+	return oldValue.Chunks, nil
+}
+
+// AddChunks adds i to the "chunks" field.
+func (m *AiKnowledgeDocumentMutation) AddChunks(i int) {
+	if m.addchunks != nil {
+		*m.addchunks += i
+	} else {
+		m.addchunks = &i
+	}
+}
+
+// AddedChunks returns the value that was added to the "chunks" field in this mutation.
+func (m *AiKnowledgeDocumentMutation) AddedChunks() (r int, exists bool) {
+	v := m.addchunks
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetChunks resets all changes to the "chunks" field.
+func (m *AiKnowledgeDocumentMutation) ResetChunks() {
+	m.chunks = nil
+	m.addchunks = nil
+}
+
+// SetParseType sets the "parse_type" field.
+func (m *AiKnowledgeDocumentMutation) SetParseType(s string) {
+	m.parse_type = &s
+}
+
+// ParseType returns the value of the "parse_type" field in the mutation.
+func (m *AiKnowledgeDocumentMutation) ParseType() (r string, exists bool) {
+	v := m.parse_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParseType returns the old "parse_type" field's value of the AiKnowledgeDocument entity.
+// If the AiKnowledgeDocument object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeDocumentMutation) OldParseType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParseType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParseType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParseType: %w", err)
+	}
+	return oldValue.ParseType, nil
+}
+
+// ClearParseType clears the value of the "parse_type" field.
+func (m *AiKnowledgeDocumentMutation) ClearParseType() {
+	m.parse_type = nil
+	m.clearedFields[aiknowledgedocument.FieldParseType] = struct{}{}
+}
+
+// ParseTypeCleared returns if the "parse_type" field was cleared in this mutation.
+func (m *AiKnowledgeDocumentMutation) ParseTypeCleared() bool {
+	_, ok := m.clearedFields[aiknowledgedocument.FieldParseType]
+	return ok
+}
+
+// ResetParseType resets all changes to the "parse_type" field.
+func (m *AiKnowledgeDocumentMutation) ResetParseType() {
+	m.parse_type = nil
+	delete(m.clearedFields, aiknowledgedocument.FieldParseType)
+}
+
+// SetContentHash sets the "content_hash" field.
+func (m *AiKnowledgeDocumentMutation) SetContentHash(s string) {
+	m.content_hash = &s
+}
+
+// ContentHash returns the value of the "content_hash" field in the mutation.
+func (m *AiKnowledgeDocumentMutation) ContentHash() (r string, exists bool) {
+	v := m.content_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContentHash returns the old "content_hash" field's value of the AiKnowledgeDocument entity.
+// If the AiKnowledgeDocument object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeDocumentMutation) OldContentHash(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContentHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContentHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContentHash: %w", err)
+	}
+	return oldValue.ContentHash, nil
+}
+
+// ClearContentHash clears the value of the "content_hash" field.
+func (m *AiKnowledgeDocumentMutation) ClearContentHash() {
+	m.content_hash = nil
+	m.clearedFields[aiknowledgedocument.FieldContentHash] = struct{}{}
+}
+
+// ContentHashCleared returns if the "content_hash" field was cleared in this mutation.
+func (m *AiKnowledgeDocumentMutation) ContentHashCleared() bool {
+	_, ok := m.clearedFields[aiknowledgedocument.FieldContentHash]
+	return ok
+}
+
+// ResetContentHash resets all changes to the "content_hash" field.
+func (m *AiKnowledgeDocumentMutation) ResetContentHash() {
+	m.content_hash = nil
+	delete(m.clearedFields, aiknowledgedocument.FieldContentHash)
+}
+
+// SetMetadata sets the "metadata" field.
+func (m *AiKnowledgeDocumentMutation) SetMetadata(value map[string]interface{}) {
+	m.metadata = &value
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *AiKnowledgeDocumentMutation) Metadata() (r map[string]interface{}, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the AiKnowledgeDocument entity.
+// If the AiKnowledgeDocument object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeDocumentMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (m *AiKnowledgeDocumentMutation) ClearMetadata() {
+	m.metadata = nil
+	m.clearedFields[aiknowledgedocument.FieldMetadata] = struct{}{}
+}
+
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *AiKnowledgeDocumentMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[aiknowledgedocument.FieldMetadata]
+	return ok
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *AiKnowledgeDocumentMutation) ResetMetadata() {
+	m.metadata = nil
+	delete(m.clearedFields, aiknowledgedocument.FieldMetadata)
 }
 
 // SetSegmentMaxTokens sets the "segment_max_tokens" field.
@@ -7766,40 +8035,40 @@ func (m *AiKnowledgeDocumentMutation) ResetRetrievalCount() {
 	m.addretrieval_count = nil
 }
 
-// SetProcess sets the "process" field.
-func (m *AiKnowledgeDocumentMutation) SetProcess(ts types.DocumentStatus) {
-	m.process = &ts
+// SetProgress sets the "progress" field.
+func (m *AiKnowledgeDocumentMutation) SetProgress(tp types.DocumentProgress) {
+	m.progress = &tp
 }
 
-// Process returns the value of the "process" field in the mutation.
-func (m *AiKnowledgeDocumentMutation) Process() (r types.DocumentStatus, exists bool) {
-	v := m.process
+// Progress returns the value of the "progress" field in the mutation.
+func (m *AiKnowledgeDocumentMutation) Progress() (r types.DocumentProgress, exists bool) {
+	v := m.progress
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProcess returns the old "process" field's value of the AiKnowledgeDocument entity.
+// OldProgress returns the old "progress" field's value of the AiKnowledgeDocument entity.
 // If the AiKnowledgeDocument object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AiKnowledgeDocumentMutation) OldProcess(ctx context.Context) (v types.DocumentStatus, err error) {
+func (m *AiKnowledgeDocumentMutation) OldProgress(ctx context.Context) (v types.DocumentProgress, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProcess is only allowed on UpdateOne operations")
+		return v, errors.New("OldProgress is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProcess requires an ID field in the mutation")
+		return v, errors.New("OldProgress requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProcess: %w", err)
+		return v, fmt.Errorf("querying old value for OldProgress: %w", err)
 	}
-	return oldValue.Process, nil
+	return oldValue.Progress, nil
 }
 
-// ResetProcess resets all changes to the "process" field.
-func (m *AiKnowledgeDocumentMutation) ResetProcess() {
-	m.process = nil
+// ResetProgress resets all changes to the "progress" field.
+func (m *AiKnowledgeDocumentMutation) ResetProgress() {
+	m.progress = nil
 }
 
 // SetStatus sets the "status" field.
@@ -7966,7 +8235,7 @@ func (m *AiKnowledgeDocumentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AiKnowledgeDocumentMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 18)
 	if m.created_at != nil {
 		fields = append(fields, aiknowledgedocument.FieldCreatedAt)
 	}
@@ -7991,8 +8260,23 @@ func (m *AiKnowledgeDocumentMutation) Fields() []string {
 	if m.content_length != nil {
 		fields = append(fields, aiknowledgedocument.FieldContentLength)
 	}
+	if m.size != nil {
+		fields = append(fields, aiknowledgedocument.FieldSize)
+	}
 	if m.tokens != nil {
 		fields = append(fields, aiknowledgedocument.FieldTokens)
+	}
+	if m.chunks != nil {
+		fields = append(fields, aiknowledgedocument.FieldChunks)
+	}
+	if m.parse_type != nil {
+		fields = append(fields, aiknowledgedocument.FieldParseType)
+	}
+	if m.content_hash != nil {
+		fields = append(fields, aiknowledgedocument.FieldContentHash)
+	}
+	if m.metadata != nil {
+		fields = append(fields, aiknowledgedocument.FieldMetadata)
 	}
 	if m.segment_max_tokens != nil {
 		fields = append(fields, aiknowledgedocument.FieldSegmentMaxTokens)
@@ -8000,8 +8284,8 @@ func (m *AiKnowledgeDocumentMutation) Fields() []string {
 	if m.retrieval_count != nil {
 		fields = append(fields, aiknowledgedocument.FieldRetrievalCount)
 	}
-	if m.process != nil {
-		fields = append(fields, aiknowledgedocument.FieldProcess)
+	if m.progress != nil {
+		fields = append(fields, aiknowledgedocument.FieldProgress)
 	}
 	if m.status != nil {
 		fields = append(fields, aiknowledgedocument.FieldStatus)
@@ -8030,14 +8314,24 @@ func (m *AiKnowledgeDocumentMutation) Field(name string) (ent.Value, bool) {
 		return m.Version()
 	case aiknowledgedocument.FieldContentLength:
 		return m.ContentLength()
+	case aiknowledgedocument.FieldSize:
+		return m.Size()
 	case aiknowledgedocument.FieldTokens:
 		return m.Tokens()
+	case aiknowledgedocument.FieldChunks:
+		return m.Chunks()
+	case aiknowledgedocument.FieldParseType:
+		return m.ParseType()
+	case aiknowledgedocument.FieldContentHash:
+		return m.ContentHash()
+	case aiknowledgedocument.FieldMetadata:
+		return m.Metadata()
 	case aiknowledgedocument.FieldSegmentMaxTokens:
 		return m.SegmentMaxTokens()
 	case aiknowledgedocument.FieldRetrievalCount:
 		return m.RetrievalCount()
-	case aiknowledgedocument.FieldProcess:
-		return m.Process()
+	case aiknowledgedocument.FieldProgress:
+		return m.Progress()
 	case aiknowledgedocument.FieldStatus:
 		return m.Status()
 	}
@@ -8065,14 +8359,24 @@ func (m *AiKnowledgeDocumentMutation) OldField(ctx context.Context, name string)
 		return m.OldVersion(ctx)
 	case aiknowledgedocument.FieldContentLength:
 		return m.OldContentLength(ctx)
+	case aiknowledgedocument.FieldSize:
+		return m.OldSize(ctx)
 	case aiknowledgedocument.FieldTokens:
 		return m.OldTokens(ctx)
+	case aiknowledgedocument.FieldChunks:
+		return m.OldChunks(ctx)
+	case aiknowledgedocument.FieldParseType:
+		return m.OldParseType(ctx)
+	case aiknowledgedocument.FieldContentHash:
+		return m.OldContentHash(ctx)
+	case aiknowledgedocument.FieldMetadata:
+		return m.OldMetadata(ctx)
 	case aiknowledgedocument.FieldSegmentMaxTokens:
 		return m.OldSegmentMaxTokens(ctx)
 	case aiknowledgedocument.FieldRetrievalCount:
 		return m.OldRetrievalCount(ctx)
-	case aiknowledgedocument.FieldProcess:
-		return m.OldProcess(ctx)
+	case aiknowledgedocument.FieldProgress:
+		return m.OldProgress(ctx)
 	case aiknowledgedocument.FieldStatus:
 		return m.OldStatus(ctx)
 	}
@@ -8140,12 +8444,47 @@ func (m *AiKnowledgeDocumentMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetContentLength(v)
 		return nil
+	case aiknowledgedocument.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSize(v)
+		return nil
 	case aiknowledgedocument.FieldTokens:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTokens(v)
+		return nil
+	case aiknowledgedocument.FieldChunks:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChunks(v)
+		return nil
+	case aiknowledgedocument.FieldParseType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParseType(v)
+		return nil
+	case aiknowledgedocument.FieldContentHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContentHash(v)
+		return nil
+	case aiknowledgedocument.FieldMetadata:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadata(v)
 		return nil
 	case aiknowledgedocument.FieldSegmentMaxTokens:
 		v, ok := value.(int)
@@ -8161,12 +8500,12 @@ func (m *AiKnowledgeDocumentMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetRetrievalCount(v)
 		return nil
-	case aiknowledgedocument.FieldProcess:
-		v, ok := value.(types.DocumentStatus)
+	case aiknowledgedocument.FieldProgress:
+		v, ok := value.(types.DocumentProgress)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProcess(v)
+		m.SetProgress(v)
 		return nil
 	case aiknowledgedocument.FieldStatus:
 		v, ok := value.(entmodule.Status)
@@ -8186,8 +8525,14 @@ func (m *AiKnowledgeDocumentMutation) AddedFields() []string {
 	if m.addcontent_length != nil {
 		fields = append(fields, aiknowledgedocument.FieldContentLength)
 	}
+	if m.addsize != nil {
+		fields = append(fields, aiknowledgedocument.FieldSize)
+	}
 	if m.addtokens != nil {
 		fields = append(fields, aiknowledgedocument.FieldTokens)
+	}
+	if m.addchunks != nil {
+		fields = append(fields, aiknowledgedocument.FieldChunks)
 	}
 	if m.addsegment_max_tokens != nil {
 		fields = append(fields, aiknowledgedocument.FieldSegmentMaxTokens)
@@ -8205,8 +8550,12 @@ func (m *AiKnowledgeDocumentMutation) AddedField(name string) (ent.Value, bool) 
 	switch name {
 	case aiknowledgedocument.FieldContentLength:
 		return m.AddedContentLength()
+	case aiknowledgedocument.FieldSize:
+		return m.AddedSize()
 	case aiknowledgedocument.FieldTokens:
 		return m.AddedTokens()
+	case aiknowledgedocument.FieldChunks:
+		return m.AddedChunks()
 	case aiknowledgedocument.FieldSegmentMaxTokens:
 		return m.AddedSegmentMaxTokens()
 	case aiknowledgedocument.FieldRetrievalCount:
@@ -8227,12 +8576,26 @@ func (m *AiKnowledgeDocumentMutation) AddField(name string, value ent.Value) err
 		}
 		m.AddContentLength(v)
 		return nil
+	case aiknowledgedocument.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSize(v)
+		return nil
 	case aiknowledgedocument.FieldTokens:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddTokens(v)
+		return nil
+	case aiknowledgedocument.FieldChunks:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddChunks(v)
 		return nil
 	case aiknowledgedocument.FieldSegmentMaxTokens:
 		v, ok := value.(int)
@@ -8259,6 +8622,15 @@ func (m *AiKnowledgeDocumentMutation) ClearedFields() []string {
 	if m.FieldCleared(aiknowledgedocument.FieldDeletedAt) {
 		fields = append(fields, aiknowledgedocument.FieldDeletedAt)
 	}
+	if m.FieldCleared(aiknowledgedocument.FieldParseType) {
+		fields = append(fields, aiknowledgedocument.FieldParseType)
+	}
+	if m.FieldCleared(aiknowledgedocument.FieldContentHash) {
+		fields = append(fields, aiknowledgedocument.FieldContentHash)
+	}
+	if m.FieldCleared(aiknowledgedocument.FieldMetadata) {
+		fields = append(fields, aiknowledgedocument.FieldMetadata)
+	}
 	return fields
 }
 
@@ -8275,6 +8647,15 @@ func (m *AiKnowledgeDocumentMutation) ClearField(name string) error {
 	switch name {
 	case aiknowledgedocument.FieldDeletedAt:
 		m.ClearDeletedAt()
+		return nil
+	case aiknowledgedocument.FieldParseType:
+		m.ClearParseType()
+		return nil
+	case aiknowledgedocument.FieldContentHash:
+		m.ClearContentHash()
+		return nil
+	case aiknowledgedocument.FieldMetadata:
+		m.ClearMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown AiKnowledgeDocument nullable field %s", name)
@@ -8308,8 +8689,23 @@ func (m *AiKnowledgeDocumentMutation) ResetField(name string) error {
 	case aiknowledgedocument.FieldContentLength:
 		m.ResetContentLength()
 		return nil
+	case aiknowledgedocument.FieldSize:
+		m.ResetSize()
+		return nil
 	case aiknowledgedocument.FieldTokens:
 		m.ResetTokens()
+		return nil
+	case aiknowledgedocument.FieldChunks:
+		m.ResetChunks()
+		return nil
+	case aiknowledgedocument.FieldParseType:
+		m.ResetParseType()
+		return nil
+	case aiknowledgedocument.FieldContentHash:
+		m.ResetContentHash()
+		return nil
+	case aiknowledgedocument.FieldMetadata:
+		m.ResetMetadata()
 		return nil
 	case aiknowledgedocument.FieldSegmentMaxTokens:
 		m.ResetSegmentMaxTokens()
@@ -8317,8 +8713,8 @@ func (m *AiKnowledgeDocumentMutation) ResetField(name string) error {
 	case aiknowledgedocument.FieldRetrievalCount:
 		m.ResetRetrievalCount()
 		return nil
-	case aiknowledgedocument.FieldProcess:
-		m.ResetProcess()
+	case aiknowledgedocument.FieldProgress:
+		m.ResetProgress()
 		return nil
 	case aiknowledgedocument.FieldStatus:
 		m.ResetStatus()
@@ -8444,6 +8840,14 @@ type AiKnowledgeSegmentMutation struct {
 	addcontent_length            *int
 	tokens                       *int
 	addtokens                    *int
+	chunk_index                  *int
+	addchunk_index               *int
+	section_path                 *string
+	start_offset                 *int
+	addstart_offset              *int
+	end_offset                   *int
+	addend_offset                *int
+	metadata                     *map[string]interface{}
 	vector_id                    *string
 	retrieval_count              *int
 	addretrieval_count           *int
@@ -8879,6 +9283,272 @@ func (m *AiKnowledgeSegmentMutation) ResetTokens() {
 	m.addtokens = nil
 }
 
+// SetChunkIndex sets the "chunk_index" field.
+func (m *AiKnowledgeSegmentMutation) SetChunkIndex(i int) {
+	m.chunk_index = &i
+	m.addchunk_index = nil
+}
+
+// ChunkIndex returns the value of the "chunk_index" field in the mutation.
+func (m *AiKnowledgeSegmentMutation) ChunkIndex() (r int, exists bool) {
+	v := m.chunk_index
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChunkIndex returns the old "chunk_index" field's value of the AiKnowledgeSegment entity.
+// If the AiKnowledgeSegment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeSegmentMutation) OldChunkIndex(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChunkIndex is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChunkIndex requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChunkIndex: %w", err)
+	}
+	return oldValue.ChunkIndex, nil
+}
+
+// AddChunkIndex adds i to the "chunk_index" field.
+func (m *AiKnowledgeSegmentMutation) AddChunkIndex(i int) {
+	if m.addchunk_index != nil {
+		*m.addchunk_index += i
+	} else {
+		m.addchunk_index = &i
+	}
+}
+
+// AddedChunkIndex returns the value that was added to the "chunk_index" field in this mutation.
+func (m *AiKnowledgeSegmentMutation) AddedChunkIndex() (r int, exists bool) {
+	v := m.addchunk_index
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetChunkIndex resets all changes to the "chunk_index" field.
+func (m *AiKnowledgeSegmentMutation) ResetChunkIndex() {
+	m.chunk_index = nil
+	m.addchunk_index = nil
+}
+
+// SetSectionPath sets the "section_path" field.
+func (m *AiKnowledgeSegmentMutation) SetSectionPath(s string) {
+	m.section_path = &s
+}
+
+// SectionPath returns the value of the "section_path" field in the mutation.
+func (m *AiKnowledgeSegmentMutation) SectionPath() (r string, exists bool) {
+	v := m.section_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSectionPath returns the old "section_path" field's value of the AiKnowledgeSegment entity.
+// If the AiKnowledgeSegment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeSegmentMutation) OldSectionPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSectionPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSectionPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSectionPath: %w", err)
+	}
+	return oldValue.SectionPath, nil
+}
+
+// ClearSectionPath clears the value of the "section_path" field.
+func (m *AiKnowledgeSegmentMutation) ClearSectionPath() {
+	m.section_path = nil
+	m.clearedFields[aiknowledgesegment.FieldSectionPath] = struct{}{}
+}
+
+// SectionPathCleared returns if the "section_path" field was cleared in this mutation.
+func (m *AiKnowledgeSegmentMutation) SectionPathCleared() bool {
+	_, ok := m.clearedFields[aiknowledgesegment.FieldSectionPath]
+	return ok
+}
+
+// ResetSectionPath resets all changes to the "section_path" field.
+func (m *AiKnowledgeSegmentMutation) ResetSectionPath() {
+	m.section_path = nil
+	delete(m.clearedFields, aiknowledgesegment.FieldSectionPath)
+}
+
+// SetStartOffset sets the "start_offset" field.
+func (m *AiKnowledgeSegmentMutation) SetStartOffset(i int) {
+	m.start_offset = &i
+	m.addstart_offset = nil
+}
+
+// StartOffset returns the value of the "start_offset" field in the mutation.
+func (m *AiKnowledgeSegmentMutation) StartOffset() (r int, exists bool) {
+	v := m.start_offset
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartOffset returns the old "start_offset" field's value of the AiKnowledgeSegment entity.
+// If the AiKnowledgeSegment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeSegmentMutation) OldStartOffset(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStartOffset is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStartOffset requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStartOffset: %w", err)
+	}
+	return oldValue.StartOffset, nil
+}
+
+// AddStartOffset adds i to the "start_offset" field.
+func (m *AiKnowledgeSegmentMutation) AddStartOffset(i int) {
+	if m.addstart_offset != nil {
+		*m.addstart_offset += i
+	} else {
+		m.addstart_offset = &i
+	}
+}
+
+// AddedStartOffset returns the value that was added to the "start_offset" field in this mutation.
+func (m *AiKnowledgeSegmentMutation) AddedStartOffset() (r int, exists bool) {
+	v := m.addstart_offset
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStartOffset resets all changes to the "start_offset" field.
+func (m *AiKnowledgeSegmentMutation) ResetStartOffset() {
+	m.start_offset = nil
+	m.addstart_offset = nil
+}
+
+// SetEndOffset sets the "end_offset" field.
+func (m *AiKnowledgeSegmentMutation) SetEndOffset(i int) {
+	m.end_offset = &i
+	m.addend_offset = nil
+}
+
+// EndOffset returns the value of the "end_offset" field in the mutation.
+func (m *AiKnowledgeSegmentMutation) EndOffset() (r int, exists bool) {
+	v := m.end_offset
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEndOffset returns the old "end_offset" field's value of the AiKnowledgeSegment entity.
+// If the AiKnowledgeSegment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeSegmentMutation) OldEndOffset(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEndOffset is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEndOffset requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEndOffset: %w", err)
+	}
+	return oldValue.EndOffset, nil
+}
+
+// AddEndOffset adds i to the "end_offset" field.
+func (m *AiKnowledgeSegmentMutation) AddEndOffset(i int) {
+	if m.addend_offset != nil {
+		*m.addend_offset += i
+	} else {
+		m.addend_offset = &i
+	}
+}
+
+// AddedEndOffset returns the value that was added to the "end_offset" field in this mutation.
+func (m *AiKnowledgeSegmentMutation) AddedEndOffset() (r int, exists bool) {
+	v := m.addend_offset
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetEndOffset resets all changes to the "end_offset" field.
+func (m *AiKnowledgeSegmentMutation) ResetEndOffset() {
+	m.end_offset = nil
+	m.addend_offset = nil
+}
+
+// SetMetadata sets the "metadata" field.
+func (m *AiKnowledgeSegmentMutation) SetMetadata(value map[string]interface{}) {
+	m.metadata = &value
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *AiKnowledgeSegmentMutation) Metadata() (r map[string]interface{}, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the AiKnowledgeSegment entity.
+// If the AiKnowledgeSegment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiKnowledgeSegmentMutation) OldMetadata(ctx context.Context) (v map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (m *AiKnowledgeSegmentMutation) ClearMetadata() {
+	m.metadata = nil
+	m.clearedFields[aiknowledgesegment.FieldMetadata] = struct{}{}
+}
+
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *AiKnowledgeSegmentMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[aiknowledgesegment.FieldMetadata]
+	return ok
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *AiKnowledgeSegmentMutation) ResetMetadata() {
+	m.metadata = nil
+	delete(m.clearedFields, aiknowledgesegment.FieldMetadata)
+}
+
 // SetVectorID sets the "vector_id" field.
 func (m *AiKnowledgeSegmentMutation) SetVectorID(s string) {
 	m.vector_id = &s
@@ -9081,7 +9751,7 @@ func (m *AiKnowledgeSegmentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AiKnowledgeSegmentMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 15)
 	if m.created_at != nil {
 		fields = append(fields, aiknowledgesegment.FieldCreatedAt)
 	}
@@ -9102,6 +9772,21 @@ func (m *AiKnowledgeSegmentMutation) Fields() []string {
 	}
 	if m.tokens != nil {
 		fields = append(fields, aiknowledgesegment.FieldTokens)
+	}
+	if m.chunk_index != nil {
+		fields = append(fields, aiknowledgesegment.FieldChunkIndex)
+	}
+	if m.section_path != nil {
+		fields = append(fields, aiknowledgesegment.FieldSectionPath)
+	}
+	if m.start_offset != nil {
+		fields = append(fields, aiknowledgesegment.FieldStartOffset)
+	}
+	if m.end_offset != nil {
+		fields = append(fields, aiknowledgesegment.FieldEndOffset)
+	}
+	if m.metadata != nil {
+		fields = append(fields, aiknowledgesegment.FieldMetadata)
 	}
 	if m.vector_id != nil {
 		fields = append(fields, aiknowledgesegment.FieldVectorID)
@@ -9134,6 +9819,16 @@ func (m *AiKnowledgeSegmentMutation) Field(name string) (ent.Value, bool) {
 		return m.ContentLength()
 	case aiknowledgesegment.FieldTokens:
 		return m.Tokens()
+	case aiknowledgesegment.FieldChunkIndex:
+		return m.ChunkIndex()
+	case aiknowledgesegment.FieldSectionPath:
+		return m.SectionPath()
+	case aiknowledgesegment.FieldStartOffset:
+		return m.StartOffset()
+	case aiknowledgesegment.FieldEndOffset:
+		return m.EndOffset()
+	case aiknowledgesegment.FieldMetadata:
+		return m.Metadata()
 	case aiknowledgesegment.FieldVectorID:
 		return m.VectorID()
 	case aiknowledgesegment.FieldRetrievalCount:
@@ -9163,6 +9858,16 @@ func (m *AiKnowledgeSegmentMutation) OldField(ctx context.Context, name string) 
 		return m.OldContentLength(ctx)
 	case aiknowledgesegment.FieldTokens:
 		return m.OldTokens(ctx)
+	case aiknowledgesegment.FieldChunkIndex:
+		return m.OldChunkIndex(ctx)
+	case aiknowledgesegment.FieldSectionPath:
+		return m.OldSectionPath(ctx)
+	case aiknowledgesegment.FieldStartOffset:
+		return m.OldStartOffset(ctx)
+	case aiknowledgesegment.FieldEndOffset:
+		return m.OldEndOffset(ctx)
+	case aiknowledgesegment.FieldMetadata:
+		return m.OldMetadata(ctx)
 	case aiknowledgesegment.FieldVectorID:
 		return m.OldVectorID(ctx)
 	case aiknowledgesegment.FieldRetrievalCount:
@@ -9227,6 +9932,41 @@ func (m *AiKnowledgeSegmentMutation) SetField(name string, value ent.Value) erro
 		}
 		m.SetTokens(v)
 		return nil
+	case aiknowledgesegment.FieldChunkIndex:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChunkIndex(v)
+		return nil
+	case aiknowledgesegment.FieldSectionPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSectionPath(v)
+		return nil
+	case aiknowledgesegment.FieldStartOffset:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStartOffset(v)
+		return nil
+	case aiknowledgesegment.FieldEndOffset:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEndOffset(v)
+		return nil
+	case aiknowledgesegment.FieldMetadata:
+		v, ok := value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadata(v)
+		return nil
 	case aiknowledgesegment.FieldVectorID:
 		v, ok := value.(string)
 		if !ok {
@@ -9265,6 +10005,15 @@ func (m *AiKnowledgeSegmentMutation) AddedFields() []string {
 	if m.addtokens != nil {
 		fields = append(fields, aiknowledgesegment.FieldTokens)
 	}
+	if m.addchunk_index != nil {
+		fields = append(fields, aiknowledgesegment.FieldChunkIndex)
+	}
+	if m.addstart_offset != nil {
+		fields = append(fields, aiknowledgesegment.FieldStartOffset)
+	}
+	if m.addend_offset != nil {
+		fields = append(fields, aiknowledgesegment.FieldEndOffset)
+	}
 	if m.addretrieval_count != nil {
 		fields = append(fields, aiknowledgesegment.FieldRetrievalCount)
 	}
@@ -9282,6 +10031,12 @@ func (m *AiKnowledgeSegmentMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedContentLength()
 	case aiknowledgesegment.FieldTokens:
 		return m.AddedTokens()
+	case aiknowledgesegment.FieldChunkIndex:
+		return m.AddedChunkIndex()
+	case aiknowledgesegment.FieldStartOffset:
+		return m.AddedStartOffset()
+	case aiknowledgesegment.FieldEndOffset:
+		return m.AddedEndOffset()
 	case aiknowledgesegment.FieldRetrievalCount:
 		return m.AddedRetrievalCount()
 	}
@@ -9314,6 +10069,27 @@ func (m *AiKnowledgeSegmentMutation) AddField(name string, value ent.Value) erro
 		}
 		m.AddTokens(v)
 		return nil
+	case aiknowledgesegment.FieldChunkIndex:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddChunkIndex(v)
+		return nil
+	case aiknowledgesegment.FieldStartOffset:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStartOffset(v)
+		return nil
+	case aiknowledgesegment.FieldEndOffset:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddEndOffset(v)
+		return nil
 	case aiknowledgesegment.FieldRetrievalCount:
 		v, ok := value.(int)
 		if !ok {
@@ -9332,6 +10108,12 @@ func (m *AiKnowledgeSegmentMutation) ClearedFields() []string {
 	if m.FieldCleared(aiknowledgesegment.FieldDeletedAt) {
 		fields = append(fields, aiknowledgesegment.FieldDeletedAt)
 	}
+	if m.FieldCleared(aiknowledgesegment.FieldSectionPath) {
+		fields = append(fields, aiknowledgesegment.FieldSectionPath)
+	}
+	if m.FieldCleared(aiknowledgesegment.FieldMetadata) {
+		fields = append(fields, aiknowledgesegment.FieldMetadata)
+	}
 	return fields
 }
 
@@ -9348,6 +10130,12 @@ func (m *AiKnowledgeSegmentMutation) ClearField(name string) error {
 	switch name {
 	case aiknowledgesegment.FieldDeletedAt:
 		m.ClearDeletedAt()
+		return nil
+	case aiknowledgesegment.FieldSectionPath:
+		m.ClearSectionPath()
+		return nil
+	case aiknowledgesegment.FieldMetadata:
+		m.ClearMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown AiKnowledgeSegment nullable field %s", name)
@@ -9377,6 +10165,21 @@ func (m *AiKnowledgeSegmentMutation) ResetField(name string) error {
 		return nil
 	case aiknowledgesegment.FieldTokens:
 		m.ResetTokens()
+		return nil
+	case aiknowledgesegment.FieldChunkIndex:
+		m.ResetChunkIndex()
+		return nil
+	case aiknowledgesegment.FieldSectionPath:
+		m.ResetSectionPath()
+		return nil
+	case aiknowledgesegment.FieldStartOffset:
+		m.ResetStartOffset()
+		return nil
+	case aiknowledgesegment.FieldEndOffset:
+		m.ResetEndOffset()
+		return nil
+	case aiknowledgesegment.FieldMetadata:
+		m.ResetMetadata()
 		return nil
 	case aiknowledgesegment.FieldVectorID:
 		m.ResetVectorID()
@@ -12237,4 +13040,878 @@ func (m *AiWebPageMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown AiWebPage edge %s", name)
+}
+
+// TaskMutation represents an operation that mutates the Task nodes in the graph.
+type TaskMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	created_at    *time.Time
+	updated_at    *time.Time
+	deleted_at    *time.Time
+	_type         *string
+	status        *queue.TaskStatus
+	public_state  **queue.TaskPublicState
+	private_state *string
+	trace_id      *string
+	user_id       *int
+	adduser_id    *int
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Task, error)
+	predicates    []predicate.Task
+}
+
+var _ ent.Mutation = (*TaskMutation)(nil)
+
+// taskOption allows management of the mutation configuration using functional options.
+type taskOption func(*TaskMutation)
+
+// newTaskMutation creates new mutation for the Task entity.
+func newTaskMutation(c config, op Op, opts ...taskOption) *TaskMutation {
+	m := &TaskMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTask,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTaskID sets the ID field of the mutation.
+func withTaskID(id int) taskOption {
+	return func(m *TaskMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Task
+		)
+		m.oldValue = func(ctx context.Context) (*Task, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Task.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTask sets the old Task of the mutation.
+func withTask(node *Task) taskOption {
+	return func(m *TaskMutation) {
+		m.oldValue = func(context.Context) (*Task, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TaskMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TaskMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TaskMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TaskMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Task.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TaskMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TaskMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TaskMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *TaskMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *TaskMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *TaskMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *TaskMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *TaskMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *TaskMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[task.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *TaskMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[task.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *TaskMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, task.FieldDeletedAt)
+}
+
+// SetType sets the "type" field.
+func (m *TaskMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *TaskMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *TaskMutation) ResetType() {
+	m._type = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *TaskMutation) SetStatus(qs queue.TaskStatus) {
+	m.status = &qs
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *TaskMutation) Status() (r queue.TaskStatus, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldStatus(ctx context.Context) (v queue.TaskStatus, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *TaskMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetPublicState sets the "public_state" field.
+func (m *TaskMutation) SetPublicState(qps *queue.TaskPublicState) {
+	m.public_state = &qps
+}
+
+// PublicState returns the value of the "public_state" field in the mutation.
+func (m *TaskMutation) PublicState() (r *queue.TaskPublicState, exists bool) {
+	v := m.public_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicState returns the old "public_state" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldPublicState(ctx context.Context) (v *queue.TaskPublicState, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublicState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublicState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicState: %w", err)
+	}
+	return oldValue.PublicState, nil
+}
+
+// ResetPublicState resets all changes to the "public_state" field.
+func (m *TaskMutation) ResetPublicState() {
+	m.public_state = nil
+}
+
+// SetPrivateState sets the "private_state" field.
+func (m *TaskMutation) SetPrivateState(s string) {
+	m.private_state = &s
+}
+
+// PrivateState returns the value of the "private_state" field in the mutation.
+func (m *TaskMutation) PrivateState() (r string, exists bool) {
+	v := m.private_state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrivateState returns the old "private_state" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldPrivateState(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrivateState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrivateState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrivateState: %w", err)
+	}
+	return oldValue.PrivateState, nil
+}
+
+// ClearPrivateState clears the value of the "private_state" field.
+func (m *TaskMutation) ClearPrivateState() {
+	m.private_state = nil
+	m.clearedFields[task.FieldPrivateState] = struct{}{}
+}
+
+// PrivateStateCleared returns if the "private_state" field was cleared in this mutation.
+func (m *TaskMutation) PrivateStateCleared() bool {
+	_, ok := m.clearedFields[task.FieldPrivateState]
+	return ok
+}
+
+// ResetPrivateState resets all changes to the "private_state" field.
+func (m *TaskMutation) ResetPrivateState() {
+	m.private_state = nil
+	delete(m.clearedFields, task.FieldPrivateState)
+}
+
+// SetTraceID sets the "trace_id" field.
+func (m *TaskMutation) SetTraceID(s string) {
+	m.trace_id = &s
+}
+
+// TraceID returns the value of the "trace_id" field in the mutation.
+func (m *TaskMutation) TraceID() (r string, exists bool) {
+	v := m.trace_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTraceID returns the old "trace_id" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldTraceID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTraceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTraceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTraceID: %w", err)
+	}
+	return oldValue.TraceID, nil
+}
+
+// ClearTraceID clears the value of the "trace_id" field.
+func (m *TaskMutation) ClearTraceID() {
+	m.trace_id = nil
+	m.clearedFields[task.FieldTraceID] = struct{}{}
+}
+
+// TraceIDCleared returns if the "trace_id" field was cleared in this mutation.
+func (m *TaskMutation) TraceIDCleared() bool {
+	_, ok := m.clearedFields[task.FieldTraceID]
+	return ok
+}
+
+// ResetTraceID resets all changes to the "trace_id" field.
+func (m *TaskMutation) ResetTraceID() {
+	m.trace_id = nil
+	delete(m.clearedFields, task.FieldTraceID)
+}
+
+// SetUserID sets the "user_id" field.
+func (m *TaskMutation) SetUserID(i int) {
+	m.user_id = &i
+	m.adduser_id = nil
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *TaskMutation) UserID() (r int, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldUserID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// AddUserID adds i to the "user_id" field.
+func (m *TaskMutation) AddUserID(i int) {
+	if m.adduser_id != nil {
+		*m.adduser_id += i
+	} else {
+		m.adduser_id = &i
+	}
+}
+
+// AddedUserID returns the value that was added to the "user_id" field in this mutation.
+func (m *TaskMutation) AddedUserID() (r int, exists bool) {
+	v := m.adduser_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *TaskMutation) ClearUserID() {
+	m.user_id = nil
+	m.adduser_id = nil
+	m.clearedFields[task.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *TaskMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[task.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *TaskMutation) ResetUserID() {
+	m.user_id = nil
+	m.adduser_id = nil
+	delete(m.clearedFields, task.FieldUserID)
+}
+
+// Where appends a list predicates to the TaskMutation builder.
+func (m *TaskMutation) Where(ps ...predicate.Task) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TaskMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TaskMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Task, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TaskMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TaskMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Task).
+func (m *TaskMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TaskMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.created_at != nil {
+		fields = append(fields, task.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, task.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, task.FieldDeletedAt)
+	}
+	if m._type != nil {
+		fields = append(fields, task.FieldType)
+	}
+	if m.status != nil {
+		fields = append(fields, task.FieldStatus)
+	}
+	if m.public_state != nil {
+		fields = append(fields, task.FieldPublicState)
+	}
+	if m.private_state != nil {
+		fields = append(fields, task.FieldPrivateState)
+	}
+	if m.trace_id != nil {
+		fields = append(fields, task.FieldTraceID)
+	}
+	if m.user_id != nil {
+		fields = append(fields, task.FieldUserID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TaskMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case task.FieldCreatedAt:
+		return m.CreatedAt()
+	case task.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case task.FieldDeletedAt:
+		return m.DeletedAt()
+	case task.FieldType:
+		return m.GetType()
+	case task.FieldStatus:
+		return m.Status()
+	case task.FieldPublicState:
+		return m.PublicState()
+	case task.FieldPrivateState:
+		return m.PrivateState()
+	case task.FieldTraceID:
+		return m.TraceID()
+	case task.FieldUserID:
+		return m.UserID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case task.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case task.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case task.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case task.FieldType:
+		return m.OldType(ctx)
+	case task.FieldStatus:
+		return m.OldStatus(ctx)
+	case task.FieldPublicState:
+		return m.OldPublicState(ctx)
+	case task.FieldPrivateState:
+		return m.OldPrivateState(ctx)
+	case task.FieldTraceID:
+		return m.OldTraceID(ctx)
+	case task.FieldUserID:
+		return m.OldUserID(ctx)
+	}
+	return nil, fmt.Errorf("unknown Task field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TaskMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case task.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case task.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case task.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case task.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case task.FieldStatus:
+		v, ok := value.(queue.TaskStatus)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case task.FieldPublicState:
+		v, ok := value.(*queue.TaskPublicState)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicState(v)
+		return nil
+	case task.FieldPrivateState:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrivateState(v)
+		return nil
+	case task.FieldTraceID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTraceID(v)
+		return nil
+	case task.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Task field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TaskMutation) AddedFields() []string {
+	var fields []string
+	if m.adduser_id != nil {
+		fields = append(fields, task.FieldUserID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TaskMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case task.FieldUserID:
+		return m.AddedUserID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TaskMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case task.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUserID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Task numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TaskMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(task.FieldDeletedAt) {
+		fields = append(fields, task.FieldDeletedAt)
+	}
+	if m.FieldCleared(task.FieldPrivateState) {
+		fields = append(fields, task.FieldPrivateState)
+	}
+	if m.FieldCleared(task.FieldTraceID) {
+		fields = append(fields, task.FieldTraceID)
+	}
+	if m.FieldCleared(task.FieldUserID) {
+		fields = append(fields, task.FieldUserID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TaskMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TaskMutation) ClearField(name string) error {
+	switch name {
+	case task.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case task.FieldPrivateState:
+		m.ClearPrivateState()
+		return nil
+	case task.FieldTraceID:
+		m.ClearTraceID()
+		return nil
+	case task.FieldUserID:
+		m.ClearUserID()
+		return nil
+	}
+	return fmt.Errorf("unknown Task nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TaskMutation) ResetField(name string) error {
+	switch name {
+	case task.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case task.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case task.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case task.FieldType:
+		m.ResetType()
+		return nil
+	case task.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case task.FieldPublicState:
+		m.ResetPublicState()
+		return nil
+	case task.FieldPrivateState:
+		m.ResetPrivateState()
+		return nil
+	case task.FieldTraceID:
+		m.ResetTraceID()
+		return nil
+	case task.FieldUserID:
+		m.ResetUserID()
+		return nil
+	}
+	return fmt.Errorf("unknown Task field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TaskMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TaskMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TaskMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TaskMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TaskMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TaskMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TaskMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Task unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TaskMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Task edge %s", name)
 }

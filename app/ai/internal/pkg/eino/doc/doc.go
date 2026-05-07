@@ -112,11 +112,11 @@ func NewIndexer(cfg *conf.Bootstrap, emb embedding.Embedder) (indexer.Indexer, e
 	ctx := context.Background()
 	return milvus2.NewIndexer(ctx, &milvus2.IndexerConfig{
 		ClientConfig: &milvusclient.ClientConfig{
-			Address:  cfg.Extensions.Milvus.Addr,
-			Username: cfg.Extensions.Milvus.Username,
-			Password: cfg.Extensions.Milvus.Password,
+			Address:  cfg.Data.Milvus.Addr,
+			Username: cfg.Data.Milvus.Username,
+			Password: cfg.Data.Milvus.Password,
 		},
-		Collection: cfg.Extensions.Milvus.Collection,
+		Collection: cfg.Data.Milvus.Collection,
 		Vector: &milvus2.VectorConfig{
 			Dimension:    1024, // 与 embedding 模型维度匹配
 			MetricType:   milvus2.COSINE,

@@ -7,6 +7,7 @@ import "google/protobuf/timestamp.proto";
 
 import "google/protobuf/wrappers.proto";
 import "user/common/v1/common.proto";
+import "common/v1/common.proto";
 
 option go_package = "api/api/user/common/v1;v1";
 
@@ -20,18 +21,15 @@ message Group {
   google.protobuf.Timestamp deleted_at = 102;
 
   string name = 2;
-
-  google.protobuf.Int64Value max_storage = 3;
-
-  google.protobuf.Int64Value speed_limit = 4;
+  int64 max_storage = 3;
+  int64 speed_limit = 4;
 
   bytes permissions = 5;
 
   user.common.v1.GroupSetting settings = 6;
+  int64 storage_policy_id = 7;
 
-  google.protobuf.Int64Value storage_policy_id = 7;
-
-  user.common.v1.StoragePolicyInfo storage_policy_info = 8;
+  .common.v1.StoragePolicyInfo storage_policy_info = 8;
 
   repeated User users = 80;
 }

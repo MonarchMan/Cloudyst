@@ -1,24 +1,20 @@
 package workflows
 
 import (
-	pb "api/api/file/common/v1"
-	explorerpb "api/api/file/workflow/v1"
 	"common/serializer"
 	"common/util"
 	"context"
 	"encoding/json"
-	"file/ent"
-	"file/ent/task"
 	"file/internal/biz/cluster"
 	"file/internal/biz/filemanager"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/filemanager/manager"
-	"file/internal/biz/queue"
 	"file/internal/data/types"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
+	mqueue "queue"
 	"sync"
 	"sync/atomic"
 
@@ -40,52 +36,47 @@ type (
 		First5TransferErrors string              `json:"first_5_transfer_errors,omitempty"`
 	}
 	SlaveUploadTask struct {
-		*queue.InMemoryTask
+		*mqueue.InMemoryTask
 
-		progress *explorerpb.TaskPhaseProgressResponse
+		progress mqueue.Progresses
 		l        *log.Helper
 		state    *SlaveUploadTaskState
+		props    *types.SlaveTaskProps
 		node     cluster.Node
 	}
 )
 
 // NewSlaveUploadTask creates a new SlaveUploadTask from raw private state
-func NewSlaveUploadTask(ctx context.Context, props *pb.SlaveTaskProps, id int, state string) queue.Task {
+func NewSlaveUploadTask(ctx context.Context, props *types.SlaveTaskProps, id int, state string) mqueue.Task {
 	return &SlaveUploadTask{
-		InMemoryTask: &queue.InMemoryTask{
-			DBTask: &queue.DBTask{
-				Task: &ent.Task{
-					ID:      id,
-					TraceID: util.TraceID(ctx),
-					PublicState: &pb.TaskPublicState{
-						SlaveTaskProps: props,
-					},
-					PrivateState: state,
-				},
+		InMemoryTask: &mqueue.InMemoryTask{
+			TaskModel: &mqueue.TaskModel{
+				ModelID:           id,
+				ModelTraceID:      util.TraceID(ctx),
+				ModelPrivateState: state,
 			},
 		},
+		props: props,
 
-		progress: &explorerpb.TaskPhaseProgressResponse{
-			ProgressMap: make(map[string]*explorerpb.Progress),
-		},
+		progress: make(mqueue.Progresses),
 	}
 }
 
-func (t *SlaveUploadTask) Do(ctx context.Context) (task.Status, error) {
-	ctx = prepareSlaveTaskCtx(ctx, t.Model().PublicState.SlaveTaskProps)
+func (t *SlaveUploadTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
+	ctx = prepareSlaveTaskCtx(ctx, t.props)
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	np := filemanager.NodePoolFromContext(ctx)
 	t.l = dep.Logger()
 
 	if np == nil {
-		return task.StatusError, fmt.Errorf("failed to get node pool")
+		return mqueue.StatusError, fmt.Errorf("failed to get node pool")
 	}
 
 	var err error
 	t.node, err = np.Get(ctx, types.NodeCapabilityNone, 0)
 	if err != nil || !t.node.IsMaster() {
-		return task.StatusError, fmt.Errorf("failed to get master node: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to get master node: %w", err)
 	}
 
 	fm := manager.NewFileManager(dep, dbfsDep, nil)
@@ -93,7 +84,7 @@ func (t *SlaveUploadTask) Do(ctx context.Context) (task.Status, error) {
 	// unmarshal state
 	state := &SlaveUploadTaskState{}
 	if err := json.Unmarshal([]byte(t.State()), state); err != nil {
-		return task.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
+		return mqueue.StatusError, fmt.Errorf("failed to unmarshal state: %w", err)
 	}
 
 	t.state = state
@@ -115,21 +106,21 @@ func (t *SlaveUploadTask) Do(ctx context.Context) (task.Status, error) {
 		totalCount++
 	}
 	t.Lock()
-	t.progress.ProgressMap[ProgressTypeUploadCount] = &explorerpb.Progress{}
-	t.progress.ProgressMap[ProgressTypeUpload] = &explorerpb.Progress{}
+	t.progress[ProgressTypeUploadCount] = &mqueue.Progress{}
+	t.progress[ProgressTypeUpload] = &mqueue.Progress{}
 	t.Unlock()
-	atomic.StoreInt64(&t.progress.ProgressMap[ProgressTypeUploadCount].Total, int64(totalCount))
-	atomic.StoreInt64(&t.progress.ProgressMap[ProgressTypeUpload].Total, totalSize)
+	atomic.StoreInt64(&t.progress[ProgressTypeUploadCount].Total, int64(totalCount))
+	atomic.StoreInt64(&t.progress[ProgressTypeUpload].Total, totalSize)
 	ae := serializer.NewAggregateError()
 	transferFunc := func(workerId, fileId int, file SlaveUploadEntity) {
 		t.l.WithContext(ctx).Infof("Uploading files %s to %s...", file.Src, file.Uri.String())
 
 		progressKey := fmt.Sprintf("%s%d", ProgressTypeUploadSinglePrefix, workerId)
 		t.Lock()
-		t.progress.ProgressMap[progressKey] = &explorerpb.Progress{Identifier: file.Uri.String(), Total: file.Size}
-		fileProgress := t.progress.ProgressMap[progressKey]
-		uploadProgress := t.progress.ProgressMap[ProgressTypeUpload]
-		uploadCountProgress := t.progress.ProgressMap[ProgressTypeUploadCount]
+		t.progress[progressKey] = &mqueue.Progress{Identifier: file.Uri.String(), Total: file.Size}
+		fileProgress := t.progress[progressKey]
+		uploadProgress := t.progress[ProgressTypeUpload]
+		uploadCountProgress := t.progress[ProgressTypeUploadCount]
 		t.Unlock()
 
 		defer func() {
@@ -190,15 +181,15 @@ func (t *SlaveUploadTask) Do(ctx context.Context) (task.Status, error) {
 		if _, ok := t.state.Transferred[fileId]; ok {
 			t.l.WithContext(ctx).Infof("File %s already transferred, skipping...", file.Src)
 			t.Lock()
-			atomic.AddInt64(&t.progress.ProgressMap[ProgressTypeUpload].Current, file.Size)
-			atomic.AddInt64(&t.progress.ProgressMap[ProgressTypeUploadCount].Current, 1)
+			atomic.AddInt64(&t.progress[ProgressTypeUpload].Current, file.Size)
+			atomic.AddInt64(&t.progress[ProgressTypeUploadCount].Current, 1)
 			t.Unlock()
 			continue
 		}
 
 		select {
 		case <-ctx.Done():
-			return task.StatusError, ctx.Err()
+			return mqueue.StatusError, ctx.Err()
 		case workerId := <-worker:
 			wg.Add(1)
 
@@ -211,33 +202,31 @@ func (t *SlaveUploadTask) Do(ctx context.Context) (task.Status, error) {
 	t.state.First5TransferErrors = ae.FormatFirstN(5)
 	newStateStr, marshalErr := json.Marshal(t.state)
 	if marshalErr != nil {
-		return task.StatusError, fmt.Errorf("failed to marshal state: %w", marshalErr)
+		return mqueue.StatusError, fmt.Errorf("failed to marshal state: %w", marshalErr)
 	}
 	t.Lock()
-	t.Task.PrivateState = string(newStateStr)
+	t.TaskModel.ModelPrivateState = string(newStateStr)
 	t.Unlock()
 
 	// If all files are failed to transfer, return error
 	if len(t.state.Transferred) != len(t.state.Files) {
 		t.l.WithContext(ctx).Warnf("%d files not transferred", len(t.state.Files)-len(t.state.Transferred))
 		if len(t.state.Transferred) == 0 {
-			return task.StatusError, fmt.Errorf("all files failed to transfer")
+			return mqueue.StatusError, fmt.Errorf("all files failed to transfer")
 		}
 
 	}
 
-	return task.StatusCompleted, nil
+	return mqueue.StatusCompleted, nil
 }
 
-func (m *SlaveUploadTask) Progress(ctx context.Context) *explorerpb.TaskPhaseProgressResponse {
+func (m *SlaveUploadTask) Progress(ctx context.Context) mqueue.Progresses {
 	m.Lock()
 	defer m.Unlock()
 
-	res := &explorerpb.TaskPhaseProgressResponse{
-		ProgressMap: make(map[string]*explorerpb.Progress),
-	}
-	for k, v := range m.progress.ProgressMap {
-		res.ProgressMap[k] = v
+	res := make(mqueue.Progresses)
+	for k, v := range m.progress {
+		res[k] = v
 	}
 	return res
 }

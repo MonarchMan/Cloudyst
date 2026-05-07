@@ -62,7 +62,7 @@ func (n *FetcherNode) Fetch(ctx context.Context, src document.Source) (info *doc
 	}
 
 	documentInfo := GetDocumentInfo(ctx)
-	_, err = n.kdc.UpdateContentLenVersionAndProcess(ctx, documentInfo.ID, int(info.Size), documentInfo.Version, types.DocumentProcessing)
+	_, err = n.kdc.UpdateSizeVersionAndProcess(ctx, documentInfo.ID, info.Size, documentInfo.Version, types.DocumentProcessing)
 	if err != nil {
 		return nil, err
 	}

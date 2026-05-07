@@ -380,63 +380,7 @@ func (m *Entity) validate(all bool) error {
 
 	// no validation rules for StoragePolicyEntities
 
-	if all {
-		switch v := interface{}(m.GetCreatedBy()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, EntityValidationError{
-					field:  "CreatedBy",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, EntityValidationError{
-					field:  "CreatedBy",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetCreatedBy()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return EntityValidationError{
-				field:  "CreatedBy",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetUploadSessionId()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, EntityValidationError{
-					field:  "UploadSessionId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, EntityValidationError{
-					field:  "UploadSessionId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetUploadSessionId()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return EntityValidationError{
-				field:  "UploadSessionId",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for CreatedBy
 
 	if all {
 		switch v := interface{}(m.GetProps()).(type) {
@@ -528,6 +472,10 @@ func (m *Entity) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	if m.UploadSessionId != nil {
+		// no validation rules for UploadSessionId
 	}
 
 	if len(errors) > 0 {
@@ -725,63 +673,9 @@ func (m *File) validate(all bool) error {
 
 	// no validation rules for Size
 
-	if all {
-		switch v := interface{}(m.GetPrimaryEntity()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, FileValidationError{
-					field:  "PrimaryEntity",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, FileValidationError{
-					field:  "PrimaryEntity",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetPrimaryEntity()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return FileValidationError{
-				field:  "PrimaryEntity",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for PrimaryEntity
 
-	if all {
-		switch v := interface{}(m.GetFileParentId()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, FileValidationError{
-					field:  "FileParentId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, FileValidationError{
-					field:  "FileParentId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetFileParentId()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return FileValidationError{
-				field:  "FileParentId",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for FileParentId
 
 	// no validation rules for IsSymbolic
 
@@ -814,34 +708,7 @@ func (m *File) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetStoragePolicyFiles()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, FileValidationError{
-					field:  "StoragePolicyFiles",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, FileValidationError{
-					field:  "StoragePolicyFiles",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetStoragePolicyFiles()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return FileValidationError{
-				field:  "StoragePolicyFiles",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for StoragePolicyFiles
 
 	if all {
 		switch v := interface{}(m.GetStoragePolicies()).(type) {
@@ -1489,63 +1356,9 @@ func (m *Node) validate(all bool) error {
 
 	// no validation rules for Type
 
-	if all {
-		switch v := interface{}(m.GetServer()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, NodeValidationError{
-					field:  "Server",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, NodeValidationError{
-					field:  "Server",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetServer()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return NodeValidationError{
-				field:  "Server",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Server
 
-	if all {
-		switch v := interface{}(m.GetSlaveKey()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, NodeValidationError{
-					field:  "SlaveKey",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, NodeValidationError{
-					field:  "SlaveKey",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetSlaveKey()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return NodeValidationError{
-				field:  "SlaveKey",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for SlaveKey
 
 	// no validation rules for Capabilities
 
@@ -1803,34 +1616,7 @@ func (m *Setting) validate(all bool) error {
 
 	// no validation rules for Name
 
-	if all {
-		switch v := interface{}(m.GetValue()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, SettingValidationError{
-					field:  "Value",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, SettingValidationError{
-					field:  "Value",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetValue()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return SettingValidationError{
-				field:  "Value",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Value
 
 	if len(errors) > 0 {
 		return SettingMultiError(errors)
@@ -2019,34 +1805,7 @@ func (m *Share) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetPassword()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ShareValidationError{
-					field:  "Password",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ShareValidationError{
-					field:  "Password",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetPassword()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ShareValidationError{
-				field:  "Password",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Password
 
 	// no validation rules for Views
 
@@ -2075,35 +1834,6 @@ func (m *Share) validate(all bool) error {
 		if err := v.Validate(); err != nil {
 			return ShareValidationError{
 				field:  "Expires",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
-		switch v := interface{}(m.GetRemainDownloads()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ShareValidationError{
-					field:  "RemainDownloads",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ShareValidationError{
-					field:  "RemainDownloads",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetRemainDownloads()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ShareValidationError{
-				field:  "RemainDownloads",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -2197,6 +1927,10 @@ func (m *Share) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	if m.RemainDownloads != nil {
+		// no validation rules for RemainDownloads
 	}
 
 	if len(errors) > 0 {
@@ -2391,237 +2125,21 @@ func (m *StoragePolicy) validate(all bool) error {
 
 	// no validation rules for Type
 
-	if all {
-		switch v := interface{}(m.GetServer()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "Server",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "Server",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetServer()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StoragePolicyValidationError{
-				field:  "Server",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Server
 
-	if all {
-		switch v := interface{}(m.GetBucketName()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "BucketName",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "BucketName",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetBucketName()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StoragePolicyValidationError{
-				field:  "BucketName",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for BucketName
 
-	if all {
-		switch v := interface{}(m.GetIsPrivate()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "IsPrivate",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "IsPrivate",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetIsPrivate()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StoragePolicyValidationError{
-				field:  "IsPrivate",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for IsPrivate
 
-	if all {
-		switch v := interface{}(m.GetAccessKey()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "AccessKey",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "AccessKey",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetAccessKey()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StoragePolicyValidationError{
-				field:  "AccessKey",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for AccessKey
 
-	if all {
-		switch v := interface{}(m.GetSecretKey()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "SecretKey",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "SecretKey",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetSecretKey()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StoragePolicyValidationError{
-				field:  "SecretKey",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for SecretKey
 
-	if all {
-		switch v := interface{}(m.GetMaxSize()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "MaxSize",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "MaxSize",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetMaxSize()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StoragePolicyValidationError{
-				field:  "MaxSize",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for MaxSize
 
-	if all {
-		switch v := interface{}(m.GetDirNameRule()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "DirNameRule",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "DirNameRule",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetDirNameRule()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StoragePolicyValidationError{
-				field:  "DirNameRule",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for DirNameRule
 
-	if all {
-		switch v := interface{}(m.GetFileNameRule()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "FileNameRule",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "FileNameRule",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetFileNameRule()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StoragePolicyValidationError{
-				field:  "FileNameRule",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for FileNameRule
 
 	if all {
 		switch v := interface{}(m.GetSettings()).(type) {
@@ -2652,34 +2170,7 @@ func (m *StoragePolicy) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetNodeId()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "NodeId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, StoragePolicyValidationError{
-					field:  "NodeId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetNodeId()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return StoragePolicyValidationError{
-				field:  "NodeId",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for NodeId
 
 	for idx, item := range m.GetFiles() {
 		_, _ = idx, item
@@ -2999,65 +2490,11 @@ func (m *Task) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetPrivateState()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, TaskValidationError{
-					field:  "PrivateState",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, TaskValidationError{
-					field:  "PrivateState",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetPrivateState()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return TaskValidationError{
-				field:  "PrivateState",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for PrivateState
 
 	// no validation rules for TraceId
 
-	if all {
-		switch v := interface{}(m.GetUserId()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, TaskValidationError{
-					field:  "UserId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, TaskValidationError{
-					field:  "UserId",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetUserId()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return TaskValidationError{
-				field:  "UserId",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for UserId
 
 	if len(errors) > 0 {
 		return TaskMultiError(errors)

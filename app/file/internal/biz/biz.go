@@ -16,6 +16,7 @@ import (
 	"file/internal/biz/thumb"
 	"file/internal/conf"
 	"file/internal/data"
+	mqueue "queue"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -25,7 +26,7 @@ import (
 var ProviderSet = wire.NewSet(
 	filemanager.NewManagerDependency, // auth.Auth, hashid.Encoder
 	filemanager.NewDBFSDependency,    // lock.LockSystem
-	queue.NewTaskRegistry,
+	mqueue.NewTaskRegistry,
 	queue.NewQueueManager,
 	thumb.NewPipeline,
 	mime.NewMimeManager,

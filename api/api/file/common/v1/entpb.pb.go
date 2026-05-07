@@ -9,10 +9,10 @@
 package v1
 
 import (
+	v1 "api/api/common/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
-	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -300,8 +300,8 @@ type Entity struct {
 	Size                  int64                  `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
 	ReferenceCount        int64                  `protobuf:"varint,5,opt,name=reference_count,json=referenceCount,proto3" json:"reference_count,omitempty"`
 	StoragePolicyEntities int64                  `protobuf:"varint,6,opt,name=storage_policy_entities,json=storagePolicyEntities,proto3" json:"storage_policy_entities,omitempty"`
-	CreatedBy             *wrapperspb.Int64Value `protobuf:"bytes,7,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
-	UploadSessionId       *wrapperspb.BytesValue `protobuf:"bytes,8,opt,name=upload_session_id,json=uploadSessionId,proto3" json:"upload_session_id,omitempty"`
+	CreatedBy             int64                  `protobuf:"varint,7,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	UploadSessionId       []byte                 `protobuf:"bytes,8,opt,name=upload_session_id,json=uploadSessionId,proto3,oneof" json:"upload_session_id,omitempty"`
 	Props                 *EntityProps           `protobuf:"bytes,9,opt,name=props,proto3" json:"props,omitempty"`
 	File                  []*File                `protobuf:"bytes,81,rep,name=file,proto3" json:"file,omitempty"`
 	StoragePolicy         *StoragePolicy         `protobuf:"bytes,82,opt,name=storage_policy,json=storagePolicy,proto3" json:"storage_policy,omitempty"`
@@ -402,14 +402,14 @@ func (x *Entity) GetStoragePolicyEntities() int64 {
 	return 0
 }
 
-func (x *Entity) GetCreatedBy() *wrapperspb.Int64Value {
+func (x *Entity) GetCreatedBy() int64 {
 	if x != nil {
 		return x.CreatedBy
 	}
-	return nil
+	return 0
 }
 
-func (x *Entity) GetUploadSessionId() *wrapperspb.BytesValue {
+func (x *Entity) GetUploadSessionId() []byte {
 	if x != nil {
 		return x.UploadSessionId
 	}
@@ -445,13 +445,13 @@ type File struct {
 	Type               int64                  `protobuf:"varint,4,opt,name=type,proto3" json:"type,omitempty"`
 	Name               string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
 	OwnerId            int64                  `protobuf:"varint,6,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
-	OwnerInfo          *UserInfo              `protobuf:"bytes,7,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
+	OwnerInfo          *v1.UserInfo           `protobuf:"bytes,7,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
 	Size               int64                  `protobuf:"varint,8,opt,name=size,proto3" json:"size,omitempty"`
-	PrimaryEntity      *wrapperspb.Int64Value `protobuf:"bytes,9,opt,name=primary_entity,json=primaryEntity,proto3" json:"primary_entity,omitempty"`
-	FileParentId       *wrapperspb.Int64Value `protobuf:"bytes,10,opt,name=file_parent_id,json=fileParentId,proto3" json:"file_parent_id,omitempty"`
+	PrimaryEntity      int64                  `protobuf:"varint,9,opt,name=primary_entity,json=primaryEntity,proto3" json:"primary_entity,omitempty"`
+	FileParentId       int64                  `protobuf:"varint,10,opt,name=file_parent_id,json=fileParentId,proto3" json:"file_parent_id,omitempty"`
 	IsSymbolic         bool                   `protobuf:"varint,11,opt,name=is_symbolic,json=isSymbolic,proto3" json:"is_symbolic,omitempty"`
 	Props              *FileProps             `protobuf:"bytes,12,opt,name=props,proto3" json:"props,omitempty"`
-	StoragePolicyFiles *wrapperspb.Int64Value `protobuf:"bytes,13,opt,name=storage_policy_files,json=storagePolicyFiles,proto3" json:"storage_policy_files,omitempty"`
+	StoragePolicyFiles int64                  `protobuf:"varint,13,opt,name=storage_policy_files,json=storagePolicyFiles,proto3" json:"storage_policy_files,omitempty"`
 	StoragePolicies    *StoragePolicy         `protobuf:"bytes,81,opt,name=storage_policies,json=storagePolicies,proto3" json:"storage_policies,omitempty"`
 	Parent             *File                  `protobuf:"bytes,83,opt,name=parent,proto3" json:"parent,omitempty"`
 	Children           []*File                `protobuf:"bytes,82,rep,name=children,proto3" json:"children,omitempty"`
@@ -535,7 +535,7 @@ func (x *File) GetOwnerId() int64 {
 	return 0
 }
 
-func (x *File) GetOwnerInfo() *UserInfo {
+func (x *File) GetOwnerInfo() *v1.UserInfo {
 	if x != nil {
 		return x.OwnerInfo
 	}
@@ -549,18 +549,18 @@ func (x *File) GetSize() int64 {
 	return 0
 }
 
-func (x *File) GetPrimaryEntity() *wrapperspb.Int64Value {
+func (x *File) GetPrimaryEntity() int64 {
 	if x != nil {
 		return x.PrimaryEntity
 	}
-	return nil
+	return 0
 }
 
-func (x *File) GetFileParentId() *wrapperspb.Int64Value {
+func (x *File) GetFileParentId() int64 {
 	if x != nil {
 		return x.FileParentId
 	}
-	return nil
+	return 0
 }
 
 func (x *File) GetIsSymbolic() bool {
@@ -577,11 +577,11 @@ func (x *File) GetProps() *FileProps {
 	return nil
 }
 
-func (x *File) GetStoragePolicyFiles() *wrapperspb.Int64Value {
+func (x *File) GetStoragePolicyFiles() int64 {
 	if x != nil {
 		return x.StoragePolicyFiles
 	}
-	return nil
+	return 0
 }
 
 func (x *File) GetStoragePolicies() *StoragePolicy {
@@ -742,20 +742,20 @@ func (x *Metadata) GetFile() *File {
 }
 
 type Node struct {
-	state         protoimpl.MessageState  `protogen:"open.v1"`
-	Id            int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	DeletedAt     *timestamppb.Timestamp  `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
-	Status        Node_Status             `protobuf:"varint,2,opt,name=status,proto3,enum=file.common.v1.Node_Status" json:"status,omitempty"`
-	Name          string                  `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Type          Node_Type               `protobuf:"varint,4,opt,name=type,proto3,enum=file.common.v1.Node_Type" json:"type,omitempty"`
-	Server        *wrapperspb.StringValue `protobuf:"bytes,5,opt,name=server,proto3" json:"server,omitempty"`
-	SlaveKey      *wrapperspb.StringValue `protobuf:"bytes,6,opt,name=slave_key,json=slaveKey,proto3" json:"slave_key,omitempty"`
-	Capabilities  []byte                  `protobuf:"bytes,7,opt,name=capabilities,proto3" json:"capabilities,omitempty"`
-	Settings      *NodeSetting            `protobuf:"bytes,8,opt,name=settings,proto3" json:"settings,omitempty"`
-	Weight        int64                   `protobuf:"varint,9,opt,name=weight,proto3" json:"weight,omitempty"`
-	StoragePolicy []*StoragePolicy        `protobuf:"bytes,81,rep,name=storage_policy,json=storagePolicy,proto3" json:"storage_policy,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	DeletedAt     *timestamppb.Timestamp `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
+	Status        Node_Status            `protobuf:"varint,2,opt,name=status,proto3,enum=file.common.v1.Node_Status" json:"status,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Type          Node_Type              `protobuf:"varint,4,opt,name=type,proto3,enum=file.common.v1.Node_Type" json:"type,omitempty"`
+	Server        string                 `protobuf:"bytes,5,opt,name=server,proto3" json:"server,omitempty"`
+	SlaveKey      string                 `protobuf:"bytes,6,opt,name=slave_key,json=slaveKey,proto3" json:"slave_key,omitempty"`
+	Capabilities  []byte                 `protobuf:"bytes,7,opt,name=capabilities,proto3" json:"capabilities,omitempty"`
+	Settings      *NodeSetting           `protobuf:"bytes,8,opt,name=settings,proto3" json:"settings,omitempty"`
+	Weight        int64                  `protobuf:"varint,9,opt,name=weight,proto3" json:"weight,omitempty"`
+	StoragePolicy []*StoragePolicy       `protobuf:"bytes,81,rep,name=storage_policy,json=storagePolicy,proto3" json:"storage_policy,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -839,18 +839,18 @@ func (x *Node) GetType() Node_Type {
 	return Node_TYPE_UNSPECIFIED
 }
 
-func (x *Node) GetServer() *wrapperspb.StringValue {
+func (x *Node) GetServer() string {
 	if x != nil {
 		return x.Server
 	}
-	return nil
+	return ""
 }
 
-func (x *Node) GetSlaveKey() *wrapperspb.StringValue {
+func (x *Node) GetSlaveKey() string {
 	if x != nil {
 		return x.SlaveKey
 	}
-	return nil
+	return ""
 }
 
 func (x *Node) GetCapabilities() []byte {
@@ -882,13 +882,13 @@ func (x *Node) GetStoragePolicy() []*StoragePolicy {
 }
 
 type Setting struct {
-	state         protoimpl.MessageState  `protogen:"open.v1"`
-	Id            int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	DeletedAt     *timestamppb.Timestamp  `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
-	Name          string                  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Value         *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	DeletedAt     *timestamppb.Timestamp `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Value         string                 `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -958,28 +958,28 @@ func (x *Setting) GetName() string {
 	return ""
 }
 
-func (x *Setting) GetValue() *wrapperspb.StringValue {
+func (x *Setting) GetValue() string {
 	if x != nil {
 		return x.Value
 	}
-	return nil
+	return ""
 }
 
 type Share struct {
-	state           protoimpl.MessageState  `protogen:"open.v1"`
-	Id              int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreatedAt       *timestamppb.Timestamp  `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt       *timestamppb.Timestamp  `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	DeletedAt       *timestamppb.Timestamp  `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
-	Password        *wrapperspb.StringValue `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
-	Views           int64                   `protobuf:"varint,3,opt,name=views,proto3" json:"views,omitempty"`
-	Downloads       int64                   `protobuf:"varint,4,opt,name=downloads,proto3" json:"downloads,omitempty"`
-	Expires         *timestamppb.Timestamp  `protobuf:"bytes,5,opt,name=expires,proto3" json:"expires,omitempty"`
-	RemainDownloads *wrapperspb.Int64Value  `protobuf:"bytes,6,opt,name=remain_downloads,json=remainDownloads,proto3" json:"remain_downloads,omitempty"`
-	Props           *ShareProps             `protobuf:"bytes,7,opt,name=props,proto3" json:"props,omitempty"`
-	OwnerId         int64                   `protobuf:"varint,8,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
-	OwnerInfo       *UserInfo               `protobuf:"bytes,9,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
-	File            *File                   `protobuf:"bytes,81,opt,name=file,proto3" json:"file,omitempty"`
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	DeletedAt       *timestamppb.Timestamp `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
+	Password        string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	Views           int64                  `protobuf:"varint,3,opt,name=views,proto3" json:"views,omitempty"`
+	Downloads       int64                  `protobuf:"varint,4,opt,name=downloads,proto3" json:"downloads,omitempty"`
+	Expires         *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=expires,proto3" json:"expires,omitempty"`
+	RemainDownloads *int64                 `protobuf:"varint,6,opt,name=remain_downloads,json=remainDownloads,proto3,oneof" json:"remain_downloads,omitempty"`
+	Props           *ShareProps            `protobuf:"bytes,7,opt,name=props,proto3" json:"props,omitempty"`
+	OwnerId         int64                  `protobuf:"varint,8,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
+	OwnerInfo       *v1.UserInfo           `protobuf:"bytes,9,opt,name=owner_info,json=ownerInfo,proto3" json:"owner_info,omitempty"`
+	File            *File                  `protobuf:"bytes,81,opt,name=file,proto3" json:"file,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -1042,11 +1042,11 @@ func (x *Share) GetDeletedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Share) GetPassword() *wrapperspb.StringValue {
+func (x *Share) GetPassword() string {
 	if x != nil {
 		return x.Password
 	}
-	return nil
+	return ""
 }
 
 func (x *Share) GetViews() int64 {
@@ -1070,11 +1070,11 @@ func (x *Share) GetExpires() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Share) GetRemainDownloads() *wrapperspb.Int64Value {
-	if x != nil {
-		return x.RemainDownloads
+func (x *Share) GetRemainDownloads() int64 {
+	if x != nil && x.RemainDownloads != nil {
+		return *x.RemainDownloads
 	}
-	return nil
+	return 0
 }
 
 func (x *Share) GetProps() *ShareProps {
@@ -1091,7 +1091,7 @@ func (x *Share) GetOwnerId() int64 {
 	return 0
 }
 
-func (x *Share) GetOwnerInfo() *UserInfo {
+func (x *Share) GetOwnerInfo() *v1.UserInfo {
 	if x != nil {
 		return x.OwnerInfo
 	}
@@ -1106,26 +1106,26 @@ func (x *Share) GetFile() *File {
 }
 
 type StoragePolicy struct {
-	state         protoimpl.MessageState  `protogen:"open.v1"`
-	Id            int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	DeletedAt     *timestamppb.Timestamp  `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
-	Name          string                  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Type          string                  `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
-	Server        *wrapperspb.StringValue `protobuf:"bytes,4,opt,name=server,proto3" json:"server,omitempty"`
-	BucketName    *wrapperspb.StringValue `protobuf:"bytes,5,opt,name=bucket_name,json=bucketName,proto3" json:"bucket_name,omitempty"`
-	IsPrivate     *wrapperspb.BoolValue   `protobuf:"bytes,6,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
-	AccessKey     *wrapperspb.StringValue `protobuf:"bytes,7,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
-	SecretKey     *wrapperspb.StringValue `protobuf:"bytes,8,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
-	MaxSize       *wrapperspb.Int64Value  `protobuf:"bytes,9,opt,name=max_size,json=maxSize,proto3" json:"max_size,omitempty"`
-	DirNameRule   *wrapperspb.StringValue `protobuf:"bytes,10,opt,name=dir_name_rule,json=dirNameRule,proto3" json:"dir_name_rule,omitempty"`
-	FileNameRule  *wrapperspb.StringValue `protobuf:"bytes,11,opt,name=file_name_rule,json=fileNameRule,proto3" json:"file_name_rule,omitempty"`
-	Settings      *PolicySetting          `protobuf:"bytes,12,opt,name=settings,proto3" json:"settings,omitempty"`
-	NodeId        *wrapperspb.Int64Value  `protobuf:"bytes,13,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	Files         []*File                 `protobuf:"bytes,81,rep,name=files,json=-,proto3" json:"files,omitempty"`
-	Entities      []*Entity               `protobuf:"bytes,82,rep,name=entities,proto3" json:"entities,omitempty"`
-	Node          *Node                   `protobuf:"bytes,83,opt,name=node,proto3" json:"node,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	DeletedAt     *timestamppb.Timestamp `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
+	Server        string                 `protobuf:"bytes,4,opt,name=server,proto3" json:"server,omitempty"`
+	BucketName    string                 `protobuf:"bytes,5,opt,name=bucket_name,json=bucketName,proto3" json:"bucket_name,omitempty"`
+	IsPrivate     bool                   `protobuf:"varint,6,opt,name=is_private,json=isPrivate,proto3" json:"is_private,omitempty"`
+	AccessKey     string                 `protobuf:"bytes,7,opt,name=access_key,json=accessKey,proto3" json:"access_key,omitempty"`
+	SecretKey     string                 `protobuf:"bytes,8,opt,name=secret_key,json=secretKey,proto3" json:"secret_key,omitempty"`
+	MaxSize       int64                  `protobuf:"varint,9,opt,name=max_size,json=maxSize,proto3" json:"max_size,omitempty"`
+	DirNameRule   string                 `protobuf:"bytes,10,opt,name=dir_name_rule,json=dirNameRule,proto3" json:"dir_name_rule,omitempty"`
+	FileNameRule  string                 `protobuf:"bytes,11,opt,name=file_name_rule,json=fileNameRule,proto3" json:"file_name_rule,omitempty"`
+	Settings      *PolicySetting         `protobuf:"bytes,12,opt,name=settings,proto3" json:"settings,omitempty"`
+	NodeId        int64                  `protobuf:"varint,13,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	Files         []*File                `protobuf:"bytes,81,rep,name=files,json=-,proto3" json:"files,omitempty"`
+	Entities      []*Entity              `protobuf:"bytes,82,rep,name=entities,proto3" json:"entities,omitempty"`
+	Node          *Node                  `protobuf:"bytes,83,opt,name=node,proto3" json:"node,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1202,60 +1202,60 @@ func (x *StoragePolicy) GetType() string {
 	return ""
 }
 
-func (x *StoragePolicy) GetServer() *wrapperspb.StringValue {
+func (x *StoragePolicy) GetServer() string {
 	if x != nil {
 		return x.Server
 	}
-	return nil
+	return ""
 }
 
-func (x *StoragePolicy) GetBucketName() *wrapperspb.StringValue {
+func (x *StoragePolicy) GetBucketName() string {
 	if x != nil {
 		return x.BucketName
 	}
-	return nil
+	return ""
 }
 
-func (x *StoragePolicy) GetIsPrivate() *wrapperspb.BoolValue {
+func (x *StoragePolicy) GetIsPrivate() bool {
 	if x != nil {
 		return x.IsPrivate
 	}
-	return nil
+	return false
 }
 
-func (x *StoragePolicy) GetAccessKey() *wrapperspb.StringValue {
+func (x *StoragePolicy) GetAccessKey() string {
 	if x != nil {
 		return x.AccessKey
 	}
-	return nil
+	return ""
 }
 
-func (x *StoragePolicy) GetSecretKey() *wrapperspb.StringValue {
+func (x *StoragePolicy) GetSecretKey() string {
 	if x != nil {
 		return x.SecretKey
 	}
-	return nil
+	return ""
 }
 
-func (x *StoragePolicy) GetMaxSize() *wrapperspb.Int64Value {
+func (x *StoragePolicy) GetMaxSize() int64 {
 	if x != nil {
 		return x.MaxSize
 	}
-	return nil
+	return 0
 }
 
-func (x *StoragePolicy) GetDirNameRule() *wrapperspb.StringValue {
+func (x *StoragePolicy) GetDirNameRule() string {
 	if x != nil {
 		return x.DirNameRule
 	}
-	return nil
+	return ""
 }
 
-func (x *StoragePolicy) GetFileNameRule() *wrapperspb.StringValue {
+func (x *StoragePolicy) GetFileNameRule() string {
 	if x != nil {
 		return x.FileNameRule
 	}
-	return nil
+	return ""
 }
 
 func (x *StoragePolicy) GetSettings() *PolicySetting {
@@ -1265,11 +1265,11 @@ func (x *StoragePolicy) GetSettings() *PolicySetting {
 	return nil
 }
 
-func (x *StoragePolicy) GetNodeId() *wrapperspb.Int64Value {
+func (x *StoragePolicy) GetNodeId() int64 {
 	if x != nil {
 		return x.NodeId
 	}
-	return nil
+	return 0
 }
 
 func (x *StoragePolicy) GetFiles() []*File {
@@ -1294,17 +1294,17 @@ func (x *StoragePolicy) GetNode() *Node {
 }
 
 type Task struct {
-	state         protoimpl.MessageState  `protogen:"open.v1"`
-	Id            int64                   `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp  `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	DeletedAt     *timestamppb.Timestamp  `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
-	Type          string                  `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Status        Task_Status             `protobuf:"varint,3,opt,name=status,proto3,enum=file.common.v1.Task_Status" json:"status,omitempty"`
-	PublicState   *TaskPublicState        `protobuf:"bytes,4,opt,name=public_state,json=publicState,proto3" json:"public_state,omitempty"`
-	PrivateState  *wrapperspb.StringValue `protobuf:"bytes,5,opt,name=private_state,json=privateState,proto3" json:"private_state,omitempty"`
-	TraceId       string                  `protobuf:"bytes,6,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
-	UserId        *wrapperspb.Int64Value  `protobuf:"bytes,7,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	DeletedAt     *timestamppb.Timestamp `protobuf:"bytes,102,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
+	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	Status        Task_Status            `protobuf:"varint,3,opt,name=status,proto3,enum=file.common.v1.Task_Status" json:"status,omitempty"`
+	PublicState   *TaskPublicState       `protobuf:"bytes,4,opt,name=public_state,json=publicState,proto3" json:"public_state,omitempty"`
+	PrivateState  string                 `protobuf:"bytes,5,opt,name=private_state,json=privateState,proto3" json:"private_state,omitempty"`
+	TraceId       string                 `protobuf:"bytes,6,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
+	UserId        int64                  `protobuf:"varint,7,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1388,11 +1388,11 @@ func (x *Task) GetPublicState() *TaskPublicState {
 	return nil
 }
 
-func (x *Task) GetPrivateState() *wrapperspb.StringValue {
+func (x *Task) GetPrivateState() string {
 	if x != nil {
 		return x.PrivateState
 	}
-	return nil
+	return ""
 }
 
 func (x *Task) GetTraceId() string {
@@ -1402,18 +1402,18 @@ func (x *Task) GetTraceId() string {
 	return ""
 }
 
-func (x *Task) GetUserId() *wrapperspb.Int64Value {
+func (x *Task) GetUserId() int64 {
 	if x != nil {
 		return x.UserId
 	}
-	return nil
+	return 0
 }
 
 var File_file_common_v1_entpb_proto protoreflect.FileDescriptor
 
 const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"\n" +
-	"\x1afile/common/v1/entpb.proto\x12\x0efile.common.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1bfile/common/v1/common.proto\"\xd8\x02\n" +
+	"\x1afile/common/v1/entpb.proto\x12\x0efile.common.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bfile/common/v1/common.proto\x1a\x16common/v1/common.proto\"\xd8\x02\n" +
 	"\n" +
 	"DirectLink\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
@@ -1427,7 +1427,7 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"\tdownloads\x18\x03 \x01(\x03R\tdownloads\x12\x17\n" +
 	"\afile_id\x18\x04 \x01(\x03R\x06fileId\x12\x14\n" +
 	"\x05speed\x18\x05 \x01(\x03R\x05speed\x12(\n" +
-	"\x04file\x18Q \x01(\v2\x14.file.common.v1.FileR\x04file\"\x92\x05\n" +
+	"\x04file\x18Q \x01(\v2\x14.file.common.v1.FileR\x04file\"\xf3\x04\n" +
 	"\x06Entity\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1440,13 +1440,14 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"\x06source\x18\x03 \x01(\tR\x06source\x12\x12\n" +
 	"\x04size\x18\x04 \x01(\x03R\x04size\x12'\n" +
 	"\x0freference_count\x18\x05 \x01(\x03R\x0ereferenceCount\x126\n" +
-	"\x17storage_policy_entities\x18\x06 \x01(\x03R\x15storagePolicyEntities\x12:\n" +
+	"\x17storage_policy_entities\x18\x06 \x01(\x03R\x15storagePolicyEntities\x12\x1d\n" +
 	"\n" +
-	"created_by\x18\a \x01(\v2\x1b.google.protobuf.Int64ValueR\tcreatedBy\x12G\n" +
-	"\x11upload_session_id\x18\b \x01(\v2\x1b.google.protobuf.BytesValueR\x0fuploadSessionId\x121\n" +
+	"created_by\x18\a \x01(\x03R\tcreatedBy\x12/\n" +
+	"\x11upload_session_id\x18\b \x01(\fH\x00R\x0fuploadSessionId\x88\x01\x01\x121\n" +
 	"\x05props\x18\t \x01(\v2\x1b.file.common.v1.EntityPropsR\x05props\x12(\n" +
 	"\x04file\x18Q \x03(\v2\x14.file.common.v1.FileR\x04file\x12D\n" +
-	"\x0estorage_policy\x18R \x01(\v2\x1d.file.common.v1.StoragePolicyR\rstoragePolicy\"\xc6\a\n" +
+	"\x0estorage_policy\x18R \x01(\v2\x1d.file.common.v1.StoragePolicyR\rstoragePolicyB\x14\n" +
+	"\x12_upload_session_id\"\xea\x06\n" +
 	"\x04File\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1455,17 +1456,17 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"updated_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x12\n" +
 	"\x04type\x18\x04 \x01(\x03R\x04type\x12\x12\n" +
 	"\x04name\x18\x05 \x01(\tR\x04name\x12\x19\n" +
-	"\bowner_id\x18\x06 \x01(\x03R\aownerId\x127\n" +
+	"\bowner_id\x18\x06 \x01(\x03R\aownerId\x122\n" +
 	"\n" +
-	"owner_info\x18\a \x01(\v2\x18.file.common.v1.UserInfoR\townerInfo\x12\x12\n" +
-	"\x04size\x18\b \x01(\x03R\x04size\x12B\n" +
-	"\x0eprimary_entity\x18\t \x01(\v2\x1b.google.protobuf.Int64ValueR\rprimaryEntity\x12A\n" +
+	"owner_info\x18\a \x01(\v2\x13.common.v1.UserInfoR\townerInfo\x12\x12\n" +
+	"\x04size\x18\b \x01(\x03R\x04size\x12%\n" +
+	"\x0eprimary_entity\x18\t \x01(\x03R\rprimaryEntity\x12$\n" +
 	"\x0efile_parent_id\x18\n" +
-	" \x01(\v2\x1b.google.protobuf.Int64ValueR\ffileParentId\x12\x1f\n" +
+	" \x01(\x03R\ffileParentId\x12\x1f\n" +
 	"\vis_symbolic\x18\v \x01(\bR\n" +
 	"isSymbolic\x12/\n" +
-	"\x05props\x18\f \x01(\v2\x19.file.common.v1.FilePropsR\x05props\x12M\n" +
-	"\x14storage_policy_files\x18\r \x01(\v2\x1b.google.protobuf.Int64ValueR\x12storagePolicyFiles\x12H\n" +
+	"\x05props\x18\f \x01(\v2\x19.file.common.v1.FilePropsR\x05props\x120\n" +
+	"\x14storage_policy_files\x18\r \x01(\x03R\x12storagePolicyFiles\x12H\n" +
 	"\x10storage_policies\x18Q \x01(\v2\x1d.file.common.v1.StoragePolicyR\x0fstoragePolicies\x12,\n" +
 	"\x06parent\x18S \x01(\v2\x14.file.common.v1.FileR\x06parent\x120\n" +
 	"\bchildren\x18R \x03(\v2\x14.file.common.v1.FileR\bchildren\x124\n" +
@@ -1485,7 +1486,7 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"\x05value\x18\x03 \x01(\tR\x05value\x12\x17\n" +
 	"\afile_id\x18\x04 \x01(\x03R\x06fileId\x12\x1b\n" +
 	"\tis_public\x18\x05 \x01(\bR\bisPublic\x12(\n" +
-	"\x04file\x18Q \x01(\v2\x14.file.common.v1.FileR\x04file\"\xf5\x05\n" +
+	"\x04file\x18Q \x01(\v2\x14.file.common.v1.FileR\x04file\"\xb9\x05\n" +
 	"\x04Node\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1496,9 +1497,9 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"deleted_at\x18f \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x123\n" +
 	"\x06status\x18\x02 \x01(\x0e2\x1b.file.common.v1.Node.StatusR\x06status\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12-\n" +
-	"\x04type\x18\x04 \x01(\x0e2\x19.file.common.v1.Node.TypeR\x04type\x124\n" +
-	"\x06server\x18\x05 \x01(\v2\x1c.google.protobuf.StringValueR\x06server\x129\n" +
-	"\tslave_key\x18\x06 \x01(\v2\x1c.google.protobuf.StringValueR\bslaveKey\x12\"\n" +
+	"\x04type\x18\x04 \x01(\x0e2\x19.file.common.v1.Node.TypeR\x04type\x12\x16\n" +
+	"\x06server\x18\x05 \x01(\tR\x06server\x12\x1b\n" +
+	"\tslave_key\x18\x06 \x01(\tR\bslaveKey\x12\"\n" +
 	"\fcapabilities\x18\a \x01(\fR\fcapabilities\x127\n" +
 	"\bsettings\x18\b \x01(\v2\x1b.file.common.v1.NodeSettingR\bsettings\x12\x16\n" +
 	"\x06weight\x18\t \x01(\x03R\x06weight\x12D\n" +
@@ -1511,7 +1512,7 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"\x10TYPE_UNSPECIFIED\x10\x00\x12\x0f\n" +
 	"\vTYPE_MASTER\x10\x01\x12\x0e\n" +
 	"\n" +
-	"TYPE_SLAVE\x10\x02\"\x92\x02\n" +
+	"TYPE_SLAVE\x10\x02\"\xf4\x01\n" +
 	"\aSetting\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1520,8 +1521,8 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"updated_at\x18e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x129\n" +
 	"\n" +
 	"deleted_at\x18f \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x122\n" +
-	"\x05value\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\x05value\"\xe4\x04\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\tR\x05value\"\xbe\x04\n" +
 	"\x05Share\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1529,17 +1530,18 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x129\n" +
 	"\n" +
-	"deleted_at\x18f \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x128\n" +
-	"\bpassword\x18\x02 \x01(\v2\x1c.google.protobuf.StringValueR\bpassword\x12\x14\n" +
+	"deleted_at\x18f \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x14\n" +
 	"\x05views\x18\x03 \x01(\x03R\x05views\x12\x1c\n" +
 	"\tdownloads\x18\x04 \x01(\x03R\tdownloads\x124\n" +
-	"\aexpires\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\aexpires\x12F\n" +
-	"\x10remain_downloads\x18\x06 \x01(\v2\x1b.google.protobuf.Int64ValueR\x0fremainDownloads\x120\n" +
+	"\aexpires\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\aexpires\x12.\n" +
+	"\x10remain_downloads\x18\x06 \x01(\x03H\x00R\x0fremainDownloads\x88\x01\x01\x120\n" +
 	"\x05props\x18\a \x01(\v2\x1a.file.common.v1.SharePropsR\x05props\x12\x19\n" +
-	"\bowner_id\x18\b \x01(\x03R\aownerId\x127\n" +
+	"\bowner_id\x18\b \x01(\x03R\aownerId\x122\n" +
 	"\n" +
-	"owner_info\x18\t \x01(\v2\x18.file.common.v1.UserInfoR\townerInfo\x12(\n" +
-	"\x04file\x18Q \x01(\v2\x14.file.common.v1.FileR\x04file\"\xd7\a\n" +
+	"owner_info\x18\t \x01(\v2\x13.common.v1.UserInfoR\townerInfo\x12(\n" +
+	"\x04file\x18Q \x01(\v2\x14.file.common.v1.FileR\x04fileB\x13\n" +
+	"\x11_remain_downloads\"\xcd\x05\n" +
 	"\rStoragePolicy\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1549,25 +1551,25 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"\n" +
 	"deleted_at\x18f \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04type\x18\x03 \x01(\tR\x04type\x124\n" +
-	"\x06server\x18\x04 \x01(\v2\x1c.google.protobuf.StringValueR\x06server\x12=\n" +
-	"\vbucket_name\x18\x05 \x01(\v2\x1c.google.protobuf.StringValueR\n" +
-	"bucketName\x129\n" +
+	"\x04type\x18\x03 \x01(\tR\x04type\x12\x16\n" +
+	"\x06server\x18\x04 \x01(\tR\x06server\x12\x1f\n" +
+	"\vbucket_name\x18\x05 \x01(\tR\n" +
+	"bucketName\x12\x1d\n" +
 	"\n" +
-	"is_private\x18\x06 \x01(\v2\x1a.google.protobuf.BoolValueR\tisPrivate\x12;\n" +
+	"is_private\x18\x06 \x01(\bR\tisPrivate\x12\x1d\n" +
 	"\n" +
-	"access_key\x18\a \x01(\v2\x1c.google.protobuf.StringValueR\taccessKey\x12;\n" +
+	"access_key\x18\a \x01(\tR\taccessKey\x12\x1d\n" +
 	"\n" +
-	"secret_key\x18\b \x01(\v2\x1c.google.protobuf.StringValueR\tsecretKey\x126\n" +
-	"\bmax_size\x18\t \x01(\v2\x1b.google.protobuf.Int64ValueR\amaxSize\x12@\n" +
+	"secret_key\x18\b \x01(\tR\tsecretKey\x12\x19\n" +
+	"\bmax_size\x18\t \x01(\x03R\amaxSize\x12\"\n" +
 	"\rdir_name_rule\x18\n" +
-	" \x01(\v2\x1c.google.protobuf.StringValueR\vdirNameRule\x12B\n" +
-	"\x0efile_name_rule\x18\v \x01(\v2\x1c.google.protobuf.StringValueR\ffileNameRule\x129\n" +
-	"\bsettings\x18\f \x01(\v2\x1d.file.common.v1.PolicySettingR\bsettings\x124\n" +
-	"\anode_id\x18\r \x01(\v2\x1b.google.protobuf.Int64ValueR\x06nodeId\x12&\n" +
+	" \x01(\tR\vdirNameRule\x12$\n" +
+	"\x0efile_name_rule\x18\v \x01(\tR\ffileNameRule\x129\n" +
+	"\bsettings\x18\f \x01(\v2\x1d.file.common.v1.PolicySettingR\bsettings\x12\x17\n" +
+	"\anode_id\x18\r \x01(\x03R\x06nodeId\x12&\n" +
 	"\x05files\x18Q \x03(\v2\x14.file.common.v1.FileR\x01-\x122\n" +
 	"\bentities\x18R \x03(\v2\x16.file.common.v1.EntityR\bentities\x12(\n" +
-	"\x04node\x18S \x01(\v2\x14.file.common.v1.NodeR\x04node\"\xf1\x04\n" +
+	"\x04node\x18S \x01(\v2\x14.file.common.v1.NodeR\x04node\"\xb6\x04\n" +
 	"\x04Task\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x129\n" +
 	"\n" +
@@ -1578,10 +1580,10 @@ const file_file_common_v1_entpb_proto_rawDesc = "" +
 	"deleted_at\x18f \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x123\n" +
 	"\x06status\x18\x03 \x01(\x0e2\x1b.file.common.v1.Task.StatusR\x06status\x12B\n" +
-	"\fpublic_state\x18\x04 \x01(\v2\x1f.file.common.v1.TaskPublicStateR\vpublicState\x12A\n" +
-	"\rprivate_state\x18\x05 \x01(\v2\x1c.google.protobuf.StringValueR\fprivateState\x12\x19\n" +
-	"\btrace_id\x18\x06 \x01(\tR\atraceId\x124\n" +
-	"\auser_id\x18\a \x01(\v2\x1b.google.protobuf.Int64ValueR\x06userId\"\x86\x01\n" +
+	"\fpublic_state\x18\x04 \x01(\v2\x1f.file.common.v1.TaskPublicStateR\vpublicState\x12#\n" +
+	"\rprivate_state\x18\x05 \x01(\tR\fprivateState\x12\x19\n" +
+	"\btrace_id\x18\x06 \x01(\tR\atraceId\x12\x17\n" +
+	"\auser_id\x18\a \x01(\x03R\x06userId\"\x86\x01\n" +
 	"\x06Status\x12\x11\n" +
 	"\rSTATUS_QUEUED\x10\x00\x12\x15\n" +
 	"\x11STATUS_PROCESSING\x10\x01\x12\x15\n" +
@@ -1605,30 +1607,26 @@ func file_file_common_v1_entpb_proto_rawDescGZIP() []byte {
 var file_file_common_v1_entpb_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_file_common_v1_entpb_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_file_common_v1_entpb_proto_goTypes = []any{
-	(Node_Status)(0),               // 0: file.common.v1.Node.Status
-	(Node_Type)(0),                 // 1: file.common.v1.Node.Type
-	(Task_Status)(0),               // 2: file.common.v1.Task.Status
-	(*DirectLink)(nil),             // 3: file.common.v1.DirectLink
-	(*Entity)(nil),                 // 4: file.common.v1.Entity
-	(*File)(nil),                   // 5: file.common.v1.File
-	(*Metadata)(nil),               // 6: file.common.v1.Metadata
-	(*Node)(nil),                   // 7: file.common.v1.Node
-	(*Setting)(nil),                // 8: file.common.v1.Setting
-	(*Share)(nil),                  // 9: file.common.v1.Share
-	(*StoragePolicy)(nil),          // 10: file.common.v1.StoragePolicy
-	(*Task)(nil),                   // 11: file.common.v1.Task
-	(*timestamppb.Timestamp)(nil),  // 12: google.protobuf.Timestamp
-	(*wrapperspb.Int64Value)(nil),  // 13: google.protobuf.Int64Value
-	(*wrapperspb.BytesValue)(nil),  // 14: google.protobuf.BytesValue
-	(*EntityProps)(nil),            // 15: file.common.v1.EntityProps
-	(*UserInfo)(nil),               // 16: file.common.v1.UserInfo
-	(*FileProps)(nil),              // 17: file.common.v1.FileProps
-	(*wrapperspb.StringValue)(nil), // 18: google.protobuf.StringValue
-	(*NodeSetting)(nil),            // 19: file.common.v1.NodeSetting
-	(*ShareProps)(nil),             // 20: file.common.v1.ShareProps
-	(*wrapperspb.BoolValue)(nil),   // 21: google.protobuf.BoolValue
-	(*PolicySetting)(nil),          // 22: file.common.v1.PolicySetting
-	(*TaskPublicState)(nil),        // 23: file.common.v1.TaskPublicState
+	(Node_Status)(0),              // 0: file.common.v1.Node.Status
+	(Node_Type)(0),                // 1: file.common.v1.Node.Type
+	(Task_Status)(0),              // 2: file.common.v1.Task.Status
+	(*DirectLink)(nil),            // 3: file.common.v1.DirectLink
+	(*Entity)(nil),                // 4: file.common.v1.Entity
+	(*File)(nil),                  // 5: file.common.v1.File
+	(*Metadata)(nil),              // 6: file.common.v1.Metadata
+	(*Node)(nil),                  // 7: file.common.v1.Node
+	(*Setting)(nil),               // 8: file.common.v1.Setting
+	(*Share)(nil),                 // 9: file.common.v1.Share
+	(*StoragePolicy)(nil),         // 10: file.common.v1.StoragePolicy
+	(*Task)(nil),                  // 11: file.common.v1.Task
+	(*timestamppb.Timestamp)(nil), // 12: google.protobuf.Timestamp
+	(*EntityProps)(nil),           // 13: file.common.v1.EntityProps
+	(*v1.UserInfo)(nil),           // 14: common.v1.UserInfo
+	(*FileProps)(nil),             // 15: file.common.v1.FileProps
+	(*NodeSetting)(nil),           // 16: file.common.v1.NodeSetting
+	(*ShareProps)(nil),            // 17: file.common.v1.ShareProps
+	(*PolicySetting)(nil),         // 18: file.common.v1.PolicySetting
+	(*TaskPublicState)(nil),       // 19: file.common.v1.TaskPublicState
 }
 var file_file_common_v1_entpb_proto_depIdxs = []int32{
 	12, // 0: file.common.v1.DirectLink.created_at:type_name -> google.protobuf.Timestamp
@@ -1638,79 +1636,58 @@ var file_file_common_v1_entpb_proto_depIdxs = []int32{
 	12, // 4: file.common.v1.Entity.created_at:type_name -> google.protobuf.Timestamp
 	12, // 5: file.common.v1.Entity.updated_at:type_name -> google.protobuf.Timestamp
 	12, // 6: file.common.v1.Entity.deleted_at:type_name -> google.protobuf.Timestamp
-	13, // 7: file.common.v1.Entity.created_by:type_name -> google.protobuf.Int64Value
-	14, // 8: file.common.v1.Entity.upload_session_id:type_name -> google.protobuf.BytesValue
-	15, // 9: file.common.v1.Entity.props:type_name -> file.common.v1.EntityProps
-	5,  // 10: file.common.v1.Entity.file:type_name -> file.common.v1.File
-	10, // 11: file.common.v1.Entity.storage_policy:type_name -> file.common.v1.StoragePolicy
-	12, // 12: file.common.v1.File.created_at:type_name -> google.protobuf.Timestamp
-	12, // 13: file.common.v1.File.updated_at:type_name -> google.protobuf.Timestamp
-	16, // 14: file.common.v1.File.owner_info:type_name -> file.common.v1.UserInfo
-	13, // 15: file.common.v1.File.primary_entity:type_name -> google.protobuf.Int64Value
-	13, // 16: file.common.v1.File.file_parent_id:type_name -> google.protobuf.Int64Value
-	17, // 17: file.common.v1.File.props:type_name -> file.common.v1.FileProps
-	13, // 18: file.common.v1.File.storage_policy_files:type_name -> google.protobuf.Int64Value
-	10, // 19: file.common.v1.File.storage_policies:type_name -> file.common.v1.StoragePolicy
-	5,  // 20: file.common.v1.File.parent:type_name -> file.common.v1.File
-	5,  // 21: file.common.v1.File.children:type_name -> file.common.v1.File
-	6,  // 22: file.common.v1.File.metadata:type_name -> file.common.v1.Metadata
-	4,  // 23: file.common.v1.File.entities:type_name -> file.common.v1.Entity
-	9,  // 24: file.common.v1.File.shares:type_name -> file.common.v1.Share
-	3,  // 25: file.common.v1.File.direct_links:type_name -> file.common.v1.DirectLink
-	12, // 26: file.common.v1.Metadata.created_at:type_name -> google.protobuf.Timestamp
-	12, // 27: file.common.v1.Metadata.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 28: file.common.v1.Metadata.deleted_at:type_name -> google.protobuf.Timestamp
-	5,  // 29: file.common.v1.Metadata.file:type_name -> file.common.v1.File
-	12, // 30: file.common.v1.Node.created_at:type_name -> google.protobuf.Timestamp
-	12, // 31: file.common.v1.Node.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 32: file.common.v1.Node.deleted_at:type_name -> google.protobuf.Timestamp
-	0,  // 33: file.common.v1.Node.status:type_name -> file.common.v1.Node.Status
-	1,  // 34: file.common.v1.Node.type:type_name -> file.common.v1.Node.Type
-	18, // 35: file.common.v1.Node.server:type_name -> google.protobuf.StringValue
-	18, // 36: file.common.v1.Node.slave_key:type_name -> google.protobuf.StringValue
-	19, // 37: file.common.v1.Node.settings:type_name -> file.common.v1.NodeSetting
-	10, // 38: file.common.v1.Node.storage_policy:type_name -> file.common.v1.StoragePolicy
-	12, // 39: file.common.v1.Setting.created_at:type_name -> google.protobuf.Timestamp
-	12, // 40: file.common.v1.Setting.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 41: file.common.v1.Setting.deleted_at:type_name -> google.protobuf.Timestamp
-	18, // 42: file.common.v1.Setting.value:type_name -> google.protobuf.StringValue
-	12, // 43: file.common.v1.Share.created_at:type_name -> google.protobuf.Timestamp
-	12, // 44: file.common.v1.Share.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 45: file.common.v1.Share.deleted_at:type_name -> google.protobuf.Timestamp
-	18, // 46: file.common.v1.Share.password:type_name -> google.protobuf.StringValue
-	12, // 47: file.common.v1.Share.expires:type_name -> google.protobuf.Timestamp
-	13, // 48: file.common.v1.Share.remain_downloads:type_name -> google.protobuf.Int64Value
-	20, // 49: file.common.v1.Share.props:type_name -> file.common.v1.ShareProps
-	16, // 50: file.common.v1.Share.owner_info:type_name -> file.common.v1.UserInfo
-	5,  // 51: file.common.v1.Share.file:type_name -> file.common.v1.File
-	12, // 52: file.common.v1.StoragePolicy.created_at:type_name -> google.protobuf.Timestamp
-	12, // 53: file.common.v1.StoragePolicy.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 54: file.common.v1.StoragePolicy.deleted_at:type_name -> google.protobuf.Timestamp
-	18, // 55: file.common.v1.StoragePolicy.server:type_name -> google.protobuf.StringValue
-	18, // 56: file.common.v1.StoragePolicy.bucket_name:type_name -> google.protobuf.StringValue
-	21, // 57: file.common.v1.StoragePolicy.is_private:type_name -> google.protobuf.BoolValue
-	18, // 58: file.common.v1.StoragePolicy.access_key:type_name -> google.protobuf.StringValue
-	18, // 59: file.common.v1.StoragePolicy.secret_key:type_name -> google.protobuf.StringValue
-	13, // 60: file.common.v1.StoragePolicy.max_size:type_name -> google.protobuf.Int64Value
-	18, // 61: file.common.v1.StoragePolicy.dir_name_rule:type_name -> google.protobuf.StringValue
-	18, // 62: file.common.v1.StoragePolicy.file_name_rule:type_name -> google.protobuf.StringValue
-	22, // 63: file.common.v1.StoragePolicy.settings:type_name -> file.common.v1.PolicySetting
-	13, // 64: file.common.v1.StoragePolicy.node_id:type_name -> google.protobuf.Int64Value
-	5,  // 65: file.common.v1.StoragePolicy.files:type_name -> file.common.v1.File
-	4,  // 66: file.common.v1.StoragePolicy.entities:type_name -> file.common.v1.Entity
-	7,  // 67: file.common.v1.StoragePolicy.node:type_name -> file.common.v1.Node
-	12, // 68: file.common.v1.Task.created_at:type_name -> google.protobuf.Timestamp
-	12, // 69: file.common.v1.Task.updated_at:type_name -> google.protobuf.Timestamp
-	12, // 70: file.common.v1.Task.deleted_at:type_name -> google.protobuf.Timestamp
-	2,  // 71: file.common.v1.Task.status:type_name -> file.common.v1.Task.Status
-	23, // 72: file.common.v1.Task.public_state:type_name -> file.common.v1.TaskPublicState
-	18, // 73: file.common.v1.Task.private_state:type_name -> google.protobuf.StringValue
-	13, // 74: file.common.v1.Task.user_id:type_name -> google.protobuf.Int64Value
-	75, // [75:75] is the sub-list for method output_type
-	75, // [75:75] is the sub-list for method input_type
-	75, // [75:75] is the sub-list for extension type_name
-	75, // [75:75] is the sub-list for extension extendee
-	0,  // [0:75] is the sub-list for field type_name
+	13, // 7: file.common.v1.Entity.props:type_name -> file.common.v1.EntityProps
+	5,  // 8: file.common.v1.Entity.file:type_name -> file.common.v1.File
+	10, // 9: file.common.v1.Entity.storage_policy:type_name -> file.common.v1.StoragePolicy
+	12, // 10: file.common.v1.File.created_at:type_name -> google.protobuf.Timestamp
+	12, // 11: file.common.v1.File.updated_at:type_name -> google.protobuf.Timestamp
+	14, // 12: file.common.v1.File.owner_info:type_name -> common.v1.UserInfo
+	15, // 13: file.common.v1.File.props:type_name -> file.common.v1.FileProps
+	10, // 14: file.common.v1.File.storage_policies:type_name -> file.common.v1.StoragePolicy
+	5,  // 15: file.common.v1.File.parent:type_name -> file.common.v1.File
+	5,  // 16: file.common.v1.File.children:type_name -> file.common.v1.File
+	6,  // 17: file.common.v1.File.metadata:type_name -> file.common.v1.Metadata
+	4,  // 18: file.common.v1.File.entities:type_name -> file.common.v1.Entity
+	9,  // 19: file.common.v1.File.shares:type_name -> file.common.v1.Share
+	3,  // 20: file.common.v1.File.direct_links:type_name -> file.common.v1.DirectLink
+	12, // 21: file.common.v1.Metadata.created_at:type_name -> google.protobuf.Timestamp
+	12, // 22: file.common.v1.Metadata.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 23: file.common.v1.Metadata.deleted_at:type_name -> google.protobuf.Timestamp
+	5,  // 24: file.common.v1.Metadata.file:type_name -> file.common.v1.File
+	12, // 25: file.common.v1.Node.created_at:type_name -> google.protobuf.Timestamp
+	12, // 26: file.common.v1.Node.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 27: file.common.v1.Node.deleted_at:type_name -> google.protobuf.Timestamp
+	0,  // 28: file.common.v1.Node.status:type_name -> file.common.v1.Node.Status
+	1,  // 29: file.common.v1.Node.type:type_name -> file.common.v1.Node.Type
+	16, // 30: file.common.v1.Node.settings:type_name -> file.common.v1.NodeSetting
+	10, // 31: file.common.v1.Node.storage_policy:type_name -> file.common.v1.StoragePolicy
+	12, // 32: file.common.v1.Setting.created_at:type_name -> google.protobuf.Timestamp
+	12, // 33: file.common.v1.Setting.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 34: file.common.v1.Setting.deleted_at:type_name -> google.protobuf.Timestamp
+	12, // 35: file.common.v1.Share.created_at:type_name -> google.protobuf.Timestamp
+	12, // 36: file.common.v1.Share.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 37: file.common.v1.Share.deleted_at:type_name -> google.protobuf.Timestamp
+	12, // 38: file.common.v1.Share.expires:type_name -> google.protobuf.Timestamp
+	17, // 39: file.common.v1.Share.props:type_name -> file.common.v1.ShareProps
+	14, // 40: file.common.v1.Share.owner_info:type_name -> common.v1.UserInfo
+	5,  // 41: file.common.v1.Share.file:type_name -> file.common.v1.File
+	12, // 42: file.common.v1.StoragePolicy.created_at:type_name -> google.protobuf.Timestamp
+	12, // 43: file.common.v1.StoragePolicy.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 44: file.common.v1.StoragePolicy.deleted_at:type_name -> google.protobuf.Timestamp
+	18, // 45: file.common.v1.StoragePolicy.settings:type_name -> file.common.v1.PolicySetting
+	5,  // 46: file.common.v1.StoragePolicy.files:type_name -> file.common.v1.File
+	4,  // 47: file.common.v1.StoragePolicy.entities:type_name -> file.common.v1.Entity
+	7,  // 48: file.common.v1.StoragePolicy.node:type_name -> file.common.v1.Node
+	12, // 49: file.common.v1.Task.created_at:type_name -> google.protobuf.Timestamp
+	12, // 50: file.common.v1.Task.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 51: file.common.v1.Task.deleted_at:type_name -> google.protobuf.Timestamp
+	2,  // 52: file.common.v1.Task.status:type_name -> file.common.v1.Task.Status
+	19, // 53: file.common.v1.Task.public_state:type_name -> file.common.v1.TaskPublicState
+	54, // [54:54] is the sub-list for method output_type
+	54, // [54:54] is the sub-list for method input_type
+	54, // [54:54] is the sub-list for extension type_name
+	54, // [54:54] is the sub-list for extension extendee
+	0,  // [0:54] is the sub-list for field type_name
 }
 
 func init() { file_file_common_v1_entpb_proto_init() }
@@ -1719,6 +1696,8 @@ func file_file_common_v1_entpb_proto_init() {
 		return
 	}
 	file_file_common_v1_common_proto_init()
+	file_file_common_v1_entpb_proto_msgTypes[1].OneofWrappers = []any{}
+	file_file_common_v1_entpb_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

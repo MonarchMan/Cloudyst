@@ -43,8 +43,8 @@ type WorkflowHTTPServer interface {
 func RegisterWorkflowHTTPServer(s *http.Server, srv WorkflowHTTPServer) {
 	r := s.Route("/")
 	r.POST("/workflow/import", _Workflow_ImportFiles0_HTTP_Handler(srv))
-	r.GET("/workflow/list", _Workflow_ListTasks1_HTTP_Handler(srv))
-	r.GET("/workflow/progress/{id}", _Workflow_GetTaskPhaseProgress0_HTTP_Handler(srv))
+	r.GET("/workflow/list", _Workflow_ListTasks3_HTTP_Handler(srv))
+	r.GET("/workflow/progress/{id}", _Workflow_GetTaskPhaseProgress1_HTTP_Handler(srv))
 	r.POST("/workflow/archive", _Workflow_CreateArchive0_HTTP_Handler(srv))
 	r.POST("/workflow/extract", _Workflow_ExtractArchive0_HTTP_Handler(srv))
 	r.POST("/workflow/download", _Workflow_CreateRemoteDownload0_HTTP_Handler(srv))
@@ -74,7 +74,7 @@ func _Workflow_ImportFiles0_HTTP_Handler(srv WorkflowHTTPServer) func(ctx http.C
 	}
 }
 
-func _Workflow_ListTasks1_HTTP_Handler(srv WorkflowHTTPServer) func(ctx http.Context) error {
+func _Workflow_ListTasks3_HTTP_Handler(srv WorkflowHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ListTasksRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -93,7 +93,7 @@ func _Workflow_ListTasks1_HTTP_Handler(srv WorkflowHTTPServer) func(ctx http.Con
 	}
 }
 
-func _Workflow_GetTaskPhaseProgress0_HTTP_Handler(srv WorkflowHTTPServer) func(ctx http.Context) error {
+func _Workflow_GetTaskPhaseProgress1_HTTP_Handler(srv WorkflowHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in SimpleWorkflowRequest
 		if err := ctx.BindQuery(&in); err != nil {

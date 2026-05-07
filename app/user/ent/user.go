@@ -3,7 +3,7 @@
 package ent
 
 import (
-	v1 "api/api/user/common/v1"
+	"api/external/data/userdata"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -41,7 +41,7 @@ type User struct {
 	// Avatar holds the value of the "avatar" field.
 	Avatar string `json:"avatar,omitempty"`
 	// Settings holds the value of the "settings" field.
-	Settings *v1.UserSetting `json:"settings,omitempty"`
+	Settings *userdata.UserSetting `json:"settings,omitempty"`
 	// GroupUsers holds the value of the "group_users" field.
 	GroupUsers int `json:"group_users,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.

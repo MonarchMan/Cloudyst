@@ -2,8 +2,10 @@ package pkg
 
 import (
 	"ai/internal/conf"
+	"ai/internal/pkg/eino/interrupt"
 	"ai/internal/pkg/eino/model"
 	"ai/internal/pkg/eino/tool/factory"
+	"ai/internal/pkg/mcp"
 	"common/hashid"
 	"common/logging"
 	"context"
@@ -36,6 +38,7 @@ import (
 var ProviderSet = wire.NewSet(
 	model.NewAiModelManager,
 	factory.NewToolRegistry,
+	mcp.NewMCPClientManager,
 	HasherWrapper,
 	LoggerWrapper,
 	TracerProvider,
@@ -43,6 +46,7 @@ var ProviderSet = wire.NewSet(
 	OllamaEmbedder,
 	ExtParser,
 	URLLoader,
+	interrupt.NewCheckPointStore,
 )
 
 func HasherWrapper(bs *conf.Bootstrap) (hashid.Encoder, error) {
@@ -103,7 +107,7 @@ func Propagator() propagation.TextMapPropagator {
 }
 
 func OllamaEmbedder(bs *conf.Bootstrap) (embedding.Embedder, error) {
-	embedderCfg := bs.Server.Sys.Embedder
+	embedderCfg := bs.Server.Embedder
 	if embedderCfg.Model == "" {
 		return nil, fmt.Errorf("model is required")
 	}

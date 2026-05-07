@@ -25,174 +25,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type SimpleModelRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SimpleModelRequest) Reset() {
-	*x = SimpleModelRequest{}
-	mi := &file_ai_role_v1_role_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SimpleModelRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SimpleModelRequest) ProtoMessage() {}
-
-func (x *SimpleModelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_role_v1_role_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SimpleModelRequest.ProtoReflect.Descriptor instead.
-func (*SimpleModelRequest) Descriptor() ([]byte, []int) {
-	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *SimpleModelRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetModelResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
-	Platform      string                 `protobuf:"bytes,4,opt,name=platform,proto3" json:"platform,omitempty"`
-	Sort          int32                  `protobuf:"varint,5,opt,name=sort,proto3" json:"sort,omitempty"`
-	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
-	Temperature   float32                `protobuf:"fixed32,7,opt,name=temperature,proto3" json:"temperature,omitempty"`
-	MaxTokens     int32                  `protobuf:"varint,8,opt,name=max_tokens,json=maxTokens,proto3" json:"max_tokens,omitempty"`
-	MaxContexts   int32                  `protobuf:"varint,9,opt,name=max_contexts,json=maxContexts,proto3" json:"max_contexts,omitempty"`
-	KeyId         string                 `protobuf:"bytes,10,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetModelResponse) Reset() {
-	*x = GetModelResponse{}
-	mi := &file_ai_role_v1_role_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetModelResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetModelResponse) ProtoMessage() {}
-
-func (x *GetModelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_role_v1_role_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetModelResponse.ProtoReflect.Descriptor instead.
-func (*GetModelResponse) Descriptor() ([]byte, []int) {
-	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *GetModelResponse) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *GetModelResponse) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *GetModelResponse) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *GetModelResponse) GetPlatform() string {
-	if x != nil {
-		return x.Platform
-	}
-	return ""
-}
-
-func (x *GetModelResponse) GetSort() int32 {
-	if x != nil {
-		return x.Sort
-	}
-	return 0
-}
-
-func (x *GetModelResponse) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *GetModelResponse) GetTemperature() float32 {
-	if x != nil {
-		return x.Temperature
-	}
-	return 0
-}
-
-func (x *GetModelResponse) GetMaxTokens() int32 {
-	if x != nil {
-		return x.MaxTokens
-	}
-	return 0
-}
-
-func (x *GetModelResponse) GetMaxContexts() int32 {
-	if x != nil {
-		return x.MaxContexts
-	}
-	return 0
-}
-
-func (x *GetModelResponse) GetKeyId() string {
-	if x != nil {
-		return x.KeyId
-	}
-	return ""
-}
-
-func (x *GetModelResponse) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
 // Role
 type UpsertRoleRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
@@ -213,7 +45,7 @@ type UpsertRoleRequest struct {
 
 func (x *UpsertRoleRequest) Reset() {
 	*x = UpsertRoleRequest{}
-	mi := &file_ai_role_v1_role_proto_msgTypes[2]
+	mi := &file_ai_role_v1_role_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -225,7 +57,7 @@ func (x *UpsertRoleRequest) String() string {
 func (*UpsertRoleRequest) ProtoMessage() {}
 
 func (x *UpsertRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_role_v1_role_proto_msgTypes[2]
+	mi := &file_ai_role_v1_role_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -238,7 +70,7 @@ func (x *UpsertRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertRoleRequest.ProtoReflect.Descriptor instead.
 func (*UpsertRoleRequest) Descriptor() ([]byte, []int) {
-	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{2}
+	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *UpsertRoleRequest) GetId() string {
@@ -327,7 +159,7 @@ type SimpleRoleRequest struct {
 
 func (x *SimpleRoleRequest) Reset() {
 	*x = SimpleRoleRequest{}
-	mi := &file_ai_role_v1_role_proto_msgTypes[3]
+	mi := &file_ai_role_v1_role_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -339,7 +171,7 @@ func (x *SimpleRoleRequest) String() string {
 func (*SimpleRoleRequest) ProtoMessage() {}
 
 func (x *SimpleRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_role_v1_role_proto_msgTypes[3]
+	mi := &file_ai_role_v1_role_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -352,7 +184,7 @@ func (x *SimpleRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SimpleRoleRequest.ProtoReflect.Descriptor instead.
 func (*SimpleRoleRequest) Descriptor() ([]byte, []int) {
-	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{3}
+	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *SimpleRoleRequest) GetId() string {
@@ -382,7 +214,7 @@ type GetRoleResponse struct {
 
 func (x *GetRoleResponse) Reset() {
 	*x = GetRoleResponse{}
-	mi := &file_ai_role_v1_role_proto_msgTypes[4]
+	mi := &file_ai_role_v1_role_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -394,7 +226,7 @@ func (x *GetRoleResponse) String() string {
 func (*GetRoleResponse) ProtoMessage() {}
 
 func (x *GetRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_role_v1_role_proto_msgTypes[4]
+	mi := &file_ai_role_v1_role_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -407,7 +239,7 @@ func (x *GetRoleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoleResponse.ProtoReflect.Descriptor instead.
 func (*GetRoleResponse) Descriptor() ([]byte, []int) {
-	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{4}
+	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetRoleResponse) GetId() string {
@@ -494,9 +326,122 @@ func (x *GetRoleResponse) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type GetMultiRolesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Roles         []*GetRoleResponse     `protobuf:"bytes,1,rep,name=roles,proto3" json:"roles,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMultiRolesResponse) Reset() {
+	*x = GetMultiRolesResponse{}
+	mi := &file_ai_role_v1_role_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMultiRolesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMultiRolesResponse) ProtoMessage() {}
+
+func (x *GetMultiRolesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_role_v1_role_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMultiRolesResponse.ProtoReflect.Descriptor instead.
+func (*GetMultiRolesResponse) Descriptor() ([]byte, []int) {
+	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetMultiRolesResponse) GetRoles() []*GetRoleResponse {
+	if x != nil {
+		return x.Roles
+	}
+	return nil
+}
+
+type ListRoleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Pagination    *v1.PaginationArgs     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Category      string                 `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
+	IsPublic      bool                   `protobuf:"varint,4,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRoleRequest) Reset() {
+	*x = ListRoleRequest{}
+	mi := &file_ai_role_v1_role_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRoleRequest) ProtoMessage() {}
+
+func (x *ListRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_role_v1_role_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRoleRequest.ProtoReflect.Descriptor instead.
+func (*ListRoleRequest) Descriptor() ([]byte, []int) {
+	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ListRoleRequest) GetPagination() *v1.PaginationArgs {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+func (x *ListRoleRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ListRoleRequest) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *ListRoleRequest) GetIsPublic() bool {
+	if x != nil {
+		return x.IsPublic
+	}
+	return false
+}
+
 type ListRoleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Roles         []*GetRoleResponse     `protobuf:"bytes,1,rep,name=roles,proto3" json:"roles,omitempty"`
+	Pagination    *v1.PaginationResults  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -538,120 +483,7 @@ func (x *ListRoleResponse) GetRoles() []*GetRoleResponse {
 	return nil
 }
 
-type PageRoleRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pagination    *v1.PaginationArgs     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Category      string                 `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
-	IsPublic      bool                   `protobuf:"varint,4,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PageRoleRequest) Reset() {
-	*x = PageRoleRequest{}
-	mi := &file_ai_role_v1_role_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PageRoleRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PageRoleRequest) ProtoMessage() {}
-
-func (x *PageRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_role_v1_role_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PageRoleRequest.ProtoReflect.Descriptor instead.
-func (*PageRoleRequest) Descriptor() ([]byte, []int) {
-	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *PageRoleRequest) GetPagination() *v1.PaginationArgs {
-	if x != nil {
-		return x.Pagination
-	}
-	return nil
-}
-
-func (x *PageRoleRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *PageRoleRequest) GetCategory() string {
-	if x != nil {
-		return x.Category
-	}
-	return ""
-}
-
-func (x *PageRoleRequest) GetIsPublic() bool {
-	if x != nil {
-		return x.IsPublic
-	}
-	return false
-}
-
-type PageRoleResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Roles         []*GetRoleResponse     `protobuf:"bytes,1,rep,name=roles,proto3" json:"roles,omitempty"`
-	Pagination    *v1.PaginationResults  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PageRoleResponse) Reset() {
-	*x = PageRoleResponse{}
-	mi := &file_ai_role_v1_role_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PageRoleResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PageRoleResponse) ProtoMessage() {}
-
-func (x *PageRoleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_role_v1_role_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PageRoleResponse.ProtoReflect.Descriptor instead.
-func (*PageRoleResponse) Descriptor() ([]byte, []int) {
-	return file_ai_role_v1_role_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *PageRoleResponse) GetRoles() []*GetRoleResponse {
-	if x != nil {
-		return x.Roles
-	}
-	return nil
-}
-
-func (x *PageRoleResponse) GetPagination() *v1.PaginationResults {
+func (x *ListRoleResponse) GetPagination() *v1.PaginationResults {
 	if x != nil {
 		return x.Pagination
 	}
@@ -663,24 +495,7 @@ var File_ai_role_v1_role_proto protoreflect.FileDescriptor
 const file_ai_role_v1_role_proto_rawDesc = "" +
 	"\n" +
 	"\x15ai/role/v1/role.proto\x12\n" +
-	"ai.role.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x16common/v1/common.proto\"$\n" +
-	"\x12SimpleModelRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xc8\x02\n" +
-	"\x10GetModelResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04type\x18\x03 \x01(\tR\x04type\x12\x1a\n" +
-	"\bplatform\x18\x04 \x01(\tR\bplatform\x12\x12\n" +
-	"\x04sort\x18\x05 \x01(\x05R\x04sort\x12\x16\n" +
-	"\x06status\x18\x06 \x01(\tR\x06status\x12 \n" +
-	"\vtemperature\x18\a \x01(\x02R\vtemperature\x12\x1d\n" +
-	"\n" +
-	"max_tokens\x18\b \x01(\x05R\tmaxTokens\x12!\n" +
-	"\fmax_contexts\x18\t \x01(\x05R\vmaxContexts\x12\x15\n" +
-	"\x06key_id\x18\n" +
-	" \x01(\tR\x05keyId\x129\n" +
-	"\n" +
-	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xcf\x02\n" +
+	"ai.role.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x16common/v1/common.proto\"\xcf\x02\n" +
 	"\x11UpsertRoleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
@@ -710,31 +525,32 @@ const file_ai_role_v1_role_proto_rawDesc = "" +
 	" \x03(\tR\atoolIds\x12(\n" +
 	"\x10mcp_client_names\x18\v \x03(\tR\x0emcpClientNames\x129\n" +
 	"\n" +
-	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"E\n" +
-	"\x10ListRoleResponse\x121\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"J\n" +
+	"\x15GetMultiRolesResponse\x121\n" +
 	"\x05roles\x18\x01 \x03(\v2\x1b.ai.role.v1.GetRoleResponseR\x05roles\"\x99\x01\n" +
-	"\x0fPageRoleRequest\x129\n" +
+	"\x0fListRoleRequest\x129\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x19.common.v1.PaginationArgsR\n" +
 	"pagination\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
 	"\bcategory\x18\x03 \x01(\tR\bcategory\x12\x1b\n" +
 	"\tis_public\x18\x04 \x01(\bR\bisPublic\"\x83\x01\n" +
-	"\x10PageRoleResponse\x121\n" +
+	"\x10ListRoleResponse\x121\n" +
 	"\x05roles\x18\x01 \x03(\v2\x1b.ai.role.v1.GetRoleResponseR\x05roles\x12<\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
-	"pagination2\xe6\x04\n" +
-	"\x04Role\x12c\n" +
+	"pagination2\xc7\x04\n" +
+	"\x04Role\x12]\n" +
 	"\n" +
-	"CreateRole\x12\x1d.ai.role.v1.UpsertRoleRequest\x1a\x1b.ai.role.v1.GetRoleResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/admin/ai/role\x12h\n" +
+	"CreateRole\x12\x1d.ai.role.v1.UpsertRoleRequest\x1a\x1b.ai.role.v1.GetRoleResponse\"\x13\x82\xd3\xe4\x93\x02\r:\x01*\"\b/ai/role\x12b\n" +
 	"\n" +
-	"UpdateRole\x12\x1d.ai.role.v1.UpsertRoleRequest\x1a\x1b.ai.role.v1.GetRoleResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\x1a\x13/admin/ai/role/{id}\x12`\n" +
+	"UpdateRole\x12\x1d.ai.role.v1.UpsertRoleRequest\x1a\x1b.ai.role.v1.GetRoleResponse\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\x1a\r/ai/role/{id}\x12Z\n" +
 	"\n" +
-	"DeleteRole\x12\x1d.ai.role.v1.SimpleRoleRequest\x1a\x16.google.protobuf.Empty\"\x1b\x82\xd3\xe4\x93\x02\x15*\x13/admin/ai/role/{id}\x12b\n" +
-	"\aGetRole\x12\x1d.ai.role.v1.SimpleRoleRequest\x1a\x1b.ai.role.v1.GetRoleResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/admin/ai/role/{id}\x12`\n" +
-	"\bListRole\x12\x16.google.protobuf.Empty\x1a\x1c.ai.role.v1.ListRoleResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/admin/ai/role/list/me\x12g\n" +
-	"\bPageRole\x12\x1b.ai.role.v1.PageRoleRequest\x1a\x1c.ai.role.v1.PageRoleResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/admin/ai/role/page/listB&\n" +
+	"DeleteRole\x12\x1d.ai.role.v1.SimpleRoleRequest\x1a\x16.google.protobuf.Empty\"\x15\x82\xd3\xe4\x93\x02\x0f*\r/ai/role/{id}\x12\\\n" +
+	"\aGetRole\x12\x1d.ai.role.v1.SimpleRoleRequest\x1a\x1b.ai.role.v1.GetRoleResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/ai/role/{id}\x12a\n" +
+	"\n" +
+	"ListRoleMe\x12\x16.google.protobuf.Empty\x1a!.ai.role.v1.GetMultiRolesResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/ai/role/list/me\x12_\n" +
+	"\bListRole\x12\x1b.ai.role.v1.ListRoleRequest\x1a\x1c.ai.role.v1.ListRoleResponse\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/ai/role/listB&\n" +
 	"\vapi.role.v1P\x01Z\x15api/api/ai/role/v1;v1b\x06proto3"
 
 var (
@@ -749,45 +565,42 @@ func file_ai_role_v1_role_proto_rawDescGZIP() []byte {
 	return file_ai_role_v1_role_proto_rawDescData
 }
 
-var file_ai_role_v1_role_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_ai_role_v1_role_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_ai_role_v1_role_proto_goTypes = []any{
-	(*SimpleModelRequest)(nil),    // 0: ai.role.v1.SimpleModelRequest
-	(*GetModelResponse)(nil),      // 1: ai.role.v1.GetModelResponse
-	(*UpsertRoleRequest)(nil),     // 2: ai.role.v1.UpsertRoleRequest
-	(*SimpleRoleRequest)(nil),     // 3: ai.role.v1.SimpleRoleRequest
-	(*GetRoleResponse)(nil),       // 4: ai.role.v1.GetRoleResponse
+	(*UpsertRoleRequest)(nil),     // 0: ai.role.v1.UpsertRoleRequest
+	(*SimpleRoleRequest)(nil),     // 1: ai.role.v1.SimpleRoleRequest
+	(*GetRoleResponse)(nil),       // 2: ai.role.v1.GetRoleResponse
+	(*GetMultiRolesResponse)(nil), // 3: ai.role.v1.GetMultiRolesResponse
+	(*ListRoleRequest)(nil),       // 4: ai.role.v1.ListRoleRequest
 	(*ListRoleResponse)(nil),      // 5: ai.role.v1.ListRoleResponse
-	(*PageRoleRequest)(nil),       // 6: ai.role.v1.PageRoleRequest
-	(*PageRoleResponse)(nil),      // 7: ai.role.v1.PageRoleResponse
-	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
-	(*v1.PaginationArgs)(nil),     // 9: common.v1.PaginationArgs
-	(*v1.PaginationResults)(nil),  // 10: common.v1.PaginationResults
-	(*emptypb.Empty)(nil),         // 11: google.protobuf.Empty
+	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
+	(*v1.PaginationArgs)(nil),     // 7: common.v1.PaginationArgs
+	(*v1.PaginationResults)(nil),  // 8: common.v1.PaginationResults
+	(*emptypb.Empty)(nil),         // 9: google.protobuf.Empty
 }
 var file_ai_role_v1_role_proto_depIdxs = []int32{
-	8,  // 0: ai.role.v1.GetModelResponse.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 1: ai.role.v1.GetRoleResponse.created_at:type_name -> google.protobuf.Timestamp
-	4,  // 2: ai.role.v1.ListRoleResponse.roles:type_name -> ai.role.v1.GetRoleResponse
-	9,  // 3: ai.role.v1.PageRoleRequest.pagination:type_name -> common.v1.PaginationArgs
-	4,  // 4: ai.role.v1.PageRoleResponse.roles:type_name -> ai.role.v1.GetRoleResponse
-	10, // 5: ai.role.v1.PageRoleResponse.pagination:type_name -> common.v1.PaginationResults
-	2,  // 6: ai.role.v1.Role.CreateRole:input_type -> ai.role.v1.UpsertRoleRequest
-	2,  // 7: ai.role.v1.Role.UpdateRole:input_type -> ai.role.v1.UpsertRoleRequest
-	3,  // 8: ai.role.v1.Role.DeleteRole:input_type -> ai.role.v1.SimpleRoleRequest
-	3,  // 9: ai.role.v1.Role.GetRole:input_type -> ai.role.v1.SimpleRoleRequest
-	11, // 10: ai.role.v1.Role.ListRole:input_type -> google.protobuf.Empty
-	6,  // 11: ai.role.v1.Role.PageRole:input_type -> ai.role.v1.PageRoleRequest
-	4,  // 12: ai.role.v1.Role.CreateRole:output_type -> ai.role.v1.GetRoleResponse
-	4,  // 13: ai.role.v1.Role.UpdateRole:output_type -> ai.role.v1.GetRoleResponse
-	11, // 14: ai.role.v1.Role.DeleteRole:output_type -> google.protobuf.Empty
-	4,  // 15: ai.role.v1.Role.GetRole:output_type -> ai.role.v1.GetRoleResponse
+	6,  // 0: ai.role.v1.GetRoleResponse.created_at:type_name -> google.protobuf.Timestamp
+	2,  // 1: ai.role.v1.GetMultiRolesResponse.roles:type_name -> ai.role.v1.GetRoleResponse
+	7,  // 2: ai.role.v1.ListRoleRequest.pagination:type_name -> common.v1.PaginationArgs
+	2,  // 3: ai.role.v1.ListRoleResponse.roles:type_name -> ai.role.v1.GetRoleResponse
+	8,  // 4: ai.role.v1.ListRoleResponse.pagination:type_name -> common.v1.PaginationResults
+	0,  // 5: ai.role.v1.Role.CreateRole:input_type -> ai.role.v1.UpsertRoleRequest
+	0,  // 6: ai.role.v1.Role.UpdateRole:input_type -> ai.role.v1.UpsertRoleRequest
+	1,  // 7: ai.role.v1.Role.DeleteRole:input_type -> ai.role.v1.SimpleRoleRequest
+	1,  // 8: ai.role.v1.Role.GetRole:input_type -> ai.role.v1.SimpleRoleRequest
+	9,  // 9: ai.role.v1.Role.ListRoleMe:input_type -> google.protobuf.Empty
+	4,  // 10: ai.role.v1.Role.ListRole:input_type -> ai.role.v1.ListRoleRequest
+	2,  // 11: ai.role.v1.Role.CreateRole:output_type -> ai.role.v1.GetRoleResponse
+	2,  // 12: ai.role.v1.Role.UpdateRole:output_type -> ai.role.v1.GetRoleResponse
+	9,  // 13: ai.role.v1.Role.DeleteRole:output_type -> google.protobuf.Empty
+	2,  // 14: ai.role.v1.Role.GetRole:output_type -> ai.role.v1.GetRoleResponse
+	3,  // 15: ai.role.v1.Role.ListRoleMe:output_type -> ai.role.v1.GetMultiRolesResponse
 	5,  // 16: ai.role.v1.Role.ListRole:output_type -> ai.role.v1.ListRoleResponse
-	7,  // 17: ai.role.v1.Role.PageRole:output_type -> ai.role.v1.PageRoleResponse
-	12, // [12:18] is the sub-list for method output_type
-	6,  // [6:12] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	11, // [11:17] is the sub-list for method output_type
+	5,  // [5:11] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_ai_role_v1_role_proto_init() }
@@ -801,7 +614,7 @@ func file_ai_role_v1_role_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_role_v1_role_proto_rawDesc), len(file_ai_role_v1_role_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

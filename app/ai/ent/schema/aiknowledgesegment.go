@@ -2,11 +2,8 @@ package schema
 
 import (
 	"entmodule"
-	mschema "entmodule/ent/schema"
 
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -27,6 +24,22 @@ func (AiKnowledgeSegment) Fields() []ent.Field {
 			Comment("分段内容长度"),
 		field.Int("tokens").
 			Comment("分段token数"),
+		field.Int("chunk_index").
+			Default(0).
+			Comment("文档内切片顺序"),
+		field.String("section_path").
+			Optional().
+			Default("").
+			Comment("章节路径"),
+		field.Int("start_offset").
+			Default(0).
+			Comment("切片在原文中的起始字符偏移"),
+		field.Int("end_offset").
+			Default(0).
+			Comment("切片在原文中的结束字符偏移"),
+		field.JSON("metadata", map[string]any{}).
+			Optional().
+			Comment("切片级增强元信息"),
 		field.String("vector_id").
 			MaxLen(100).
 			Default("").
@@ -52,12 +65,6 @@ func (AiKnowledgeSegment) Edges() []ent.Edge {
 
 func (AiKnowledgeSegment) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
-	}
-}
-
-func (AiKnowledgeSegment) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
+		CommonMixin{},
 	}
 }

@@ -1,15 +1,11 @@
 package schema
 
 import (
-	pb "api/api/file/common/v1"
-	mschema "entmodule/ent/schema"
+	"file/internal/data/types"
 
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // StoragePolicy holds the schema definition for the StoragePolicy entity.
@@ -20,67 +16,46 @@ type StoragePolicy struct {
 // Fields of the StoragePolicy.
 func (StoragePolicy) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").
-			Annotations(entproto.Field(2)),
-		field.String("type").
-			Annotations(entproto.Field(3)),
+		field.String("name"),
+		field.String("type"),
 		field.String("server").
-			Optional().
-			Annotations(entproto.Field(4)),
+			Optional(),
 		field.String("bucket_name").
-			Optional().
-			Annotations(entproto.Field(5)),
+			Optional(),
 		field.Bool("is_private").
-			Optional().
-			Annotations(entproto.Field(6)),
+			Optional(),
 		field.Text("access_key").
-			Optional().
-			Annotations(entproto.Field(7)),
+			Optional(),
 		field.Text("secret_key").
-			Optional().
-			Annotations(entproto.Field(8)),
+			Optional(),
 		field.Int64("max_size").
-			Optional().
-			Annotations(entproto.Field(9)),
+			Optional(),
 		field.String("dir_name_rule").
-			Optional().
-			Annotations(entproto.Field(10)),
+			Optional(),
 		field.String("file_name_rule").
-			Optional().
-			Annotations(entproto.Field(11)),
-		field.JSON("settings", &pb.PolicySetting{}).
-			Default(&pb.PolicySetting{}).
-			Optional().
-			Annotations(entproto.Field(12, entproto.Type(descriptorpb.FieldDescriptorProto_TYPE_STRING))),
+			Optional(),
+		field.JSON("settings", &types.PolicySetting{}).
+			Default(&types.PolicySetting{}).
+			Optional(),
 		field.Int("node_id").
-			Optional().
-			Annotations(entproto.Field(13)),
+			Optional(),
 	}
 }
 
 // Edges of the StoragePolicy.
 func (StoragePolicy) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("files", File.Type).
-			Annotations(entproto.Field(81)),
-		edge.To("entities", Entity.Type).
-			Annotations(entproto.Field(82)),
+		edge.To("files", File.Type),
+		edge.To("entities", Entity.Type),
 		edge.From("node", Node.Type).
 			Ref("storage_policy").
 			Field("node_id").
-			Unique().
-			Annotations(entproto.Field(83)),
+			Unique(),
 	}
 }
 
 func (StoragePolicy) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		mschema.CommonMixin{},
-	}
-}
-
-func (StoragePolicy) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
+		CommonMixin{},
 	}
 }

@@ -3,7 +3,7 @@
 package file
 
 import (
-	v1 "api/api/file/common/v1"
+	"api/external/data/userdata"
 	"time"
 
 	"entgo.io/ent"
@@ -144,7 +144,7 @@ var (
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// DefaultOwnerInfo holds the default value on creation for the "owner_info" field.
-	DefaultOwnerInfo *v1.UserInfo
+	DefaultOwnerInfo *userdata.UserInfo
 	// DefaultSize holds the default value on creation for the "size" field.
 	DefaultSize int64
 	// DefaultIsSymbolic holds the default value on creation for the "is_symbolic" field.

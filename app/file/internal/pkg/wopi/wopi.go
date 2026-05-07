@@ -1,7 +1,7 @@
 package wopi
 
 import (
-	ftypes "api/external/data/file"
+	ftypes "api/external/data/filedata"
 	"errors"
 	"file/internal/biz/cluster/routes"
 	"file/internal/biz/filemanager/manager"

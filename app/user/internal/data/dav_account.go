@@ -2,8 +2,8 @@ package data
 
 import (
 	pb "api/api/user/common/v1"
+	"api/external/data/common"
 	"common/boolset"
-	"common/db"
 	"common/hashid"
 	"context"
 	"fmt"
@@ -46,11 +46,11 @@ type (
 	}
 )
 
-func NewDavAccountClient(client *ent.Client, dbType db.DBType, hasher hashid.Encoder) DavAccountClient {
+func NewDavAccountClient(client *ent.Client, dbType common.DBType, hasher hashid.Encoder) DavAccountClient {
 	return &davAccountClient{
 		client:      client,
 		hasher:      hasher,
-		maxSQlParam: db.SqlParamLimit(dbType),
+		maxSQlParam: common.SqlParamLimit(dbType),
 	}
 }
 

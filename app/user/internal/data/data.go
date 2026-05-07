@@ -1,8 +1,8 @@
 package data
 
 import (
+	"api/external/data/common"
 	"common/cache"
-	"common/db"
 	"user/internal/conf"
 	"user/internal/data/rpc"
 
@@ -34,6 +34,6 @@ func KVStoreWrapper(config *conf.Bootstrap, l log.Logger) cache.Driver {
 		redisConf.User, redisConf.Password, redisConf.UseTls, redisConf.TlsSkipVerify)
 }
 
-func DBTypeWrapper(config *conf.Bootstrap) db.DBType {
-	return db.DBType(config.Data.Database.DbType)
+func DBTypeWrapper(config *conf.Bootstrap) common.DBType {
+	return common.DBType(config.Data.Database.DbType)
 }

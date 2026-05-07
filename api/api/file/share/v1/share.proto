@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "file/common/v1/common.proto";
+import "common/v1/common.proto";
 
 option go_package = "api/api/file/share/v1;v1";
 
@@ -101,7 +102,7 @@ message GetShareResponse {
   bool password_protected = 8;
   int32 source_type = 9;
   int32 owner_id = 10;
-  file.common.v1.UserInfo owner_info = 11;
+  .common.v1.UserInfo owner_info = 11;
   google.protobuf.Timestamp created_at = 12;
   bool expired = 13;
   string url = 14;

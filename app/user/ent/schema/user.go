@@ -1,14 +1,12 @@
 package schema
 
 import (
-	pb "api/api/user/common/v1"
+	"api/external/data/userdata"
 
 	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // User holds the schema definition for the User entity.
@@ -20,40 +18,26 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("email").
 			MaxLen(100).
-			Unique().
-			Annotations(entproto.Field(2)),
+			Unique(),
 		field.String("nick").
-			MaxLen(100).
-			Annotations(entproto.Field(3)),
+			MaxLen(100),
 		field.String("password").
 			Optional().
-			Sensitive().
-			Annotations(entproto.Field(4)),
+			Sensitive(),
 		field.Enum("status").
 			Values("active", "inactive", "manual_banned", "sys_banned").
-			Default("active").
-			Annotations(entproto.Field(5), entproto.Enum(map[string]int32{
-				"active":        0,
-				"inactive":      1,
-				"manual_banned": 2,
-				"sys_banned":    3,
-			})),
+			Default("active"),
 		field.Int64("storage").
-			Default(0).
-			Annotations(entproto.Field(6)),
+			Default(0),
 		field.String("two_factor_secret").
 			Sensitive().
-			Optional().
-			Annotations(entproto.Field(7)),
+			Optional(),
 		field.String("avatar").
-			Optional().
-			Annotations(entproto.Field(8)),
-		field.JSON("settings", &pb.UserSetting{}).
-			Default(&pb.UserSetting{}).
-			Optional().
-			Annotations(entproto.Field(9, entproto.Type(descriptorpb.FieldDescriptorProto_TYPE_STRING))),
-		field.Int("group_users").
-			Annotations(entproto.Field(10)),
+			Optional(),
+		field.JSON("settings", &userdata.UserSetting{}).
+			Default(&userdata.UserSetting{}).
+			Optional(),
+		field.Int("group_users"),
 	}
 }
 
@@ -75,11 +59,5 @@ func (User) Edges() []ent.Edge {
 func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		CommonMixin{},
-	}
-}
-
-func (User) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
 	}
 }

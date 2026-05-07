@@ -2,15 +2,16 @@ package data
 
 import (
 	pb "api/api/file/common/v1"
-	userpb "api/api/user/common/v1"
+	"api/external/data/common"
+	"api/external/data/userdata"
 	"common/constants"
-	"common/db"
 	"common/hashid"
 	"context"
 	"file/ent"
 	"file/ent/file"
 	"file/ent/predicate"
 	"file/ent/share"
+	"file/internal/data/types"
 	"fmt"
 	"time"
 
@@ -61,9 +62,9 @@ type (
 		Password        string
 		RemainDownloads int
 		Expires         *time.Time
-		Owner           *userpb.User
+		Owner           *userdata.User
 		FileID          int
-		Props           *pb.ShareProps
+		Props           *types.ShareProps
 	}
 
 	ListShareArgs struct {
@@ -79,11 +80,11 @@ type (
 	}
 )
 
-func NewShareClient(client *ent.Client, dbType db.DBType, hasher hashid.Encoder) ShareClient {
+func NewShareClient(client *ent.Client, dbType common.DBType, hasher hashid.Encoder) ShareClient {
 	return &shareClient{
 		client:      client,
 		hasher:      hasher,
-		maxSQlParam: db.SqlParamLimit(dbType),
+		maxSQlParam: common.SqlParamLimit(dbType),
 	}
 }
 
@@ -133,9 +134,9 @@ func (c *shareClient) Upsert(ctx context.Context, params *CreateShareParams) (*e
 
 	query := c.client.Share.
 		Create().
-		SetOwnerID(int(params.Owner.Id)).
+		SetOwnerID(params.Owner.ID).
 		SetFileID(params.FileID).
-		SetOwnerInfo(UserInfoFromPbUser(params.Owner))
+		SetOwnerInfo(userdata.UserInfoFromUser(c.hasher, params.Owner))
 	if params.Password != "" {
 		query.SetPassword(params.Password)
 	}

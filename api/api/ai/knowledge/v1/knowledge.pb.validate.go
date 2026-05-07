@@ -141,22 +141,22 @@ var _ interface {
 	ErrorName() string
 } = SimpleRequestValidationError{}
 
-// Validate checks the field values on BatchDeleteRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *BatchDeleteRequest) Validate() error {
+// Validate checks the field values on MultiRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *MultiRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on BatchDeleteRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// BatchDeleteRequestMultiError, or nil if none found.
-func (m *BatchDeleteRequest) ValidateAll() error {
+// ValidateAll checks the field values on MultiRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in MultiRequestMultiError, or
+// nil if none found.
+func (m *MultiRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *BatchDeleteRequest) validate(all bool) error {
+func (m *MultiRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -164,19 +164,18 @@ func (m *BatchDeleteRequest) validate(all bool) error {
 	var errors []error
 
 	if len(errors) > 0 {
-		return BatchDeleteRequestMultiError(errors)
+		return MultiRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// BatchDeleteRequestMultiError is an error wrapping multiple validation errors
-// returned by BatchDeleteRequest.ValidateAll() if the designated constraints
-// aren't met.
-type BatchDeleteRequestMultiError []error
+// MultiRequestMultiError is an error wrapping multiple validation errors
+// returned by MultiRequest.ValidateAll() if the designated constraints aren't met.
+type MultiRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m BatchDeleteRequestMultiError) Error() string {
+func (m MultiRequestMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -185,11 +184,11 @@ func (m BatchDeleteRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m BatchDeleteRequestMultiError) AllErrors() []error { return m }
+func (m MultiRequestMultiError) AllErrors() []error { return m }
 
-// BatchDeleteRequestValidationError is the validation error returned by
-// BatchDeleteRequest.Validate if the designated constraints aren't met.
-type BatchDeleteRequestValidationError struct {
+// MultiRequestValidationError is the validation error returned by
+// MultiRequest.Validate if the designated constraints aren't met.
+type MultiRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -197,24 +196,22 @@ type BatchDeleteRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e BatchDeleteRequestValidationError) Field() string { return e.field }
+func (e MultiRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e BatchDeleteRequestValidationError) Reason() string { return e.reason }
+func (e MultiRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e BatchDeleteRequestValidationError) Cause() error { return e.cause }
+func (e MultiRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e BatchDeleteRequestValidationError) Key() bool { return e.key }
+func (e MultiRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e BatchDeleteRequestValidationError) ErrorName() string {
-	return "BatchDeleteRequestValidationError"
-}
+func (e MultiRequestValidationError) ErrorName() string { return "MultiRequestValidationError" }
 
 // Error satisfies the builtin error interface
-func (e BatchDeleteRequestValidationError) Error() string {
+func (e MultiRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -226,14 +223,14 @@ func (e BatchDeleteRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sBatchDeleteRequest.%s: %s%s",
+		"invalid %sMultiRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = BatchDeleteRequestValidationError{}
+var _ error = MultiRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -241,7 +238,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = BatchDeleteRequestValidationError{}
+} = MultiRequestValidationError{}
 
 // Validate checks the field values on UpsertKnowledgeRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -580,8 +577,6 @@ func (m *ListKnowledgeRequest) validate(all bool) error {
 
 	// no validation rules for Status
 
-	// no validation rules for IsMaster
-
 	// no validation rules for IsPublic
 
 	if len(errors) > 0 {
@@ -829,6 +824,120 @@ var _ interface {
 	ErrorName() string
 } = ListKnowledgeResponseValidationError{}
 
+// Validate checks the field values on KnowledgeStatsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *KnowledgeStatsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on KnowledgeStatsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// KnowledgeStatsResponseMultiError, or nil if none found.
+func (m *KnowledgeStatsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *KnowledgeStatsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DocumentCount
+
+	// no validation rules for Ready
+
+	// no validation rules for Processing
+
+	// no validation rules for Failed
+
+	// no validation rules for SuccessRate
+
+	// no validation rules for TotalTokens
+
+	if len(errors) > 0 {
+		return KnowledgeStatsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// KnowledgeStatsResponseMultiError is an error wrapping multiple validation
+// errors returned by KnowledgeStatsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type KnowledgeStatsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m KnowledgeStatsResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m KnowledgeStatsResponseMultiError) AllErrors() []error { return m }
+
+// KnowledgeStatsResponseValidationError is the validation error returned by
+// KnowledgeStatsResponse.Validate if the designated constraints aren't met.
+type KnowledgeStatsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e KnowledgeStatsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e KnowledgeStatsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e KnowledgeStatsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e KnowledgeStatsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e KnowledgeStatsResponseValidationError) ErrorName() string {
+	return "KnowledgeStatsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e KnowledgeStatsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sKnowledgeStatsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = KnowledgeStatsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = KnowledgeStatsResponseValidationError{}
+
 // Validate checks the field values on UpsertDocumentRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -944,6 +1053,139 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = UpsertDocumentRequestValidationError{}
+
+// Validate checks the field values on UpsertDocumentResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpsertDocumentResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpsertDocumentResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpsertDocumentResponseMultiError, or nil if none found.
+func (m *UpsertDocumentResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpsertDocumentResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetDocument()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpsertDocumentResponseValidationError{
+					field:  "Document",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpsertDocumentResponseValidationError{
+					field:  "Document",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDocument()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpsertDocumentResponseValidationError{
+				field:  "Document",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for TaskId
+
+	if len(errors) > 0 {
+		return UpsertDocumentResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpsertDocumentResponseMultiError is an error wrapping multiple validation
+// errors returned by UpsertDocumentResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpsertDocumentResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpsertDocumentResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpsertDocumentResponseMultiError) AllErrors() []error { return m }
+
+// UpsertDocumentResponseValidationError is the validation error returned by
+// UpsertDocumentResponse.Validate if the designated constraints aren't met.
+type UpsertDocumentResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpsertDocumentResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpsertDocumentResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpsertDocumentResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpsertDocumentResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpsertDocumentResponseValidationError) ErrorName() string {
+	return "UpsertDocumentResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpsertDocumentResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpsertDocumentResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpsertDocumentResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpsertDocumentResponseValidationError{}
 
 // Validate checks the field values on BatchCreateDocumentRequest with the
 // rules defined in the proto definition for this message. If any rules are
@@ -1139,6 +1381,8 @@ func (m *BatchCreateDocumentResponse) validate(all bool) error {
 
 	// no validation rules for Total
 
+	// no validation rules for TaskId
+
 	if len(errors) > 0 {
 		return BatchCreateDocumentResponseMultiError(errors)
 	}
@@ -1220,6 +1464,280 @@ var _ interface {
 	ErrorName() string
 } = BatchCreateDocumentResponseValidationError{}
 
+// Validate checks the field values on ReindexDocumentResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ReindexDocumentResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReindexDocumentResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ReindexDocumentResponseMultiError, or nil if none found.
+func (m *ReindexDocumentResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReindexDocumentResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetProgress()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ReindexDocumentResponseValidationError{
+					field:  "Progress",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ReindexDocumentResponseValidationError{
+					field:  "Progress",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetProgress()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ReindexDocumentResponseValidationError{
+				field:  "Progress",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for TaskId
+
+	if len(errors) > 0 {
+		return ReindexDocumentResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReindexDocumentResponseMultiError is an error wrapping multiple validation
+// errors returned by ReindexDocumentResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ReindexDocumentResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReindexDocumentResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReindexDocumentResponseMultiError) AllErrors() []error { return m }
+
+// ReindexDocumentResponseValidationError is the validation error returned by
+// ReindexDocumentResponse.Validate if the designated constraints aren't met.
+type ReindexDocumentResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReindexDocumentResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReindexDocumentResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReindexDocumentResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReindexDocumentResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReindexDocumentResponseValidationError) ErrorName() string {
+	return "ReindexDocumentResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReindexDocumentResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReindexDocumentResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReindexDocumentResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReindexDocumentResponseValidationError{}
+
+// Validate checks the field values on BatchReindexDocumentResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *BatchReindexDocumentResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on BatchReindexDocumentResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// BatchReindexDocumentResponseMultiError, or nil if none found.
+func (m *BatchReindexDocumentResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *BatchReindexDocumentResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetProgresses() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, BatchReindexDocumentResponseValidationError{
+						field:  fmt.Sprintf("Progresses[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, BatchReindexDocumentResponseValidationError{
+						field:  fmt.Sprintf("Progresses[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return BatchReindexDocumentResponseValidationError{
+					field:  fmt.Sprintf("Progresses[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Total
+
+	// no validation rules for TaskId
+
+	if len(errors) > 0 {
+		return BatchReindexDocumentResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// BatchReindexDocumentResponseMultiError is an error wrapping multiple
+// validation errors returned by BatchReindexDocumentResponse.ValidateAll() if
+// the designated constraints aren't met.
+type BatchReindexDocumentResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m BatchReindexDocumentResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m BatchReindexDocumentResponseMultiError) AllErrors() []error { return m }
+
+// BatchReindexDocumentResponseValidationError is the validation error returned
+// by BatchReindexDocumentResponse.Validate if the designated constraints
+// aren't met.
+type BatchReindexDocumentResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e BatchReindexDocumentResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e BatchReindexDocumentResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e BatchReindexDocumentResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e BatchReindexDocumentResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e BatchReindexDocumentResponseValidationError) ErrorName() string {
+	return "BatchReindexDocumentResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e BatchReindexDocumentResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sBatchReindexDocumentResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = BatchReindexDocumentResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = BatchReindexDocumentResponseValidationError{}
+
 // Validate checks the field values on GetDocumentResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -1255,6 +1773,8 @@ func (m *GetDocumentResponse) validate(all bool) error {
 	// no validation rules for Tokens
 
 	// no validation rules for SegmentMaxTokens
+
+	// no validation rules for Progress
 
 	// no validation rules for Status
 
@@ -1315,6 +1835,8 @@ func (m *GetDocumentResponse) validate(all bool) error {
 			}
 		}
 	}
+
+	// no validation rules for Version
 
 	if len(errors) > 0 {
 		return GetDocumentResponseMultiError(errors)
@@ -1452,6 +1974,10 @@ func (m *ListDocumentsRequest) validate(all bool) error {
 	// no validation rules for Name
 
 	// no validation rules for Status
+
+	// no validation rules for Progress
+
+	// no validation rules for PathKeyword
 
 	if len(errors) > 0 {
 		return ListDocumentsRequestMultiError(errors)
@@ -1697,6 +2223,115 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListDocumentsResponseValidationError{}
+
+// Validate checks the field values on GetDocumentProgressResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetDocumentProgressResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetDocumentProgressResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetDocumentProgressResponseMultiError, or nil if none found.
+func (m *GetDocumentProgressResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetDocumentProgressResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Name
+
+	// no validation rules for Progress
+
+	if len(errors) > 0 {
+		return GetDocumentProgressResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetDocumentProgressResponseMultiError is an error wrapping multiple
+// validation errors returned by GetDocumentProgressResponse.ValidateAll() if
+// the designated constraints aren't met.
+type GetDocumentProgressResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetDocumentProgressResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetDocumentProgressResponseMultiError) AllErrors() []error { return m }
+
+// GetDocumentProgressResponseValidationError is the validation error returned
+// by GetDocumentProgressResponse.Validate if the designated constraints
+// aren't met.
+type GetDocumentProgressResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetDocumentProgressResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetDocumentProgressResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetDocumentProgressResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetDocumentProgressResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetDocumentProgressResponseValidationError) ErrorName() string {
+	return "GetDocumentProgressResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetDocumentProgressResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetDocumentProgressResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetDocumentProgressResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetDocumentProgressResponseValidationError{}
 
 // Validate checks the field values on SearchRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, the first

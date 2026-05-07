@@ -22,6 +22,10 @@ func UserFromContext(ctx context.Context) *ent.User {
 	return ctx.Value(UserCtx{}).(*ent.User)
 }
 
+func WithUser(ctx context.Context, key any, value any) context.Context {
+	return context.WithValue(ctx, key, value)
+}
+
 func CurrentUser(uc data.UserClient) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {

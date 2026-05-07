@@ -71,6 +71,7 @@ func (s *sliceVar) Set(val string) error {
 }
 func (s *sliceVar) String() string { return fmt.Sprintf("%+v", *s) }
 
+// eg: -conf cmd/gateway/config.yaml -discovery.dsn consul://simple-net.dynv6.net:8500 -addr 0.0.0.0:8080
 func init() {
 	rand.Seed(uint64(time.Now().Nanosecond()))
 

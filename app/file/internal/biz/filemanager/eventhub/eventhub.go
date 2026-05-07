@@ -1,10 +1,10 @@
 package eventhub
 
 import (
-	pbuser "api/api/user/users/v1"
 	"context"
 	"file/internal/biz/setting"
 	"file/internal/data"
+	"file/internal/data/rpc"
 	"sync"
 	"time"
 
@@ -36,7 +36,7 @@ const (
 type eventHub struct {
 	mu            sync.RWMutex
 	topics        map[int]map[string]*subscriber
-	userClient    pbuser.UserClient
+	userClient    rpc.UserClient
 	fsEventClient data.FsEventClient
 	settings      setting.Provider
 	closed        bool
@@ -45,7 +45,7 @@ type eventHub struct {
 	l             *log.Helper
 }
 
-func NewEventHub(userClient pbuser.UserClient, fsEventClient data.FsEventClient, settings setting.Provider, l log.Logger) (EventHub, func()) {
+func NewEventHub(userClient rpc.UserClient, fsEventClient data.FsEventClient, settings setting.Provider, l log.Logger) (EventHub, func()) {
 	e := &eventHub{
 		topics:        make(map[int]map[string]*subscriber),
 		userClient:    userClient,
