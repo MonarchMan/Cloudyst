@@ -10,7 +10,6 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/hashicorp/consul/api"
-	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -67,15 +66,21 @@ func (c *KnowledgeClient) CreateDocument(ctx context.Context, doc *CreateDocumen
 	return resp, nil
 }
 
-func (c *KnowledgeClient) CreateDocuments(ctx context.Context, knowledgeID string, docs []*CreateDocumentRequest) ([]*pbknowledge.GetDocumentResponse, int64, error) {
+func (c *KnowledgeClient) BatchCreateDocuments(ctx context.Context, docs []CreateDocumentRequest) ([]*pbknowledge.GetDocumentResponse, int64, error) {
+	if len(docs) <= 0 {
+		return nil, 0, nil
+	}
+	upsertDocs := make([]*pbknowledge.UpsertDocumentRequest, len(docs))
+	for i, doc := range docs {
+		upsertDocs[i] = &pbknowledge.UpsertDocumentRequest{
+			KnowledgeId: doc.KnowledgeId,
+			Name:        doc.DocumentName,
+			Url:         doc.Uri,
+			Version:     doc.Version,
+		}
+	}
 	req := &pbknowledge.BatchCreateDocumentRequest{
-		Documents: lo.Map(docs, func(doc *CreateDocumentRequest, index int) *pbknowledge.UpsertDocumentRequest {
-			return &pbknowledge.UpsertDocumentRequest{
-				KnowledgeId: knowledgeID,
-				Name:        doc.DocumentName,
-				Url:         doc.Uri,
-			}
-		}),
+		Documents: upsertDocs,
 	}
 	resp, err := c.kc.BatchCreateDocuments(ctx, req)
 	if err != nil {
@@ -151,4 +156,18 @@ func (c *KnowledgeClient) GetSupportTextParseTypes(ctx context.Context) ([]strin
 
 func (c *KnowledgeClient) Rename(ctx context.Context, id int, id2 int, name string) error {
 	return fmt.Errorf("rename not implemented")
+}
+
+func (c *KnowledgeClient) BatchReindex(ctx context.Context, docIDs ...string) (*pbknowledge.BatchReindexDocumentResponse, error) {
+	if len(docIDs) <= 0 {
+		return nil, nil
+	}
+	req := &pbknowledge.MultiRequest{
+		Ids: docIDs,
+	}
+	res, err := c.kc.BatchReindexDocument(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

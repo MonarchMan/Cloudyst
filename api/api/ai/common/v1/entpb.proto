@@ -4,7 +4,6 @@ syntax = "proto3";
 package ai.common.v1;
 
 import "google/protobuf/timestamp.proto";
-import "common/v1/common.proto";
 
 option go_package = "api/api/ai/common/v1;v1";
 
@@ -25,7 +24,7 @@ message AiApiKey {
 
   string url = 5;
 
-  .common.v1.Status status = 6;
+  string status = 6;
 
   repeated AiModel ai_model = 81;
 }
@@ -127,7 +126,7 @@ message AiChatRole {
 
   repeated string mcp_client_names = 12;
 
-  .common.v1.Status status = 13;
+  string status = 13;
 }
 
 message AiImage {
@@ -155,25 +154,13 @@ message AiImage {
 
   string options = 9;
 
-  Status status = 10;
+  string status = 10;
 
   string pic_url = 11;
 
   string task_id = 12;
 
   string buttons = 13;
-
-  enum Status {
-    STATUS_UNSPECIFIED = 0;
-
-    STATUS_PENDING = 1;
-
-    STATUS_PROCESSING = 2;
-
-    STATUS_SUCCESS = 3;
-
-    STATUS_FAILED = 4;
-  }
 }
 
 message AiKnowledge {
@@ -197,7 +184,7 @@ message AiKnowledge {
 
   double similarity_threshold = 7;
 
-  .common.v1.Status status = 8;
+  string status = 8;
 
   int64 user_id = 9;
 
@@ -235,21 +222,13 @@ message AiKnowledgeDocument {
 
   int64 retrieval_count = 9;
 
-  Progress progress = 10;
+  string progress = 10;
 
-  .common.v1.Status status = 11;
+  string status = 11;
 
   AiKnowledge ai_knowledge = 81;
 
   repeated AiKnowledgeSegment ai_knowledge_segment = 82;
-
-  enum Progress {
-    PROGRESS_UNSPECIFIED = 0;
-    PROGRESS_PENDING = 1;
-    PROGRESS_PROCESSING = 2;
-    PROGRESS_SUCCESS = 3;
-    PROGRESS_FAILED = 4;
-  }
 }
 
 message AiKnowledgeSegment {
@@ -271,7 +250,7 @@ message AiKnowledgeSegment {
 
   int64 retrieval_count = 7;
 
-  .common.v1.Status status = 8;
+  string status = 8;
 
   AiKnowledgeDocument ai_knowledge_document = 81;
 }
@@ -293,15 +272,17 @@ message AiModel {
 
   int64 sort = 5;
 
-  .common.v1.Status status = 6;
+  string status = 6;
 
   double temperature = 7;
 
   int64 max_tokens = 8;
 
-  int64 max_context = 9;
+  int64 max_contexts = 9;
 
   int64 key_id = 10;
+
+  string model = 11;
 
   AiApiKey ai_api_key = 81;
 }
@@ -323,7 +304,7 @@ message AiTool {
 
   string parameters = 5;
 
-  .common.v1.Status status = 6;
+  string status = 6;
 }
 
 message AiWebPage {

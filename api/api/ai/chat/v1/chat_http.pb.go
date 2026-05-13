@@ -58,10 +58,10 @@ func RegisterChatHTTPServer(s *http.Server, srv ChatHTTPServer) {
 	r.GET("/ai/chat/conversation/{id}", _Chat_GetChatConversation1_HTTP_Handler(srv))
 	r.DELETE("/ai/chat/conversation/{id}", _Chat_DeleteChatConversation0_HTTP_Handler(srv))
 	r.DELETE("/ai/chat/conversation/unpinned", _Chat_DeleteUnpinnedChatConversations0_HTTP_Handler(srv))
-	r.GET("/ai/chat/conversation/list", _Chat_ListChatConversations0_HTTP_Handler(srv))
+	r.POST("/ai/chat/conversation/list", _Chat_ListChatConversations0_HTTP_Handler(srv))
 	r.POST("/ai/chat/message/send", _Chat_SendMessage0_HTTP_Handler(srv))
 	r.DELETE("/ai/chat/message/{id}", _Chat_DeleteMessage0_HTTP_Handler(srv))
-	r.GET("/ai/chat/message/list", _Chat_ListConversationMessage0_HTTP_Handler(srv))
+	r.POST("/ai/chat/message/list", _Chat_ListConversationMessage0_HTTP_Handler(srv))
 	r.GET("/ai/chat/message/{id}/retry", _Chat_RetryMessage0_HTTP_Handler(srv))
 	r.PATCH("/ai/chat/message/{id}", _Chat_PatchMessage0_HTTP_Handler(srv))
 }
@@ -198,6 +198,9 @@ func _Chat_DeleteUnpinnedChatConversations0_HTTP_Handler(srv ChatHTTPServer) fun
 func _Chat_ListChatConversations0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ListConversationRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -261,6 +264,9 @@ func _Chat_DeleteMessage0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context
 func _Chat_ListConversationMessage0_HTTP_Handler(srv ChatHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ListConversationMessagesRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -431,10 +437,10 @@ func (c *ChatHTTPClientImpl) ListChatConversationMe(ctx context.Context, in *emp
 func (c *ChatHTTPClientImpl) ListChatConversations(ctx context.Context, in *ListConversationRequest, opts ...http.CallOption) (*ListConversationResponse, error) {
 	var out ListConversationResponse
 	pattern := "/ai/chat/conversation/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationChatListChatConversations))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -444,10 +450,10 @@ func (c *ChatHTTPClientImpl) ListChatConversations(ctx context.Context, in *List
 func (c *ChatHTTPClientImpl) ListConversationMessage(ctx context.Context, in *ListConversationMessagesRequest, opts ...http.CallOption) (*ListConversationMessagesResponse, error) {
 	var out ListConversationMessagesResponse
 	pattern := "/ai/chat/message/list"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationChatListConversationMessage))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

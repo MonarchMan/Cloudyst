@@ -17,8 +17,6 @@ import (
 	"unicode/utf8"
 
 	"google.golang.org/protobuf/types/known/anypb"
-
-	v1 "api/api/common/v1"
 )
 
 // ensure the imports are used
@@ -35,8 +33,6 @@ var (
 	_ = (*mail.Address)(nil)
 	_ = anypb.Any{}
 	_ = sort.Sort
-
-	_ = v1.Status(0)
 )
 
 // Validate checks the field values on SimpleRequest with the rules defined in
@@ -710,7 +706,7 @@ func (m *ListKnowledgeResponse) validate(all bool) error {
 		}
 	}
 
-	for idx, item := range m.GetKnowledge() {
+	for idx, item := range m.GetKnowledges() {
 		_, _ = idx, item
 
 		if all {
@@ -718,7 +714,7 @@ func (m *ListKnowledgeResponse) validate(all bool) error {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, ListKnowledgeResponseValidationError{
-						field:  fmt.Sprintf("Knowledge[%v]", idx),
+						field:  fmt.Sprintf("Knowledges[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -726,7 +722,7 @@ func (m *ListKnowledgeResponse) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, ListKnowledgeResponseValidationError{
-						field:  fmt.Sprintf("Knowledge[%v]", idx),
+						field:  fmt.Sprintf("Knowledges[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -735,7 +731,7 @@ func (m *ListKnowledgeResponse) validate(all bool) error {
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return ListKnowledgeResponseValidationError{
-					field:  fmt.Sprintf("Knowledge[%v]", idx),
+					field:  fmt.Sprintf("Knowledges[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}

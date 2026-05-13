@@ -7,9 +7,8 @@
 package v1
 
 import (
-	v1 "api/api/common/v1"
-	v11 "api/api/file/common/v1"
-	v12 "api/api/file/share/v1"
+	v1 "api/api/file/common/v1"
+	v11 "api/api/file/share/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -33,7 +32,7 @@ type ListFileRequest struct {
 	Page           int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize       int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	OrderBy        string                 `protobuf:"bytes,4,opt,name=order_by,json=orderBy,proto3" json:"order_by,omitempty"`
-	OrderDirection v1.OrderDirection      `protobuf:"varint,5,opt,name=order_direction,json=orderDirection,proto3,enum=common.v1.OrderDirection" json:"order_direction,omitempty"`
+	OrderDirection string                 `protobuf:"bytes,5,opt,name=order_direction,json=orderDirection,proto3" json:"order_direction,omitempty"`
 	NextPageToken  string                 `protobuf:"bytes,6,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -97,11 +96,11 @@ func (x *ListFileRequest) GetOrderBy() string {
 	return ""
 }
 
-func (x *ListFileRequest) GetOrderDirection() v1.OrderDirection {
+func (x *ListFileRequest) GetOrderDirection() string {
 	if x != nil {
 		return x.OrderDirection
 	}
-	return v1.OrderDirection(0)
+	return ""
 }
 
 func (x *ListFileRequest) GetNextPageToken() string {
@@ -115,14 +114,14 @@ type ListFileResponse struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
 	Files                 []*FileResponse        `protobuf:"bytes,1,rep,name=files,proto3" json:"files,omitempty"`
 	Parent                *FileResponse          `protobuf:"bytes,2,opt,name=parent,proto3" json:"parent,omitempty"`
-	Pagination            *v11.PaginationResults `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Pagination            *v1.PaginationResults  `protobuf:"bytes,3,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	Props                 *NavigatorProps        `protobuf:"bytes,4,opt,name=props,proto3" json:"props,omitempty"`
 	ContextHint           string                 `protobuf:"bytes,5,opt,name=context_hint,json=contextHint,proto3" json:"context_hint,omitempty"`
 	RecursionLimitReached bool                   `protobuf:"varint,6,opt,name=recursion_limit_reached,json=recursionLimitReached,proto3" json:"recursion_limit_reached,omitempty"`
 	MixedType             bool                   `protobuf:"varint,7,opt,name=mixed_type,json=mixedType,proto3" json:"mixed_type,omitempty"`
 	SingleFileView        bool                   `protobuf:"varint,8,opt,name=single_file_view,json=singleFileView,proto3" json:"single_file_view,omitempty"`
 	StoragePolicy         *StoragePolicy         `protobuf:"bytes,9,opt,name=storage_policy,json=storagePolicy,proto3" json:"storage_policy,omitempty"`
-	View                  *v11.ExplorerView      `protobuf:"bytes,10,opt,name=view,proto3" json:"view,omitempty"`
+	View                  *v1.ExplorerView       `protobuf:"bytes,10,opt,name=view,proto3" json:"view,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -171,7 +170,7 @@ func (x *ListFileResponse) GetParent() *FileResponse {
 	return nil
 }
 
-func (x *ListFileResponse) GetPagination() *v11.PaginationResults {
+func (x *ListFileResponse) GetPagination() *v1.PaginationResults {
 	if x != nil {
 		return x.Pagination
 	}
@@ -220,7 +219,7 @@ func (x *ListFileResponse) GetStoragePolicy() *StoragePolicy {
 	return nil
 }
 
-func (x *ListFileResponse) GetView() *v11.ExplorerView {
+func (x *ListFileResponse) GetView() *v1.ExplorerView {
 	if x != nil {
 		return x.View
 	}
@@ -455,9 +454,9 @@ type ExtendedInfo struct {
 	state         protoimpl.MessageState  `protogen:"open.v1"`
 	StoragePolicy *StoragePolicy          `protobuf:"bytes,1,opt,name=storage_policy,json=storagePolicy,proto3" json:"storage_policy,omitempty"`
 	StorageUsed   int64                   `protobuf:"varint,2,opt,name=storage_used,json=storageUsed,proto3" json:"storage_used,omitempty"`
-	Shares        []*v12.GetShareResponse `protobuf:"bytes,3,rep,name=shares,proto3" json:"shares,omitempty"`
+	Shares        []*v11.GetShareResponse `protobuf:"bytes,3,rep,name=shares,proto3" json:"shares,omitempty"`
 	Entities      []*EntityResponse       `protobuf:"bytes,4,rep,name=entities,proto3" json:"entities,omitempty"`
-	View          *v11.ExplorerView       `protobuf:"bytes,5,opt,name=view,proto3" json:"view,omitempty"`
+	View          *v1.ExplorerView        `protobuf:"bytes,5,opt,name=view,proto3" json:"view,omitempty"`
 	DirectLinks   []*DirectLink           `protobuf:"bytes,6,rep,name=direct_links,json=directLinks,proto3" json:"direct_links,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -507,7 +506,7 @@ func (x *ExtendedInfo) GetStorageUsed() int64 {
 	return 0
 }
 
-func (x *ExtendedInfo) GetShares() []*v12.GetShareResponse {
+func (x *ExtendedInfo) GetShares() []*v11.GetShareResponse {
 	if x != nil {
 		return x.Shares
 	}
@@ -521,7 +520,7 @@ func (x *ExtendedInfo) GetEntities() []*EntityResponse {
 	return nil
 }
 
-func (x *ExtendedInfo) GetView() *v11.ExplorerView {
+func (x *ExtendedInfo) GetView() *v1.ExplorerView {
 	if x != nil {
 		return x.View
 	}
@@ -2801,7 +2800,7 @@ func (x *EntityUrl) GetBrowserDownloadDisplayName() string {
 type PatchViewRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Uri           string                 `protobuf:"bytes,1,opt,name=uri,proto3" json:"uri,omitempty"`
-	View          *v11.ExplorerView      `protobuf:"bytes,2,opt,name=view,proto3" json:"view,omitempty"`
+	View          *v1.ExplorerView       `protobuf:"bytes,2,opt,name=view,proto3" json:"view,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2843,7 +2842,7 @@ func (x *PatchViewRequest) GetUri() string {
 	return ""
 }
 
-func (x *PatchViewRequest) GetView() *v11.ExplorerView {
+func (x *PatchViewRequest) GetView() *v1.ExplorerView {
 	if x != nil {
 		return x.View
 	}
@@ -3381,13 +3380,13 @@ var File_file_files_v1_file_proto protoreflect.FileDescriptor
 
 const file_file_files_v1_file_proto_rawDesc = "" +
 	"\n" +
-	"\x18file/files/v1/file.proto\x12\rfile.files.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bfile/common/v1/common.proto\x1a\x19file/share/v1/share.proto\x1a\x16common/v1/common.proto\"\xdb\x01\n" +
+	"\x18file/files/v1/file.proto\x12\rfile.files.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bfile/common/v1/common.proto\x1a\x19file/share/v1/share.proto\"\xc0\x01\n" +
 	"\x0fListFileRequest\x12\x10\n" +
 	"\x03uri\x18\x01 \x01(\tR\x03uri\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x19\n" +
-	"\border_by\x18\x04 \x01(\tR\aorderBy\x12B\n" +
-	"\x0forder_direction\x18\x05 \x01(\x0e2\x19.common.v1.OrderDirectionR\x0eorderDirection\x12&\n" +
+	"\border_by\x18\x04 \x01(\tR\aorderBy\x12'\n" +
+	"\x0forder_direction\x18\x05 \x01(\tR\x0eorderDirection\x12&\n" +
 	"\x0fnext_page_token\x18\x06 \x01(\tR\rnextPageToken\"\x8d\x04\n" +
 	"\x10ListFileResponse\x121\n" +
 	"\x05files\x18\x01 \x03(\v2\x1b.file.files.v1.FileResponseR\x05files\x123\n" +
@@ -3769,110 +3768,108 @@ var file_file_files_v1_file_proto_goTypes = []any{
 	nil,                                // 51: file.files.v1.FileResponse.MetadataEntry
 	nil,                                // 52: file.files.v1.CreateFileRequest.MetadataEntry
 	nil,                                // 53: file.files.v1.CreateUploadSessionRequest.MetadataEntry
-	(v1.OrderDirection)(0),             // 54: common.v1.OrderDirection
-	(*v11.PaginationResults)(nil),      // 55: file.common.v1.PaginationResults
-	(*v11.ExplorerView)(nil),           // 56: file.common.v1.ExplorerView
-	(*timestamppb.Timestamp)(nil),      // 57: google.protobuf.Timestamp
-	(*v12.GetShareResponse)(nil),       // 58: file.share.v1.GetShareResponse
-	(*emptypb.Empty)(nil),              // 59: google.protobuf.Empty
+	(*v1.PaginationResults)(nil),       // 54: file.common.v1.PaginationResults
+	(*v1.ExplorerView)(nil),            // 55: file.common.v1.ExplorerView
+	(*timestamppb.Timestamp)(nil),      // 56: google.protobuf.Timestamp
+	(*v11.GetShareResponse)(nil),       // 57: file.share.v1.GetShareResponse
+	(*emptypb.Empty)(nil),              // 58: google.protobuf.Empty
 }
 var file_file_files_v1_file_proto_depIdxs = []int32{
-	54, // 0: file.files.v1.ListFileRequest.order_direction:type_name -> common.v1.OrderDirection
-	2,  // 1: file.files.v1.ListFileResponse.files:type_name -> file.files.v1.FileResponse
-	2,  // 2: file.files.v1.ListFileResponse.parent:type_name -> file.files.v1.FileResponse
-	55, // 3: file.files.v1.ListFileResponse.pagination:type_name -> file.common.v1.PaginationResults
-	8,  // 4: file.files.v1.ListFileResponse.props:type_name -> file.files.v1.NavigatorProps
-	45, // 5: file.files.v1.ListFileResponse.storage_policy:type_name -> file.files.v1.StoragePolicy
-	56, // 6: file.files.v1.ListFileResponse.view:type_name -> file.common.v1.ExplorerView
-	57, // 7: file.files.v1.FileResponse.created_at:type_name -> google.protobuf.Timestamp
-	57, // 8: file.files.v1.FileResponse.updated_at:type_name -> google.protobuf.Timestamp
-	51, // 9: file.files.v1.FileResponse.metadata:type_name -> file.files.v1.FileResponse.MetadataEntry
-	3,  // 10: file.files.v1.FileResponse.folder_summary:type_name -> file.files.v1.FolderSummary
-	4,  // 11: file.files.v1.FileResponse.extended_info:type_name -> file.files.v1.ExtendedInfo
-	57, // 12: file.files.v1.FolderSummary.calculated_at:type_name -> google.protobuf.Timestamp
-	45, // 13: file.files.v1.ExtendedInfo.storage_policy:type_name -> file.files.v1.StoragePolicy
-	58, // 14: file.files.v1.ExtendedInfo.shares:type_name -> file.share.v1.GetShareResponse
-	5,  // 15: file.files.v1.ExtendedInfo.entities:type_name -> file.files.v1.EntityResponse
-	56, // 16: file.files.v1.ExtendedInfo.view:type_name -> file.common.v1.ExplorerView
-	43, // 17: file.files.v1.ExtendedInfo.direct_links:type_name -> file.files.v1.DirectLink
-	57, // 18: file.files.v1.EntityResponse.created_at:type_name -> google.protobuf.Timestamp
-	45, // 19: file.files.v1.EntityResponse.storage_policy:type_name -> file.files.v1.StoragePolicy
-	7,  // 20: file.files.v1.ListViewColumn.props:type_name -> file.files.v1.ColumnTypeProps
-	11, // 21: file.files.v1.ListArchiveFilesResponse.files:type_name -> file.files.v1.ArchivedFile
-	57, // 22: file.files.v1.ArchivedFile.updated_at:type_name -> google.protobuf.Timestamp
-	52, // 23: file.files.v1.CreateFileRequest.metadata:type_name -> file.files.v1.CreateFileRequest.MetadataEntry
-	40, // 24: file.files.v1.FileUrlResponse.urls:type_name -> file.files.v1.EntityUrl
-	57, // 25: file.files.v1.FileUrlResponse.expires:type_name -> google.protobuf.Timestamp
-	19, // 26: file.files.v1.StreamFileUpdateRequest.file_info:type_name -> file.files.v1.UpdateFileInfo
-	57, // 27: file.files.v1.FileThumbResponse.expires:type_name -> google.protobuf.Timestamp
-	26, // 28: file.files.v1.PatchMetadataRequest.patches:type_name -> file.files.v1.MetadataPatch
-	53, // 29: file.files.v1.CreateUploadSessionRequest.metadata:type_name -> file.files.v1.CreateUploadSessionRequest.MetadataEntry
-	45, // 30: file.files.v1.UploadSessionResponse.storage_policy:type_name -> file.files.v1.StoragePolicy
-	36, // 31: file.files.v1.ViewerSessionResponse.session:type_name -> file.files.v1.ViewerSession
-	44, // 32: file.files.v1.GetSourceResponse.sources:type_name -> file.files.v1.DirectLinkResponse
-	56, // 33: file.files.v1.PatchViewRequest.view:type_name -> file.common.v1.ExplorerView
-	57, // 34: file.files.v1.DirectLink.created_at:type_name -> google.protobuf.Timestamp
-	57, // 35: file.files.v1.TimeRangeRequest.start:type_name -> google.protobuf.Timestamp
-	57, // 36: file.files.v1.TimeRangeRequest.end:type_name -> google.protobuf.Timestamp
-	0,  // 37: file.files.v1.File.ListDirectory:input_type -> file.files.v1.ListFileRequest
-	9,  // 38: file.files.v1.File.ListArchiveFiles:input_type -> file.files.v1.ListArchiveFilesRequest
-	12, // 39: file.files.v1.File.CreateFile:input_type -> file.files.v1.CreateFileRequest
-	13, // 40: file.files.v1.File.RenameFile:input_type -> file.files.v1.RenameFileRequest
-	14, // 41: file.files.v1.File.MoveOrCopyFile:input_type -> file.files.v1.MoveOrCopyFileRequest
-	15, // 42: file.files.v1.File.FileUrl:input_type -> file.files.v1.FileUrlRequest
-	17, // 43: file.files.v1.File.PutContent:input_type -> file.files.v1.FileUpdateRequest
-	18, // 44: file.files.v1.File.PutContentStream:input_type -> file.files.v1.StreamFileUpdateRequest
-	21, // 45: file.files.v1.File.GetThumb:input_type -> file.files.v1.FileThumbRequest
-	23, // 46: file.files.v1.File.DeleteFile:input_type -> file.files.v1.DeleteFileRequest
-	24, // 47: file.files.v1.File.UnlockFile:input_type -> file.files.v1.UnlockFileRequest
-	23, // 48: file.files.v1.File.RestoreFile:input_type -> file.files.v1.DeleteFileRequest
-	25, // 49: file.files.v1.File.PatchMetadata:input_type -> file.files.v1.PatchMetadataRequest
-	27, // 50: file.files.v1.File.CreateUploadSession:input_type -> file.files.v1.CreateUploadSessionRequest
-	29, // 51: file.files.v1.File.UploadFile:input_type -> file.files.v1.UploadFileRequest
-	30, // 52: file.files.v1.File.DeleteUploadSession:input_type -> file.files.v1.DeleteUploadSessionRequest
-	31, // 53: file.files.v1.File.GetFileInfo:input_type -> file.files.v1.GetFileInfoRequest
-	32, // 54: file.files.v1.File.SetCurrentVersion:input_type -> file.files.v1.SetCurrentVersionRequest
-	33, // 55: file.files.v1.File.DeleteVersion:input_type -> file.files.v1.DeleteVersionRequest
-	34, // 56: file.files.v1.File.CreateViewerSession:input_type -> file.files.v1.CreateViewerSessionRequest
-	37, // 57: file.files.v1.File.GetSource:input_type -> file.files.v1.GetSourceRequest
-	39, // 58: file.files.v1.File.DeleteDirectLink:input_type -> file.files.v1.DeleteDirectLinkRequest
-	41, // 59: file.files.v1.File.PatchView:input_type -> file.files.v1.PatchViewRequest
-	46, // 60: file.files.v1.File.AnonymousPermLink:input_type -> file.files.v1.AnonymousPermLinkRequest
-	46, // 61: file.files.v1.File.AnonymousPermLinkD:input_type -> file.files.v1.AnonymousPermLinkRequest
-	48, // 62: file.files.v1.File.DeleteFilesByUserId:input_type -> file.files.v1.SimpleUserRequest
-	49, // 63: file.files.v1.File.CountByTimeRange:input_type -> file.files.v1.TimeRangeRequest
-	1,  // 64: file.files.v1.File.ListDirectory:output_type -> file.files.v1.ListFileResponse
-	10, // 65: file.files.v1.File.ListArchiveFiles:output_type -> file.files.v1.ListArchiveFilesResponse
-	2,  // 66: file.files.v1.File.CreateFile:output_type -> file.files.v1.FileResponse
-	2,  // 67: file.files.v1.File.RenameFile:output_type -> file.files.v1.FileResponse
-	59, // 68: file.files.v1.File.MoveOrCopyFile:output_type -> google.protobuf.Empty
-	16, // 69: file.files.v1.File.FileUrl:output_type -> file.files.v1.FileUrlResponse
-	2,  // 70: file.files.v1.File.PutContent:output_type -> file.files.v1.FileResponse
-	2,  // 71: file.files.v1.File.PutContentStream:output_type -> file.files.v1.FileResponse
-	22, // 72: file.files.v1.File.GetThumb:output_type -> file.files.v1.FileThumbResponse
-	59, // 73: file.files.v1.File.DeleteFile:output_type -> google.protobuf.Empty
-	59, // 74: file.files.v1.File.UnlockFile:output_type -> google.protobuf.Empty
-	59, // 75: file.files.v1.File.RestoreFile:output_type -> google.protobuf.Empty
-	59, // 76: file.files.v1.File.PatchMetadata:output_type -> google.protobuf.Empty
-	28, // 77: file.files.v1.File.CreateUploadSession:output_type -> file.files.v1.UploadSessionResponse
-	59, // 78: file.files.v1.File.UploadFile:output_type -> google.protobuf.Empty
-	59, // 79: file.files.v1.File.DeleteUploadSession:output_type -> google.protobuf.Empty
-	2,  // 80: file.files.v1.File.GetFileInfo:output_type -> file.files.v1.FileResponse
-	59, // 81: file.files.v1.File.SetCurrentVersion:output_type -> google.protobuf.Empty
-	59, // 82: file.files.v1.File.DeleteVersion:output_type -> google.protobuf.Empty
-	35, // 83: file.files.v1.File.CreateViewerSession:output_type -> file.files.v1.ViewerSessionResponse
-	38, // 84: file.files.v1.File.GetSource:output_type -> file.files.v1.GetSourceResponse
-	59, // 85: file.files.v1.File.DeleteDirectLink:output_type -> google.protobuf.Empty
-	59, // 86: file.files.v1.File.PatchView:output_type -> google.protobuf.Empty
-	47, // 87: file.files.v1.File.AnonymousPermLink:output_type -> file.files.v1.RedirectResponse
-	47, // 88: file.files.v1.File.AnonymousPermLinkD:output_type -> file.files.v1.RedirectResponse
-	59, // 89: file.files.v1.File.DeleteFilesByUserId:output_type -> google.protobuf.Empty
-	50, // 90: file.files.v1.File.CountByTimeRange:output_type -> file.files.v1.CountByTimeRangeResponse
-	64, // [64:91] is the sub-list for method output_type
-	37, // [37:64] is the sub-list for method input_type
-	37, // [37:37] is the sub-list for extension type_name
-	37, // [37:37] is the sub-list for extension extendee
-	0,  // [0:37] is the sub-list for field type_name
+	2,  // 0: file.files.v1.ListFileResponse.files:type_name -> file.files.v1.FileResponse
+	2,  // 1: file.files.v1.ListFileResponse.parent:type_name -> file.files.v1.FileResponse
+	54, // 2: file.files.v1.ListFileResponse.pagination:type_name -> file.common.v1.PaginationResults
+	8,  // 3: file.files.v1.ListFileResponse.props:type_name -> file.files.v1.NavigatorProps
+	45, // 4: file.files.v1.ListFileResponse.storage_policy:type_name -> file.files.v1.StoragePolicy
+	55, // 5: file.files.v1.ListFileResponse.view:type_name -> file.common.v1.ExplorerView
+	56, // 6: file.files.v1.FileResponse.created_at:type_name -> google.protobuf.Timestamp
+	56, // 7: file.files.v1.FileResponse.updated_at:type_name -> google.protobuf.Timestamp
+	51, // 8: file.files.v1.FileResponse.metadata:type_name -> file.files.v1.FileResponse.MetadataEntry
+	3,  // 9: file.files.v1.FileResponse.folder_summary:type_name -> file.files.v1.FolderSummary
+	4,  // 10: file.files.v1.FileResponse.extended_info:type_name -> file.files.v1.ExtendedInfo
+	56, // 11: file.files.v1.FolderSummary.calculated_at:type_name -> google.protobuf.Timestamp
+	45, // 12: file.files.v1.ExtendedInfo.storage_policy:type_name -> file.files.v1.StoragePolicy
+	57, // 13: file.files.v1.ExtendedInfo.shares:type_name -> file.share.v1.GetShareResponse
+	5,  // 14: file.files.v1.ExtendedInfo.entities:type_name -> file.files.v1.EntityResponse
+	55, // 15: file.files.v1.ExtendedInfo.view:type_name -> file.common.v1.ExplorerView
+	43, // 16: file.files.v1.ExtendedInfo.direct_links:type_name -> file.files.v1.DirectLink
+	56, // 17: file.files.v1.EntityResponse.created_at:type_name -> google.protobuf.Timestamp
+	45, // 18: file.files.v1.EntityResponse.storage_policy:type_name -> file.files.v1.StoragePolicy
+	7,  // 19: file.files.v1.ListViewColumn.props:type_name -> file.files.v1.ColumnTypeProps
+	11, // 20: file.files.v1.ListArchiveFilesResponse.files:type_name -> file.files.v1.ArchivedFile
+	56, // 21: file.files.v1.ArchivedFile.updated_at:type_name -> google.protobuf.Timestamp
+	52, // 22: file.files.v1.CreateFileRequest.metadata:type_name -> file.files.v1.CreateFileRequest.MetadataEntry
+	40, // 23: file.files.v1.FileUrlResponse.urls:type_name -> file.files.v1.EntityUrl
+	56, // 24: file.files.v1.FileUrlResponse.expires:type_name -> google.protobuf.Timestamp
+	19, // 25: file.files.v1.StreamFileUpdateRequest.file_info:type_name -> file.files.v1.UpdateFileInfo
+	56, // 26: file.files.v1.FileThumbResponse.expires:type_name -> google.protobuf.Timestamp
+	26, // 27: file.files.v1.PatchMetadataRequest.patches:type_name -> file.files.v1.MetadataPatch
+	53, // 28: file.files.v1.CreateUploadSessionRequest.metadata:type_name -> file.files.v1.CreateUploadSessionRequest.MetadataEntry
+	45, // 29: file.files.v1.UploadSessionResponse.storage_policy:type_name -> file.files.v1.StoragePolicy
+	36, // 30: file.files.v1.ViewerSessionResponse.session:type_name -> file.files.v1.ViewerSession
+	44, // 31: file.files.v1.GetSourceResponse.sources:type_name -> file.files.v1.DirectLinkResponse
+	55, // 32: file.files.v1.PatchViewRequest.view:type_name -> file.common.v1.ExplorerView
+	56, // 33: file.files.v1.DirectLink.created_at:type_name -> google.protobuf.Timestamp
+	56, // 34: file.files.v1.TimeRangeRequest.start:type_name -> google.protobuf.Timestamp
+	56, // 35: file.files.v1.TimeRangeRequest.end:type_name -> google.protobuf.Timestamp
+	0,  // 36: file.files.v1.File.ListDirectory:input_type -> file.files.v1.ListFileRequest
+	9,  // 37: file.files.v1.File.ListArchiveFiles:input_type -> file.files.v1.ListArchiveFilesRequest
+	12, // 38: file.files.v1.File.CreateFile:input_type -> file.files.v1.CreateFileRequest
+	13, // 39: file.files.v1.File.RenameFile:input_type -> file.files.v1.RenameFileRequest
+	14, // 40: file.files.v1.File.MoveOrCopyFile:input_type -> file.files.v1.MoveOrCopyFileRequest
+	15, // 41: file.files.v1.File.FileUrl:input_type -> file.files.v1.FileUrlRequest
+	17, // 42: file.files.v1.File.PutContent:input_type -> file.files.v1.FileUpdateRequest
+	18, // 43: file.files.v1.File.PutContentStream:input_type -> file.files.v1.StreamFileUpdateRequest
+	21, // 44: file.files.v1.File.GetThumb:input_type -> file.files.v1.FileThumbRequest
+	23, // 45: file.files.v1.File.DeleteFile:input_type -> file.files.v1.DeleteFileRequest
+	24, // 46: file.files.v1.File.UnlockFile:input_type -> file.files.v1.UnlockFileRequest
+	23, // 47: file.files.v1.File.RestoreFile:input_type -> file.files.v1.DeleteFileRequest
+	25, // 48: file.files.v1.File.PatchMetadata:input_type -> file.files.v1.PatchMetadataRequest
+	27, // 49: file.files.v1.File.CreateUploadSession:input_type -> file.files.v1.CreateUploadSessionRequest
+	29, // 50: file.files.v1.File.UploadFile:input_type -> file.files.v1.UploadFileRequest
+	30, // 51: file.files.v1.File.DeleteUploadSession:input_type -> file.files.v1.DeleteUploadSessionRequest
+	31, // 52: file.files.v1.File.GetFileInfo:input_type -> file.files.v1.GetFileInfoRequest
+	32, // 53: file.files.v1.File.SetCurrentVersion:input_type -> file.files.v1.SetCurrentVersionRequest
+	33, // 54: file.files.v1.File.DeleteVersion:input_type -> file.files.v1.DeleteVersionRequest
+	34, // 55: file.files.v1.File.CreateViewerSession:input_type -> file.files.v1.CreateViewerSessionRequest
+	37, // 56: file.files.v1.File.GetSource:input_type -> file.files.v1.GetSourceRequest
+	39, // 57: file.files.v1.File.DeleteDirectLink:input_type -> file.files.v1.DeleteDirectLinkRequest
+	41, // 58: file.files.v1.File.PatchView:input_type -> file.files.v1.PatchViewRequest
+	46, // 59: file.files.v1.File.AnonymousPermLink:input_type -> file.files.v1.AnonymousPermLinkRequest
+	46, // 60: file.files.v1.File.AnonymousPermLinkD:input_type -> file.files.v1.AnonymousPermLinkRequest
+	48, // 61: file.files.v1.File.DeleteFilesByUserId:input_type -> file.files.v1.SimpleUserRequest
+	49, // 62: file.files.v1.File.CountByTimeRange:input_type -> file.files.v1.TimeRangeRequest
+	1,  // 63: file.files.v1.File.ListDirectory:output_type -> file.files.v1.ListFileResponse
+	10, // 64: file.files.v1.File.ListArchiveFiles:output_type -> file.files.v1.ListArchiveFilesResponse
+	2,  // 65: file.files.v1.File.CreateFile:output_type -> file.files.v1.FileResponse
+	2,  // 66: file.files.v1.File.RenameFile:output_type -> file.files.v1.FileResponse
+	58, // 67: file.files.v1.File.MoveOrCopyFile:output_type -> google.protobuf.Empty
+	16, // 68: file.files.v1.File.FileUrl:output_type -> file.files.v1.FileUrlResponse
+	2,  // 69: file.files.v1.File.PutContent:output_type -> file.files.v1.FileResponse
+	2,  // 70: file.files.v1.File.PutContentStream:output_type -> file.files.v1.FileResponse
+	22, // 71: file.files.v1.File.GetThumb:output_type -> file.files.v1.FileThumbResponse
+	58, // 72: file.files.v1.File.DeleteFile:output_type -> google.protobuf.Empty
+	58, // 73: file.files.v1.File.UnlockFile:output_type -> google.protobuf.Empty
+	58, // 74: file.files.v1.File.RestoreFile:output_type -> google.protobuf.Empty
+	58, // 75: file.files.v1.File.PatchMetadata:output_type -> google.protobuf.Empty
+	28, // 76: file.files.v1.File.CreateUploadSession:output_type -> file.files.v1.UploadSessionResponse
+	58, // 77: file.files.v1.File.UploadFile:output_type -> google.protobuf.Empty
+	58, // 78: file.files.v1.File.DeleteUploadSession:output_type -> google.protobuf.Empty
+	2,  // 79: file.files.v1.File.GetFileInfo:output_type -> file.files.v1.FileResponse
+	58, // 80: file.files.v1.File.SetCurrentVersion:output_type -> google.protobuf.Empty
+	58, // 81: file.files.v1.File.DeleteVersion:output_type -> google.protobuf.Empty
+	35, // 82: file.files.v1.File.CreateViewerSession:output_type -> file.files.v1.ViewerSessionResponse
+	38, // 83: file.files.v1.File.GetSource:output_type -> file.files.v1.GetSourceResponse
+	58, // 84: file.files.v1.File.DeleteDirectLink:output_type -> google.protobuf.Empty
+	58, // 85: file.files.v1.File.PatchView:output_type -> google.protobuf.Empty
+	47, // 86: file.files.v1.File.AnonymousPermLink:output_type -> file.files.v1.RedirectResponse
+	47, // 87: file.files.v1.File.AnonymousPermLinkD:output_type -> file.files.v1.RedirectResponse
+	58, // 88: file.files.v1.File.DeleteFilesByUserId:output_type -> google.protobuf.Empty
+	50, // 89: file.files.v1.File.CountByTimeRange:output_type -> file.files.v1.CountByTimeRangeResponse
+	63, // [63:90] is the sub-list for method output_type
+	36, // [36:63] is the sub-list for method input_type
+	36, // [36:36] is the sub-list for extension type_name
+	36, // [36:36] is the sub-list for extension extendee
+	0,  // [0:36] is the sub-list for field type_name
 }
 
 func init() { file_file_files_v1_file_proto_init() }

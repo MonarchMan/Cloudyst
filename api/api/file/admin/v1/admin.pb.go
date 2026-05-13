@@ -2373,7 +2373,7 @@ const file_file_admin_v1_admin_proto_rawDesc = "" +
 	"\x12SimpleShareRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\"&\n" +
 	"\x12BatchSharesRequest\x12\x10\n" +
-	"\x03ids\x18\x01 \x03(\x05R\x03ids2\xe1#\n" +
+	"\x03ids\x18\x01 \x03(\x05R\x03ids2\xc8#\n" +
 	"\x05Admin\x12j\n" +
 	"\fListEntities\x12\x1b.file.common.v1.ListRequest\x1a#.file.admin.v1.ListEntitiesResponse\"\x18\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/admin/entity\x12m\n" +
 	"\tGetEntity\x12\".file.admin.v1.SimpleEntityRequest\x1a .file.admin.v1.GetEntityResponse\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/admin/entity/{id}\x12y\n" +
@@ -2389,12 +2389,12 @@ const file_file_admin_v1_admin_proto_rawDesc = "" +
 	"\tFetchWopi\x12(.file.admin.v1.FetchWopiDiscoveryRequest\x1a\x1b.file.common.v1.ViewerGroup\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/admin/tool/wopi\x12\x91\x01\n" +
 	"\x12TestThumbGenerator\x12(.file.admin.v1.TestThumbGeneratorRequest\x1a).file.admin.v1.TestThumbGeneratorResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/admin/tool/thumbExecutable\x12g\n" +
 	"\fSendTestMail\x12\x1e.file.admin.v1.TestMailRequest\x1a\x16.google.protobuf.Empty\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/admin/tool/testMail\x12i\n" +
-	"\x13ClearEntityUrlCache\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\"\x82\xd3\xe4\x93\x02\x1c*\x1a/admin/tool/entityUrlCache\x12q\n" +
-	"\x0fGetQueueMetrics\x12\x16.google.protobuf.Empty\x1a#.file.admin.v1.QueueMetricsResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/admin/file/queue/metrics\x12g\n" +
-	"\tListTasks\x12\x1b.file.common.v1.ListRequest\x1a\x1f.file.admin.v1.ListTaskResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/admin/file/queue\x12k\n" +
-	"\aGetTask\x12 .file.admin.v1.SimpleTaskRequest\x1a\x1e.file.admin.v1.GetTaskResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/admin/file/queue/{id}\x12}\n" +
-	"\x10BatchDeleteTasks\x12&.file.admin.v1.BatchDeleteTasksRequest\x1a\x16.google.protobuf.Empty\")\x82\xd3\xe4\x93\x02#:\x01*\"\x1e/admin/file/queue/batch/delete\x12n\n" +
-	"\vCleanupTask\x12!.file.admin.v1.CleanupTaskRequest\x1a\x16.google.protobuf.Empty\"$\x82\xd3\xe4\x93\x02\x1e:\x01*\"\x19/admin/file/queue/cleanup\x12b\n" +
+	"\x13ClearEntityUrlCache\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"\"\x82\xd3\xe4\x93\x02\x1c*\x1a/admin/tool/entityUrlCache\x12l\n" +
+	"\x0fGetQueueMetrics\x12\x16.google.protobuf.Empty\x1a#.file.admin.v1.QueueMetricsResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/queue/metrics\x12b\n" +
+	"\tListTasks\x12\x1b.file.common.v1.ListRequest\x1a\x1f.file.admin.v1.ListTaskResponse\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/admin/queue\x12f\n" +
+	"\aGetTask\x12 .file.admin.v1.SimpleTaskRequest\x1a\x1e.file.admin.v1.GetTaskResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/admin/queue/{id}\x12x\n" +
+	"\x10BatchDeleteTasks\x12&.file.admin.v1.BatchDeleteTasksRequest\x1a\x16.google.protobuf.Empty\"$\x82\xd3\xe4\x93\x02\x1e:\x01*\"\x19/admin/queue/batch/delete\x12i\n" +
+	"\vCleanupTask\x12!.file.admin.v1.CleanupTaskRequest\x1a\x16.google.protobuf.Empty\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/admin/queue/cleanup\x12b\n" +
 	"\tListNodes\x12\x1b.file.common.v1.ListRequest\x1a .file.admin.v1.ListNodesResponse\"\x16\x82\xd3\xe4\x93\x02\x10:\x01*\"\v/admin/node\x12e\n" +
 	"\aGetNode\x12 .file.admin.v1.SimpleNodeRequest\x1a\x1e.file.admin.v1.GetNodeResponse\"\x18\x82\xd3\xe4\x93\x02\x12\x12\x10/admin/node/{id}\x12^\n" +
 	"\tTestSlave\x12\x1c.file.admin.v1.OpNodeRequest\x1a\x16.google.protobuf.Empty\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/admin/node/test\x12n\n" +

@@ -3,10 +3,12 @@ package service
 import (
 	userpb "api/api/user/common/v1"
 	pbdevice "api/api/user/device/v1"
-	pb "api/api/user/users/v1"
+	pbsession "api/api/user/session/v1"
+	pbuser "api/api/user/users/v1"
 	"api/external/data/userdata"
 	"common/hashid"
 	"user/ent"
+	"user/internal/biz"
 	"user/internal/data"
 
 	"github.com/samber/lo"
@@ -18,8 +20,8 @@ const (
 	RedactLevelUser
 )
 
-func buildUser(u *ent.User, hasher hashid.Encoder) *pb.GetUserResponse {
-	return &pb.GetUserResponse{
+func buildUser(u *ent.User, hasher hashid.Encoder) *pbuser.GetUserResponse {
+	return &pbuser.GetUserResponse{
 		Id:             hashid.EncodeUserID(hasher, u.ID),
 		Email:          u.Email,
 		Nickname:       u.Nick,
@@ -38,11 +40,11 @@ func buildUser(u *ent.User, hasher hashid.Encoder) *pb.GetUserResponse {
 	}
 }
 
-func buildGroup(group *ent.Group, hasher hashid.Encoder) *pb.GetGroupResponse {
+func buildGroup(group *ent.Group, hasher hashid.Encoder) *pbuser.GetGroupResponse {
 	if group == nil {
 		return nil
 	}
-	return &pb.GetGroupResponse{
+	return &pbuser.GetGroupResponse{
 		Id:                  hashid.EncodeGroupID(hasher, group.ID),
 		Name:                group.Name,
 		Permissions:         *group.Permissions,
@@ -51,10 +53,10 @@ func buildGroup(group *ent.Group, hasher hashid.Encoder) *pb.GetGroupResponse {
 	}
 }
 
-func buildUserRedacted(u *ent.User, level int, idEncoder hashid.Encoder) *pb.GetUserResponse {
+func buildUserRedacted(u *ent.User, level int, idEncoder hashid.Encoder) *pbuser.GetUserResponse {
 	userRaw := buildUser(u, idEncoder)
 
-	user := &pb.GetUserResponse{
+	user := &pbuser.GetUserResponse{
 		Id:                  userRaw.Id,
 		Nickname:            userRaw.Nickname,
 		Avatar:              userRaw.Avatar,
@@ -73,19 +75,19 @@ func buildUserRedacted(u *ent.User, level int, idEncoder hashid.Encoder) *pb.Get
 	return user
 }
 
-func redactedGroup(group *pb.GetGroupResponse) *pb.GetGroupResponse {
+func redactedGroup(group *pbuser.GetGroupResponse) *pbuser.GetGroupResponse {
 	if group == nil {
 		return nil
 	}
 
-	return &pb.GetGroupResponse{
+	return &pbuser.GetGroupResponse{
 		Id:   group.Id,
 		Name: group.Name,
 	}
 }
 
-func buildPasskey(passkey *ent.Passkey) *pb.GetPasskeyResponse {
-	resp := &pb.GetPasskeyResponse{
+func buildPasskey(passkey *ent.Passkey) *pbuser.GetPasskeyResponse {
+	resp := &pbuser.GetPasskeyResponse{
 		Id:        passkey.CredentialID,
 		Name:      passkey.Name,
 		CreatedAt: timestamppb.New(passkey.CreatedAt),
@@ -119,17 +121,34 @@ func buildDavAccountResponse(account *ent.DavAccount, hasher hashid.Encoder) *pb
 	return resp
 }
 
-func buildUserSettingResponse(user *ent.User, passkeys []*ent.Passkey) *pb.GetSettingResponse {
-	return &pb.GetSettingResponse{
+func buildUserSettingResponse(user *ent.User, passkeys []*ent.Passkey) *pbuser.GetSettingResponse {
+	return &pbuser.GetSettingResponse{
 		VersionRetentionEnabled: user.Settings.VersionRetention,
 		VersionRetentionExt:     user.Settings.VersionRetentionExt,
 		VersionRetentionMax:     int32(user.Settings.VersionRetentionMax),
 		PasswordLess:            user.Password != "",
 		TwoFaEnabled:            user.TwoFactorSecret != "",
-		Passkeys: lo.Map(passkeys, func(item *ent.Passkey, index int) *pb.GetPasskeyResponse {
+		Passkeys: lo.Map(passkeys, func(item *ent.Passkey, index int) *pbuser.GetPasskeyResponse {
 			return buildPasskey(item)
 		}),
 		DiableViewSync:      false,
 		ShareLinksInProfile: "",
+	}
+}
+
+func buildBuiltinLoginResponse(hasher hashid.Encoder, user *ent.User, token *biz.Token) *pbsession.BuiltinLoginResponse {
+	return &pbsession.BuiltinLoginResponse{
+		User:  buildUser(user, hasher),
+		Token: buildToken(token),
+	}
+}
+
+func buildToken(token *biz.Token) *pbsession.Token {
+	return &pbsession.Token{
+		AccessToken:    token.AccessToken,
+		RefreshToken:   token.RefreshToken,
+		AccessExpires:  timestamppb.New(token.AccessExpires),
+		RefreshExpires: timestamppb.New(token.RefreshExpires),
+		Uid:            int32(token.UID),
 	}
 }

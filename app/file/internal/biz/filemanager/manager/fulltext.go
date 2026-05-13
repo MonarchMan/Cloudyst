@@ -4,7 +4,6 @@ import (
 	pbknowledge "api/api/ai/knowledge/v1"
 	pbfile "api/api/file/files/v1"
 	"api/external/data/userdata"
-	"api/external/trans"
 	"common/constants"
 	"common/hashid"
 	"common/util"
@@ -136,7 +135,7 @@ func (t *FullTextIndexTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	l := dep.Logger()
-	fm := NewFileManager(dep, dbfsDep, trans.FromContext(ctx)).(*manager)
+	fm := NewFileManager(dep, dbfsDep, t.Owner()).(*manager)
 
 	if fm.settings.FTSEnabled(ctx) {
 		l.Debug("FTS disabled, skipping full text index task.")
@@ -257,7 +256,7 @@ func NewFullTextCopyTaskFromModel(t mqueue.TaskRecord) mqueue.Task {
 func (t *FullTextCopyTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
-	fm := NewFileManager(dep, dbfsDep, trans.FromContext(ctx)).(*manager)
+	fm := NewFileManager(dep, dbfsDep, t.Owner()).(*manager)
 	l := dep.Logger()
 
 	if !fm.settings.FTSEnabled(ctx) {
@@ -362,7 +361,7 @@ func NewFullTextChangeOwnerTaskFromModel(t mqueue.TaskRecord) mqueue.Task {
 func (t *FullTextChangeOwnerTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
-	fm := NewFileManager(dep, dbfsDep, trans.FromContext(ctx)).(*manager)
+	fm := NewFileManager(dep, dbfsDep, t.Owner()).(*manager)
 	l := dep.Logger()
 
 	if !fm.settings.FTSEnabled(ctx) {
@@ -554,13 +553,13 @@ func (m *manager) processIndexDiff(ctx context.Context, diff *fs.IndexDiff) {
 		}
 	}
 
-	// 由于ai模块的知识库里的文档和文件名不强制一致，所以这里不处理重命名
-	//ctx = context.WithoutCancel(ctx)
-	//go func() {
-	//	for _, rename := range diff.IndexToRename {
-	//		if err := m.aikc.Rename(ctx, rename.FileID, rename.EntityID, rename.Uri.Name()); err != nil {
-	//			m.l.Warnf("Failed to rename index for file %d: %s", rename.FileID, err)
-	//		}
-	//	}
-	//}()
+	// 由于ai模块的知识库里的文档和文件名不强制一致，只需修改对应的uri即可
+	ctx = context.WithoutCancel(ctx)
+	go func() {
+		for _, rename := range diff.IndexToRename {
+			if err := m.aikc.Rename(ctx, rename.FileID, rename.EntityID, rename.Uri.Name()); err != nil {
+				m.l.Warnf("Failed to rename index for file %d: %s", rename.FileID, err)
+			}
+		}
+	}()
 }

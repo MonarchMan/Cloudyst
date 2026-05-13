@@ -4,7 +4,6 @@ import (
 	commonpb "api/api/common/v1"
 	filepb "api/api/file/common/v1"
 	pbfile "api/api/file/files/v1"
-	"api/external/data/common"
 	"api/external/data/filedata"
 	"api/external/data/userdata"
 	"api/external/trans"
@@ -102,7 +101,7 @@ func (s *FileService) ListDirectory(ctx context.Context, req *pbfile.ListFileReq
 		Page:           int(req.Page),
 		PageSize:       int(req.PageSize),
 		Order:          req.OrderBy,
-		OrderDirection: common.OrderDirectionFromProto(req.OrderDirection),
+		OrderDirection: req.OrderDirection,
 	})
 	if err != nil {
 		return nil, err

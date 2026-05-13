@@ -95,7 +95,8 @@ func (m *manager) CreateUploadSession(ctx context.Context, req *fs.UploadRequest
 	uploadSession.ChunkSize = uploadSession.Policy.Settings.ChunkSize
 	// Create upload credential for underlying storage driver
 	credential := &fs.UploadCredential{}
-	if !uploadSession.Policy.Settings.Relay || m.stateless {
+	unrelayed := !uploadSession.Policy.Settings.Relay || m.stateless
+	if unrelayed {
 		credential, err = d.Token(ctx, uploadSession, req)
 		if err != nil {
 			m.OnUploadFailed(ctx, uploadSession)
@@ -105,12 +106,17 @@ func (m *manager) CreateUploadSession(ctx context.Context, req *fs.UploadRequest
 		// For relayed upload, we don't need to create credential
 		uploadSession.ChunkSize = 0
 		credential.ChunkSize = 0
+		credential.EncryptMetadata = nil
+		uploadSession.Props.ClientSideEncrypted = false
 	}
 	credential.SessionID = uploadSession.Props.UploadSessionID
 	credential.Expires = req.Props.ExpireAt.Unix()
 	credential.StoragePolicy = uploadSession.Policy
 	credential.CallbackSecret = uploadSession.CallbackSecret
 	credential.Uri = uploadSession.Props.Uri.String()
+	if unrelayed {
+		credential.EncryptMetadata = uploadSession.EncryptMetadata
+	}
 
 	// If upload sentinel check is required, queue a check task
 	if d.Capabilities().StaticFeatures.Enabled(int(driver.HandlerCapabilityUploadSentinelRequired)) {
@@ -149,7 +155,7 @@ func (m *manager) ConfirmUploadSession(ctx context.Context, session *fs.UploadSe
 	}
 
 	// Confirm locks on placeholder files（由于这是上传会话，所以session.LockToken一定不为空，这里的代码有些问题）
-	if session.LockToken == "" {
+	if session.LockToken != "" {
 		release, ls, err := m.fs.ConfirmLock(ctx, file, file.Uri(false), session.LockToken)
 		if err != nil {
 			return nil, fs.ErrLockExpired.WithCause(err)
@@ -292,7 +298,8 @@ func (m *manager) CompleteUpload(ctx context.Context, session *fs.UploadSession)
 	}
 
 	var (
-		file fs.File
+		file    fs.File
+		ownerID int
 	)
 	if m.fs != nil {
 		file, err = m.fs.CompleteUpload(ctx, session)
@@ -307,9 +314,10 @@ func (m *manager) CompleteUpload(ctx context.Context, session *fs.UploadSession)
 		if err := m.tc.SetCompleteByID(ctx, session.SentinelTaskID); err != nil {
 			m.l.WithContext(ctx).Warnf("Failed to set upload sentinel check task [%d] to complete: %s", session.SentinelTaskID, err)
 		}
+		ownerID = file.OwnerID()
 	}
 
-	m.onNewEntityUploaded(ctx, session, d)
+	m.onNewEntityUploaded(ctx, session, d, ownerID)
 	// Remove upload session
 	_ = m.kv.Delete(UploadSessionCachePrefix, session.Props.UploadSessionID)
 	return file, nil
@@ -331,6 +339,8 @@ func (m *manager) Update(ctx context.Context, req *fs.UploadRequest, opts ...fs.
 	}
 
 	req.Props.UploadSessionID = uuid.Must(uuid.NewV4()).String()
+	// Server side supported encryption algorithm
+	req.Props.EncryptionSupported = []types.Cipher{types.CipherAES256CTR}
 
 	if m.stateless {
 		return m.updateStateless(ctx, req, o)
@@ -426,10 +436,12 @@ func (m *manager) updateStateless(ctx context.Context, req *fs.UploadRequest, o 
 	return nil, nil
 }
 
-func (m *manager) onNewEntityUploaded(ctx context.Context, session *fs.UploadSession, d driver.Handler) {
+func (m *manager) onNewEntityUploaded(ctx context.Context, session *fs.UploadSession, d driver.Handler, owner int) {
 	if !m.stateless {
 		// Submit media meta task for new entity
 		m.mediaMetaForNewEntity(ctx, session, d)
+		// Submit full text index task for new entity
+		m.fullTextIndexForNewEntity(ctx, session, owner)
 	}
 }
 
@@ -495,7 +507,7 @@ func newUploadSentinelCheckTask(ctx context.Context, uploadSession *fs.UploadSes
 func (m *UploadSentinelCheckTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
-	user := trans.FromContext(ctx)
+	user := m.Owner()
 	fm := NewFileManager(dep, dbfsDep, user).(*manager)
 	l := dep.Logger()
 	taskClient := dep.TaskClient()

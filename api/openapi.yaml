@@ -6,897 +6,6 @@ info:
     title: ""
     version: 0.0.1
 paths:
-    /admin/ai/api-key:
-        post:
-            tags:
-                - Admin
-            description: Api Key
-            operationId: Admin_CreateApikey
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiApiKey'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiApiKey'
-    /admin/ai/api-key/batch/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteApiKey
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/api-key/list:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListApikey
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListApikeyResponse'
-    /admin/ai/api-key/{id}:
-        get:
-            tags:
-                - Admin
-            operationId: Admin_GetApikey
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiApiKey'
-        put:
-            tags:
-                - Admin
-            operationId: Admin_UpdateApikey
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiApiKey'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiApiKey'
-        delete:
-            tags:
-                - Admin
-            operationId: Admin_DeleteApikey
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/chat/conversation/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteChatConversation
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/chat/conversation/list:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListChatConversation
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListChatConversationResponse'
-    /admin/ai/chat/conversation/{id}:
-        get:
-            tags:
-                - Admin
-            description: Conversation
-            operationId: Admin_GetChatConversation
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ChatConversation'
-    /admin/ai/chat/message/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteChatMessage
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/chat/message/list:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListChatMessage
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListChatMessageResponse'
-    /admin/ai/chat/message/{id}:
-        get:
-            tags:
-                - Admin
-            description: Chat Message
-            operationId: Admin_GetChatMessage
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ChatMessage'
-    /admin/ai/image/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteImage
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/image/list:
-        get:
-            tags:
-                - Admin
-            description: Image
-            operationId: Admin_ListImage
-            parameters:
-                - name: page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: orderDirection
-                  in: query
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListImageResponse'
-    /admin/ai/image/{id}:
-        get:
-            tags:
-                - Admin
-            operationId: Admin_GetImage
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.Image'
-        put:
-            tags:
-                - Admin
-            operationId: Admin_UpdateImage
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiImage'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.Image'
-    /admin/ai/knowledge:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_CreateKnowledge
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiKnowledge'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.Knowledge'
-    /admin/ai/knowledge/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteKnowledge
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/knowledge/document/delete:
-        post:
-            tags:
-                - Admin
-            description: Knowledge Document
-            operationId: Admin_BatchDeleteKnowledgeDocument
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/knowledge/document/list:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListKnowledgeDocument
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListKnowledgeDocumentResponse'
-    /admin/ai/knowledge/document/{id}:
-        get:
-            tags:
-                - Admin
-            operationId: Admin_GetKnowledgeDocument
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiKnowledgeDocument'
-        put:
-            tags:
-                - Admin
-            operationId: Admin_UpdateKnowledgeDocument
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiKnowledgeDocument'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.UpsertDocumentResponse'
-    /admin/ai/knowledge/document/{id}/status:
-        put:
-            tags:
-                - Admin
-            operationId: Admin_UpdateDocumentStatus
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.UpdateDocumentStatusRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiKnowledgeDocument'
-    /admin/ai/knowledge/list:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListKnowledge
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListKnowledgeResponse'
-    /admin/ai/knowledge/segment/list:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListKnowledgeSegments
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListKnowledgeSegmentResponse'
-    /admin/ai/knowledge/segment/{id}:
-        get:
-            tags:
-                - Admin
-            description: Knowledge Document Segment
-            operationId: Admin_GetKnowledgeSegment
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiKnowledgeSegment'
-    /admin/ai/knowledge/{id}:
-        get:
-            tags:
-                - Admin
-            description: Knowledge
-            operationId: Admin_GetKnowledge
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.Knowledge'
-        put:
-            tags:
-                - Admin
-            operationId: Admin_UpdateKnowledge
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiKnowledge'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.Knowledge'
-    /admin/ai/model:
-        post:
-            tags:
-                - Admin
-            description: Model
-            operationId: Admin_CreateModel
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiModel'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiModel'
-    /admin/ai/model/batch/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteModel
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/model/list:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListModel
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListModelResponse'
-    /admin/ai/model/{id}:
-        get:
-            tags:
-                - Admin
-            operationId: Admin_GetModel
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiModel'
-        put:
-            tags:
-                - Admin
-            operationId: Admin_UpdateModel
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiModel'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiModel'
-        delete:
-            tags:
-                - Admin
-            operationId: Admin_DeleteModel
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/queue:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListTasks
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/common.v1.ListTaskResponse'
-    /admin/ai/queue/batch/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteTasks
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/queue/cleanup:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_CleanupTask
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.CleanupTaskRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/queue/metrics:
-        get:
-            tags:
-                - Admin
-            description: Task
-            operationId: Admin_GetQueueMetrics
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/common.v1.QueueMetricsResponse'
-    /admin/ai/queue/{id}:
-        get:
-            tags:
-                - Admin
-            operationId: Admin_GetTask
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/common.v1.GetTaskResponse'
-    /admin/ai/role:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_CreateRole
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiChatRole'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.Role'
-    /admin/ai/role/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteRole
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRoleRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/role/list:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListRole
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListRoleResponse'
-    /admin/ai/role/{id}:
-        get:
-            tags:
-                - Admin
-            description: Role
-            operationId: Admin_GetRole
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.Role'
-        put:
-            tags:
-                - Admin
-            operationId: Admin_UpdateRole
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiChatRole'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.Role'
-    /admin/ai/tool:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_CreateTool
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.common.v1.AiTool'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiTool'
-    /admin/ai/tool/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteTool
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/ai/tool/list:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListTool
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.admin.v1.ListToolResponse'
-    /admin/ai/tool/{id}:
-        get:
-            tags:
-                - Admin
-            description: Tool
-            operationId: Admin_GetTool
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ai.common.v1.AiTool'
-        delete:
-            tags:
-                - Admin
-            operationId: Admin_DeleteTool
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content: {}
     /admin/entity:
         post:
             tags:
@@ -1018,85 +127,6 @@ paths:
                 "200":
                     description: OK
                     content: {}
-    /admin/file/queue:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_ListTasks
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/file.common.v1.ListRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/file.admin.v1.ListTaskResponse'
-    /admin/file/queue/batch/delete:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_BatchDeleteTasks
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/file.admin.v1.BatchDeleteTasksRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/file/queue/cleanup:
-        post:
-            tags:
-                - Admin
-            operationId: Admin_CleanupTask
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/file.admin.v1.CleanupTaskRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content: {}
-    /admin/file/queue/metrics:
-        get:
-            tags:
-                - Admin
-            operationId: Admin_GetQueueMetrics
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/file.admin.v1.QueueMetricsResponse'
-    /admin/file/queue/{id}:
-        get:
-            tags:
-                - Admin
-            operationId: Admin_GetTask
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: integer
-                    format: int32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/file.admin.v1.GetTaskResponse'
     /admin/file/url/{id}:
         get:
             tags:
@@ -1517,6 +547,85 @@ paths:
                 "200":
                     description: OK
                     content: {}
+    /admin/queue:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListTasks
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/file.common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/file.admin.v1.ListTaskResponse'
+    /admin/queue/batch/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteTasks
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/file.admin.v1.BatchDeleteTasksRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/queue/cleanup:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_CleanupTask
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/file.admin.v1.CleanupTaskRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /admin/queue/metrics:
+        get:
+            tags:
+                - Admin
+            operationId: Admin_GetQueueMetrics
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/file.admin.v1.QueueMetricsResponse'
+    /admin/queue/{id}:
+        get:
+            tags:
+                - Admin
+            operationId: Admin_GetTask
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/file.admin.v1.GetTaskResponse'
     /admin/settings:
         post:
             tags:
@@ -1751,7 +860,870 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/user.admin.v1.AdminGetUserResponse'
+    /ai/admin/api-key:
+        post:
+            tags:
+                - Admin
+            description: Api Key
+            operationId: Admin_CreateApikey
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiApiKey'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiApiKey'
+    /ai/admin/api-key/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteApiKey
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/api-key/list:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListApikey
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListApikeyResponse'
+    /ai/admin/api-key/{id}:
+        get:
+            tags:
+                - Admin
+            operationId: Admin_GetApikey
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiApiKey'
+        put:
+            tags:
+                - Admin
+            operationId: Admin_UpdateApikey
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiApiKey'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiApiKey'
+        delete:
+            tags:
+                - Admin
+            operationId: Admin_DeleteApikey
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/chat/conversation/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteChatConversation
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/chat/conversation/list:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListChatConversation
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListChatConversationResponse'
+    /ai/admin/chat/conversation/{id}:
+        get:
+            tags:
+                - Admin
+            description: Conversation
+            operationId: Admin_GetChatConversation
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ChatConversation'
+    /ai/admin/chat/message/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteChatMessage
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/chat/message/list:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListChatMessage
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListChatMessageResponse'
+    /ai/admin/chat/message/{id}:
+        get:
+            tags:
+                - Admin
+            description: Chat Message
+            operationId: Admin_GetChatMessage
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ChatMessage'
+    /ai/admin/document/delete:
+        post:
+            tags:
+                - Admin
+            description: Knowledge Document
+            operationId: Admin_BatchDeleteKnowledgeDocument
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/document/list:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListKnowledgeDocument
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListKnowledgeDocumentResponse'
+    /ai/admin/document/{id}:
+        get:
+            tags:
+                - Admin
+            operationId: Admin_GetKnowledgeDocument
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiKnowledgeDocument'
+        put:
+            tags:
+                - Admin
+            operationId: Admin_UpdateKnowledgeDocument
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiKnowledgeDocument'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.UpsertDocumentResponse'
+    /ai/admin/document/{id}/status:
+        put:
+            tags:
+                - Admin
+            operationId: Admin_UpdateDocumentStatus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.UpdateDocumentStatusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiKnowledgeDocument'
+    /ai/admin/image/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteImage
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/image/list:
+        post:
+            tags:
+                - Admin
+            description: Image
+            operationId: Admin_ListImage
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListImageResponse'
+    /ai/admin/image/{id}:
+        get:
+            tags:
+                - Admin
+            operationId: Admin_GetImage
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.Image'
+        put:
+            tags:
+                - Admin
+            operationId: Admin_UpdateImage
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiImage'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.Image'
+    /ai/admin/knowledge:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_CreateKnowledge
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiKnowledge'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.Knowledge'
+    /ai/admin/knowledge/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteKnowledge
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/knowledge/list:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListKnowledge
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListKnowledgeResponse'
+    /ai/admin/knowledge/{id}:
+        get:
+            tags:
+                - Admin
+            description: Knowledge
+            operationId: Admin_GetKnowledge
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.Knowledge'
+        put:
+            tags:
+                - Admin
+            operationId: Admin_UpdateKnowledge
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiKnowledge'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.Knowledge'
+    /ai/admin/model:
+        post:
+            tags:
+                - Admin
+            description: Model
+            operationId: Admin_CreateModel
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiModel'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiModel'
+    /ai/admin/model/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteModel
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/model/list:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListModel
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListModelResponse'
+    /ai/admin/model/{id}:
+        get:
+            tags:
+                - Admin
+            operationId: Admin_GetModel
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiModel'
+        put:
+            tags:
+                - Admin
+            operationId: Admin_UpdateModel
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiModel'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiModel'
+        delete:
+            tags:
+                - Admin
+            operationId: Admin_DeleteModel
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/queue:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListTasks
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/common.v1.ListTaskResponse'
+    /ai/admin/queue/batch/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteTasks
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/queue/cleanup:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_CleanupTask
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.CleanupTaskRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/queue/metrics:
+        get:
+            tags:
+                - Admin
+            description: Task
+            operationId: Admin_GetQueueMetrics
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/common.v1.QueueMetricsResponse'
+    /ai/admin/queue/{id}:
+        get:
+            tags:
+                - Admin
+            operationId: Admin_GetTask
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/common.v1.GetTaskResponse'
+    /ai/admin/role:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_CreateRole
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiChatRole'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.Role'
+    /ai/admin/role/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteRole
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRoleRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/role/list:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListRole
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListRoleResponse'
+    /ai/admin/role/{id}:
+        get:
+            tags:
+                - Admin
+            description: Role
+            operationId: Admin_GetRole
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.Role'
+        put:
+            tags:
+                - Admin
+            operationId: Admin_UpdateRole
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiChatRole'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.Role'
+    /ai/admin/segment/list:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListKnowledgeSegments
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListKnowledgeSegmentResponse'
+    /ai/admin/segment/{id}:
+        get:
+            tags:
+                - Admin
+            description: Knowledge Document Segment
+            operationId: Admin_GetKnowledgeSegment
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiKnowledgeSegment'
+    /ai/admin/tool:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_CreateTool
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.common.v1.AiTool'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiTool'
+    /ai/admin/tool/delete:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_BatchDeleteTool
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.admin.v1.BatchDeleteRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+    /ai/admin/tool/list:
+        post:
+            tags:
+                - Admin
+            operationId: Admin_ListTool
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/common.v1.ListRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.admin.v1.ListToolResponse'
     /ai/admin/tool/{id}:
+        get:
+            tags:
+                - Admin
+            description: Tool
+            operationId: Admin_GetTool
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ai.common.v1.AiTool'
         put:
             tags:
                 - Admin
@@ -1775,6 +1747,20 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ai.common.v1.AiTool'
+        delete:
+            tags:
+                - Admin
+            operationId: Admin_DeleteTool
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content: {}
     /ai/chat/conversation:
         post:
             tags:
@@ -1795,43 +1781,16 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ai.chat.v1.GetChatConversationResponse'
     /ai/chat/conversation/list:
-        get:
+        post:
             tags:
                 - Chat
             operationId: Chat_ListChatConversations
-            parameters:
-                - name: pagination.page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: pagination.orderDirection
-                  in: query
-                  schema:
-                    type: string
-                - name: title
-                  in: query
-                  schema:
-                    type: string
-                - name: start
-                  in: query
-                  schema:
-                    type: string
-                    format: date-time
-                - name: end
-                  in: query
-                  schema:
-                    type: string
-                    format: date-time
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.chat.v1.ListConversationRequest'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -1916,33 +1875,16 @@ paths:
                     description: OK
                     content: {}
     /ai/chat/message/list:
-        get:
+        post:
             tags:
                 - Chat
             operationId: Chat_ListConversationMessage
-            parameters:
-                - name: pagination.page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: pagination.orderDirection
-                  in: query
-                  schema:
-                    type: string
-                - name: conversationId
-                  in: query
-                  schema:
-                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.chat.v1.ListConversationMessagesRequest'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -2426,19 +2368,16 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ai.knowledge.v1.KnowledgeStatsResponse'
     /ai/model/default:
-        get:
+        post:
             tags:
                 - Model
             operationId: Model_GetDefaultModel
-            parameters:
-                - name: type
-                  in: query
-                  schema:
-                    type: string
-                - name: platform
-                  in: query
-                  schema:
-                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.model.v1.DefaultModelRequest'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -2447,41 +2386,16 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/ai.model.v1.GetModelResponse'
     /ai/model/list/me:
-        get:
+        post:
             tags:
                 - Model
             operationId: Model_ListModel
-            parameters:
-                - name: pagination.page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.orderBy
-                  in: query
-                  schema:
-                    type: string
-                - name: pagination.orderDirection
-                  in: query
-                  schema:
-                    type: string
-                - name: name
-                  in: query
-                  schema:
-                    type: string
-                - name: type
-                  in: query
-                  schema:
-                    type: string
-                - name: platform
-                  in: query
-                  schema:
-                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ai.model.v1.ListModelRequest'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -2880,8 +2794,7 @@ paths:
                 - name: orderDirection
                   in: query
                   schema:
-                    type: integer
-                    format: enum
+                    type: string
                 - name: nextPageToken
                   in: query
                   schema:
@@ -4236,6 +4149,8 @@ components:
                     type: string
                 model:
                     type: string
+                modelId:
+                    type: string
                 temperature:
                     type: number
                     format: double
@@ -4272,6 +4187,13 @@ components:
                     type: string
                 documentName:
                     type: string
+        ai.chat.v1.ListConversationMessagesRequest:
+            type: object
+            properties:
+                pagination:
+                    $ref: '#/components/schemas/common.v1.PaginationArgs'
+                conversationId:
+                    type: string
         ai.chat.v1.ListConversationMessagesResponse:
             type: object
             properties:
@@ -4281,6 +4203,19 @@ components:
                         $ref: '#/components/schemas/ai.chat.v1.MessageRecord'
                 pagination:
                     $ref: '#/components/schemas/common.v1.PaginationResults'
+        ai.chat.v1.ListConversationRequest:
+            type: object
+            properties:
+                pagination:
+                    $ref: '#/components/schemas/common.v1.PaginationArgs'
+                title:
+                    type: string
+                start:
+                    type: string
+                    format: date-time
+                end:
+                    type: string
+                    format: date-time
         ai.chat.v1.ListConversationResponse:
             type: object
             properties:
@@ -4313,6 +4248,8 @@ components:
                     type: string
                     format: date-time
                 conversationId:
+                    type: string
+                replyId:
                     type: string
         ai.chat.v1.PatchMessageRequest:
             type: object
@@ -4411,8 +4348,7 @@ components:
                 url:
                     type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
                 aiModel:
                     type: array
                     items:
@@ -4541,8 +4477,7 @@ components:
                     items:
                         type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
         ai.common.v1.AiImage:
             type: object
             properties:
@@ -4574,8 +4509,7 @@ components:
                 options:
                     type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
                 picUrl:
                     type: string
                 taskId:
@@ -4610,8 +4544,7 @@ components:
                     type: number
                     format: double
                 status:
-                    type: integer
-                    format: enum
+                    type: string
                 userId:
                     type: string
                 isPublic:
@@ -4655,11 +4588,9 @@ components:
                 retrievalCount:
                     type: string
                 progress:
-                    type: integer
-                    format: enum
+                    type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
                 aiKnowledge:
                     $ref: '#/components/schemas/ai.common.v1.AiKnowledge'
                 aiKnowledgeSegment:
@@ -4691,8 +4622,7 @@ components:
                 retrievalCount:
                     type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
                 aiKnowledgeDocument:
                     $ref: '#/components/schemas/ai.common.v1.AiKnowledgeDocument'
         ai.common.v1.AiModel:
@@ -4718,16 +4648,17 @@ components:
                 sort:
                     type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
                 temperature:
                     type: number
                     format: double
                 maxTokens:
                     type: string
-                maxContext:
+                maxContexts:
                     type: string
                 keyId:
+                    type: string
+                model:
                     type: string
                 aiApiKey:
                     $ref: '#/components/schemas/ai.common.v1.AiApiKey'
@@ -4754,8 +4685,7 @@ components:
                 parameters:
                     type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
         ai.common.v1.AiWebPage:
             type: object
             properties:
@@ -4936,8 +4866,7 @@ components:
                 Progress:
                     type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
                 createdAt:
                     type: string
                     format: date-time
@@ -4996,8 +4925,7 @@ components:
                 name:
                     type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
                 progress:
                     type: string
                 pathKeyword:
@@ -5019,8 +4947,7 @@ components:
                 name:
                     type: string
                 status:
-                    type: integer
-                    format: enum
+                    type: string
                 isPublic:
                     type: boolean
         ai.knowledge.v1.ListKnowledgeResponse:
@@ -5028,7 +4955,7 @@ components:
             properties:
                 pagination:
                     $ref: '#/components/schemas/common.v1.PaginationResults'
-                knowledge:
+                knowledges:
                     type: array
                     items:
                         $ref: '#/components/schemas/ai.knowledge.v1.GetKnowledgeResponse'
@@ -5068,8 +4995,7 @@ components:
                     type: number
                     format: double
                 status:
-                    type: integer
-                    format: enum
+                    type: string
             description: Knowledge Document
         ai.knowledge.v1.UpsertDocumentResponse:
             type: object
@@ -5090,9 +5016,15 @@ components:
                 isPublic:
                     type: boolean
                 status:
-                    type: integer
-                    format: enum
+                    type: string
             description: Knowledge
+        ai.model.v1.DefaultModelRequest:
+            type: object
+            properties:
+                type:
+                    type: string
+                platform:
+                    type: string
         ai.model.v1.GetModelResponse:
             type: object
             properties:
@@ -5113,6 +5045,19 @@ components:
                 maxContexts:
                     type: integer
                     format: int32
+                model:
+                    type: string
+        ai.model.v1.ListModelRequest:
+            type: object
+            properties:
+                pagination:
+                    $ref: '#/components/schemas/common.v1.PaginationArgs'
+                name:
+                    type: string
+                type:
+                    type: string
+                platform:
+                    type: string
         ai.model.v1.ListModelResponse:
             type: object
             properties:
@@ -5899,9 +5844,8 @@ components:
                     type: string
                     description: 'order: 最大长度 255'
                 orderDirection:
-                    type: integer
+                    type: string
                     description: 'order_direction: 只能是 asc 或 desc'
-                    format: enum
                 view:
                     type: integer
                     description: 'view: 只能是 list, grid 或 gallery'

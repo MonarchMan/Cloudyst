@@ -655,7 +655,7 @@ func (b *knowledgeBiz) UpdateKnowledgeSegment(ctx context.Context, seg *types.Kn
 func (b *knowledgeBiz) ListKnowledgeSegments(ctx context.Context, args *data.ListKnowledgeSegmentArgs) (*data.ListKnowledgeSegmentResult, error) {
 	newCtx := context.WithValue(ctx, data.LoadKnowledgeSegment{}, true)
 	newCtx = context.WithValue(newCtx, data.LoadDocumentSegment{}, true)
-	return b.ListKnowledgeSegments(newCtx, args)
+	return b.ksc.List(newCtx, args)
 }
 
 func (b *knowledgeBiz) deleteSegmentVector(ctx context.Context, seg *ent.AiKnowledgeSegment) error {

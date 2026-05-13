@@ -133,7 +133,7 @@ message UpsertKnowledgeRequest {
   string name = 2;
   string description = 3;
   bool is_public = 4;
-  .common.v1.Status status = 5;
+  string status = 5;
 }
 
 message GetKnowledgeResponse {
@@ -149,13 +149,13 @@ message GetKnowledgeResponse {
 message ListKnowledgeRequest {
   .common.v1.PaginationArgs pagination = 1;
   string name = 2;
-  .common.v1.Status status = 3;
+  string status = 3;
   bool is_public = 4;
 }
 
 message ListKnowledgeResponse {
   .common.v1.PaginationResults pagination = 1;
-  repeated GetKnowledgeResponse knowledge = 2;
+  repeated GetKnowledgeResponse knowledges = 2;
 }
 
 message KnowledgeStatsResponse {
@@ -175,7 +175,7 @@ message UpsertDocumentRequest {
   string url = 4;
   string version = 5;
   double segment_max_tokens = 6;
-  .common.v1.Status status = 7;
+  string status = 7;
 }
 
 message UpsertDocumentResponse {
@@ -213,7 +213,7 @@ message GetDocumentResponse {
   int64 tokens = 6;
   int64 segment_max_tokens = 7;
   string Progress = 8;
-  .common.v1.Status status = 9;
+  string status = 9;
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp updated_at = 11;
   string version = 12;
@@ -223,7 +223,7 @@ message ListDocumentsRequest {
   .common.v1.PaginationArgs pagination = 1;
   string knowledge_id = 2;
   string name = 3;
-  .common.v1.Status status = 4;
+  string status = 4;
   string progress = 5;
   string path_keyword = 6;
 }

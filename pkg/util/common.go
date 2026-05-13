@@ -1,12 +1,19 @@
 package util
 
 import (
+	cryptoRand "crypto/rand"
 	"fmt"
+	"math/big"
 	"math/rand"
+	"path"
+	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/gofrs/uuid"
 )
 
 func init() {
@@ -23,6 +30,20 @@ func RandStringRunes(n int) string {
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = RandomVariantAll[rand.Intn(len(RandomVariantAll))]
+	}
+	return string(b)
+}
+
+func RandStringRunesCrypto(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		num, err := cryptoRand.Int(cryptoRand.Reader, big.NewInt(int64(len(RandomVariantAll))))
+		if err != nil {
+			// fallback to math/rand on crypto failure
+			b[i] = RandomVariantAll[rand.Intn(len(RandomVariantAll))]
+		} else {
+			b[i] = RandomVariantAll[num.Int64()]
+		}
 	}
 	return string(b)
 }
@@ -91,6 +112,80 @@ func Replace(table map[string]string, s string) string {
 		s = strings.Replace(s, key, value, -1)
 	}
 	return s
+}
+
+// ReplaceMagicVar 动态替换字符串中的魔法变量
+func ReplaceMagicVar(rawString string, fsSeparator string, pathAvailable bool, blobAvailable bool,
+	timeConst time.Time, userId int, originName string, originPath string, completeBlobPath string) string {
+	re := regexp.MustCompile(`\{[^{}]+\}`)
+	return re.ReplaceAllStringFunc(rawString, func(match string) string {
+		switch match {
+		case "{randomkey16}":
+			return RandStringRunes(16)
+		case "{randomkey8}":
+			return RandStringRunes(8)
+		case "{timestamp}":
+			return strconv.FormatInt(timeConst.Unix(), 10)
+		case "{timestamp_nano}":
+			return strconv.FormatInt(timeConst.UnixNano(), 10)
+		case "{randomnum2}":
+			return strconv.Itoa(rand.Intn(2))
+		case "{randomnum3}":
+			return strconv.Itoa(rand.Intn(3))
+		case "{randomnum4}":
+			return strconv.Itoa(rand.Intn(4))
+		case "{randomnum8}":
+			return strconv.Itoa(rand.Intn(8))
+		case "{uid}":
+			return strconv.Itoa(userId)
+		case "{datetime}":
+			return timeConst.Format("20060102150405")
+		case "{date}":
+			return timeConst.Format("20060102")
+		case "{year}":
+			return timeConst.Format("2006")
+		case "{month}":
+			return timeConst.Format("01")
+		case "{day}":
+			return timeConst.Format("02")
+		case "{hour}":
+			return timeConst.Format("15")
+		case "{minute}":
+			return timeConst.Format("04")
+		case "{second}":
+			return timeConst.Format("05")
+		case "{uuid}":
+			return uuid.Must(uuid.NewV4()).String()
+		case "{ext}":
+			return filepath.Ext(originName)
+		case "{originname}":
+			return originName
+		case "{originname_without_ext}":
+			return strings.TrimSuffix(originName, filepath.Ext(originName))
+		case "{path}":
+			if pathAvailable {
+				return originPath + fsSeparator
+			}
+			return match
+		case "{blob_name}":
+			if blobAvailable {
+				return filepath.Base(completeBlobPath)
+			}
+			return match
+		case "{blob_name_without_ext}":
+			if blobAvailable {
+				return strings.TrimSuffix(filepath.Base(completeBlobPath), filepath.Ext(completeBlobPath))
+			}
+			return match
+		case "{blob_path}":
+			if blobAvailable {
+				return path.Dir(completeBlobPath) + fsSeparator
+			}
+			return match
+		default:
+			return match
+		}
+	})
 }
 
 // BuildRegexp 构建用于SQL查询用的多条件正则

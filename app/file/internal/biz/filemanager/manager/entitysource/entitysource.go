@@ -146,6 +146,14 @@ func WithThumb(isThumb bool) EntitySourceOption {
 	})
 }
 
+// WithDisableCryptor disable cryptor for file source, file stream will be
+// presented as is.
+func WithDisableCryptor() EntitySourceOption {
+	return EntitySourceOptionFunc(func(option any) {
+		option.(*EntitySourceOptions).DisableCryptor = true
+	})
+}
+
 func (f EntitySourceOptionFunc) Apply(option any) {
 	f(option)
 }
@@ -334,6 +342,19 @@ func (f *entitySource) Serve(w http.ResponseWriter, r *http.Request, opts ...Ent
 				response.Header.Del("ETag")
 				response.Header.Del("Content-Disposition")
 				response.Header.Del("Cache-Control")
+
+				// If the response is successful, decrypt the body if needed
+				if response.StatusCode >= http.StatusOK && response.StatusCode < 300 {
+					// Parse offset from Content-Range header if present
+					offset := parseContentRangeOffset(response.Header.Get("Content-Range"))
+
+					body, err := f.getDecryptedRsc(response.Body, offset)
+					if err != nil {
+						return fmt.Errorf("failed to get decrypted rsc: %w", err)
+					}
+
+					response.Body = body
+				}
 				logging.Request(f.l.Logger(),
 					false,
 					response.StatusCode,
@@ -661,6 +682,7 @@ func (f *entitySource) resetRequest() error {
 
 func (f *entitySource) getRsc(pos int64) (io.ReadCloser, error) {
 	// For inbound files, we can use the handler to open the files directly
+	var rsc io.ReadCloser
 	if f.IsLocal() {
 		file, err := f.handler.Open(f.o.Ctx, f.e.Source())
 		if err != nil {
@@ -676,47 +698,54 @@ func (f *entitySource) getRsc(pos int64) (io.ReadCloser, error) {
 
 		if f.o.SpeedLimit > 0 {
 			bucket := ratelimit.NewBucketWithRate(float64(f.o.SpeedLimit), f.o.SpeedLimit)
-			return lrs{file, ratelimit.Reader(file, bucket)}, nil
+			rsc = lrs{file, ratelimit.Reader(file, bucket)}
 		} else {
-			return file, nil
+			rsc = file
 		}
-
-	}
-
-	// For outbound files, we need to get the URL from the handler
-	var urlStr string
-	now := time.Now()
-
-	// Check if we have a valid cached URL and expiry
-	if f.cachedUrl != "" && now.Before(f.cachedExpiry.Add(-time.Minute)) {
-		// Use cached URL if it's still valid (with 1 minute buffer before expiry)
-		urlStr = f.cachedUrl
 	} else {
-		// Generate new URL and cache it
-		expire := now.Add(defaultUrlExpire)
-		u, err := f.Url(driver.WithForcePublicEndpoint(f.o.Ctx, false), WithNoInternalProxy(), WithExpire(&expire))
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate download url: %w", err)
+		// For outbound files, we need to get the URL from the handler
+		var urlStr string
+		now := time.Now()
+
+		// Check if we have a valid cached URL and expiry
+		if f.cachedUrl != "" && now.Before(f.cachedExpiry.Add(-time.Minute)) {
+			// Use cached URL if it's still valid (with 1 minute buffer before expiry)
+			urlStr = f.cachedUrl
+		} else {
+			// Generate new URL and cache it
+			expire := now.Add(defaultUrlExpire)
+			u, err := f.Url(driver.WithForcePublicEndpoint(f.o.Ctx, false), WithNoInternalProxy(), WithExpire(&expire))
+			if err != nil {
+				return nil, fmt.Errorf("failed to generate download url: %w", err)
+			}
+
+			// Cache the URL and expiry
+			f.cachedUrl = u.Url
+			f.cachedExpiry = expire
+			urlStr = u.Url
 		}
 
-		// Cache the URL and expiry
-		f.cachedUrl = u.Url
-		f.cachedExpiry = expire
-		urlStr = u.Url
+		h := http.Header{}
+		h.Set("Range", fmt.Sprintf("bytes=%d-", pos))
+		resp := f.c.Request(http.MethodGet, urlStr, nil,
+			request.WithContext(f.o.Ctx),
+			request.WithLogger(f.l.Logger()),
+			request.WithHeader(h),
+		).CheckHTTPResponse(http.StatusOK, http.StatusPartialContent)
+		if resp.Err != nil {
+			return nil, fmt.Errorf("failed to request download url: %w", resp.Err)
+		}
+
+		rsc = resp.Response.Body
 	}
 
-	h := http.Header{}
-	h.Set("Range", fmt.Sprintf("bytes=%d-", pos))
-	resp := f.c.Request(http.MethodGet, urlStr, nil,
-		request.WithContext(f.o.Ctx),
-		request.WithLogger(f.l.Logger()),
-		request.WithHeader(h),
-	).CheckHTTPResponse(http.StatusOK, http.StatusPartialContent)
-	if resp.Err != nil {
-		return nil, fmt.Errorf("failed to request download url: %w", resp.Err)
+	var err error
+	rsc, err = f.getDecryptedRsc(rsc, pos)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get decrypted rsc: %w", err)
 	}
 
-	return resp.Response.Body, nil
+	return rsc, nil
 }
 
 func (f *entitySource) getDecryptedRsc(rsc io.ReadCloser, pos int64) (io.ReadCloser, error) {
@@ -1029,6 +1058,33 @@ func sumRangesSize(ranges []httpRange) (size int64) {
 		size += ra.length
 	}
 	return
+}
+
+// parseContentRangeOffset parses the start offset from a Content-Range header.
+// Content-Range format: "bytes start-end/total" (e.g., "bytes 100-200/1000")
+// Returns 0 if the header is empty, invalid, or cannot be parsed.
+func parseContentRangeOffset(contentRange string) int64 {
+	if contentRange == "" {
+		return 0
+	}
+
+	// Content-Range format: "bytes start-end/total"
+	if !strings.HasPrefix(contentRange, "bytes ") {
+		return 0
+	}
+
+	rangeSpec := strings.TrimPrefix(contentRange, "bytes ")
+	dashPos := strings.Index(rangeSpec, "-")
+	if dashPos <= 0 {
+		return 0
+	}
+
+	start, err := strconv.ParseInt(rangeSpec[:dashPos], 10, 64)
+	if err != nil {
+		return 0
+	}
+
+	return start
 }
 
 // countingWriter counts how many bytes have been written to it.

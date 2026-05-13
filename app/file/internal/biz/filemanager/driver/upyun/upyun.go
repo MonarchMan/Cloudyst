@@ -1,7 +1,6 @@
 package upyun
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"bytes"
 	"common/boolset"
 	"common/request"
@@ -346,7 +345,7 @@ func (handler *Driver) Capabilities() *driver.Capabilities {
 	}
 }
 
-func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]driver.MediaMeta, error) {
 	return handler.extractImageMeta(ctx, path)
 }
 

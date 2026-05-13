@@ -19,6 +19,9 @@ func (AiModel) Fields() []ent.Field {
 		field.String("name").
 			MaxLen(64).
 			Comment("模型名称"),
+		field.String("model").
+			MaxLen(64).
+			Comment("模型标识"),
 		field.String("type").
 			MaxLen(64).
 			Comment("模型类型"),
@@ -34,7 +37,7 @@ func (AiModel) Fields() []ent.Field {
 			Comment("温度"),
 		field.Int("max_tokens").
 			Comment("最大token数"),
-		field.Int("max_context").
+		field.Int("max_contexts").
 			Comment("最大上下文数"),
 		field.Int("key_id").
 			Comment("API Key ID"),

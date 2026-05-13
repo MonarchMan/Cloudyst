@@ -4,6 +4,7 @@ import (
 	pbuser "api/api/user/users/v1"
 	"api/external/data/userdata"
 	"api/external/trans"
+	"common/auth"
 	"common/constants"
 	"context"
 	"strconv"
@@ -63,6 +64,17 @@ func LoginRequired() middleware.Middleware {
 				return next(ctx, req)
 			}
 			return nil, errors.Unauthorized("login required", "login required")
+		}
+	}
+}
+
+func RequiredScopes(requiredScopes ...string) middleware.Middleware {
+	return func(next middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req any) (any, error) {
+			if err := auth.CheckScope(ctx, requiredScopes...); err != nil {
+				return nil, errors.Unauthorized("require scopes", "require scopes")
+			}
+			return next(ctx, req)
 		}
 	}
 }

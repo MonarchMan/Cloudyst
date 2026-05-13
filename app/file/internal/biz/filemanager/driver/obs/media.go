@@ -1,7 +1,6 @@
 package obs
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/request"
 	"context"
 	"encoding/json"
@@ -18,7 +17,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func (d *Driver) MediaMeta(ctx context.Context, path, ext string) ([]pbslave.MediaMeta, error) {
+func (d *Driver) MediaMeta(ctx context.Context, path, ext string) ([]driver.MediaMeta, error) {
 	thumbURL, err := d.signSourceURL(&obs.CreateSignedUrlInput{
 		Method:  obs.HttpMethodGet,
 		Bucket:  d.policy.BucketName,
@@ -53,7 +52,7 @@ func (d *Driver) MediaMeta(ctx context.Context, path, ext string) ([]pbslave.Med
 
 		return k, fmt.Sprintf("%v", v)
 	})
-	metas := make([]pbslave.MediaMeta, 0)
+	metas := make([]driver.MediaMeta, 0)
 	metas = append(metas, mediameta.ExtractExifMap(imageInfoMap, time.Time{})...)
 	metas = append(metas, parseGpsInfo(imageInfoMap)...)
 	for i := 0; i < len(metas); i++ {
@@ -62,7 +61,7 @@ func (d *Driver) MediaMeta(ctx context.Context, path, ext string) ([]pbslave.Med
 	return metas, nil
 }
 
-func parseGpsInfo(imageInfo map[string]string) []pbslave.MediaMeta {
+func parseGpsInfo(imageInfo map[string]string) []driver.MediaMeta {
 	latitude := imageInfo["GPSLatitude"]   // 31/1, 162680820/10000000, 0/1
 	longitude := imageInfo["GPSLongitude"] // 120/1, 429103939/10000000, 0/1
 	latRef := imageInfo["GPSLatitudeRef"]  // N
@@ -77,7 +76,7 @@ func parseGpsInfo(imageInfo map[string]string) []pbslave.MediaMeta {
 	lon := parseRawGPS(longitude, lonRef)
 	if !math.IsNaN(lat) && !math.IsNaN(lon) {
 		lat, lng := mediameta.NormalizeGPS(lat, lon)
-		return []pbslave.MediaMeta{{
+		return []driver.MediaMeta{{
 			Key:   mediameta.GpsLat,
 			Value: fmt.Sprintf("%f", lat),
 		}, {

@@ -30,6 +30,7 @@ const (
 	SiteVersionHeader = constants.CrHeaderPrefix + "Version"
 	SiteIDHeader      = constants.CrHeaderPrefix + "Site-ID"
 	SlaveNodeIDHeader = constants.CrHeaderPrefix + "Node-ID"
+	ClientIDHeader    = constants.CrHeaderPrefix + "Client-Id"
 	LocalIP           = "localhost"
 )
 

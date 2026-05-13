@@ -78,7 +78,7 @@ type (
 		// List lists files under give path.
 		List(ctx context.Context, path *URI, opts ...Option) (File, *ListFileResult, error)
 		// Rename renames a files.
-		Rename(ctx context.Context, path *URI, newName string) (File, error)
+		Rename(ctx context.Context, path *URI, newName string) (File, *IndexDiff, error)
 		// Move moves files to dst.
 		MoveOrCopy(ctx context.Context, path []*URI, dst *URI, isCopy bool) (*IndexDiff, error)
 		// Delete performs hard-delete for given paths, return newly generated stale entities in this delete operation.
@@ -234,21 +234,22 @@ type (
 
 	// UploadCredential for uploading files in client side.
 	UploadCredential struct {
-		SessionID      string   `json:"session_id"`
-		ChunkSize      int64    `json:"chunk_size"` // 分块大小，0 为部分快
-		Expires        int64    `json:"expires"`    // 上传凭证过期时间， Unix 时间戳
-		UploadURLs     []string `json:"upload_urls,omitempty"`
-		Credential     string   `json:"credential,omitempty"`
-		UploadID       string   `json:"uploadID,omitempty"`
-		Callback       string   `json:"callback,omitempty"` // 回调地址
-		Uri            string   `json:"uri,omitempty"`      // 存储路径
-		AccessKey      string   `json:"ak,omitempty"`
-		KeyTime        string   `json:"keyTime,omitempty"` // COS用有效期
-		CompleteURL    string   `json:"completeURL,omitempty"`
-		StoragePolicy  *ent.StoragePolicy
-		CallbackSecret string `json:"callback_secret,omitempty"`
-		MimeType       string `json:"mime_type,omitempty"`     // Expected mimetype
-		UploadPolicy   string `json:"upload_policy,omitempty"` // Upyun upload policy
+		SessionID       string   `json:"session_id"`
+		ChunkSize       int64    `json:"chunk_size"` // 分块大小，0 为部分快
+		Expires         int64    `json:"expires"`    // 上传凭证过期时间， Unix 时间戳
+		UploadURLs      []string `json:"upload_urls,omitempty"`
+		Credential      string   `json:"credential,omitempty"`
+		UploadID        string   `json:"uploadID,omitempty"`
+		Callback        string   `json:"callback,omitempty"` // 回调地址
+		Uri             string   `json:"uri,omitempty"`      // 存储路径
+		AccessKey       string   `json:"ak,omitempty"`
+		KeyTime         string   `json:"keyTime,omitempty"` // COS用有效期
+		CompleteURL     string   `json:"completeURL,omitempty"`
+		StoragePolicy   *ent.StoragePolicy
+		CallbackSecret  string                 `json:"callback_secret,omitempty"`
+		MimeType        string                 `json:"mime_type,omitempty"`     // Expected mimetype
+		UploadPolicy    string                 `json:"upload_policy,omitempty"` // Upyun upload policy
+		EncryptMetadata *types.EncryptMetadata `json:"encrypt_metadata,omitempty"`
 	}
 
 	// UploadSession stores the information of an upload session, used in server side.
@@ -833,6 +834,7 @@ type (
 		Uri      URI
 		FileID   int
 		EntityID int
+		DocID    int
 	}
 )
 

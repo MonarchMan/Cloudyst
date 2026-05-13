@@ -2,9 +2,7 @@ package manager
 
 import (
 	pbfile "api/api/file/files/v1"
-	pbslave "api/api/file/slave/v1"
 	"api/external/data/userdata"
-	"api/external/trans"
 	"common/util"
 	"context"
 	"encoding/json"
@@ -74,7 +72,7 @@ func NewMediaMetaTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
 }
 
 func (m *MediaMetaTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
-	user := trans.FromContext(ctx)
+	user := m.Owner()
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	fm := NewFileManager(dep, dbfsDep, user).(*manager)
@@ -116,7 +114,7 @@ func (m *manager) ExtractAndSaveMediaMeta(ctx context.Context, uri *fs.URI, enti
 	}
 
 	var (
-		metas []pbslave.MediaMeta
+		metas []driver.MediaMeta
 	)
 	// 2. try using native driver
 	_, d, err := m.getEntityPolicyDriver(ctx, targetVersion, nil)

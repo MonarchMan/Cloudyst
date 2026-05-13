@@ -5,7 +5,6 @@ import (
 	"ai/ent/aiknowledgedocument"
 	"ai/ent/aiknowledgesegment"
 	"ai/internal/biz/types"
-	pb "api/api/common/v1"
 	"api/external/data/common"
 	"context"
 	"entmodule"
@@ -44,14 +43,14 @@ type (
 	}
 
 	ListKnowledgeDocumentArgs struct {
-		*pb.PaginationArgs
+		*common.PaginationArgs
 		KnowledgeID int
 		Name        string
 		Status      entmodule.Status
 	}
 
 	ListKnowledgeDocumentResult struct {
-		*pb.PaginationResults
+		*common.PaginationResults
 		Documents []*ent.AiKnowledgeDocument
 	}
 
@@ -136,16 +135,16 @@ func (c *knowledgeDocumentClient) List(ctx context.Context, args *ListKnowledgeD
 		return nil, err
 	}
 	q.Order(getKnowledgeDocumentOrderOption(args)...)
-	documents, err := withKnowledgeDocumentEagerLoading(ctx, q).Limit(int(args.PageSize)).Offset(int(args.Page * args.PageSize)).All(ctx)
+	documents, err := withKnowledgeDocumentEagerLoading(ctx, q).Limit(args.PageSize).Offset(args.Page * args.PageSize).All(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &ListKnowledgeDocumentResult{
-		PaginationResults: &pb.PaginationResults{
+		PaginationResults: &common.PaginationResults{
 			Page:       args.Page,
 			PageSize:   args.PageSize,
-			TotalItems: int32(total),
+			TotalItems: total,
 		},
 		Documents: documents,
 	}, nil
@@ -314,7 +313,7 @@ func withKnowledgeDocumentEagerLoading(ctx context.Context, q *ent.AiKnowledgeDo
 }
 
 func getKnowledgeDocumentOrderOption(args *ListKnowledgeDocumentArgs) []aiknowledgedocument.OrderOption {
-	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDir))
 	switch args.OrderBy {
 	case aiknowledgedocument.FieldRetrievalCount:
 		return []aiknowledgedocument.OrderOption{aiknowledgedocument.ByRetrievalCount(orderTerm), aiknowledgedocument.ByID(orderTerm)}

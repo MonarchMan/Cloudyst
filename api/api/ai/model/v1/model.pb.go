@@ -76,6 +76,7 @@ type GetModelResponse struct {
 	Temperature   float64                `protobuf:"fixed64,5,opt,name=temperature,proto3" json:"temperature,omitempty"`
 	MaxTokens     int32                  `protobuf:"varint,6,opt,name=max_tokens,json=maxTokens,proto3" json:"max_tokens,omitempty"`
 	MaxContexts   int32                  `protobuf:"varint,7,opt,name=max_contexts,json=maxContexts,proto3" json:"max_contexts,omitempty"`
+	Model         string                 `protobuf:"bytes,8,opt,name=model,proto3" json:"model,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -157,6 +158,13 @@ func (x *GetModelResponse) GetMaxContexts() int32 {
 		return x.MaxContexts
 	}
 	return 0
+}
+
+func (x *GetModelResponse) GetModel() string {
+	if x != nil {
+		return x.Model
+	}
+	return ""
 }
 
 type ListModelRequest struct {
@@ -337,7 +345,7 @@ const file_ai_model_v1_model_proto_rawDesc = "" +
 	"\n" +
 	"\x17ai/model/v1/model.proto\x12\vai.model.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x16common/v1/common.proto\"\x1f\n" +
 	"\rSimpleRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xca\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xe0\x01\n" +
 	"\x10GetModelResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -346,7 +354,8 @@ const file_ai_model_v1_model_proto_rawDesc = "" +
 	"\vtemperature\x18\x05 \x01(\x01R\vtemperature\x12\x1d\n" +
 	"\n" +
 	"max_tokens\x18\x06 \x01(\x05R\tmaxTokens\x12!\n" +
-	"\fmax_contexts\x18\a \x01(\x05R\vmaxContexts\"\x91\x01\n" +
+	"\fmax_contexts\x18\a \x01(\x05R\vmaxContexts\x12\x14\n" +
+	"\x05model\x18\b \x01(\tR\x05model\"\x91\x01\n" +
 	"\x10ListModelRequest\x129\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x19.common.v1.PaginationArgsR\n" +
@@ -361,11 +370,11 @@ const file_ai_model_v1_model_proto_rawDesc = "" +
 	"pagination\"E\n" +
 	"\x13DefaultModelRequest\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x1a\n" +
-	"\bplatform\x18\x02 \x01(\tR\bplatform2\xbc\x02\n" +
-	"\x05Model\x12e\n" +
-	"\tListModel\x12\x1d.ai.model.v1.ListModelRequest\x1a\x1e.ai.model.v1.ListModelResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/ai/model/list/me\x12]\n" +
-	"\bGetModel\x12\x1a.ai.model.v1.SimpleRequest\x1a\x1d.ai.model.v1.GetModelResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/ai/model/{id}\x12m\n" +
-	"\x0fGetDefaultModel\x12 .ai.model.v1.DefaultModelRequest\x1a\x1d.ai.model.v1.GetModelResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/ai/model/defaultB'\n" +
+	"\bplatform\x18\x02 \x01(\tR\bplatform2\xc2\x02\n" +
+	"\x05Model\x12h\n" +
+	"\tListModel\x12\x1d.ai.model.v1.ListModelRequest\x1a\x1e.ai.model.v1.ListModelResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/ai/model/list/me\x12]\n" +
+	"\bGetModel\x12\x1a.ai.model.v1.SimpleRequest\x1a\x1d.ai.model.v1.GetModelResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/ai/model/{id}\x12p\n" +
+	"\x0fGetDefaultModel\x12 .ai.model.v1.DefaultModelRequest\x1a\x1d.ai.model.v1.GetModelResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/ai/model/defaultB'\n" +
 	"\vai.model.v1P\x01Z\x16api/api/ai/model/v1;v1b\x06proto3"
 
 var (

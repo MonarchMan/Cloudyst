@@ -139,7 +139,9 @@ func (m *manager) Create(ctx context.Context, path *fs.URI, fileType int, opts .
 }
 
 func (m *manager) Rename(ctx context.Context, path *fs.URI, newName string) (fs.File, error) {
-	return m.fs.Rename(ctx, path, newName)
+	file, indexDiff, err := m.fs.Rename(ctx, path, newName)
+	m.processIndexDiff(ctx, indexDiff)
+	return file, err
 }
 
 func (m *manager) MoveOrCopy(ctx context.Context, src []*fs.URI, dst *fs.URI, isCopy bool) error {
@@ -188,7 +190,9 @@ func (m *manager) Delete(ctx context.Context, path []*fs.URI, opts ...fs.Option)
 	}
 
 	// Process index diff
-	m.processIndexDiff(ctx, indexDiff)
+	if indexDiff != nil {
+		m.processIndexDiff(ctx, indexDiff)
+	}
 	return nil
 }
 

@@ -19,6 +19,7 @@ var ProviderSet = wire.NewSet(
 	NewSettingClient,
 	NewDBClient,
 	NewDavAccountClient,
+	NewOAuthClientClient,
 	KVStoreWrapper,
 	NewGroupClient,
 	DBTypeWrapper,

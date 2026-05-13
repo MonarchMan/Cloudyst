@@ -1,7 +1,6 @@
 package mediameta
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"context"
 	"encoding/json"
 	"errors"
@@ -146,7 +145,12 @@ func (e *exifExtractor) Exts() []string {
 }
 
 // Reference: https://github.com/photoprism/photoprism/blob/602097635f1c84d91f2d919f7aedaef7a07fc458/internal/meta/exif.go
-func (e *exifExtractor) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]pbslave.MediaMeta, error) {
+func (e *exifExtractor) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]driver.MediaMeta, error) {
+	option := &option{}
+	for _, opt := range opts {
+		opt.apply(option)
+	}
+
 	localLimit, remoteLimit := e.settings.MediaMetaExifSizeLimit(ctx)
 	if err := checkFileSize(localLimit, remoteLimit, source); err != nil {
 		return nil, err
@@ -209,7 +213,7 @@ func (e *exifExtractor) Extract(ctx context.Context, ext string, source entityso
 		return nil, errors.New("no exif constants found")
 	}
 
-	metas := make([]pbslave.MediaMeta, 0)
+	metas := make([]driver.MediaMeta, 0)
 	takenTimeGps := time.Time{}
 
 	// Extract GPS info
@@ -226,10 +230,10 @@ func (e *exifExtractor) Extract(ctx context.Context, ext string, source entityso
 			} else {
 				if !math.IsNaN(gi.Latitude.Decimal()) && !math.IsNaN(gi.Longitude.Decimal()) {
 					lat, lng := NormalizeGPS(gi.Latitude.Decimal(), gi.Longitude.Decimal())
-					metas = append(metas, pbslave.MediaMeta{
+					metas = append(metas, driver.MediaMeta{
 						Key:   GpsLat,
 						Value: fmt.Sprintf("%f", lat),
-					}, pbslave.MediaMeta{
+					}, driver.MediaMeta{
 						Key:   GpsLng,
 						Value: fmt.Sprintf("%f", lng),
 					})
@@ -238,7 +242,7 @@ func (e *exifExtractor) Extract(ctx context.Context, ext string, source entityso
 				}
 
 				if gi.Altitude != 0 {
-					metas = append(metas, pbslave.MediaMeta{
+					metas = append(metas, driver.MediaMeta{
 						Key:   GpsAttitude,
 						Value: fmt.Sprintf("%d", gi.Altitude),
 					})
@@ -259,17 +263,17 @@ func (e *exifExtractor) Extract(ctx context.Context, ext string, source entityso
 	return metas, nil
 }
 
-func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.MediaMeta {
-	metas := make([]pbslave.MediaMeta, 0)
+func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []driver.MediaMeta {
+	metas := make([]driver.MediaMeta, 0)
 	if value, ok := exifMap["Artist"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   Artist,
 			Value: SanitizeMeta(value),
 		})
 	}
 
 	if value, ok := exifMap["Copyright"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   Copyright,
 			Value: SanitizeString(value),
 		})
@@ -284,7 +288,7 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 		cameraMode = SanitizeString(value)
 	}
 	if cameraMode != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   CameraModel,
 			Value: cameraMode,
 		})
@@ -297,28 +301,28 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 		cameraMake = SanitizeString(value)
 	}
 	if cameraMake != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   CameraMake,
 			Value: cameraMake,
 		})
 	}
 
 	if value, ok := exifMap["CameraOwnerName"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   CameraOwnerName,
 			Value: SanitizeString(value),
 		})
 	}
 
 	if value, ok := exifMap["BodySerialNumber"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   BodySerialNumber,
 			Value: SanitizeString(value),
 		})
 	}
 
 	if value, ok := exifMap["LensMake"]; ok && !IsUInt(value) {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   LensMake,
 			Value: SanitizeString(value),
 		})
@@ -331,14 +335,14 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 		lens = SanitizeString(value)
 	}
 	if lens != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   LensModel,
 			Value: lens,
 		})
 	}
 
 	if value, ok := exifMap["Software"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   Software,
 			Value: SanitizeString(value),
 		})
@@ -355,7 +359,7 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 			}
 		}
 
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   ExposureTime,
 			Value: value,
 		})
@@ -367,7 +371,7 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 			if n1, err := strconv.ParseInt(n[1], 10, 64); err == nil {
 				v := "0"
 				v = fmt.Sprintf("%f", float64(n0)/float64(n1))
-				metas = append(metas, pbslave.MediaMeta{
+				metas = append(metas, driver.MediaMeta{
 					Key:   ExposureBiasValue,
 					Value: v,
 				})
@@ -382,7 +386,7 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 			number, _ := strconv.ParseFloat(values[0], 64)
 			denom, _ := strconv.ParseFloat(values[1], 64)
 
-			metas = append(metas, pbslave.MediaMeta{
+			metas = append(metas, driver.MediaMeta{
 				Key:   FNumber,
 				Value: fmt.Sprintf("%f", float32(math.Round((number/denom)*1000)/1000)),
 			})
@@ -396,7 +400,7 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 			number, _ := strconv.ParseFloat(values[0], 64)
 			denom, _ := strconv.ParseFloat(values[1], 64)
 
-			metas = append(metas, pbslave.MediaMeta{
+			metas = append(metas, driver.MediaMeta{
 				Key:   ApertureValue,
 				Value: fmt.Sprintf("%f", float32(math.Round((number/denom)*1000)/1000)),
 			})
@@ -417,14 +421,14 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 		}
 	}
 	if focalLength != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   FocalLength,
 			Value: focalLength,
 		})
 	}
 
 	if value, ok := exifMap["ISOSpeedRatings"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   ISOSpeedRatings,
 			Value: value,
 		})
@@ -437,7 +441,7 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 		width = value
 	}
 	if width != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   PixelXDimension,
 			Value: width,
 		})
@@ -450,7 +454,7 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 		height = value
 	}
 	if height != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   PixelYDimension,
 			Value: height,
 		})
@@ -460,7 +464,7 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 	if value, ok := exifMap["Orientation"]; ok {
 		orientation = value
 	}
-	metas = append(metas, pbslave.MediaMeta{
+	metas = append(metas, driver.MediaMeta{
 		Key:   Orientation,
 		Value: orientation,
 	})
@@ -477,7 +481,7 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 	}
 
 	if !takeTime.IsZero() {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   TakenAt,
 			Value: takeTime.Format(time.RFC3339),
 		})
@@ -488,21 +492,21 @@ func ExtractExifMap(exifMap map[string]string, gpsTime time.Time) []pbslave.Medi
 		if i, err := strconv.Atoi(value); err == nil && i&1 == 1 {
 			flash = "1"
 		}
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   Flash,
 			Value: flash,
 		})
 	}
 
 	if value, ok := exifMap["ImageDescription"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   ImageDescription,
 			Value: SanitizeDescription(value),
 		})
 	}
 
 	if value, ok := exifMap["ProjectionType"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   ProjectionType,
 			Value: SanitizeString(value),
 		})

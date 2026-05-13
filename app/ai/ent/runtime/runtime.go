@@ -334,12 +334,16 @@ func init() {
 	aimodelDescName := aimodelFields[0].Descriptor()
 	// aimodel.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	aimodel.NameValidator = aimodelDescName.Validators[0].(func(string) error)
+	// aimodelDescModel is the schema descriptor for model field.
+	aimodelDescModel := aimodelFields[1].Descriptor()
+	// aimodel.ModelValidator is a validator for the "model" field. It is called by the builders before save.
+	aimodel.ModelValidator = aimodelDescModel.Validators[0].(func(string) error)
 	// aimodelDescType is the schema descriptor for type field.
-	aimodelDescType := aimodelFields[1].Descriptor()
+	aimodelDescType := aimodelFields[2].Descriptor()
 	// aimodel.TypeValidator is a validator for the "type" field. It is called by the builders before save.
 	aimodel.TypeValidator = aimodelDescType.Validators[0].(func(string) error)
 	// aimodelDescPlatform is the schema descriptor for platform field.
-	aimodelDescPlatform := aimodelFields[2].Descriptor()
+	aimodelDescPlatform := aimodelFields[3].Descriptor()
 	// aimodel.PlatformValidator is a validator for the "platform" field. It is called by the builders before save.
 	aimodel.PlatformValidator = aimodelDescPlatform.Validators[0].(func(string) error)
 	aitoolMixin := schema.AiTool{}.Mixin()

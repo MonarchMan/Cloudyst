@@ -208,7 +208,7 @@ func (q *queue) QueueTask(ctx context.Context, t Task) error {
 func (q *queue) newContext(t Task) context.Context {
 	//l := q.logger.CopyWithPrefix(fmt.Sprintf("[Cid: %s TaskID: %d Queue: %s]", t.TraceID(), t.ID(), q.name))
 	//ctx := q.dep.ForkWithLogger(q.rootCtx, l)
-	//ctx := trans.WithValue(q.rootCtx, t.Owner())
+	//ctx := trans.WithValue(q.rootCtx, t.OwnerID())
 	//ctx = context.WithValue(ctx, filemanager.ManagerDepCtx{}, q.managerDep)
 	//ctx = context.WithValue(ctx, filemanager.DbfsDepCtx{}, q.dbfsDep)
 	//ctx = context.WithValue(ctx, filemanager.NodePoolCtx{}, q.nodePool)

@@ -70,6 +70,20 @@ func (_u *AiModelUpdate) SetNillableName(v *string) *AiModelUpdate {
 	return _u
 }
 
+// SetModel sets the "model" field.
+func (_u *AiModelUpdate) SetModel(v string) *AiModelUpdate {
+	_u.mutation.SetModel(v)
+	return _u
+}
+
+// SetNillableModel sets the "model" field if the given value is not nil.
+func (_u *AiModelUpdate) SetNillableModel(v *string) *AiModelUpdate {
+	if v != nil {
+		_u.SetModel(*v)
+	}
+	return _u
+}
+
 // SetType sets the "type" field.
 func (_u *AiModelUpdate) SetType(v string) *AiModelUpdate {
 	_u.mutation.SetType(v)
@@ -175,24 +189,24 @@ func (_u *AiModelUpdate) AddMaxTokens(v int) *AiModelUpdate {
 	return _u
 }
 
-// SetMaxContext sets the "max_context" field.
-func (_u *AiModelUpdate) SetMaxContext(v int) *AiModelUpdate {
-	_u.mutation.ResetMaxContext()
-	_u.mutation.SetMaxContext(v)
+// SetMaxContexts sets the "max_contexts" field.
+func (_u *AiModelUpdate) SetMaxContexts(v int) *AiModelUpdate {
+	_u.mutation.ResetMaxContexts()
+	_u.mutation.SetMaxContexts(v)
 	return _u
 }
 
-// SetNillableMaxContext sets the "max_context" field if the given value is not nil.
-func (_u *AiModelUpdate) SetNillableMaxContext(v *int) *AiModelUpdate {
+// SetNillableMaxContexts sets the "max_contexts" field if the given value is not nil.
+func (_u *AiModelUpdate) SetNillableMaxContexts(v *int) *AiModelUpdate {
 	if v != nil {
-		_u.SetMaxContext(*v)
+		_u.SetMaxContexts(*v)
 	}
 	return _u
 }
 
-// AddMaxContext adds value to the "max_context" field.
-func (_u *AiModelUpdate) AddMaxContext(v int) *AiModelUpdate {
-	_u.mutation.AddMaxContext(v)
+// AddMaxContexts adds value to the "max_contexts" field.
+func (_u *AiModelUpdate) AddMaxContexts(v int) *AiModelUpdate {
+	_u.mutation.AddMaxContexts(v)
 	return _u
 }
 
@@ -281,6 +295,11 @@ func (_u *AiModelUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "AiModel.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Model(); ok {
+		if err := aimodel.ModelValidator(v); err != nil {
+			return &ValidationError{Name: "model", err: fmt.Errorf(`ent: validator failed for field "AiModel.model": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.GetType(); ok {
 		if err := aimodel.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "AiModel.type": %w`, err)}
@@ -326,6 +345,9 @@ func (_u *AiModelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(aimodel.FieldName, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.Model(); ok {
+		_spec.SetField(aimodel.FieldModel, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(aimodel.FieldType, field.TypeString, value)
 	}
@@ -353,11 +375,11 @@ func (_u *AiModelUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AddedMaxTokens(); ok {
 		_spec.AddField(aimodel.FieldMaxTokens, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.MaxContext(); ok {
-		_spec.SetField(aimodel.FieldMaxContext, field.TypeInt, value)
+	if value, ok := _u.mutation.MaxContexts(); ok {
+		_spec.SetField(aimodel.FieldMaxContexts, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.AddedMaxContext(); ok {
-		_spec.AddField(aimodel.FieldMaxContext, field.TypeInt, value)
+	if value, ok := _u.mutation.AddedMaxContexts(); ok {
+		_spec.AddField(aimodel.FieldMaxContexts, field.TypeInt, value)
 	}
 	if _u.mutation.AiAPIKeyCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -444,6 +466,20 @@ func (_u *AiModelUpdateOne) SetName(v string) *AiModelUpdateOne {
 func (_u *AiModelUpdateOne) SetNillableName(v *string) *AiModelUpdateOne {
 	if v != nil {
 		_u.SetName(*v)
+	}
+	return _u
+}
+
+// SetModel sets the "model" field.
+func (_u *AiModelUpdateOne) SetModel(v string) *AiModelUpdateOne {
+	_u.mutation.SetModel(v)
+	return _u
+}
+
+// SetNillableModel sets the "model" field if the given value is not nil.
+func (_u *AiModelUpdateOne) SetNillableModel(v *string) *AiModelUpdateOne {
+	if v != nil {
+		_u.SetModel(*v)
 	}
 	return _u
 }
@@ -553,24 +589,24 @@ func (_u *AiModelUpdateOne) AddMaxTokens(v int) *AiModelUpdateOne {
 	return _u
 }
 
-// SetMaxContext sets the "max_context" field.
-func (_u *AiModelUpdateOne) SetMaxContext(v int) *AiModelUpdateOne {
-	_u.mutation.ResetMaxContext()
-	_u.mutation.SetMaxContext(v)
+// SetMaxContexts sets the "max_contexts" field.
+func (_u *AiModelUpdateOne) SetMaxContexts(v int) *AiModelUpdateOne {
+	_u.mutation.ResetMaxContexts()
+	_u.mutation.SetMaxContexts(v)
 	return _u
 }
 
-// SetNillableMaxContext sets the "max_context" field if the given value is not nil.
-func (_u *AiModelUpdateOne) SetNillableMaxContext(v *int) *AiModelUpdateOne {
+// SetNillableMaxContexts sets the "max_contexts" field if the given value is not nil.
+func (_u *AiModelUpdateOne) SetNillableMaxContexts(v *int) *AiModelUpdateOne {
 	if v != nil {
-		_u.SetMaxContext(*v)
+		_u.SetMaxContexts(*v)
 	}
 	return _u
 }
 
-// AddMaxContext adds value to the "max_context" field.
-func (_u *AiModelUpdateOne) AddMaxContext(v int) *AiModelUpdateOne {
-	_u.mutation.AddMaxContext(v)
+// AddMaxContexts adds value to the "max_contexts" field.
+func (_u *AiModelUpdateOne) AddMaxContexts(v int) *AiModelUpdateOne {
+	_u.mutation.AddMaxContexts(v)
 	return _u
 }
 
@@ -672,6 +708,11 @@ func (_u *AiModelUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "AiModel.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Model(); ok {
+		if err := aimodel.ModelValidator(v); err != nil {
+			return &ValidationError{Name: "model", err: fmt.Errorf(`ent: validator failed for field "AiModel.model": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.GetType(); ok {
 		if err := aimodel.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "AiModel.type": %w`, err)}
@@ -734,6 +775,9 @@ func (_u *AiModelUpdateOne) sqlSave(ctx context.Context) (_node *AiModel, err er
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(aimodel.FieldName, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.Model(); ok {
+		_spec.SetField(aimodel.FieldModel, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(aimodel.FieldType, field.TypeString, value)
 	}
@@ -761,11 +805,11 @@ func (_u *AiModelUpdateOne) sqlSave(ctx context.Context) (_node *AiModel, err er
 	if value, ok := _u.mutation.AddedMaxTokens(); ok {
 		_spec.AddField(aimodel.FieldMaxTokens, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.MaxContext(); ok {
-		_spec.SetField(aimodel.FieldMaxContext, field.TypeInt, value)
+	if value, ok := _u.mutation.MaxContexts(); ok {
+		_spec.SetField(aimodel.FieldMaxContexts, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.AddedMaxContext(); ok {
-		_spec.AddField(aimodel.FieldMaxContext, field.TypeInt, value)
+	if value, ok := _u.mutation.AddedMaxContexts(); ok {
+		_spec.AddField(aimodel.FieldMaxContexts, field.TypeInt, value)
 	}
 	if _u.mutation.AiAPIKeyCleared() {
 		edge := &sqlgraph.EdgeSpec{

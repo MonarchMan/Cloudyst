@@ -116,6 +116,8 @@ type (
 		QiniuUploadCdn bool `json:"qiniu_upload_cdn,omitempty"`
 		// ChunkConcurrency the number of chunks to upload concurrently.
 		ChunkConcurrency int `json:"chunk_concurrency,omitempty"`
+		// Whether to enable file encryption.
+		Encryption bool `json:"encryption,omitempty"`
 	}
 
 	NodeSetting struct {

@@ -33,6 +33,7 @@ func buildChatConversation(conversation *ent.AiChatConversation, hasher hashid.E
 		Title:         conversation.Title,
 		Pinned:        conversation.Pinned,
 		SystemMessage: conversation.SystemMessage,
+		ModelId:       hashid.EncodeID(hasher, conversation.ModelID, hashid.ModelID),
 		Model:         conversation.Model,
 		Temperature:   conversation.Temperature,
 		MaxTokens:     int64(conversation.MaxTokens),
@@ -70,6 +71,7 @@ func buildAiChatMessage(hasher hashid.Encoder, msg *ent.AiChatMessage, output *s
 			return buildWebPage(page)
 		}),
 		ConversationId: hashid.EncodeID(hasher, msg.ConversationID, hashid.ChatConversationID),
+		ReplyId:        hashid.EncodeID(hasher, msg.ReplyID, hashid.ChatMessageID),
 	}
 	if output != nil {
 		record.Content = output.Content
@@ -191,7 +193,7 @@ func buildGetDocumentResponse(hasher hashid.Encoder, doc *ent.AiKnowledgeDocumen
 		Tokens:           int64(doc.Tokens),
 		SegmentMaxTokens: int64(doc.SegmentMaxTokens),
 		Progress:         string(doc.Progress),
-		Status:           utils.StatusToProto[commonpb.Status](doc.Status),
+		Status:           string(doc.Status),
 		CreatedAt:        timestamppb.New(doc.CreatedAt),
 		UpdatedAt:        timestamppb.New(doc.UpdatedAt),
 	}
@@ -311,11 +313,12 @@ func buildGetModelResponse(hasher hashid.Encoder, model *ent.AiModel) *pb.GetMod
 	return &pb.GetModelResponse{
 		Id:          hashid.EncodeID(hasher, model.ID, hashid.ModelID),
 		Name:        model.Name,
+		Model:       model.Model,
 		Type:        model.Type,
 		Platform:    model.Platform,
 		Temperature: model.Temperature,
 		MaxTokens:   int32(model.MaxTokens),
-		MaxContexts: int32(model.MaxContext),
+		MaxContexts: int32(model.MaxContexts),
 	}
 }
 

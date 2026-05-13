@@ -123,34 +123,37 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 		return nil, nil, err
 	}
 	mcpClientManager := mcp.NewMCPClientManager()
-	chatBiz := chat.NewChatBiz(chatConversationClient, roleClient, knowledgeClient, modelClient, chatMessageClient, webPageClient, toolClient, loader, mcpClientManager, vectorStore, bootstrap, toolRegistry, logger)
+	chatBiz := chat.NewChatBiz(chatConversationClient, roleClient, knowledgeClient, chatMessageClient, webPageClient, toolClient, loader, mcpClientManager, vectorStore, bootstrap, toolRegistry, logger)
+	taskClient := data.NewTaskClient(entClient, dbType, encoder)
 	userClient, err := rpc.NewUserClient(client)
 	if err != nil {
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	adminService := service.NewAdminService(knowledgeBiz, imageBiz, modelBiz, chatBiz, roleClient, userClient, encoder)
-	chatService := service.NewChatService()
-	knowledgeService := service.NewKnowledgeService()
+	queueManager, cleanup3 := queue.NewQueueManager(taskClient, logger, settingClient)
+	adminService := service.NewAdminService(knowledgeBiz, imageBiz, modelBiz, chatBiz, roleClient, taskClient, toolClient, userClient, queueManager, encoder)
+	roleService := service.NewRoleService(encoder, roleClient, knowledgeClient, toolClient, logger)
+	chatService := service.NewChatService(roleService, encoder, chatBiz, knowledgeBiz, modelBiz, toolRegistry, logger)
+	knowledgeService := service.NewKnowledgeService(encoder, knowledgeBiz, bootstrap, logger)
 	imageService := service.NewImageService()
 	tracerProvider, err := pkg.TracerProvider(bootstrap)
 	if err != nil {
+		cleanup3()
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
 	textMapPropagator := pkg.Propagator()
-	roleService := service.NewRoleService()
 	grpcServer := server.NewGRPCServer(bootstrap, adminService, chatService, knowledgeService, imageService, tracerProvider, textMapPropagator, roleService)
-	httpServer, err := server.NewHTTPServer(adminService, chatService, knowledgeService, userClient, imageService, roleService, bootstrap, tracerProvider, textMapPropagator, logger)
+	modelService := service.NewModelService(encoder, modelBiz, logger)
+	httpServer, err := server.NewHTTPServer(adminService, chatService, knowledgeService, userClient, imageService, roleService, modelService, bootstrap, tracerProvider, textMapPropagator, logger)
 	if err != nil {
+		cleanup3()
 		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
-	taskClient := data.NewTaskClient(entClient, dbType, encoder)
-	queueManager, cleanup3 := queue.NewQueueManager(taskClient, logger, settingClient)
 	appServer, cleanup4 := app.NewServer(logger, bootstrap, driver, queueManager)
 	kratosApp, err := newApp(grpcServer, httpServer, bootstrap, client, logger, appServer)
 	if err != nil {

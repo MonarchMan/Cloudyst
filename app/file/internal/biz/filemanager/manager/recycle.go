@@ -45,14 +45,15 @@ type (
 func init() {
 	mqueue.RegisterResumableTaskFactory(queue.ExplicitEntityRecycleTaskType, NewExplicitEntityRecycleTaskFromModel)
 	mqueue.RegisterResumableTaskFactory(queue.EntityRecycleRoutineTaskType, NewEntityRecycleRoutineTaskFromModel)
-	crontab.Register(setting.CronTypeEntityCollect, func(ctx context.Context, q mqueue.Queue) {
+	crontab.Register(setting.CronTypeEntityCollect, func(ctx context.Context) {
 		h := log.NewHelper(log.GetLogger())
 		t, err := NewEntityRecycleRoutineTask(ctx)
 		if err != nil {
 			h.Errorf("Failed to create entity recycle routine task: %s", err)
 		}
 
-		if err := q.QueueTask(ctx, t); err != nil {
+		dep := filemanager.ManagerDepFromContext(ctx)
+		if err := dep.QueuManager().GetEntityRecycleQueue().QueueTask(ctx, t); err != nil {
 			h.Errorf("Failed to queue entity recycle routine task: %s", err)
 		}
 	})
@@ -99,7 +100,7 @@ func newExplicitEntityRecycleTask(ctx context.Context, entities []int) (*Explici
 }
 
 func (m *ExplicitEntityRecycleTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
-	user := trans.FromContext(ctx)
+	user := m.Owner()
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
 	fm := NewFileManager(dep, dbfsDep, user).(*manager)
@@ -176,7 +177,7 @@ func NewEntityRecycleRoutineTask(ctx context.Context) (mqueue.Task, error) {
 func (m *EntityRecycleRoutineTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
-	user := trans.FromContext(ctx)
+	user := m.Owner()
 	fm := NewFileManager(dep, dbfsDep, user).(*manager)
 
 	// unmarshal state
@@ -309,7 +310,7 @@ const (
 )
 
 // CronCollectTrashBin walks through all files in trash bin and delete them if they are expired.
-func CronCollectTrashBin(ctx context.Context, q mqueue.Queue) {
+func CronCollectTrashBin(ctx context.Context) {
 	user := trans.FromContext(ctx)
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)

@@ -7,13 +7,12 @@ import (
 	"ai/internal/data"
 	"ai/internal/data/rpc"
 	einointerrupt "ai/internal/pkg/eino/interrupt"
-	"common/constants"
-	"common/request"
 	"context"
 	"errors"
 	"fmt"
 	"sync"
 
+	"github.com/cloudwego/eino-ext/components/document/loader/file"
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/components/document"
 	"github.com/cloudwego/eino/components/document/parser"
@@ -111,13 +110,17 @@ func (e *IngestEngine) BuildIngestionGraphWithConfig(embedder embedding.Embedder
 }
 
 func (e *IngestEngine) buildIngestionGraphWithConfig(embedder embedding.Embedder, graphConf *IngestionGraphConfig) (compose.Runnable[document.Source, []string], error) {
-	loader, err := NewRemoteLoader(e.kdc, e.fc, &RemoteLoaderConfig{
-		Client: request.NewClient(constants.MasterMode, request.WithLogger(e.l.Logger())),
-		Parser: e.parser,
+	//loader, err := NewRemoteLoader(e.kdc, e.fc, &RemoteLoaderConfig{
+	//	Client: request.NewClient(constants.MasterMode, request.WithLogger(e.l.Logger())),
+	//	Parser: e.parser,
+	//})
+	//if err != nil {
+	//	return nil, err
+	//}
+	loader, err := file.NewFileLoader(context.Background(), &file.FileLoaderConfig{
+		UseNameAsID: true,
+		Parser:      e.parser,
 	})
-	if err != nil {
-		e.l.Errorf("failed to initialize ollama embedder: %v", err)
-	}
 	ctx := context.Background()
 	semanticSplitter, err := NewSemanticSplitter(e.ksc, embedder)
 	if err != nil {

@@ -1,7 +1,6 @@
 package qiniu
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/request"
 	"context"
 	"encoding/json"
@@ -39,7 +38,7 @@ type (
 	}
 )
 
-func (handler *Driver) extractAvMeta(ctx context.Context, path string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) extractAvMeta(ctx context.Context, path string) ([]driver.MediaMeta, error) {
 	resp, err := handler.extractMediaInfo(ctx, path, avInfoParam)
 	if err != nil {
 		return nil, err
@@ -52,7 +51,7 @@ func (handler *Driver) extractAvMeta(ctx context.Context, path string) ([]pbslav
 
 	metas := mediameta.ProbeMetaTransform(avInfo)
 	if artist, ok := avInfo.Format.Tags["artist"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   mediameta.Artist,
 			Value: artist,
 			Type:  driver.MediaTypeMusic,
@@ -60,7 +59,7 @@ func (handler *Driver) extractAvMeta(ctx context.Context, path string) ([]pbslav
 	}
 
 	if album, ok := avInfo.Format.Tags["album"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   mediameta.MusicAlbum,
 			Value: album,
 			Type:  driver.MediaTypeMusic,
@@ -68,7 +67,7 @@ func (handler *Driver) extractAvMeta(ctx context.Context, path string) ([]pbslav
 	}
 
 	if title, ok := avInfo.Format.Tags["title"]; ok {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   mediameta.MusicTitle,
 			Value: title,
 			Type:  driver.MediaTypeMusic,
@@ -78,7 +77,7 @@ func (handler *Driver) extractAvMeta(ctx context.Context, path string) ([]pbslav
 	return metas, nil
 }
 
-func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]driver.MediaMeta, error) {
 	resp, err := handler.extractMediaInfo(ctx, path, exifParam)
 	if err != nil {
 		return nil, err
@@ -89,7 +88,7 @@ func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]pbs
 		return nil, fmt.Errorf("failed to unmarshal media info: %w", err)
 	}
 
-	metas := make([]pbslave.MediaMeta, 0)
+	metas := make([]driver.MediaMeta, 0)
 	exifMap := lo.MapEntries(imageInfo, func(key string, value ImageProp) (string, string) {
 		return key, value.Value
 	})
@@ -131,7 +130,7 @@ func unmarshalError(resp string, originErr error) error {
 	return fmt.Errorf("qiniu error: %s", err.Error)
 }
 
-func parseGpsInfo(imageInfo ImageInfo) []pbslave.MediaMeta {
+func parseGpsInfo(imageInfo ImageInfo) []driver.MediaMeta {
 	latitude := imageInfo["GPSLatitude"]   // 31, 16.2680820,  0
 	longitude := imageInfo["GPSLongitude"] // 120, 42.9103939,  0
 	latRef := imageInfo["GPSLatitudeRef"]  // N
@@ -146,7 +145,7 @@ func parseGpsInfo(imageInfo ImageInfo) []pbslave.MediaMeta {
 	lon := parseRawGPS(longitude.Value, lonRef.Value)
 	if !math.IsNaN(lat) && !math.IsNaN(lon) {
 		lat, lng := mediameta.NormalizeGPS(lat, lon)
-		return []pbslave.MediaMeta{{
+		return []driver.MediaMeta{{
 			Key:   mediameta.GpsLat,
 			Value: fmt.Sprintf("%f", lat),
 		}, {

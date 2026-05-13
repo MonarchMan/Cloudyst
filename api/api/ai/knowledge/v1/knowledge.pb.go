@@ -120,7 +120,7 @@ type UpsertKnowledgeRequest struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	IsPublic      bool                   `protobuf:"varint,4,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
-	Status        v1.Status              `protobuf:"varint,5,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
+	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -183,11 +183,11 @@ func (x *UpsertKnowledgeRequest) GetIsPublic() bool {
 	return false
 }
 
-func (x *UpsertKnowledgeRequest) GetStatus() v1.Status {
+func (x *UpsertKnowledgeRequest) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
-	return v1.Status(0)
+	return ""
 }
 
 type GetKnowledgeResponse struct {
@@ -286,7 +286,7 @@ type ListKnowledgeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Pagination    *v1.PaginationArgs     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Status        v1.Status              `protobuf:"varint,3,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
 	IsPublic      bool                   `protobuf:"varint,4,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -336,11 +336,11 @@ func (x *ListKnowledgeRequest) GetName() string {
 	return ""
 }
 
-func (x *ListKnowledgeRequest) GetStatus() v1.Status {
+func (x *ListKnowledgeRequest) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
-	return v1.Status(0)
+	return ""
 }
 
 func (x *ListKnowledgeRequest) GetIsPublic() bool {
@@ -353,7 +353,7 @@ func (x *ListKnowledgeRequest) GetIsPublic() bool {
 type ListKnowledgeResponse struct {
 	state         protoimpl.MessageState  `protogen:"open.v1"`
 	Pagination    *v1.PaginationResults   `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	Knowledge     []*GetKnowledgeResponse `protobuf:"bytes,2,rep,name=knowledge,proto3" json:"knowledge,omitempty"`
+	Knowledges    []*GetKnowledgeResponse `protobuf:"bytes,2,rep,name=knowledges,proto3" json:"knowledges,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -395,9 +395,9 @@ func (x *ListKnowledgeResponse) GetPagination() *v1.PaginationResults {
 	return nil
 }
 
-func (x *ListKnowledgeResponse) GetKnowledge() []*GetKnowledgeResponse {
+func (x *ListKnowledgeResponse) GetKnowledges() []*GetKnowledgeResponse {
 	if x != nil {
-		return x.Knowledge
+		return x.Knowledges
 	}
 	return nil
 }
@@ -495,7 +495,7 @@ type UpsertDocumentRequest struct {
 	Url              string                 `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
 	Version          string                 `protobuf:"bytes,5,opt,name=version,proto3" json:"version,omitempty"`
 	SegmentMaxTokens float64                `protobuf:"fixed64,6,opt,name=segment_max_tokens,json=segmentMaxTokens,proto3" json:"segment_max_tokens,omitempty"`
-	Status           v1.Status              `protobuf:"varint,7,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
+	Status           string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -572,11 +572,11 @@ func (x *UpsertDocumentRequest) GetSegmentMaxTokens() float64 {
 	return 0
 }
 
-func (x *UpsertDocumentRequest) GetStatus() v1.Status {
+func (x *UpsertDocumentRequest) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
-	return v1.Status(0)
+	return ""
 }
 
 type UpsertDocumentResponse struct {
@@ -857,7 +857,7 @@ type GetDocumentResponse struct {
 	Tokens           int64                  `protobuf:"varint,6,opt,name=tokens,proto3" json:"tokens,omitempty"`
 	SegmentMaxTokens int64                  `protobuf:"varint,7,opt,name=segment_max_tokens,json=segmentMaxTokens,proto3" json:"segment_max_tokens,omitempty"`
 	Progress         string                 `protobuf:"bytes,8,opt,name=Progress,proto3" json:"Progress,omitempty"`
-	Status           v1.Status              `protobuf:"varint,9,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
+	Status           string                 `protobuf:"bytes,9,opt,name=status,proto3" json:"status,omitempty"`
 	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	Version          string                 `protobuf:"bytes,12,opt,name=version,proto3" json:"version,omitempty"`
@@ -951,11 +951,11 @@ func (x *GetDocumentResponse) GetProgress() string {
 	return ""
 }
 
-func (x *GetDocumentResponse) GetStatus() v1.Status {
+func (x *GetDocumentResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
-	return v1.Status(0)
+	return ""
 }
 
 func (x *GetDocumentResponse) GetCreatedAt() *timestamppb.Timestamp {
@@ -984,7 +984,7 @@ type ListDocumentsRequest struct {
 	Pagination    *v1.PaginationArgs     `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	KnowledgeId   string                 `protobuf:"bytes,2,opt,name=knowledge_id,json=knowledgeId,proto3" json:"knowledge_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Status        v1.Status              `protobuf:"varint,4,opt,name=status,proto3,enum=common.v1.Status" json:"status,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
 	Progress      string                 `protobuf:"bytes,5,opt,name=progress,proto3" json:"progress,omitempty"`
 	PathKeyword   string                 `protobuf:"bytes,6,opt,name=path_keyword,json=pathKeyword,proto3" json:"path_keyword,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1042,11 +1042,11 @@ func (x *ListDocumentsRequest) GetName() string {
 	return ""
 }
 
-func (x *ListDocumentsRequest) GetStatus() v1.Status {
+func (x *ListDocumentsRequest) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
-	return v1.Status(0)
+	return ""
 }
 
 func (x *ListDocumentsRequest) GetProgress() string {
@@ -1657,13 +1657,13 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\rSimpleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\" \n" +
 	"\fMultiRequest\x12\x10\n" +
-	"\x03ids\x18\x01 \x03(\tR\x03ids\"\xa6\x01\n" +
+	"\x03ids\x18\x01 \x03(\tR\x03ids\"\x93\x01\n" +
 	"\x16UpsertKnowledgeRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1b\n" +
-	"\tis_public\x18\x04 \x01(\bR\bisPublic\x12)\n" +
-	"\x06status\x18\x05 \x01(\x0e2\x11.common.v1.StatusR\x06status\"\x90\x02\n" +
+	"\tis_public\x18\x04 \x01(\bR\bisPublic\x12\x16\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status\"\x90\x02\n" +
 	"\x14GetKnowledgeResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -1673,19 +1673,21 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xad\x01\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x9a\x01\n" +
 	"\x14ListKnowledgeRequest\x129\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x19.common.v1.PaginationArgsR\n" +
 	"pagination\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12)\n" +
-	"\x06status\x18\x03 \x01(\x0e2\x11.common.v1.StatusR\x06status\x12\x1b\n" +
-	"\tis_public\x18\x04 \x01(\bR\bisPublic\"\x9a\x01\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\x12\x1b\n" +
+	"\tis_public\x18\x04 \x01(\bR\bisPublic\"\x9c\x01\n" +
 	"\x15ListKnowledgeResponse\x12<\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
-	"pagination\x12C\n" +
-	"\tknowledge\x18\x02 \x03(\v2%.ai.knowledge.v1.GetKnowledgeResponseR\tknowledge\"\xd3\x01\n" +
+	"pagination\x12E\n" +
+	"\n" +
+	"knowledges\x18\x02 \x03(\v2%.ai.knowledge.v1.GetKnowledgeResponseR\n" +
+	"knowledges\"\xd3\x01\n" +
 	"\x16KnowledgeStatsResponse\x12%\n" +
 	"\x0edocument_count\x18\x01 \x01(\x05R\rdocumentCount\x12\x14\n" +
 	"\x05ready\x18\x02 \x01(\x05R\x05ready\x12\x1e\n" +
@@ -1694,15 +1696,15 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"processing\x12\x16\n" +
 	"\x06failed\x18\x04 \x01(\x05R\x06failed\x12!\n" +
 	"\fsuccess_rate\x18\x05 \x01(\x01R\vsuccessRate\x12!\n" +
-	"\ftotal_tokens\x18\x06 \x01(\x03R\vtotalTokens\"\xe3\x01\n" +
+	"\ftotal_tokens\x18\x06 \x01(\x03R\vtotalTokens\"\xd0\x01\n" +
 	"\x15UpsertDocumentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fknowledge_id\x18\x02 \x01(\tR\vknowledgeId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x10\n" +
 	"\x03url\x18\x04 \x01(\tR\x03url\x12\x18\n" +
 	"\aversion\x18\x05 \x01(\tR\aversion\x12,\n" +
-	"\x12segment_max_tokens\x18\x06 \x01(\x01R\x10segmentMaxTokens\x12)\n" +
-	"\x06status\x18\a \x01(\x0e2\x11.common.v1.StatusR\x06status\"s\n" +
+	"\x12segment_max_tokens\x18\x06 \x01(\x01R\x10segmentMaxTokens\x12\x16\n" +
+	"\x06status\x18\a \x01(\tR\x06status\"s\n" +
 	"\x16UpsertDocumentResponse\x12@\n" +
 	"\bdocument\x18\x01 \x01(\v2$.ai.knowledge.v1.GetDocumentResponseR\bdocument\x12\x17\n" +
 	"\atask_id\x18\x02 \x01(\tR\x06taskId\"b\n" +
@@ -1720,7 +1722,7 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"progresses\x18\x01 \x03(\v2,.ai.knowledge.v1.GetDocumentProgressResponseR\n" +
 	"progresses\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x17\n" +
-	"\atask_id\x18\x03 \x01(\tR\x06taskId\"\x9f\x03\n" +
+	"\atask_id\x18\x03 \x01(\tR\x06taskId\"\x8c\x03\n" +
 	"\x13GetDocumentResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fknowledge_id\x18\x02 \x01(\tR\vknowledgeId\x12\x12\n" +
@@ -1729,21 +1731,21 @@ const file_ai_knowledge_v1_knowledge_proto_rawDesc = "" +
 	"\x04size\x18\x05 \x01(\x03R\x04size\x12\x16\n" +
 	"\x06tokens\x18\x06 \x01(\x03R\x06tokens\x12,\n" +
 	"\x12segment_max_tokens\x18\a \x01(\x03R\x10segmentMaxTokens\x12\x1a\n" +
-	"\bProgress\x18\b \x01(\tR\bProgress\x12)\n" +
-	"\x06status\x18\t \x01(\x0e2\x11.common.v1.StatusR\x06status\x129\n" +
+	"\bProgress\x18\b \x01(\tR\bProgress\x12\x16\n" +
+	"\x06status\x18\t \x01(\tR\x06status\x129\n" +
 	"\n" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x18\n" +
-	"\aversion\x18\f \x01(\tR\aversion\"\xf2\x01\n" +
+	"\aversion\x18\f \x01(\tR\aversion\"\xdf\x01\n" +
 	"\x14ListDocumentsRequest\x129\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x19.common.v1.PaginationArgsR\n" +
 	"pagination\x12!\n" +
 	"\fknowledge_id\x18\x02 \x01(\tR\vknowledgeId\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12)\n" +
-	"\x06status\x18\x04 \x01(\x0e2\x11.common.v1.StatusR\x06status\x12\x1a\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12\x1a\n" +
 	"\bprogress\x18\x05 \x01(\tR\bprogress\x12!\n" +
 	"\fpath_keyword\x18\x06 \x01(\tR\vpathKeyword\"\x99\x01\n" +
 	"\x15ListDocumentsResponse\x12<\n" +
@@ -1851,83 +1853,77 @@ var file_ai_knowledge_v1_knowledge_proto_goTypes = []any{
 	(*GetMasterKnowledgeRequest)(nil),    // 22: ai.knowledge.v1.GetMasterKnowledgeRequest
 	(*ChangeDocumentOwnerRequest)(nil),   // 23: ai.knowledge.v1.ChangeDocumentOwnerRequest
 	(*GetSupportTextParseResponse)(nil),  // 24: ai.knowledge.v1.GetSupportTextParseResponse
-	(v1.Status)(0),                       // 25: common.v1.Status
-	(*timestamppb.Timestamp)(nil),        // 26: google.protobuf.Timestamp
-	(*v1.PaginationArgs)(nil),            // 27: common.v1.PaginationArgs
-	(*v1.PaginationResults)(nil),         // 28: common.v1.PaginationResults
-	(*emptypb.Empty)(nil),                // 29: google.protobuf.Empty
+	(*timestamppb.Timestamp)(nil),        // 25: google.protobuf.Timestamp
+	(*v1.PaginationArgs)(nil),            // 26: common.v1.PaginationArgs
+	(*v1.PaginationResults)(nil),         // 27: common.v1.PaginationResults
+	(*emptypb.Empty)(nil),                // 28: google.protobuf.Empty
 }
 var file_ai_knowledge_v1_knowledge_proto_depIdxs = []int32{
-	25, // 0: ai.knowledge.v1.UpsertKnowledgeRequest.status:type_name -> common.v1.Status
-	26, // 1: ai.knowledge.v1.GetKnowledgeResponse.created_at:type_name -> google.protobuf.Timestamp
-	26, // 2: ai.knowledge.v1.GetKnowledgeResponse.updated_at:type_name -> google.protobuf.Timestamp
-	27, // 3: ai.knowledge.v1.ListKnowledgeRequest.pagination:type_name -> common.v1.PaginationArgs
-	25, // 4: ai.knowledge.v1.ListKnowledgeRequest.status:type_name -> common.v1.Status
-	28, // 5: ai.knowledge.v1.ListKnowledgeResponse.pagination:type_name -> common.v1.PaginationResults
-	3,  // 6: ai.knowledge.v1.ListKnowledgeResponse.knowledge:type_name -> ai.knowledge.v1.GetKnowledgeResponse
-	25, // 7: ai.knowledge.v1.UpsertDocumentRequest.status:type_name -> common.v1.Status
-	13, // 8: ai.knowledge.v1.UpsertDocumentResponse.document:type_name -> ai.knowledge.v1.GetDocumentResponse
-	7,  // 9: ai.knowledge.v1.BatchCreateDocumentRequest.documents:type_name -> ai.knowledge.v1.UpsertDocumentRequest
-	13, // 10: ai.knowledge.v1.BatchCreateDocumentResponse.documents:type_name -> ai.knowledge.v1.GetDocumentResponse
-	16, // 11: ai.knowledge.v1.ReindexDocumentResponse.progress:type_name -> ai.knowledge.v1.GetDocumentProgressResponse
-	16, // 12: ai.knowledge.v1.BatchReindexDocumentResponse.progresses:type_name -> ai.knowledge.v1.GetDocumentProgressResponse
-	25, // 13: ai.knowledge.v1.GetDocumentResponse.status:type_name -> common.v1.Status
-	26, // 14: ai.knowledge.v1.GetDocumentResponse.created_at:type_name -> google.protobuf.Timestamp
-	26, // 15: ai.knowledge.v1.GetDocumentResponse.updated_at:type_name -> google.protobuf.Timestamp
-	27, // 16: ai.knowledge.v1.ListDocumentsRequest.pagination:type_name -> common.v1.PaginationArgs
-	25, // 17: ai.knowledge.v1.ListDocumentsRequest.status:type_name -> common.v1.Status
-	28, // 18: ai.knowledge.v1.ListDocumentsResponse.pagination:type_name -> common.v1.PaginationResults
-	13, // 19: ai.knowledge.v1.ListDocumentsResponse.documents:type_name -> ai.knowledge.v1.GetDocumentResponse
-	19, // 20: ai.knowledge.v1.SearchResponse.results:type_name -> ai.knowledge.v1.SearchResult
-	2,  // 21: ai.knowledge.v1.Knowledge.CreateKnowledge:input_type -> ai.knowledge.v1.UpsertKnowledgeRequest
-	2,  // 22: ai.knowledge.v1.Knowledge.UpdateKnowledge:input_type -> ai.knowledge.v1.UpsertKnowledgeRequest
-	0,  // 23: ai.knowledge.v1.Knowledge.GetKnowledge:input_type -> ai.knowledge.v1.SimpleRequest
-	0,  // 24: ai.knowledge.v1.Knowledge.DeleteKnowledge:input_type -> ai.knowledge.v1.SimpleRequest
-	4,  // 25: ai.knowledge.v1.Knowledge.ListKnowledge:input_type -> ai.knowledge.v1.ListKnowledgeRequest
-	0,  // 26: ai.knowledge.v1.Knowledge.KnowledgeStats:input_type -> ai.knowledge.v1.SimpleRequest
-	7,  // 27: ai.knowledge.v1.Knowledge.CreateDocument:input_type -> ai.knowledge.v1.UpsertDocumentRequest
-	9,  // 28: ai.knowledge.v1.Knowledge.BatchCreateDocuments:input_type -> ai.knowledge.v1.BatchCreateDocumentRequest
-	7,  // 29: ai.knowledge.v1.Knowledge.UpdateDocument:input_type -> ai.knowledge.v1.UpsertDocumentRequest
-	0,  // 30: ai.knowledge.v1.Knowledge.GetDocument:input_type -> ai.knowledge.v1.SimpleRequest
-	0,  // 31: ai.knowledge.v1.Knowledge.DeleteDocument:input_type -> ai.knowledge.v1.SimpleRequest
-	1,  // 32: ai.knowledge.v1.Knowledge.BatchDeleteDocuments:input_type -> ai.knowledge.v1.MultiRequest
-	14, // 33: ai.knowledge.v1.Knowledge.ListDocuments:input_type -> ai.knowledge.v1.ListDocumentsRequest
-	0,  // 34: ai.knowledge.v1.Knowledge.GetDocumentProgress:input_type -> ai.knowledge.v1.SimpleRequest
-	0,  // 35: ai.knowledge.v1.Knowledge.ReindexDocument:input_type -> ai.knowledge.v1.SimpleRequest
-	1,  // 36: ai.knowledge.v1.Knowledge.BatchReindexDocument:input_type -> ai.knowledge.v1.MultiRequest
-	17, // 37: ai.knowledge.v1.Knowledge.Search:input_type -> ai.knowledge.v1.SearchRequest
-	20, // 38: ai.knowledge.v1.Knowledge.CopyDocument:input_type -> ai.knowledge.v1.CopyDocumentRequest
-	21, // 39: ai.knowledge.v1.Knowledge.CreateMasterKnowledge:input_type -> ai.knowledge.v1.CreateMasterKnowledgeRequest
-	22, // 40: ai.knowledge.v1.Knowledge.GetMasterKnowledge:input_type -> ai.knowledge.v1.GetMasterKnowledgeRequest
-	23, // 41: ai.knowledge.v1.Knowledge.ChangeDocumentOwner:input_type -> ai.knowledge.v1.ChangeDocumentOwnerRequest
-	29, // 42: ai.knowledge.v1.Knowledge.GetSupportTextParse:input_type -> google.protobuf.Empty
-	3,  // 43: ai.knowledge.v1.Knowledge.CreateKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	3,  // 44: ai.knowledge.v1.Knowledge.UpdateKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	3,  // 45: ai.knowledge.v1.Knowledge.GetKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	29, // 46: ai.knowledge.v1.Knowledge.DeleteKnowledge:output_type -> google.protobuf.Empty
-	5,  // 47: ai.knowledge.v1.Knowledge.ListKnowledge:output_type -> ai.knowledge.v1.ListKnowledgeResponse
-	6,  // 48: ai.knowledge.v1.Knowledge.KnowledgeStats:output_type -> ai.knowledge.v1.KnowledgeStatsResponse
-	8,  // 49: ai.knowledge.v1.Knowledge.CreateDocument:output_type -> ai.knowledge.v1.UpsertDocumentResponse
-	10, // 50: ai.knowledge.v1.Knowledge.BatchCreateDocuments:output_type -> ai.knowledge.v1.BatchCreateDocumentResponse
-	8,  // 51: ai.knowledge.v1.Knowledge.UpdateDocument:output_type -> ai.knowledge.v1.UpsertDocumentResponse
-	13, // 52: ai.knowledge.v1.Knowledge.GetDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
-	29, // 53: ai.knowledge.v1.Knowledge.DeleteDocument:output_type -> google.protobuf.Empty
-	29, // 54: ai.knowledge.v1.Knowledge.BatchDeleteDocuments:output_type -> google.protobuf.Empty
-	15, // 55: ai.knowledge.v1.Knowledge.ListDocuments:output_type -> ai.knowledge.v1.ListDocumentsResponse
-	16, // 56: ai.knowledge.v1.Knowledge.GetDocumentProgress:output_type -> ai.knowledge.v1.GetDocumentProgressResponse
-	11, // 57: ai.knowledge.v1.Knowledge.ReindexDocument:output_type -> ai.knowledge.v1.ReindexDocumentResponse
-	12, // 58: ai.knowledge.v1.Knowledge.BatchReindexDocument:output_type -> ai.knowledge.v1.BatchReindexDocumentResponse
-	18, // 59: ai.knowledge.v1.Knowledge.Search:output_type -> ai.knowledge.v1.SearchResponse
-	13, // 60: ai.knowledge.v1.Knowledge.CopyDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
-	3,  // 61: ai.knowledge.v1.Knowledge.CreateMasterKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	3,  // 62: ai.knowledge.v1.Knowledge.GetMasterKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
-	13, // 63: ai.knowledge.v1.Knowledge.ChangeDocumentOwner:output_type -> ai.knowledge.v1.GetDocumentResponse
-	24, // 64: ai.knowledge.v1.Knowledge.GetSupportTextParse:output_type -> ai.knowledge.v1.GetSupportTextParseResponse
-	43, // [43:65] is the sub-list for method output_type
-	21, // [21:43] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	25, // 0: ai.knowledge.v1.GetKnowledgeResponse.created_at:type_name -> google.protobuf.Timestamp
+	25, // 1: ai.knowledge.v1.GetKnowledgeResponse.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 2: ai.knowledge.v1.ListKnowledgeRequest.pagination:type_name -> common.v1.PaginationArgs
+	27, // 3: ai.knowledge.v1.ListKnowledgeResponse.pagination:type_name -> common.v1.PaginationResults
+	3,  // 4: ai.knowledge.v1.ListKnowledgeResponse.knowledges:type_name -> ai.knowledge.v1.GetKnowledgeResponse
+	13, // 5: ai.knowledge.v1.UpsertDocumentResponse.document:type_name -> ai.knowledge.v1.GetDocumentResponse
+	7,  // 6: ai.knowledge.v1.BatchCreateDocumentRequest.documents:type_name -> ai.knowledge.v1.UpsertDocumentRequest
+	13, // 7: ai.knowledge.v1.BatchCreateDocumentResponse.documents:type_name -> ai.knowledge.v1.GetDocumentResponse
+	16, // 8: ai.knowledge.v1.ReindexDocumentResponse.progress:type_name -> ai.knowledge.v1.GetDocumentProgressResponse
+	16, // 9: ai.knowledge.v1.BatchReindexDocumentResponse.progresses:type_name -> ai.knowledge.v1.GetDocumentProgressResponse
+	25, // 10: ai.knowledge.v1.GetDocumentResponse.created_at:type_name -> google.protobuf.Timestamp
+	25, // 11: ai.knowledge.v1.GetDocumentResponse.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 12: ai.knowledge.v1.ListDocumentsRequest.pagination:type_name -> common.v1.PaginationArgs
+	27, // 13: ai.knowledge.v1.ListDocumentsResponse.pagination:type_name -> common.v1.PaginationResults
+	13, // 14: ai.knowledge.v1.ListDocumentsResponse.documents:type_name -> ai.knowledge.v1.GetDocumentResponse
+	19, // 15: ai.knowledge.v1.SearchResponse.results:type_name -> ai.knowledge.v1.SearchResult
+	2,  // 16: ai.knowledge.v1.Knowledge.CreateKnowledge:input_type -> ai.knowledge.v1.UpsertKnowledgeRequest
+	2,  // 17: ai.knowledge.v1.Knowledge.UpdateKnowledge:input_type -> ai.knowledge.v1.UpsertKnowledgeRequest
+	0,  // 18: ai.knowledge.v1.Knowledge.GetKnowledge:input_type -> ai.knowledge.v1.SimpleRequest
+	0,  // 19: ai.knowledge.v1.Knowledge.DeleteKnowledge:input_type -> ai.knowledge.v1.SimpleRequest
+	4,  // 20: ai.knowledge.v1.Knowledge.ListKnowledge:input_type -> ai.knowledge.v1.ListKnowledgeRequest
+	0,  // 21: ai.knowledge.v1.Knowledge.KnowledgeStats:input_type -> ai.knowledge.v1.SimpleRequest
+	7,  // 22: ai.knowledge.v1.Knowledge.CreateDocument:input_type -> ai.knowledge.v1.UpsertDocumentRequest
+	9,  // 23: ai.knowledge.v1.Knowledge.BatchCreateDocuments:input_type -> ai.knowledge.v1.BatchCreateDocumentRequest
+	7,  // 24: ai.knowledge.v1.Knowledge.UpdateDocument:input_type -> ai.knowledge.v1.UpsertDocumentRequest
+	0,  // 25: ai.knowledge.v1.Knowledge.GetDocument:input_type -> ai.knowledge.v1.SimpleRequest
+	0,  // 26: ai.knowledge.v1.Knowledge.DeleteDocument:input_type -> ai.knowledge.v1.SimpleRequest
+	1,  // 27: ai.knowledge.v1.Knowledge.BatchDeleteDocuments:input_type -> ai.knowledge.v1.MultiRequest
+	14, // 28: ai.knowledge.v1.Knowledge.ListDocuments:input_type -> ai.knowledge.v1.ListDocumentsRequest
+	0,  // 29: ai.knowledge.v1.Knowledge.GetDocumentProgress:input_type -> ai.knowledge.v1.SimpleRequest
+	0,  // 30: ai.knowledge.v1.Knowledge.ReindexDocument:input_type -> ai.knowledge.v1.SimpleRequest
+	1,  // 31: ai.knowledge.v1.Knowledge.BatchReindexDocument:input_type -> ai.knowledge.v1.MultiRequest
+	17, // 32: ai.knowledge.v1.Knowledge.Search:input_type -> ai.knowledge.v1.SearchRequest
+	20, // 33: ai.knowledge.v1.Knowledge.CopyDocument:input_type -> ai.knowledge.v1.CopyDocumentRequest
+	21, // 34: ai.knowledge.v1.Knowledge.CreateMasterKnowledge:input_type -> ai.knowledge.v1.CreateMasterKnowledgeRequest
+	22, // 35: ai.knowledge.v1.Knowledge.GetMasterKnowledge:input_type -> ai.knowledge.v1.GetMasterKnowledgeRequest
+	23, // 36: ai.knowledge.v1.Knowledge.ChangeDocumentOwner:input_type -> ai.knowledge.v1.ChangeDocumentOwnerRequest
+	28, // 37: ai.knowledge.v1.Knowledge.GetSupportTextParse:input_type -> google.protobuf.Empty
+	3,  // 38: ai.knowledge.v1.Knowledge.CreateKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	3,  // 39: ai.knowledge.v1.Knowledge.UpdateKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	3,  // 40: ai.knowledge.v1.Knowledge.GetKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	28, // 41: ai.knowledge.v1.Knowledge.DeleteKnowledge:output_type -> google.protobuf.Empty
+	5,  // 42: ai.knowledge.v1.Knowledge.ListKnowledge:output_type -> ai.knowledge.v1.ListKnowledgeResponse
+	6,  // 43: ai.knowledge.v1.Knowledge.KnowledgeStats:output_type -> ai.knowledge.v1.KnowledgeStatsResponse
+	8,  // 44: ai.knowledge.v1.Knowledge.CreateDocument:output_type -> ai.knowledge.v1.UpsertDocumentResponse
+	10, // 45: ai.knowledge.v1.Knowledge.BatchCreateDocuments:output_type -> ai.knowledge.v1.BatchCreateDocumentResponse
+	8,  // 46: ai.knowledge.v1.Knowledge.UpdateDocument:output_type -> ai.knowledge.v1.UpsertDocumentResponse
+	13, // 47: ai.knowledge.v1.Knowledge.GetDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
+	28, // 48: ai.knowledge.v1.Knowledge.DeleteDocument:output_type -> google.protobuf.Empty
+	28, // 49: ai.knowledge.v1.Knowledge.BatchDeleteDocuments:output_type -> google.protobuf.Empty
+	15, // 50: ai.knowledge.v1.Knowledge.ListDocuments:output_type -> ai.knowledge.v1.ListDocumentsResponse
+	16, // 51: ai.knowledge.v1.Knowledge.GetDocumentProgress:output_type -> ai.knowledge.v1.GetDocumentProgressResponse
+	11, // 52: ai.knowledge.v1.Knowledge.ReindexDocument:output_type -> ai.knowledge.v1.ReindexDocumentResponse
+	12, // 53: ai.knowledge.v1.Knowledge.BatchReindexDocument:output_type -> ai.knowledge.v1.BatchReindexDocumentResponse
+	18, // 54: ai.knowledge.v1.Knowledge.Search:output_type -> ai.knowledge.v1.SearchResponse
+	13, // 55: ai.knowledge.v1.Knowledge.CopyDocument:output_type -> ai.knowledge.v1.GetDocumentResponse
+	3,  // 56: ai.knowledge.v1.Knowledge.CreateMasterKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	3,  // 57: ai.knowledge.v1.Knowledge.GetMasterKnowledge:output_type -> ai.knowledge.v1.GetKnowledgeResponse
+	13, // 58: ai.knowledge.v1.Knowledge.ChangeDocumentOwner:output_type -> ai.knowledge.v1.GetDocumentResponse
+	24, // 59: ai.knowledge.v1.Knowledge.GetSupportTextParse:output_type -> ai.knowledge.v1.GetSupportTextParseResponse
+	38, // [38:60] is the sub-list for method output_type
+	16, // [16:38] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_ai_knowledge_v1_knowledge_proto_init() }

@@ -143,7 +143,7 @@ func (s *SessionService) RefreshToken(ctx context.Context, req *v1.RefreshTokenR
 		return nil, userpb.ErrorCredentialInvalid("Failed to issue token pair: %w", err)
 	}
 
-	return token, nil
+	return buildToken(token), nil
 }
 func (s *SessionService) SignOut(ctx context.Context, req *v1.RefreshTokenRequest) (*emptypb.Empty, error) {
 	claims, err := s.tokenAuth.Claims(ctx, req.RefreshToken)
@@ -323,15 +323,15 @@ func (s *SessionService) LoginValidation(ctx context.Context, req *v1.LoginReque
 }
 
 func (s *SessionService) IssueToken(ctx context.Context, user *ent.User) (*v1.BuiltinLoginResponse, error) {
-	token, err := s.tokenAuth.Issue(ctx, user, nil)
+	token, err := s.tokenAuth.Issue(ctx, &biz.IssueTokenArgs{
+		User:        user,
+		RootTokenID: nil,
+	})
 	if err != nil {
 		return nil, commonpb.ErrorEncrypt("Failed to issue token pair: %w", err)
 	}
 
-	return &v1.BuiltinLoginResponse{
-		User:  buildUser(user, s.hasher),
-		Token: token,
-	}, nil
+	return buildBuiltinLoginResponse(s.hasher, user, token), nil
 }
 
 func (s *SessionService) FinishPasskeyLogin(ctx context.Context, req *v1.FinishPasskeyLoginRequest) (*ent.User, error) {

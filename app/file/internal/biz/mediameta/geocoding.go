@@ -1,7 +1,6 @@
 package mediameta
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/request"
 	"context"
 	"encoding/json"
@@ -45,7 +44,7 @@ func (e *geocodingExtractor) Exts() []string {
 	return exifExts
 }
 
-func (e *geocodingExtractor) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]pbslave.MediaMeta, error) {
+func (e *geocodingExtractor) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]driver.MediaMeta, error) {
 	option := &option{}
 	for _, opt := range opts {
 		opt.apply(option)
@@ -88,7 +87,7 @@ func (e *geocodingExtractor) Extract(ctx context.Context, ext string, source ent
 	return metas, nil
 }
 
-func (e *geocodingExtractor) getGeocoding(ctx context.Context, lat, lng float64, language string) ([]pbslave.MediaMeta, error) {
+func (e *geocodingExtractor) getGeocoding(ctx context.Context, lat, lng float64, language string) ([]driver.MediaMeta, error) {
 	values := url.Values{}
 	values.Add("longitude", fmt.Sprintf("%f", lng))
 	values.Add("latitude", fmt.Sprintf("%f", lat))
@@ -118,40 +117,40 @@ func (e *geocodingExtractor) getGeocoding(ctx context.Context, lat, lng float64,
 		return nil, nil
 	}
 
-	metas := make([]pbslave.MediaMeta, 0)
+	metas := make([]driver.MediaMeta, 0)
 	contexts := geocoding.Features[0].Properties.Context
 	if contexts.Street != nil {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   Street,
 			Value: contexts.Street.Name,
 		})
 	}
 	if contexts.Locality != nil {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   Locality,
 			Value: contexts.Locality.Name,
 		})
 	}
 	if contexts.Place != nil {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   Place,
 			Value: contexts.Place.Name,
 		})
 	}
 	if contexts.District != nil {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   District,
 			Value: contexts.District.Name,
 		})
 	}
 	if contexts.Region != nil {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   Region,
 			Value: contexts.Region.Name,
 		})
 	}
 	if contexts.Country != nil {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   Country,
 			Value: contexts.Country.Name,
 		})

@@ -10,6 +10,7 @@ import (
 	"file/ent"
 	"file/internal/biz/cluster"
 	"file/internal/biz/filemanager"
+	"file/internal/biz/filemanager/encrypt"
 	"file/internal/biz/filemanager/fs"
 	"file/internal/biz/filemanager/manager"
 	"file/internal/biz/filemanager/manager/entitysource"
@@ -116,7 +117,7 @@ func NewCreateArchiveTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
 func (m *CreateArchiveTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	managerDep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
-	nodePool := filemanager.NodePoolFromContext(ctx)
+	nodePool := cluster.NodePoolFromContext(ctx)
 	m.l = managerDep.Logger()
 
 	m.Lock()
@@ -223,14 +224,21 @@ func (m *CreateArchiveTask) listEntitiesAndSendToSlave(ctx context.Context, mana
 		Policies: make(map[int]*ent.StoragePolicy),
 	}
 
-	user := trans.FromContext(ctx)
+	user := m.Owner()
 	fm := manager.NewFileManager(managerDep, dbfsDep, user)
 	storagePolicyClient := managerDep.PolicyClient()
+	masterKey, _ := managerDep.MasterEncryptKeyVault().GetMasterKey(ctx)
 
 	failed, err := fm.CreateArchive(ctx, uris, io.Discard,
 		fs.WithDryRun(func(name string, e fs.Entity) {
+			entityModel, err := decryptEntityKeyIfNeeded(masterKey, e.Model())
+			if err != nil {
+				m.l.Warnf("Failed to decrypt entity key for %q: %s", name, err)
+				return
+			}
+
 			payload.Entities = append(payload.Entities, SlaveCreateArchiveEntity{
-				Entity: e.Model(),
+				Entity: entityModel,
 				Path:   name,
 			})
 			if _, ok := payload.Policies[e.PolicyID()]; !ok {
@@ -300,8 +308,6 @@ func (m *CreateArchiveTask) awaitSlaveCompressing(ctx context.Context) (mqueue.T
 }
 
 func (m *CreateArchiveTask) createAndAwaitSlaveUploading(ctx context.Context, dep filemanager.ManagerDep) (mqueue.TaskStatus, error) {
-	user := trans.FromContext(ctx)
-
 	if m.state.SlaveUploadTaskID == 0 {
 		dst, err := fs.NewUriFromString(m.state.Dst)
 		if err != nil {
@@ -318,7 +324,7 @@ func (m *CreateArchiveTask) createAndAwaitSlaveUploading(ctx context.Context, de
 				},
 			},
 			MaxParallel: dep.SettingProvider().MaxParallelTransfer(ctx),
-			UserID:      user.ID,
+			UserID:      m.OwnerID(),
 		}
 
 		payloadStr, err := json.Marshal(payload)
@@ -687,4 +693,19 @@ func (m *SlaveCreateArchiveTask) Progress(ctx context.Context) mqueue.Progresses
 	defer m.Unlock()
 
 	return m.progress
+}
+
+func decryptEntityKeyIfNeeded(masterKey []byte, entity *ent.Entity) (*ent.Entity, error) {
+	if entity.Props == nil || entity.Props.EncryptMetadata == nil {
+		return entity, nil
+	}
+
+	decryptedKey, err := encrypt.DecryptWithMasterKey(masterKey, entity.Props.EncryptMetadata.Key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decrypt entity key: %w", err)
+	}
+
+	entity.Props.EncryptMetadata.KeyPlainText = decryptedKey
+	entity.Props.EncryptMetadata.Key = nil
+	return entity, nil
 }

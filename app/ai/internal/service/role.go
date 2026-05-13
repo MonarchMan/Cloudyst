@@ -5,12 +5,14 @@ import (
 	"ai/internal/data"
 	pb "api/api/ai/role/v1"
 	commonpb "api/api/common/v1"
+	"api/external/data/common"
 	"api/external/trans"
 	"common/hashid"
 	"context"
 	"entmodule"
 	"strings"
 
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -21,10 +23,17 @@ type RoleService struct {
 	rc     data.RoleClient
 	kc     data.KnowledgeClient
 	tc     data.ToolClient
+	l      *log.Helper
 }
 
-func NewRoleService() *RoleService {
-	return &RoleService{}
+func NewRoleService(hasher hashid.Encoder, rc data.RoleClient, kc data.KnowledgeClient, tc data.ToolClient, logger log.Logger) *RoleService {
+	return &RoleService{
+		hasher: hasher,
+		rc:     rc,
+		kc:     kc,
+		tc:     tc,
+		l:      log.NewHelper(logger, log.WithMessageKey("service-role")),
+	}
 }
 
 func (s *RoleService) CreateRole(ctx context.Context, req *pb.UpsertRoleRequest) (*pb.GetRoleResponse, error) {
@@ -135,7 +144,7 @@ func (s *RoleService) ListRole(ctx context.Context, req *pb.ListRoleRequest) (*p
 	u := trans.FromContext(ctx)
 	// 构建分页参数
 	args := &data.ListChatRoleArgs{
-		PaginationArgs: req.Pagination,
+		PaginationArgs: common.PaginationArgsFromProto(req.Pagination),
 		Name:           req.Name,
 		UserID:         u.ID,
 		PublicStatus:   req.IsPublic,
@@ -150,7 +159,7 @@ func (s *RoleService) ListRole(ctx context.Context, req *pb.ListRoleRequest) (*p
 		Roles: lo.Map(roles.Roles, func(r *ent.AiChatRole, index int) *pb.GetRoleResponse {
 			return buildRoleResponse(r, s.hasher)
 		}),
-		Pagination: roles.PaginationResults,
+		Pagination: common.PaginationResultsToProto(roles.PaginationResults),
 	}, nil
 }
 

@@ -39,6 +39,7 @@ type (
 	ListAiModelArgs struct {
 		*common.PaginationArgs
 		Name     string
+		Model    string
 		Platform string
 		Status   entmodule.Status
 	}
@@ -107,6 +108,10 @@ func (c *modelClient) ListModels(ctx context.Context, args *ListAiModelArgs) (*L
 		q.Where(aimodel.NameContainsFold(args.Name))
 	}
 
+	if args.Model != "" {
+		q.Where(aimodel.ModelContainsFold(args.Model))
+	}
+
 	if args.Platform != "" {
 		q.Where(aimodel.Platform(args.Platform))
 	}
@@ -140,13 +145,14 @@ func (c *modelClient) UpsertModel(ctx context.Context, model *ent.AiModel) (*ent
 	if model.ID == 0 {
 		q := c.client.AiModel.Create().
 			SetName(model.Name).
+			SetModel(model.Model).
 			SetType(model.Type).
 			SetPlatform(model.Platform).
 			SetSort(model.Sort).
 			SetStatus(model.Status).
 			SetTemperature(model.Temperature).
 			SetMaxTokens(model.MaxTokens).
-			SetMaxContext(model.MaxContext).
+			SetMaxContexts(model.MaxContexts).
 			SetKeyID(model.KeyID)
 		return q.Save(ctx)
 	}
@@ -154,11 +160,15 @@ func (c *modelClient) UpsertModel(ctx context.Context, model *ent.AiModel) (*ent
 	q := c.client.AiModel.UpdateOne(model).
 		SetName(model.Name).
 		SetPlatform(model.Platform).
-		SetSort(model.Sort).
-		SetStatus(model.Status).
-		SetTemperature(model.Temperature)
+		SetStatus(model.Status)
+	if model.Model != "" {
+		q = q.SetModel(model.Model)
+	}
 	if model.Type != "" {
 		q = q.SetType(model.Type)
+	}
+	if model.Sort >= 0 {
+		q = q.SetSort(model.Sort)
 	}
 
 	if model.Temperature >= 0 {
@@ -169,8 +179,8 @@ func (c *modelClient) UpsertModel(ctx context.Context, model *ent.AiModel) (*ent
 		q = q.SetMaxTokens(model.MaxTokens)
 	}
 
-	if model.MaxContext >= 0 {
-		q = q.SetMaxContext(model.MaxContext)
+	if model.MaxContexts >= 0 {
+		q = q.SetMaxContexts(model.MaxContexts)
 	}
 
 	return q.Save(ctx)
@@ -231,7 +241,7 @@ func (c *modelClient) ListApiKeys(ctx context.Context, args *ListApiKeyArgs) (*L
 	}
 
 	q.Order(getApiKeyOrderOption(args)...)
-	apiKeys, err := withApiKeyEagerLoading(ctx, q).Limit(int(args.PageSize)).Offset(int(args.Page * args.PageSize)).All(ctx)
+	apiKeys, err := withApiKeyEagerLoading(ctx, q).Limit(args.PageSize).Offset(args.Page * args.PageSize).All(ctx)
 	if err != nil {
 		return nil, err
 	}

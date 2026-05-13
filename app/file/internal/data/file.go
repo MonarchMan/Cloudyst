@@ -206,11 +206,16 @@ type FileClient interface {
 	// SoftDelete soft-deletes a files, also renaming it to a random name
 	SoftDelete(ctx context.Context, file *ent.File) error
 	// SetPrimaryEntity sets primary entity of a files
-	SetPrimaryEntity(ctx context.Context, file *ent.File, entityID int) error
+	SetPrimaryEntity(ctx context.Context, file *ent.File, entity *ent.Entity) error
 	// UnlinkEntity unlinks an entity from a files
 	UnlinkEntity(ctx context.Context, entity *ent.Entity, file *ent.File, ownerId int) (types.StorageDiff, error)
 	// CreateDirectLink creates a direct link for a files
 	CreateDirectLink(ctx context.Context, fileID int, name string, speed int, reuse bool) (*ent.DirectLink, error)
+	// CountIndexableFiles counts files suitable for FTS indexing (non-empty name, has parent, is file type).
+	CountIndexableFiles(ctx context.Context) (int, error)
+	// ListIndexableFiles lists files suitable for FTS indexing, returning up to limit files
+	// with ID strictly greater than afterID. Use afterID=0 to start from the beginning.
+	ListIndexableFiles(ctx context.Context, afterID, limit int) ([]*ent.File, error)
 	// CountByTimeRange counts files created in a given time range
 	CountByTimeRange(ctx context.Context, start, end *time.Time) (int, error)
 	// CountEntityByTimeRange counts entities created in a given time range
@@ -362,6 +367,27 @@ func (c *fileClient) CreateDirectLink(ctx context.Context, file int, name string
 		SetSpeed(speed).
 		SetDownloads(0).
 		Save(ctx)
+}
+
+func (f *fileClient) CountIndexableFiles(ctx context.Context) (int, error) {
+	return f.indexableFilesQuery().Count(ctx)
+}
+
+func (f *fileClient) ListIndexableFiles(ctx context.Context, afterID, limit int) ([]*ent.File, error) {
+	q := f.indexableFilesQuery()
+	if afterID > 0 {
+		q = q.Where(file.IDGT(afterID))
+	}
+	return q.Limit(limit).All(ctx)
+}
+
+func (f *fileClient) indexableFilesQuery() *ent.FileQuery {
+	return f.client.File.Query().Where(
+		file.Type(int(types.FileTypeFile)),
+		file.NameNEQ(""),
+		file.SizeGT(0),
+		file.FileParentIDNotNil(),
+	).Order(file.ByID())
 }
 
 func (c *fileClient) GetByHashID(ctx context.Context, hashID string) (*ent.File, error) {
@@ -782,8 +808,8 @@ func (c *fileClient) UpgradePlaceholder(ctx context.Context, file *ent.File, mod
 	return nil
 }
 
-func (c *fileClient) SetPrimaryEntity(ctx context.Context, file *ent.File, entityID int) error {
-	return c.client.File.UpdateOne(file).SetPrimaryEntity(entityID).Exec(ctx)
+func (c *fileClient) SetPrimaryEntity(ctx context.Context, file *ent.File, entity *ent.Entity) error {
+	return c.client.File.UpdateOne(file).SetPrimaryEntity(entity.ID).Exec(ctx)
 }
 
 func (c *fileClient) CreateFile(ctx context.Context, root *ent.File, args *CreateFileParameters) (*ent.File, *ent.Entity, types.StorageDiff, error) {

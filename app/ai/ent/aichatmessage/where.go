@@ -720,6 +720,26 @@ func UseContextNEQ(v bool) predicate.AiChatMessage {
 	return predicate.AiChatMessage(sql.FieldNEQ(FieldUseContext, v))
 }
 
+// SegmentIdsIsNil applies the IsNil predicate on the "segment_ids" field.
+func SegmentIdsIsNil() predicate.AiChatMessage {
+	return predicate.AiChatMessage(sql.FieldIsNull(FieldSegmentIds))
+}
+
+// SegmentIdsNotNil applies the NotNil predicate on the "segment_ids" field.
+func SegmentIdsNotNil() predicate.AiChatMessage {
+	return predicate.AiChatMessage(sql.FieldNotNull(FieldSegmentIds))
+}
+
+// AttachmentUrlsIsNil applies the IsNil predicate on the "attachment_urls" field.
+func AttachmentUrlsIsNil() predicate.AiChatMessage {
+	return predicate.AiChatMessage(sql.FieldIsNull(FieldAttachmentUrls))
+}
+
+// AttachmentUrlsNotNil applies the NotNil predicate on the "attachment_urls" field.
+func AttachmentUrlsNotNil() predicate.AiChatMessage {
+	return predicate.AiChatMessage(sql.FieldNotNull(FieldAttachmentUrls))
+}
+
 // HasAiWebPage applies the HasEdge predicate on the "ai_web_page" edge.
 func HasAiWebPage() predicate.AiChatMessage {
 	return predicate.AiChatMessage(func(s *sql.Selector) {

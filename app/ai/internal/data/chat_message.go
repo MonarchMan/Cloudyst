@@ -53,9 +53,11 @@ type (
 		UserID        int
 		RoleID        int
 		ModelID       int
+		Model         string
 		Type          string
 		ReplyID       int
 		Content       string
+		UseContext    bool
 		ReasonContent string
 		AttachUrls    []string
 		WebPages      []*types.WebPage
@@ -83,7 +85,7 @@ func (c *chatMessageClient) GetByIDs(ctx context.Context, ids []int) ([]*ent.AiC
 }
 
 func (c *chatMessageClient) List(ctx context.Context, args *ListChatMessageArgs) (*ListChatMessageResult, error) {
-	pageSize := common.CapPageSize(c.maxSQLParam, int(args.PageSize), 10)
+	pageSize := common.CapPageSize(c.maxSQLParam, args.PageSize, 10)
 	q := c.client.AiChatMessage.Query()
 	if args.ConversationID != 0 {
 		q.Where(aichatmessage.ConversationID(args.ConversationID))
@@ -102,18 +104,18 @@ func (c *chatMessageClient) List(ctx context.Context, args *ListChatMessageArgs)
 	}
 
 	if args.BeforeMsgID != 0 {
-		q.Where(aichatmessage.IDLTE(args.BeforeMsgID))
+		q.Where(aichatmessage.IDLT(args.BeforeMsgID))
 	}
 
 	if args.Type != "" {
 		q.Where(aichatmessage.Type(args.Type))
 	}
 
-	if args.Start.IsZero() {
+	if !args.Start.IsZero() {
 		q.Where(aichatmessage.CreatedAtGTE(args.Start))
 	}
 
-	if args.End.IsZero() {
+	if !args.End.IsZero() {
 		q.Where(aichatmessage.CreatedAtLTE(args.End))
 	}
 
@@ -122,7 +124,7 @@ func (c *chatMessageClient) List(ctx context.Context, args *ListChatMessageArgs)
 		return nil, err
 	}
 	q.Order(getChatMessageOrderOption(args)...)
-	cms, err := withMessageEagerLoading(ctx, q).Limit(int(args.PageSize)).Offset(int(args.Page * args.PageSize)).All(ctx)
+	cms, err := withMessageEagerLoading(ctx, q).Limit(pageSize).Offset(args.Page * args.PageSize).All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +146,8 @@ func (c *chatMessageClient) Create(ctx context.Context, args *CreateChatMessageA
 		SetRoleID(args.RoleID).
 		SetType(args.Type).
 		SetModelID(args.ModelID).
+		SetModel(args.Model).
+		SetUseContext(args.UseContext).
 		SetReplyID(args.ReplyID).
 		SetContent(args.Content).
 		SetReasonContent(args.ReasonContent).

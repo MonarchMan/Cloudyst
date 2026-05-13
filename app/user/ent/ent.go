@@ -10,6 +10,8 @@ import (
 	"sync"
 	"user/ent/davaccount"
 	"user/ent/group"
+	"user/ent/oauthclient"
+	"user/ent/oauthgrant"
 	"user/ent/passkey"
 	"user/ent/setting"
 	"user/ent/user"
@@ -77,11 +79,13 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			davaccount.Table: davaccount.ValidColumn,
-			group.Table:      group.ValidColumn,
-			passkey.Table:    passkey.ValidColumn,
-			setting.Table:    setting.ValidColumn,
-			user.Table:       user.ValidColumn,
+			davaccount.Table:  davaccount.ValidColumn,
+			group.Table:       group.ValidColumn,
+			oauthclient.Table: oauthclient.ValidColumn,
+			oauthgrant.Table:  oauthgrant.ValidColumn,
+			passkey.Table:     passkey.ValidColumn,
+			setting.Table:     setting.ValidColumn,
+			user.Table:        user.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

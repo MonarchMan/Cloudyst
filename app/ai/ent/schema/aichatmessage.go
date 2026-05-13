@@ -40,8 +40,10 @@ func (AiChatMessage) Fields() []ent.Field {
 		field.Bool("use_context").
 			Comment("是否携带上下文"),
 		field.Ints("segment_ids").
+			Optional().
 			Comment("关联段落ID列表"),
 		field.Strings("attachment_urls").
+			Optional().
 			Comment("关联文件URL列表"),
 	}
 }

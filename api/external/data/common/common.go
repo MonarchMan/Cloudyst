@@ -44,6 +44,8 @@ const (
 	OrderDirectionDesc = OrderDirection("desc")
 )
 
+const defaultPageSize = 100
+
 var (
 	ErrTooManyArguments = fmt.Errorf("too many arguments")
 )
@@ -81,7 +83,13 @@ func CapPageSize(maxSQlParam, preferredSize, margin int) int {
 	return pageSize
 }
 
-func ConvertPaginationArgs(args *pb.PaginationArgs) *PaginationArgs {
+func PaginationArgsFromProto(args *pb.PaginationArgs) *PaginationArgs {
+	if args.Page <= 0 {
+		args.Page = 1
+	}
+	if args.PageSize <= 0 {
+		args.PageSize = defaultPageSize
+	}
 	return &PaginationArgs{
 		Page:     int(args.Page - 1),
 		PageSize: int(args.PageSize),
@@ -98,7 +106,7 @@ func PaginationResultsToProto(args *PaginationResults) *pb.PaginationResults {
 	}
 }
 
-func ConvertListRequestPaginationArgs(args *pb.ListRequest) *PaginationArgs {
+func ListRequestPaginationArgsFromProto(args *pb.ListRequest) *PaginationArgs {
 	return &PaginationArgs{
 		Page:     int(args.Page - 1),
 		PageSize: int(args.PageSize),

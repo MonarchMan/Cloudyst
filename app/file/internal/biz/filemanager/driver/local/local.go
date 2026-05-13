@@ -1,7 +1,6 @@
 package local
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/auth"
 	"common/boolset"
 	"common/request"
@@ -299,6 +298,6 @@ func (handler *Driver) Capabilities() *driver.Capabilities {
 	return capabilities
 }
 
-func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]driver.MediaMeta, error) {
 	return nil, errors.New("not implemented")
 }

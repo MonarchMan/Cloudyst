@@ -31,14 +31,17 @@ type ModelHTTPServer interface {
 
 func RegisterModelHTTPServer(s *http.Server, srv ModelHTTPServer) {
 	r := s.Route("/")
-	r.GET("/ai/model/list/me", _Model_ListModel1_HTTP_Handler(srv))
+	r.POST("/ai/model/list/me", _Model_ListModel1_HTTP_Handler(srv))
 	r.GET("/ai/model/{id}", _Model_GetModel1_HTTP_Handler(srv))
-	r.GET("/ai/model/default", _Model_GetDefaultModel0_HTTP_Handler(srv))
+	r.POST("/ai/model/default", _Model_GetDefaultModel0_HTTP_Handler(srv))
 }
 
 func _Model_ListModel1_HTTP_Handler(srv ModelHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in ListModelRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -80,6 +83,9 @@ func _Model_GetModel1_HTTP_Handler(srv ModelHTTPServer) func(ctx http.Context) e
 func _Model_GetDefaultModel0_HTTP_Handler(srv ModelHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in DefaultModelRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -113,10 +119,10 @@ func NewModelHTTPClient(client *http.Client) ModelHTTPClient {
 func (c *ModelHTTPClientImpl) GetDefaultModel(ctx context.Context, in *DefaultModelRequest, opts ...http.CallOption) (*GetModelResponse, error) {
 	var out GetModelResponse
 	pattern := "/ai/model/default"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationModelGetDefaultModel))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -139,10 +145,10 @@ func (c *ModelHTTPClientImpl) GetModel(ctx context.Context, in *SimpleRequest, o
 func (c *ModelHTTPClientImpl) ListModel(ctx context.Context, in *ListModelRequest, opts ...http.CallOption) (*ListModelResponse, error) {
 	var out ListModelResponse
 	pattern := "/ai/model/list/me"
-	path := binding.EncodeURL(pattern, in, true)
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationModelListModel))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

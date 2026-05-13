@@ -18,6 +18,7 @@ import (
 	"time"
 	"user/ent"
 	"user/ent/davaccount"
+	"user/ent/oauthgrant"
 	"user/ent/passkey"
 	"user/ent/schema"
 	"user/ent/user"
@@ -207,6 +208,11 @@ func (c *userClient) Delete(ctx context.Context, uid int) error {
 	// Passkeys
 	if _, err := c.client.Passkey.Delete().Where(passkey.UserID(uid)).Exec(schema.SkipSoftDelete(ctx)); err != nil {
 		return fmt.Errorf("failed to delete passkeys: %w", err)
+	}
+
+	// OAuth grants
+	if _, err := c.client.OAuthGrant.Delete().Where(oauthgrant.UserID(uid)).Exec(schema.SkipSoftDelete(ctx)); err != nil {
+		return fmt.Errorf("failed to delete oauth grants: %w", err)
 	}
 	// Tasks
 

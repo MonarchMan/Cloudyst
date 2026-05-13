@@ -8,11 +8,13 @@ import (
 	"ai/internal/data"
 	pb "api/api/ai/knowledge/v1"
 	commonpb "api/api/common/v1"
+	"api/external/data/common"
 	"api/external/trans"
 	"common/hashid"
 	"context"
 	"entmodule"
 
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -22,10 +24,16 @@ type KnowledgeService struct {
 	hasher hashid.Encoder
 	kb     knowledge.KnowledgeBiz
 	conf   *conf.Bootstrap
+	l      *log.Helper
 }
 
-func NewKnowledgeService() *KnowledgeService {
-	return &KnowledgeService{}
+func NewKnowledgeService(hasher hashid.Encoder, kb knowledge.KnowledgeBiz, conf *conf.Bootstrap, logger log.Logger) *KnowledgeService {
+	return &KnowledgeService{
+		hasher: hasher,
+		kb:     kb,
+		conf:   conf,
+		l:      log.NewHelper(logger, log.WithMessageKey("service-knowledge")),
+	}
 }
 
 func (s *KnowledgeService) CreateKnowledge(ctx context.Context, req *pb.UpsertKnowledgeRequest) (*pb.GetKnowledgeResponse, error) {
@@ -85,23 +93,18 @@ func (s *KnowledgeService) DeleteKnowledge(ctx context.Context, req *pb.SimpleRe
 }
 func (s *KnowledgeService) ListKnowledge(ctx context.Context, req *pb.ListKnowledgeRequest) (*pb.ListKnowledgeResponse, error) {
 	args := &data.ListKnowledgeArgs{
-		PaginationArgs: &commonpb.PaginationArgs{
-			Page:           req.Pagination.Page - 1,
-			PageSize:       req.Pagination.PageSize,
-			OrderBy:        req.Pagination.OrderBy,
-			OrderDirection: req.Pagination.OrderDirection,
-		},
-		Name:     req.Name,
-		IsPublic: req.IsPublic,
-		Status:   entmodule.StatusFromProto(req.Status),
+		PaginationArgs: common.PaginationArgsFromProto(req.Pagination),
+		Name:           req.Name,
+		IsPublic:       req.IsPublic,
+		Status:         entmodule.GetStatus(req.Status),
 	}
 	res, err := s.kb.ListKnowledge(ctx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list knowledge: %w", err)
 	}
 	return &pb.ListKnowledgeResponse{
-		Pagination: res.PaginationResults,
-		Knowledge: lo.Map(res.Knowledges, func(k *ent.AiKnowledge, _ int) *pb.GetKnowledgeResponse {
+		Pagination: common.PaginationResultsToProto(res.PaginationResults),
+		Knowledges: lo.Map(res.Knowledges, func(k *ent.AiKnowledge, _ int) *pb.GetKnowledgeResponse {
 			return buildGetKnowledgeResponse(s.hasher, k)
 		}),
 	}, nil
@@ -223,17 +226,17 @@ func (s *KnowledgeService) ListDocuments(ctx context.Context, req *pb.ListDocume
 	}
 	req.Pagination.Page -= 1
 	args := &data.ListKnowledgeDocumentArgs{
-		PaginationArgs: req.Pagination,
+		PaginationArgs: common.PaginationArgsFromProto(req.Pagination),
 		KnowledgeID:    kid,
 		Name:           req.Name,
-		Status:         entmodule.StatusFromProto(req.Status),
+		Status:         entmodule.GetStatus(req.Status),
 	}
 	res, err := s.kb.ListKnowledgeDocument(ctx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list documents: %w", err)
 	}
 	return &pb.ListDocumentsResponse{
-		Pagination: res.PaginationResults,
+		Pagination: common.PaginationResultsToProto(res.PaginationResults),
 		Documents: lo.Map(res.Documents, func(doc *ent.AiKnowledgeDocument, index int) *pb.GetDocumentResponse {
 			return buildGetDocumentResponse(s.hasher, doc)
 		}),

@@ -1,9 +1,7 @@
 package schema
 
 import (
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -16,14 +14,10 @@ type DirectLink struct {
 // Fields of the DirectLink.
 func (DirectLink) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").
-			Annotations(entproto.Field(2)),
-		field.Int("downloads").
-			Annotations(entproto.Field(3)),
-		field.Int("file_id").
-			Annotations(entproto.Field(4)),
-		field.Int("speed").
-			Annotations(entproto.Field(5)),
+		field.String("name"),
+		field.Int("downloads"),
+		field.Int("file_id"),
+		field.Int("speed"),
 	}
 }
 
@@ -34,19 +28,12 @@ func (DirectLink) Edges() []ent.Edge {
 			Ref("direct_links").
 			Field("file_id").
 			Required().
-			Unique().
-			Annotations(entproto.Field(80)),
+			Unique(),
 	}
 }
 
 func (DirectLink) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		CommonMixin{},
-	}
-}
-
-func (DirectLink) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
 	}
 }

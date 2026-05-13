@@ -88,7 +88,8 @@ func wireApp(bootstrap *conf.Bootstrap, parser *uaparser.Parser, client *api.Cli
 	}
 	textMapPropagator := pkg.Propagator()
 	grpcServer := server.NewGRPCServer(bootstrap, userService, adminService, tracerProvider, textMapPropagator)
-	tokenAuth := biz.NewTokenAuth(encoder, provider, bootstrap, userClient, logger, driver)
+	oAuthClientClient := data.NewOAuthClientClient(entClient, dbType)
+	tokenAuth := biz.NewTokenAuth(encoder, provider, bootstrap, userClient, oAuthClientClient, logger, driver)
 	sessionService := service.NewSessionService(userClient, driver, encoder, tokenAuth, provider, captchaHelper, logger)
 	davAccountClient := data.NewDavAccountClient(entClient, dbType, encoder)
 	deviceService := service.NewDeviceService(davAccountClient, encoder)

@@ -122,11 +122,11 @@ func RegisterAdminHTTPServer(s *http.Server, srv AdminHTTPServer) {
 	r.POST("/admin/tool/thumbExecutable", _Admin_TestThumbGenerator0_HTTP_Handler(srv))
 	r.POST("/admin/tool/testMail", _Admin_SendTestMail0_HTTP_Handler(srv))
 	r.DELETE("/admin/tool/entityUrlCache", _Admin_ClearEntityUrlCache0_HTTP_Handler(srv))
-	r.GET("/admin/file/queue/metrics", _Admin_GetQueueMetrics1_HTTP_Handler(srv))
-	r.POST("/admin/file/queue", _Admin_ListTasks2_HTTP_Handler(srv))
-	r.GET("/admin/file/queue/{id}", _Admin_GetTask2_HTTP_Handler(srv))
-	r.POST("/admin/file/queue/batch/delete", _Admin_BatchDeleteTasks1_HTTP_Handler(srv))
-	r.POST("/admin/file/queue/cleanup", _Admin_CleanupTask1_HTTP_Handler(srv))
+	r.GET("/admin/queue/metrics", _Admin_GetQueueMetrics1_HTTP_Handler(srv))
+	r.POST("/admin/queue", _Admin_ListTasks2_HTTP_Handler(srv))
+	r.GET("/admin/queue/{id}", _Admin_GetTask2_HTTP_Handler(srv))
+	r.POST("/admin/queue/batch/delete", _Admin_BatchDeleteTasks1_HTTP_Handler(srv))
+	r.POST("/admin/queue/cleanup", _Admin_CleanupTask1_HTTP_Handler(srv))
 	r.POST("/admin/node", _Admin_ListNodes0_HTTP_Handler(srv))
 	r.GET("/admin/node/{id}", _Admin_GetNode0_HTTP_Handler(srv))
 	r.POST("/admin/node/test", _Admin_TestSlave0_HTTP_Handler(srv))
@@ -1091,7 +1091,7 @@ func (c *AdminHTTPClientImpl) BatchDeleteShares(ctx context.Context, in *BatchSh
 
 func (c *AdminHTTPClientImpl) BatchDeleteTasks(ctx context.Context, in *BatchDeleteTasksRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/admin/file/queue/batch/delete"
+	pattern := "/admin/queue/batch/delete"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminBatchDeleteTasks))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -1104,7 +1104,7 @@ func (c *AdminHTTPClientImpl) BatchDeleteTasks(ctx context.Context, in *BatchDel
 
 func (c *AdminHTTPClientImpl) CleanupTask(ctx context.Context, in *CleanupTaskRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/admin/file/queue/cleanup"
+	pattern := "/admin/queue/cleanup"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminCleanupTask))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -1313,7 +1313,7 @@ func (c *AdminHTTPClientImpl) GetPolicyOAuthCallbackUrl(ctx context.Context, in 
 
 func (c *AdminHTTPClientImpl) GetQueueMetrics(ctx context.Context, in *emptypb.Empty, opts ...http.CallOption) (*QueueMetricsResponse, error) {
 	var out QueueMetricsResponse
-	pattern := "/admin/file/queue/metrics"
+	pattern := "/admin/queue/metrics"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminGetQueueMetrics))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -1365,7 +1365,7 @@ func (c *AdminHTTPClientImpl) GetStoragePolicyStatus(ctx context.Context, in *Si
 
 func (c *AdminHTTPClientImpl) GetTask(ctx context.Context, in *SimpleTaskRequest, opts ...http.CallOption) (*GetTaskResponse, error) {
 	var out GetTaskResponse
-	pattern := "/admin/file/queue/{id}"
+	pattern := "/admin/queue/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAdminGetTask))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -1446,7 +1446,7 @@ func (c *AdminHTTPClientImpl) ListShares(ctx context.Context, in *v1.ListRequest
 
 func (c *AdminHTTPClientImpl) ListTasks(ctx context.Context, in *v1.ListRequest, opts ...http.CallOption) (*ListTaskResponse, error) {
 	var out ListTaskResponse
-	pattern := "/admin/file/queue"
+	pattern := "/admin/queue"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAdminListTasks))
 	opts = append(opts, http.PathTemplate(pattern))

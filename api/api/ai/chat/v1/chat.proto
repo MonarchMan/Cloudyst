@@ -51,7 +51,8 @@ service Chat {
 
   rpc ListChatConversations(ListConversationRequest) returns (ListConversationResponse) {
     option (google.api.http) = {
-      get: "/ai/chat/conversation/list"
+      post: "/ai/chat/conversation/list"
+      body: "*"
     };
   }
 
@@ -71,7 +72,8 @@ service Chat {
 
   rpc ListConversationMessage(ListConversationMessagesRequest) returns (ListConversationMessagesResponse) {
     option (google.api.http) = {
-      get: "/ai/chat/message/list"
+      post: "/ai/chat/message/list"
+      body: "*"
     };
   }
 
@@ -104,16 +106,17 @@ message GetChatConversationResponse {
   bool pinned = 3;
   string system_message = 4;
   string model = 5;
-  double temperature = 6;
-  int64 max_tokens = 7;
-  int64 max_contexts = 8;
-  google.protobuf.Timestamp created_at = 9;
+  string model_id = 6;
+  double temperature = 7;
+  int64 max_tokens = 8;
+  int64 max_contexts = 9;
+  google.protobuf.Timestamp created_at = 10;
 
   // 关联role信息
-  string role_avatar = 10;
-  string role_name = 11;
+  string role_avatar = 11;
+  string role_name = 12;
 
-  int32 message_count = 12;
+  int32 message_count = 13;
 }
 
 message UpdateChatConversationRequest {
@@ -170,6 +173,7 @@ message MessageRecord {
   repeated WebPage web_pages = 6;
   google.protobuf.Timestamp created_at = 7;
   string conversation_id = 8;
+  string reply_id = 9;
 }
 
 message KnowledgeSegment {

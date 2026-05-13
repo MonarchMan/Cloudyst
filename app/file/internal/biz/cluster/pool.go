@@ -206,3 +206,9 @@ func (s *slaveDummyNodePool) Upsert(ctx context.Context, node *ent.Node) {
 func (s *slaveDummyNodePool) Get(ctx context.Context, capability types.NodeCapability, preferred int) (Node, error) {
 	return s.masterNode, nil
 }
+
+type NodePoolCtx struct{}
+
+func NodePoolFromContext(ctx context.Context) NodePool {
+	return ctx.Value(NodePoolCtx{}).(NodePool)
+}

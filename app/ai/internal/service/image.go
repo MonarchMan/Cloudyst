@@ -6,6 +6,7 @@ import (
 	"ai/internal/data"
 	pb "api/api/ai/image/v1"
 	commonpb "api/api/common/v1"
+	"api/external/data/common"
 	"api/external/trans"
 	"common/hashid"
 	"context"
@@ -56,7 +57,7 @@ func (s *ImageService) ListImage(ctx context.Context, req *pb.ListImageRequest) 
 	u := trans.FromContext(ctx)
 	// 构建分页参数
 	args := &data.ListAIImageArgs{
-		PaginationArgs: req.Pagination,
+		PaginationArgs: common.PaginationArgsFromProto(req.Pagination),
 		Platform:       req.Platform,
 		Status:         types.ImageStatus(req.Status),
 		UserID:         u.ID,
@@ -70,7 +71,7 @@ func (s *ImageService) ListImage(ctx context.Context, req *pb.ListImageRequest) 
 		Images: lo.Map(images.Images, func(i *ent.AiImage, index int) *pb.GetImageResponse {
 			return buildImageResponse(i, s.hasher)
 		}),
-		Pagination: images.PaginationResults,
+		Pagination: common.PaginationResultsToProto(images.PaginationResults),
 	}, nil
 }
 

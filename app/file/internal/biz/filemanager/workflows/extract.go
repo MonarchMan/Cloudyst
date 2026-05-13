@@ -118,7 +118,7 @@ func NewExtractArchiveTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
 func (t *ExtractArchiveTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
-	np := filemanager.NodePoolFromContext(ctx)
+	np := cluster.NodePoolFromContext(ctx)
 	t.l = dep.Logger()
 
 	t.Lock()
@@ -190,11 +190,11 @@ func (t *ExtractArchiveTask) createSlaveExtractTask(ctx context.Context, dep fil
 		return mqueue.StatusError, fmt.Errorf("failed to get archive files: %s (%w)", err, queue.CriticalErr)
 	}
 
-	// Validate files size
-	//if users.Edges.Group.Settings.DecompressSize > 0 && archiveFile.Size() > users.Edges.Group.Settings.DecompressSize {
-	//	return mqueue.StatusError,
-	//		fmt.Errorf("files size %d exceeds the limit %d (%w)", archiveFile.Size(), users.Edges.Group.Settings.DecompressSize, queue.CriticalErr)
-	//}
+	//Validate files size
+	if user.Group.Settings.DecompressSize > 0 && archiveFile.Size() > user.Group.Settings.DecompressSize {
+		return mqueue.StatusError,
+			fmt.Errorf("files size %d exceeds the limit %d (%w)", archiveFile.Size(), user.Group.Settings.DecompressSize, queue.CriticalErr)
+	}
 
 	// Create slave task
 	storagePolicyClient := dep.PolicyClient()
@@ -203,9 +203,15 @@ func (t *ExtractArchiveTask) createSlaveExtractTask(ctx context.Context, dep fil
 		return mqueue.StatusError, fmt.Errorf("failed to get policy: %w", err)
 	}
 
+	masterKey, _ := dep.MasterEncryptKeyVault().GetMasterKey(ctx)
+	entityModel, err := decryptEntityKeyIfNeeded(masterKey, archiveFile.PrimaryEntity().Model())
+	if err != nil {
+		return mqueue.StatusError, fmt.Errorf("failed to decrypt entity key for archive file %q: %s", archiveFile.DisplayName(), err)
+	}
+
 	payload := &SlaveExtractArchiveTaskState{
 		FileName: archiveFile.DisplayName(),
-		Entity:   archiveFile.PrimaryEntity().Model(),
+		Entity:   entityModel,
 		Policy:   policy,
 		Encoding: t.state.Encoding,
 		Dst:      t.state.Dst,
@@ -268,7 +274,7 @@ func (t *ExtractArchiveTask) masterExtractArchive(ctx context.Context, dep filem
 		return mqueue.StatusError, fmt.Errorf("failed to parse dst uri: %s (%w)", err, queue.CriticalErr)
 	}
 
-	user := trans.FromContext(ctx)
+	user := t.Owner()
 	fm := manager.NewFileManager(dep, dbfsDep, user)
 
 	// Get entity source to extract
@@ -601,7 +607,7 @@ func (t *SlaveExtractArchiveTask) Do(ctx context.Context) (mqueue.TaskStatus, er
 	ctx = prepareSlaveTaskCtx(ctx, t.props)
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
-	np := filemanager.NodePoolFromContext(ctx)
+	np := cluster.NodePoolFromContext(ctx)
 	t.l = dep.Logger()
 	if np == nil {
 		return mqueue.StatusError, fmt.Errorf("failed to get node pool")

@@ -55,6 +55,8 @@ type (
 		CountByTimeRange(ctx context.Context, start, end *time.Time) (int, error)
 		// DeleteBatch deletes the shares with the given ids.
 		DeleteBatch(ctx context.Context, shareIds []int) error
+		// DeleteBatchByUserID deletes the shares with the given ids and user id
+		DeleteBatchByUserID(ctx context.Context, uid int, shareIds []int) error
 	}
 
 	CreateShareParams struct {
@@ -193,6 +195,11 @@ func (c *shareClient) GetByIDs(ctx context.Context, ids []int) ([]*ent.Share, er
 
 func (c *shareClient) DeleteBatch(ctx context.Context, shareIds []int) error {
 	_, err := c.client.Share.Delete().Where(share.IDIn(shareIds...)).Exec(ctx)
+	return err
+}
+
+func (c *shareClient) DeleteBatchByUserID(ctx context.Context, uid int, shareIds []int) error {
+	_, err := c.client.Share.Delete().Where(share.IDIn(shareIds...)).Where(share.OwnerID(uid)).Exec(ctx)
 	return err
 }
 

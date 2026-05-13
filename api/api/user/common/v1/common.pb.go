@@ -107,6 +107,8 @@ const (
 	ErrorReason_OWNER_ONLY                      ErrorReason = 40082
 	ErrorReason_PURCHASE_REQUIRED               ErrorReason = 40083
 	ErrorReason_MANAGED_ACCOUNT_MINIMUM_OPEN_ID ErrorReason = 40084
+	// CodeInsufficientScope OAuth token scope insufficient
+	ErrorReason_CodeInsufficientScope ErrorReason = 40089
 )
 
 // Enum value maps for ErrorReason.
@@ -139,6 +141,7 @@ var (
 		40082: "OWNER_ONLY",
 		40083: "PURCHASE_REQUIRED",
 		40084: "MANAGED_ACCOUNT_MINIMUM_OPEN_ID",
+		40089: "CodeInsufficientScope",
 	}
 	ErrorReason_value = map[string]int32{
 		"UNSPECIFIED":                     0,
@@ -168,6 +171,7 @@ var (
 		"OWNER_ONLY":                      40082,
 		"PURCHASE_REQUIRED":               40083,
 		"MANAGED_ACCOUNT_MINIMUM_OPEN_ID": 40084,
+		"CodeInsufficientScope":           40089,
 	}
 )
 
@@ -1262,7 +1266,7 @@ const file_user_common_v1_common_proto_rawDesc = "" +
 	"\x11PUBLIC_SHARE_ONLY\x10\x00\x12\r\n" +
 	"\tALL_SHARE\x10\x01\x12\x0e\n" +
 	"\n" +
-	"HIDE_SHARE\x10\x02*\xbe\x05\n" +
+	"HIDE_SHARE\x10\x02*\xdb\x05\n" +
 	"\vErrorReason\x12\x0f\n" +
 	"\vUNSPECIFIED\x10\x00\x12\x17\n" +
 	"\fUNAUTHORIZED\x10\x91\x03\x1a\x04\xa8E\x91\x03\x12\x14\n" +
@@ -1291,7 +1295,8 @@ const file_user_common_v1_common_proto_rawDesc = "" +
 	"\n" +
 	"OWNER_ONLY\x10\x92\xb9\x02\x12\x17\n" +
 	"\x11PURCHASE_REQUIRED\x10\x93\xb9\x02\x12%\n" +
-	"\x1fMANAGED_ACCOUNT_MINIMUM_OPEN_ID\x10\x94\xb9\x02\x1a\x04\xa0E\x90\x03B\x1bZ\x19api/api/user/common/v1;v1b\x06proto3"
+	"\x1fMANAGED_ACCOUNT_MINIMUM_OPEN_ID\x10\x94\xb9\x02\x12\x1b\n" +
+	"\x15CodeInsufficientScope\x10\x99\xb9\x02\x1a\x04\xa0E\x90\x03B\x1bZ\x19api/api/user/common/v1;v1b\x06proto3"
 
 var (
 	file_user_common_v1_common_proto_rawDescOnce sync.Once

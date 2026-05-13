@@ -5,8 +5,11 @@ import (
 	"common/cache"
 	"common/util"
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"user/ent"
 	"user/ent/setting"
 	"user/internal/data/types"
@@ -662,6 +665,32 @@ var DefaultSettings = map[string]string{
 	"headless_footer_html":                       "",
 	"headless_bottom_html":                       "",
 	"sidebar_bottom_html":                        "",
+	"encrypt_master_key":                         "",
+	"encrypt_master_key_vault":                   "setting",
+	"encrypt_master_key_file":                    "",
+	"show_encryption_status":                     "1",
+	"show_desktop_app_promotion":                 "1",
+	"fs_event_push_enabled":                      "1",
+	"fs_event_push_max_age":                      "1209600",
+	"fs_event_push_debounce":                     "5",
+	"fts_enabled":                                "0",
+	"fts_index_type":                             "meilisearch",
+	"fts_extractor_type":                         "tika",
+	"fts_meilisearch_endpoint":                   "",
+	"fts_meilisearch_api_key":                    "",
+	"fts_meilisearch_page_size":                  "5",
+	"fts_meilisearch_embed_enabled":              "0",
+	"fts_meilisearch_embed_config":               "{}",
+	"fts_tika_endpoint":                          "",
+	"fts_tika_exts":                              "pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,rtf,txt,md,html,htm,epub,csv",
+	"fts_tika_max_file_size":                     "26214400",
+	"fts_chunk_size":                             "2000",
+	"viewer_default_apps":                        "{}",
+}
+
+var RedactedSettings = map[string]struct{}{
+	"encrypt_master_key": {},
+	"secret_key":         {},
 }
 
 func init() {
@@ -722,4 +751,10 @@ func init() {
 		panic(err)
 	}
 	DefaultSettings["mail_reset_template"] = string(mailResetTemplates)
+
+	key := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, key); err != nil {
+		panic(err)
+	}
+	DefaultSettings["encrypt_master_key"] = base64.StdEncoding.EncodeToString(key)
 }

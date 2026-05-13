@@ -16,6 +16,19 @@ const (
 	SlaveClearTaskRegistryQuery = "deleteOnComplete"
 )
 
+var (
+	masterPing         *url.URL
+	masterUserActivate *url.URL
+	masterUserReset    *url.URL
+	masterHome         *url.URL
+)
+
+func init() {
+	masterPing, _ = url.Parse(constants.APIPrefix + "/site/ping")
+	masterUserActivate, _ = url.Parse("/session/activate")
+	masterUserReset, _ = url.Parse("/session/reset")
+}
+
 func FrontendHomeUrl(base *url.URL, path string) *url.URL {
 	route, _ := url.Parse(fmt.Sprintf("/home"))
 	q := route.Query()
@@ -23,6 +36,10 @@ func FrontendHomeUrl(base *url.URL, path string) *url.URL {
 	route.RawQuery = q.Encode()
 
 	return base.ResolveReference(route)
+}
+
+func MasterPingUrl(base *url.URL) *url.URL {
+	return base.ResolveReference(masterPing)
 }
 
 func MasterSlaveCallbackUrl(base *url.URL, driver, id, secret string) *url.URL {

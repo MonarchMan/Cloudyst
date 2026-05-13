@@ -76,6 +76,11 @@ func Name(v string) predicate.AiModel {
 	return predicate.AiModel(sql.FieldEQ(FieldName, v))
 }
 
+// Model applies equality check predicate on the "model" field. It's identical to ModelEQ.
+func Model(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldEQ(FieldModel, v))
+}
+
 // Type applies equality check predicate on the "type" field. It's identical to TypeEQ.
 func Type(v string) predicate.AiModel {
 	return predicate.AiModel(sql.FieldEQ(FieldType, v))
@@ -101,9 +106,9 @@ func MaxTokens(v int) predicate.AiModel {
 	return predicate.AiModel(sql.FieldEQ(FieldMaxTokens, v))
 }
 
-// MaxContext applies equality check predicate on the "max_context" field. It's identical to MaxContextEQ.
-func MaxContext(v int) predicate.AiModel {
-	return predicate.AiModel(sql.FieldEQ(FieldMaxContext, v))
+// MaxContexts applies equality check predicate on the "max_contexts" field. It's identical to MaxContextsEQ.
+func MaxContexts(v int) predicate.AiModel {
+	return predicate.AiModel(sql.FieldEQ(FieldMaxContexts, v))
 }
 
 // KeyID applies equality check predicate on the "key_id" field. It's identical to KeyIDEQ.
@@ -304,6 +309,71 @@ func NameEqualFold(v string) predicate.AiModel {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.AiModel {
 	return predicate.AiModel(sql.FieldContainsFold(FieldName, v))
+}
+
+// ModelEQ applies the EQ predicate on the "model" field.
+func ModelEQ(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldEQ(FieldModel, v))
+}
+
+// ModelNEQ applies the NEQ predicate on the "model" field.
+func ModelNEQ(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldNEQ(FieldModel, v))
+}
+
+// ModelIn applies the In predicate on the "model" field.
+func ModelIn(vs ...string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldIn(FieldModel, vs...))
+}
+
+// ModelNotIn applies the NotIn predicate on the "model" field.
+func ModelNotIn(vs ...string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldNotIn(FieldModel, vs...))
+}
+
+// ModelGT applies the GT predicate on the "model" field.
+func ModelGT(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldGT(FieldModel, v))
+}
+
+// ModelGTE applies the GTE predicate on the "model" field.
+func ModelGTE(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldGTE(FieldModel, v))
+}
+
+// ModelLT applies the LT predicate on the "model" field.
+func ModelLT(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldLT(FieldModel, v))
+}
+
+// ModelLTE applies the LTE predicate on the "model" field.
+func ModelLTE(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldLTE(FieldModel, v))
+}
+
+// ModelContains applies the Contains predicate on the "model" field.
+func ModelContains(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldContains(FieldModel, v))
+}
+
+// ModelHasPrefix applies the HasPrefix predicate on the "model" field.
+func ModelHasPrefix(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldHasPrefix(FieldModel, v))
+}
+
+// ModelHasSuffix applies the HasSuffix predicate on the "model" field.
+func ModelHasSuffix(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldHasSuffix(FieldModel, v))
+}
+
+// ModelEqualFold applies the EqualFold predicate on the "model" field.
+func ModelEqualFold(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldEqualFold(FieldModel, v))
+}
+
+// ModelContainsFold applies the ContainsFold predicate on the "model" field.
+func ModelContainsFold(v string) predicate.AiModel {
+	return predicate.AiModel(sql.FieldContainsFold(FieldModel, v))
 }
 
 // TypeEQ applies the EQ predicate on the "type" field.
@@ -586,44 +656,44 @@ func MaxTokensLTE(v int) predicate.AiModel {
 	return predicate.AiModel(sql.FieldLTE(FieldMaxTokens, v))
 }
 
-// MaxContextEQ applies the EQ predicate on the "max_context" field.
-func MaxContextEQ(v int) predicate.AiModel {
-	return predicate.AiModel(sql.FieldEQ(FieldMaxContext, v))
+// MaxContextsEQ applies the EQ predicate on the "max_contexts" field.
+func MaxContextsEQ(v int) predicate.AiModel {
+	return predicate.AiModel(sql.FieldEQ(FieldMaxContexts, v))
 }
 
-// MaxContextNEQ applies the NEQ predicate on the "max_context" field.
-func MaxContextNEQ(v int) predicate.AiModel {
-	return predicate.AiModel(sql.FieldNEQ(FieldMaxContext, v))
+// MaxContextsNEQ applies the NEQ predicate on the "max_contexts" field.
+func MaxContextsNEQ(v int) predicate.AiModel {
+	return predicate.AiModel(sql.FieldNEQ(FieldMaxContexts, v))
 }
 
-// MaxContextIn applies the In predicate on the "max_context" field.
-func MaxContextIn(vs ...int) predicate.AiModel {
-	return predicate.AiModel(sql.FieldIn(FieldMaxContext, vs...))
+// MaxContextsIn applies the In predicate on the "max_contexts" field.
+func MaxContextsIn(vs ...int) predicate.AiModel {
+	return predicate.AiModel(sql.FieldIn(FieldMaxContexts, vs...))
 }
 
-// MaxContextNotIn applies the NotIn predicate on the "max_context" field.
-func MaxContextNotIn(vs ...int) predicate.AiModel {
-	return predicate.AiModel(sql.FieldNotIn(FieldMaxContext, vs...))
+// MaxContextsNotIn applies the NotIn predicate on the "max_contexts" field.
+func MaxContextsNotIn(vs ...int) predicate.AiModel {
+	return predicate.AiModel(sql.FieldNotIn(FieldMaxContexts, vs...))
 }
 
-// MaxContextGT applies the GT predicate on the "max_context" field.
-func MaxContextGT(v int) predicate.AiModel {
-	return predicate.AiModel(sql.FieldGT(FieldMaxContext, v))
+// MaxContextsGT applies the GT predicate on the "max_contexts" field.
+func MaxContextsGT(v int) predicate.AiModel {
+	return predicate.AiModel(sql.FieldGT(FieldMaxContexts, v))
 }
 
-// MaxContextGTE applies the GTE predicate on the "max_context" field.
-func MaxContextGTE(v int) predicate.AiModel {
-	return predicate.AiModel(sql.FieldGTE(FieldMaxContext, v))
+// MaxContextsGTE applies the GTE predicate on the "max_contexts" field.
+func MaxContextsGTE(v int) predicate.AiModel {
+	return predicate.AiModel(sql.FieldGTE(FieldMaxContexts, v))
 }
 
-// MaxContextLT applies the LT predicate on the "max_context" field.
-func MaxContextLT(v int) predicate.AiModel {
-	return predicate.AiModel(sql.FieldLT(FieldMaxContext, v))
+// MaxContextsLT applies the LT predicate on the "max_contexts" field.
+func MaxContextsLT(v int) predicate.AiModel {
+	return predicate.AiModel(sql.FieldLT(FieldMaxContexts, v))
 }
 
-// MaxContextLTE applies the LTE predicate on the "max_context" field.
-func MaxContextLTE(v int) predicate.AiModel {
-	return predicate.AiModel(sql.FieldLTE(FieldMaxContext, v))
+// MaxContextsLTE applies the LTE predicate on the "max_contexts" field.
+func MaxContextsLTE(v int) predicate.AiModel {
+	return predicate.AiModel(sql.FieldLTE(FieldMaxContexts, v))
 }
 
 // KeyIDEQ applies the EQ predicate on the "key_id" field.

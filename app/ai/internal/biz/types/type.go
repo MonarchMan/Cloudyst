@@ -71,18 +71,6 @@ func (ImageStatus) Values() []string {
 	}
 }
 
-var ImageStatusProtoValues = map[string]int32{
-	string(ImageStatusProcessing): 1,
-	string(ImageStatusSuccess):    2,
-	string(ImageStatusFailed):     3,
-}
-
-var ProtoImageStatusValues = map[int32]ImageStatus{
-	1: ImageStatusProcessing,
-	2: ImageStatusSuccess,
-	3: ImageStatusFailed,
-}
-
 type ModelType string
 
 // Ai Model Type

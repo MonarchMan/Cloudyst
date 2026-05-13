@@ -24,21 +24,28 @@ var ProtoToStatusValues = map[int32]Status{
 }
 
 // ToProto 泛型函数：将 Ent 的枚举转为任意 Proto 枚举
-func ToProto[T ~int32, P ~string](mapping map[string]int32, s P) T {
-	if v, ok := mapping[string(s)]; ok {
-		return T(v)
+func ToProto[T ~int32, P ~string](mapping map[P]T, s P) T {
+	if v, ok := mapping[s]; ok {
+		return v
 	}
 	return T(0)
 }
 
 // FromProto 泛型函数：将任意 Proto 枚举转回 Ent 枚举
-func FromProto[T ~int32, P ~string](mapping map[int32]P, p T) P {
-	if val, ok := mapping[int32(p)]; ok {
+func FromProto[T ~int32, P ~string](mapping map[T]P, p T) P {
+	if val, ok := mapping[p]; ok {
 		return val
 	}
 	return P("")
 }
 
-func StatusFromProto[T ~int32](p T) Status {
-	return FromProto(ProtoToStatusValues, p)
+func GetStatus(status string) Status {
+	switch status {
+	case "active":
+		return StatusActive
+	case "inactive":
+		return StatusInactive
+	default:
+		return StatusUnspecified
+	}
 }

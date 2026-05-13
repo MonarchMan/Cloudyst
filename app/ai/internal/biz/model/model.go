@@ -5,18 +5,20 @@ import (
 	"ai/internal/biz/types"
 	"ai/internal/data"
 	"ai/internal/pkg/eino/model"
+	"api/external/trans"
+	"common/constants"
 	"common/hashid"
 	"context"
+	"entmodule"
 	"fmt"
 
 	emodel "github.com/cloudwego/eino/components/model"
-	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/samber/lo"
 )
 
 type (
 	ModelBiz interface {
-		GetActiveModel(ctx context.Context, mid int) (emodel.ToolCallingChatModel, error)
+		GetActiveModel(ctx context.Context, mid int) (*ChatModel, error)
 		CreateModel(ctx context.Context, model *ent.AiModel) (*ent.AiModel, error)
 		UpdateModel(ctx context.Context, model *ent.AiModel) (*ent.AiModel, error)
 		DeleteModel(ctx context.Context, id int) error
@@ -39,6 +41,11 @@ type (
 		hasher hashid.Encoder
 		mm     model.AiModelManager
 	}
+
+	ChatModel struct {
+		DBModel   *ent.AiModel
+		ChatModel emodel.ToolCallingChatModel
+	}
 )
 
 func NewModelBiz(mc data.ModelClient, hasher hashid.Encoder, mm model.AiModelManager) ModelBiz {
@@ -49,24 +56,38 @@ func NewModelBiz(mc data.ModelClient, hasher hashid.Encoder, mm model.AiModelMan
 	}
 }
 
-func (b *modelBiz) GetActiveModel(ctx context.Context, mid int) (emodel.ToolCallingChatModel, error) {
+func (b *modelBiz) GetActiveModel(ctx context.Context, mid int) (*ChatModel, error) {
+	ctx = context.WithValue(ctx, data.LoadApiKeyModel{}, true)
 	m, err := b.mc.GetActiveModelByIDType(ctx, mid, types.ModelTypeChat)
-	if err != nil || m == nil {
+	if err != nil {
 		return nil, fmt.Errorf("failed to get model: %w", err)
 	}
 
 	cfg := &model.ModelConfig{
 		Platform: model.Platform(m.Platform),
 		APIKey:   m.Edges.AiAPIKey.APIKey,
-		Model:    m.Type,
+		Model:    m.Model,
 	}
 	if m.Edges.AiAPIKey.APIKey != "" {
 		cfg.APIKey = m.Edges.AiAPIKey.APIKey
 	}
-	return b.mm.GetModel(cfg)
+	chatModel, err := b.mm.GetModel(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get model: %w", err)
+	}
+	return &ChatModel{
+		DBModel:   m,
+		ChatModel: chatModel,
+	}, nil
 }
 
 func (b *modelBiz) CreateModel(ctx context.Context, model *ent.AiModel) (*ent.AiModel, error) {
+	model.Status = entmodule.StatusActive
+	apiKey, err := b.mc.GetApiKeyByID(ctx, model.KeyID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get api key: %w", err)
+	}
+	model.Platform = apiKey.Platform
 	return b.mc.UpsertModel(ctx, model)
 }
 
@@ -116,7 +137,15 @@ func (b *modelBiz) BatchDeleteModels(ctx context.Context, ids []int) ([]int, err
 }
 
 func (b *modelBiz) GetModel(ctx context.Context, id int) (*ent.AiModel, error) {
-	return b.mc.GetModelByID(ctx, id)
+	m, err := b.mc.GetModelByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	u := trans.FromContext(ctx)
+	if m.Status != entmodule.StatusActive && !u.Group.Permissions.Enabled(int(constants.GroupPermissionIsAdmin)) {
+		return nil, fmt.Errorf("model is not available")
+	}
+	return m, nil
 }
 
 func (b *modelBiz) GetDefaultModel(ctx context.Context, modelType string) (*ent.AiModel, error) {
@@ -188,9 +217,6 @@ func (b *modelBiz) validateModel(ctx context.Context, id int) (*ent.AiModel, err
 	if err != nil {
 		return nil, err
 	}
-	if m == nil {
-		return nil, errors.NotFound("invalid model id", "model not found")
-	}
 	return m, nil
 }
 
@@ -198,9 +224,6 @@ func (b *modelBiz) validateApiKey(ctx context.Context, id int) (*ent.AiApiKey, e
 	key, err := b.validateApiKey(ctx, id)
 	if err != nil {
 		return nil, err
-	}
-	if key == nil {
-		return nil, errors.NotFound("invalid api key id", "api key not found")
 	}
 	return key, nil
 }

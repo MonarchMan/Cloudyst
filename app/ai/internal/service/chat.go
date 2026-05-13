@@ -16,6 +16,7 @@ import (
 	"common/hashid"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -38,7 +39,6 @@ type ChatService struct {
 	kb     knowledge.KnowledgeBiz
 	mb     model.ModelBiz
 	l      *log.Helper
-	wsm    chat.Searcher
 	tr     *factory.ToolRegistry
 }
 
@@ -48,8 +48,16 @@ type (
 	onChunkFN func(chunk *schema.Message, response *pb.SendMessageResponse) error
 )
 
-func NewChatService() *ChatService {
-	return &ChatService{}
+func NewChatService(rs *RoleService, hasher hashid.Encoder, cb chat.ChatBiz, kb knowledge.KnowledgeBiz, mb model.ModelBiz, tr *factory.ToolRegistry, logger log.Logger) *ChatService {
+	return &ChatService{
+		rs:     rs,
+		hasher: hasher,
+		cb:     cb,
+		kb:     kb,
+		mb:     mb,
+		l:      log.NewHelper(logger, log.WithMessageKey("service-chat")),
+		tr:     tr,
+	}
 }
 
 func (s *ChatService) CreateChatConversation(ctx context.Context, req *pb.CreateChatConversationRequest) (*pb.GetChatConversationResponse, error) {
@@ -67,7 +75,20 @@ func (s *ChatService) CreateChatConversation(ctx context.Context, req *pb.Create
 		return nil, err
 	}
 
-	created, err := s.cb.CreateConversation(ctx, roleID, modelID, knowledgeID)
+	var m *ent.AiModel
+	if modelID == 0 {
+		m, err = s.mb.GetDefaultModel(ctx, types.ModelTypeChat)
+	} else {
+		m, err = s.mb.GetModel(ctx, modelID)
+		if err == nil && m.Type != types.ModelTypeChat {
+			err = fmt.Errorf("model type mismatch: %d", modelID)
+		}
+	}
+	if err != nil {
+		return nil, commonpb.ErrorParamInvalid("invalid model id %s", modelID)
+	}
+
+	created, err := s.cb.CreateConversation(ctx, roleID, m, knowledgeID)
 	return buildChatConversation(created, s.hasher), err
 }
 func (s *ChatService) UpdateChatConversation(ctx context.Context, req *pb.UpdateChatConversationRequest) (*pb.GetChatConversationResponse, error) {
@@ -80,7 +101,7 @@ func (s *ChatService) UpdateChatConversation(ctx context.Context, req *pb.Update
 	if err != nil {
 		return nil, err
 	}
-	args := &chat.UpdateConversationArgs{
+	args := &data.UpsertChatConversationParams{
 		ExistedID:   conversationID,
 		Title:       req.Title,
 		Pinned:      false,
@@ -89,6 +110,13 @@ func (s *ChatService) UpdateChatConversation(ctx context.Context, req *pb.Update
 		Temperature: req.Temperature,
 		MaxTokens:   int(req.MaxTokens),
 		MaxContexts: int(req.MaxContexts),
+	}
+	// 1.2 校验模型是否存在
+	if modelID != 0 {
+		m, err := s.mb.GetModel(ctx, modelID)
+		if err != nil || m.Type != types.ModelTypeChat {
+			return nil, commonpb.ErrorParamInvalid("invalid model id %d", modelID)
+		}
 	}
 	updated, err := s.cb.UpdateConversation(ctx, args)
 	return buildChatConversation(updated, s.hasher), err
@@ -137,7 +165,7 @@ func (s *ChatService) ListChatConversations(ctx context.Context, req *pb.ListCon
 	u := trans.FromContext(ctx)
 	// 构建分页参数
 	args := &data.ListChatConversationArgs{
-		PaginationArgs: common.ConvertPaginationArgs(req.Pagination),
+		PaginationArgs: common.PaginationArgsFromProto(req.Pagination),
 		Title:          req.Title,
 		UserID:         u.ID,
 	}
@@ -169,23 +197,36 @@ func (s *ChatService) DeleteMessage(ctx context.Context, req *pb.DeleteMessageRe
 	return &emptypb.Empty{}, nil
 }
 func (s *ChatService) ListConversationMessage(ctx context.Context, req *pb.ListConversationMessagesRequest) (*pb.ListConversationMessagesResponse, error) {
-	cid, err := validateID(s.hasher, req.ConversationId, hashid.ChatMessageID, false)
+	cid, err := validateID(s.hasher, req.ConversationId, hashid.ChatConversationID, false)
 	if err != nil {
 		return nil, err
 	}
-	messages, err := s.cb.ListConversationMessages(ctx, cid, common.ConvertPaginationArgs(req.Pagination))
+	messages, err := s.cb.ListConversationMessages(ctx, cid, common.PaginationArgsFromProto(req.Pagination))
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list messages: %w", err)
+	}
+	resp := &pb.ListConversationMessagesResponse{
+		Messages:   []*pb.MessageRecord{},
+		Pagination: common.PaginationResultsToProto(messages.PaginationResults),
+	}
+	if messages.TotalItems == 0 {
+		return resp, nil
 	}
 	//关联段落
 	var sids []int
 	for _, m := range messages.ChatMessages {
 		sids = append(sids, m.SegmentIds...)
 	}
-	sids = lo.Uniq(sids)
-	segments, err := s.kb.GetKnowledgeSegments(ctx, sids)
-	if err != nil {
-		return nil, commonpb.ErrorDb("Failed to get knowledge segments: %w", err)
+	segmentMap := make(map[int]*types.KnowledgeSegment)
+	if len(sids) > 0 {
+		sids = lo.Uniq(sids)
+		segments, err := s.kb.GetKnowledgeSegments(ctx, sids)
+		if err != nil {
+			return nil, commonpb.ErrorDb("Failed to get knowledge segments: %w", err)
+		}
+		segmentMap = lo.KeyBy(segments, func(s *types.KnowledgeSegment) int {
+			return s.ID
+		})
 	}
 
 	msgRecords := make([]*pb.MessageRecord, len(messages.ChatMessages))
@@ -195,15 +236,13 @@ func (s *ChatService) ListConversationMessage(ctx context.Context, req *pb.ListC
 		} else {
 			msgSegs := make([]*types.KnowledgeSegment, 0, len(m.SegmentIds))
 			for _, sid := range m.SegmentIds {
-				msgSegs = append(msgSegs, segments[sid])
+				msgSegs = append(msgSegs, segmentMap[sid])
 			}
 			msgRecords[i] = buildAiChatMessage(s.hasher, m, nil, msgSegs, messages.PageMap[m.ID])
 		}
 	}
-	return &pb.ListConversationMessagesResponse{
-		Messages:   msgRecords,
-		Pagination: common.PaginationResultsToProto(messages.PaginationResults),
-	}, nil
+	resp.Messages = msgRecords
+	return resp, nil
 }
 
 func (s *ChatService) StreamChatHandler(ctx khttp.Context) error {
@@ -250,6 +289,8 @@ func (s *ChatService) streamChat(ctx context.Context, rawMsgID, rawConversationI
 		Content:        content,
 		UseContext:     useContext,
 		UseSearch:      useSearch,
+		ModelID:        mid,
+		Model:          m.DBModel.Name,
 		AttachmentUrls: attachmentUrls,
 	}
 	// 3. 获取知识库检索工具
@@ -262,7 +303,7 @@ func (s *ChatService) streamChat(ctx context.Context, rawMsgID, rawConversationI
 	}
 
 	// 4. 流式调用llm
-	_, err = s.cb.Stream(ctx, sendArgs, m, rt, onChunk, onFirstFN)
+	_, err = s.cb.Stream(ctx, sendArgs, m.ChatModel, rt, onChunk, onFirstFN)
 	if err != nil {
 		return commonpb.ErrorInternalSetting("Failed to send stream message: %w", err)
 	}
@@ -289,9 +330,11 @@ func (s *ChatService) SendMessage(ctx context.Context, req *pb.SendMessageReques
 		UseContext:     req.UseContext,
 		UseSearch:      req.UseSearch,
 		AttachmentUrls: req.AttachmentUrls,
+		ModelID:        mid,
+		Model:          m.DBModel.Name,
 	}
 
-	record, err := s.cb.Generate(ctx, sendArgs, m, nil)
+	record, err := s.cb.Generate(ctx, sendArgs, m.ChatModel, nil)
 	if err != nil {
 		return nil, commonpb.ErrorInternalSetting("Failed to send message: %w", err)
 	}
@@ -324,9 +367,11 @@ func (s *ChatService) RetryMessage(ctx context.Context, req *pb.RetryMessageRequ
 		MsgID:      msgID,
 		UseContext: req.UseContext,
 		UseSearch:  req.UseSearch,
+		ModelID:    mid,
+		Model:      m.DBModel.Name,
 	}
 
-	record, err := s.cb.Generate(ctx, sendArgs, m, nil)
+	record, err := s.cb.Generate(ctx, sendArgs, m.ChatModel, nil)
 	if err != nil {
 		return nil, commonpb.ErrorInternalSetting("Failed to send message: %w", err)
 	}
@@ -350,14 +395,14 @@ func (s *ChatService) RetryMessageStream(req *pb.RetryMessageRequest, grpcStream
 	return s.streamChat(grpcStream.Context(), req.Id, "", req.ModelId, "", req.UseContext, req.UseSearch,
 		nil, onChunk, onFirst)
 }
-func (s *ChatService) StreamRetryChatHandler(ctx khttp.Context) error {
+func (s *ChatService) RetryMessageHandler(ctx khttp.Context) error {
 	var req pb.RetryMessageRequest
 	if err := ctx.Bind(&req); err != nil {
 		return fmt.Errorf("failed to bind request body: %w", err)
 	}
 	onChunk, onFirst := s.HandlerChunkFn(ctx)
 	if onChunk == nil || onFirst == nil {
-		return fmt.Errorf("streaming unsupported")
+		return fmt.Errorf("streaming unsuppor`ted")
 	}
 
 	return s.streamChat(ctx, req.Id, "", req.ModelId, "", req.UseContext, req.UseSearch,
@@ -381,9 +426,11 @@ func (s *ChatService) PatchMessage(ctx context.Context, req *pb.PatchMessageRequ
 		Content:    req.Content,
 		UseContext: req.UseContext,
 		UseSearch:  req.UseSearch,
+		ModelID:    mid,
+		Model:      m.DBModel.Name,
 	}
 
-	record, err := s.cb.Generate(ctx, sendArgs, m, nil)
+	record, err := s.cb.Generate(ctx, sendArgs, m.ChatModel, nil)
 	if err != nil {
 		return nil, commonpb.ErrorInternalSetting("Failed to send message: %w", err)
 	}
@@ -446,17 +493,23 @@ func (s *ChatService) HandlerChunkFn(ctx khttp.Context) (chat.OnChunkFN, chat.On
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("X-Accel-Buffering", "no")
 
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		return nil, nil
+	controller := http.NewResponseController(w)
+	flush := func() error {
+		if err := controller.Flush(); err != nil && !errors.Is(err, http.ErrNotSupported) {
+			return err
+		}
+		return nil
 	}
 
 	onChunk := func(chunk *schema.Message, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error {
-		resp := buildAiChatMessage(s.hasher, aiMsg, chunk, record.Segs, record.WebSearch.WebPages)
+		resp := &pb.SendMessageResponse{
+			Receive: buildAiChatMessage(s.hasher, aiMsg, chunk, record.Segs, record.WebSearch.WebPages),
+		}
 		bytes, _ := json.Marshal(resp)
-		_, err := fmt.Fprintf(w, "data: %s\n\n", bytes)
-		flusher.Flush()
-		return err
+		if _, err := fmt.Fprintf(w, "data: %s\n\n", bytes); err != nil {
+			return err
+		}
+		return flush()
 	}
 	onFirstChunk := func(chunk *schema.Message, userMsg, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error {
 		resp := &pb.SendMessageResponse{
@@ -464,9 +517,10 @@ func (s *ChatService) HandlerChunkFn(ctx khttp.Context) (chat.OnChunkFN, chat.On
 			Receive: buildAiChatMessage(s.hasher, aiMsg, chunk, record.Segs, record.WebSearch.WebPages),
 		}
 		bytes, _ := json.Marshal(resp)
-		_, err := fmt.Fprintf(w, "data: %s\n\n", bytes)
-		flusher.Flush()
-		return err
+		if _, err := fmt.Fprintf(w, "data: %s\n\n", bytes); err != nil {
+			return err
+		}
+		return flush()
 	}
 	return onChunk, onFirstChunk
 }

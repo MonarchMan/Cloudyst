@@ -6,7 +6,6 @@ import (
 	"ai/ent/aiknowledge"
 	"ai/ent/aiknowledgedocument"
 	"ai/ent/aiknowledgesegment"
-	pb "api/api/common/v1"
 	"api/external/data/common"
 	"context"
 	"entmodule"
@@ -35,7 +34,7 @@ type (
 	}
 
 	ListKnowledgeArgs struct {
-		*pb.PaginationArgs
+		*common.PaginationArgs
 		Name     string
 		ModelID  int
 		IsPublic bool
@@ -44,7 +43,7 @@ type (
 	}
 
 	ListKnowledgeResult struct {
-		*pb.PaginationResults
+		*common.PaginationResults
 		Knowledges []*ent.AiKnowledge
 	}
 
@@ -129,10 +128,10 @@ func (c *knowledgeClient) List(ctx context.Context, args *ListKnowledgeArgs) (*L
 	q.Order(getKnowledgeOrderOption(args)...)
 	ks, err := withKnowledgeEagerLoading(ctx, q).Limit(int(args.PageSize)).Offset(int(args.Page * args.PageSize)).All(ctx)
 	return &ListKnowledgeResult{
-		PaginationResults: &pb.PaginationResults{
+		PaginationResults: &common.PaginationResults{
 			Page:       args.Page,
 			PageSize:   args.PageSize,
-			TotalItems: int32(total),
+			TotalItems: total,
 		},
 		Knowledges: ks,
 	}, nil
@@ -222,7 +221,7 @@ func withKnowledgeEagerLoading(ctx context.Context, q *ent.AiKnowledgeQuery) *en
 }
 
 func getKnowledgeOrderOption(args *ListKnowledgeArgs) []aiknowledge.OrderOption {
-	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(args.OrderDir)
 	switch args.OrderBy {
 	case aiapikey.FieldUpdatedAt:
 		return []aiknowledge.OrderOption{aiknowledge.ByUpdatedAt(orderTerm), aiknowledge.ByID(orderTerm)}

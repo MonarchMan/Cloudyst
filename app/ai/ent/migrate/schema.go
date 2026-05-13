@@ -66,8 +66,8 @@ var (
 		{Name: "content", Type: field.TypeString, Size: 2048},
 		{Name: "reason_content", Type: field.TypeString, Size: 2048, Default: ""},
 		{Name: "use_context", Type: field.TypeBool},
-		{Name: "segment_ids", Type: field.TypeJSON},
-		{Name: "attachment_urls", Type: field.TypeJSON},
+		{Name: "segment_ids", Type: field.TypeJSON, Nullable: true},
+		{Name: "attachment_urls", Type: field.TypeJSON, Nullable: true},
 	}
 	// AiChatMessagesTable holds the schema information for the "ai_chat_messages" table.
 	AiChatMessagesTable = &schema.Table{
@@ -224,13 +224,14 @@ var (
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
 		{Name: "name", Type: field.TypeString, Size: 64},
+		{Name: "model", Type: field.TypeString, Size: 64},
 		{Name: "type", Type: field.TypeString, Size: 64},
 		{Name: "platform", Type: field.TypeString, Size: 64},
 		{Name: "sort", Type: field.TypeInt},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"active", "inactive"}},
 		{Name: "temperature", Type: field.TypeFloat64},
 		{Name: "max_tokens", Type: field.TypeInt},
-		{Name: "max_context", Type: field.TypeInt},
+		{Name: "max_contexts", Type: field.TypeInt},
 		{Name: "key_id", Type: field.TypeInt},
 	}
 	// AiModelsTable holds the schema information for the "ai_models" table.
@@ -241,7 +242,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "ai_models_ai_api_keys_ai_model",
-				Columns:    []*schema.Column{AiModelsColumns[12]},
+				Columns:    []*schema.Column{AiModelsColumns[13]},
 				RefColumns: []*schema.Column{AiAPIKeysColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

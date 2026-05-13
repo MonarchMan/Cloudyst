@@ -12,7 +12,8 @@ import "common/v1/common.proto";
 service Model {
   rpc ListModel (ListModelRequest) returns (ListModelResponse) {
     option (google.api.http) = {
-      get: "/ai/model/list/me"
+      post: "/ai/model/list/me"
+      body: "*"
     };
   }
   rpc GetModel(SimpleRequest) returns (GetModelResponse) {
@@ -22,7 +23,8 @@ service Model {
   }
   rpc GetDefaultModel(DefaultModelRequest) returns (GetModelResponse) {
     option (google.api.http) = {
-      get: "/ai/model/default"
+      post: "/ai/model/default"
+      body: "*"
     };
   }
 }
@@ -39,9 +41,10 @@ message GetModelResponse {
   double temperature = 5;
   int32 max_tokens = 6;
   int32 max_contexts = 7;
+  string model = 8;
 }
 
-message  ListModelRequest {
+message ListModelRequest {
   common.v1.PaginationArgs pagination = 1;
   string name = 2;
   string type = 3;

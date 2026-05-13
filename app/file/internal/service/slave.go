@@ -197,7 +197,11 @@ func (s *SlaveService) GetMetadata(ctx context.Context, req *pb.GetMetadataReque
 	meta := make([]*pb.MediaMeta, len(res))
 	for i := range res {
 		// 直接取地址，避免值传递
-		meta[i] = &res[i]
+		meta[i] = &pb.MediaMeta{
+			Key:   res[i].Key,
+			Value: res[i].Value,
+			Type:  res[i].Type,
+		}
 	}
 
 	return &pb.GetMetadataResponse{

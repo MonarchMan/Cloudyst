@@ -29,7 +29,7 @@ func EntApiKeyToProto(apiKey *ent.AiApiKey) *aipb.AiApiKey {
 		ApiKey:    apiKey.APIKey,
 		Platform:  apiKey.Platform,
 		Url:       apiKey.URL,
-		Status:    StatusToProto[commonpb.Status](apiKey.Status),
+		Status:    string(apiKey.Status),
 	}
 
 	if protoApiKey.DeletedAt != nil {
@@ -58,7 +58,7 @@ func ProtoApiKeyToEnt(apiKey *aipb.AiApiKey) *ent.AiApiKey {
 		APIKey:    apiKey.ApiKey,
 		Platform:  apiKey.Platform,
 		URL:       apiKey.Url,
-		Status:    entmodule.StatusFromProto(apiKey.Status),
+		Status:    entmodule.Status(apiKey.Status),
 	}
 	if protoApiKey.DeletedAt != nil {
 		deletedAt := apiKey.DeletedAt.AsTime()
@@ -77,13 +77,15 @@ func EntModelToProto(model *ent.AiModel) *aipb.AiModel {
 		CreatedAt:   timestamppb.New(model.CreatedAt),
 		UpdatedAt:   timestamppb.New(model.UpdatedAt),
 		Name:        model.Name,
+		Model:       model.Model,
 		Type:        model.Type,
 		Platform:    model.Platform,
 		Sort:        int64(model.Sort),
-		Status:      StatusToProto[commonpb.Status](model.Status),
+		Status:      string(model.Status),
 		Temperature: model.Temperature,
 		MaxTokens:   int64(model.MaxTokens),
-		MaxContext:  int64(model.MaxContext),
+		MaxContexts: int64(model.MaxContexts),
+		KeyId:       int64(model.KeyID),
 	}
 
 	if protoModel.DeletedAt != nil {
@@ -106,13 +108,14 @@ func ProtoModelToEnt(model *aipb.AiModel) *ent.AiModel {
 		CreatedAt:   model.CreatedAt.AsTime(),
 		UpdatedAt:   model.UpdatedAt.AsTime(),
 		Name:        model.Name,
+		Model:       model.Model,
 		Type:        model.Type,
 		Platform:    model.Platform,
 		Sort:        int(model.Sort),
-		Status:      entmodule.StatusFromProto(model.Status),
+		Status:      entmodule.Status(model.Status),
 		Temperature: model.Temperature,
 		MaxTokens:   int(model.MaxTokens),
-		MaxContext:  int(model.MaxContext),
+		MaxContexts: int(model.MaxContexts),
 		KeyID:       int(model.KeyId),
 		Edges:       ent.AiModelEdges{},
 	}
@@ -141,7 +144,7 @@ func EntToolToProto(tool *ent.AiTool) *aipb.AiTool {
 		Description: tool.Description,
 		Type:        tool.Type,
 		Parameters:  tool.Parameters,
-		Status:      StatusToProto[commonpb.Status](tool.Status),
+		Status:      string(tool.Status),
 	}
 	if tool.DeletedAt != nil {
 		protoTool.DeletedAt = timestamppb.New(*tool.DeletedAt)
@@ -161,7 +164,7 @@ func ProtoToolToEnt(tool *aipb.AiTool) *ent.AiTool {
 		Description: tool.Description,
 		Type:        tool.Type,
 		Parameters:  tool.Parameters,
-		Status:      entmodule.StatusFromProto(tool.Status),
+		Status:      entmodule.Status(tool.Status),
 	}
 	if tool.DeletedAt != nil {
 		deletedAt := tool.DeletedAt.AsTime()
@@ -366,7 +369,7 @@ func EntRoleToProto(role *ent.AiChatRole) *aipb.AiChatRole {
 			return int64(item)
 		}),
 		McpClientNames: role.McpClientNames,
-		Status:         StatusToProto[commonpb.Status](role.Status),
+		Status:         string(role.Status),
 	}
 
 	if role.DeletedAt != nil {
@@ -399,7 +402,7 @@ func ProtoRoleToEnt(role *aipb.AiChatRole) *ent.AiChatRole {
 			return int(item)
 		}),
 		McpClientNames: role.McpClientNames,
-		Status:         entmodule.StatusFromProto(role.Status),
+		Status:         entmodule.Status(role.Status),
 	}
 
 	if role.DeletedAt != nil {
@@ -426,7 +429,7 @@ func EntImageToProto(image *ent.AiImage) *aipb.AiImage {
 		Prompt:    image.Prompt,
 		Width:     int64(image.Width),
 		Height:    int64(image.Height),
-		Status:    entmodule.ToProto[aipb.AiImage_Status, types.ImageStatus](types.ImageStatusProtoValues, image.Status),
+		Status:    string(image.Status),
 		PicUrl:    image.PicURL,
 		TaskId:    image.TaskID,
 		Buttons:   image.Buttons,
@@ -462,7 +465,7 @@ func ProtoImageToEnt(image *aipb.AiImage) *ent.AiImage {
 		Prompt:    image.Prompt,
 		Width:     int(image.Width),
 		Height:    int(image.Height),
-		Status:    entmodule.FromProto[aipb.AiImage_Status, types.ImageStatus](types.ProtoImageStatusValues, image.Status),
+		Status:    types.ImageStatus(image.Status),
 		PicURL:    image.PicUrl,
 		TaskID:    image.TaskId,
 		Buttons:   image.Buttons,
@@ -499,7 +502,7 @@ func EntKnowledgeToProto(knowledge *ent.AiKnowledge) *aipb.AiKnowledge {
 		EmbeddingModel:      knowledge.EmbeddingModel,
 		TopK:                int64(knowledge.TopK),
 		SimilarityThreshold: knowledge.SimilarityThreshold,
-		Status:              StatusToProto[commonpb.Status](knowledge.Status),
+		Status:              string(knowledge.Status),
 	}
 
 	if knowledge.DeletedAt != nil {
@@ -528,7 +531,7 @@ func ProtoKnowledgeToEnt(knowledge *aipb.AiKnowledge) *ent.AiKnowledge {
 		EmbeddingModel:      knowledge.EmbeddingModel,
 		TopK:                int(knowledge.TopK),
 		SimilarityThreshold: knowledge.SimilarityThreshold,
-		Status:              entmodule.StatusFromProto(knowledge.Status),
+		Status:              entmodule.Status(knowledge.Status),
 		Edges:               ent.AiKnowledgeEdges{},
 	}
 
@@ -562,7 +565,8 @@ func EntKnowledgeDocumentToProto(document *ent.AiKnowledgeDocument) *aipb.AiKnow
 		Tokens:           int64(document.Tokens),
 		SegmentMaxTokens: int64(document.SegmentMaxTokens),
 		RetrievalCount:   int64(document.RetrievalCount),
-		Status:           StatusToProto[commonpb.Status](document.Status),
+		Progress:         string(document.Progress),
+		Status:           string(document.Status),
 	}
 
 	if document.DeletedAt != nil {
@@ -592,7 +596,8 @@ func ProtoKnowledgeDocumentToEnt(document *aipb.AiKnowledgeDocument) *ent.AiKnow
 		Tokens:           int(document.Tokens),
 		SegmentMaxTokens: int(document.SegmentMaxTokens),
 		RetrievalCount:   int(document.RetrievalCount),
-		Status:           entmodule.StatusFromProto(document.Status),
+		Progress:         types.DocumentProgress(document.Progress),
+		Status:           entmodule.Status(document.Status),
 		Edges:            ent.AiKnowledgeDocumentEdges{},
 	}
 
@@ -621,7 +626,7 @@ func EntKnowledgeSegmentToProto(segment *ent.AiKnowledgeSegment) *aipb.AiKnowled
 		Tokens:         int64(segment.Tokens),
 		VectorId:       segment.VectorID,
 		RetrievalCount: int64(segment.RetrievalCount),
-		Status:         StatusToProto[commonpb.Status](segment.Status),
+		Status:         string(segment.Status),
 	}
 
 	if segment.DeletedAt != nil {
@@ -648,7 +653,7 @@ func ProtoKnowledgeSegmentToEnt(segment *aipb.AiKnowledgeSegment) *ent.AiKnowled
 		Tokens:         int(segment.Tokens),
 		VectorID:       segment.VectorId,
 		RetrievalCount: int(segment.RetrievalCount),
-		Status:         entmodule.StatusFromProto(segment.Status),
+		Status:         entmodule.Status(segment.Status),
 		Edges:          ent.AiKnowledgeSegmentEdges{},
 	}
 
@@ -694,8 +699,4 @@ func ProtoTaskToEnt(protoTask *commonpb.Task) *ent.Task {
 		TraceID:      protoTask.TraceId,
 		UserID:       int(protoTask.UserId),
 	}
-}
-
-func StatusToProto[T ~int32](s entmodule.Status) T {
-	return entmodule.ToProto[T, entmodule.Status](entmodule.StatusProtoValues, s)
 }

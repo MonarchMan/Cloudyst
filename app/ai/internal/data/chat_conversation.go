@@ -46,7 +46,7 @@ type (
 	}
 
 	UpsertChatConversationParams struct {
-		Existed     *ent.AiChatConversation
+		ExistedID   int
 		Title       string
 		Pinned      bool
 		SysMsg      string
@@ -143,7 +143,7 @@ func (c *chatConversationClient) List(ctx context.Context, args *ListChatConvers
 }
 
 func (c *chatConversationClient) Upsert(ctx context.Context, conversation *UpsertChatConversationParams) (*ent.AiChatConversation, error) {
-	if conversation.Existed == nil {
+	if conversation.ExistedID == 0 {
 		query := c.client.AiChatConversation.Create().
 			SetTitle(conversation.Title).
 			SetPinned(conversation.Pinned).
@@ -157,14 +157,9 @@ func (c *chatConversationClient) Upsert(ctx context.Context, conversation *Upser
 			SetMaxContexts(conversation.MaxContexts)
 		return query.Save(ctx)
 	}
-	query := c.client.AiChatConversation.UpdateOneID(conversation.Existed.ID).
+	query := c.client.AiChatConversation.UpdateOneID(conversation.ExistedID).
 		SetTitle(conversation.Title).
-		SetPinned(conversation.Pinned).
-		SetUserID(conversation.UserID).
-		SetRoleID(conversation.RoleID).
-		SetSystemMessage(conversation.SysMsg).
-		SetModelID(conversation.ModelID).
-		SetModel(conversation.Model)
+		SetPinned(conversation.Pinned)
 
 	if conversation.Temperature >= 0 {
 		query.SetTemperature(conversation.Temperature)
@@ -176,6 +171,23 @@ func (c *chatConversationClient) Upsert(ctx context.Context, conversation *Upser
 
 	if conversation.MaxContexts >= 0 {
 		query.SetMaxContexts(conversation.MaxContexts)
+	}
+
+	if conversation.UserID > 0 {
+		query.SetUserID(conversation.UserID)
+	}
+
+	if conversation.RoleID > 0 {
+		query.SetRoleID(conversation.RoleID)
+	}
+
+	if conversation.ModelID > 0 {
+		query.SetModelID(conversation.ModelID).
+			SetModel(conversation.Model)
+	}
+
+	if conversation.SysMsg != "" {
+		query.SetSystemMessage(conversation.SysMsg)
 	}
 
 	return query.Save(ctx)

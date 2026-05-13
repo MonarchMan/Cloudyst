@@ -1,6 +1,7 @@
 package server
 
 import (
+	"ai/app/response"
 	"ai/internal/conf"
 	"ai/internal/data/rpc"
 	"ai/internal/service"
@@ -8,14 +9,13 @@ import (
 	chatapi "api/api/ai/chat/v1"
 	imageapi "api/api/ai/image/v1"
 	knowledgeapi "api/api/ai/knowledge/v1"
+	modelapi "api/api/ai/model/v1"
 	roleapi "api/api/ai/role/v1"
 	cm "api/external/middlewares"
 	"api/external/middlewares/filters"
 	"crypto/tls"
-	"file/app/response"
 	"fmt"
 
-	"github.com/NYTimes/gziphandler"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -28,14 +28,11 @@ import (
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(as *service.AdminService, cs *service.ChatService, ks *service.KnowledgeService, uc rpc.UserClient,
-	is *service.ImageService, rs *service.RoleService, bs *conf.Bootstrap,
+	is *service.ImageService, rs *service.RoleService, ms *service.ModelService, bs *conf.Bootstrap,
 	tracerProvider trace.TracerProvider, propagator propagation.TextMapPropagator, logger log.Logger) (*khttp.Server, error) {
 	h := log.NewHelper(logger, log.WithMessageKey("server"))
 	var opts = []khttp.ServerOption{
 		khttp.Network("tcp"),
-		khttp.Filter(
-			gziphandler.GzipHandler,
-		),
 		khttp.Middleware(
 			getMiddlewares(uc, tracerProvider, propagator)...,
 		),
@@ -67,12 +64,15 @@ func NewHTTPServer(as *service.AdminService, cs *service.ChatService, ks *servic
 	knowledgeapi.RegisterKnowledgeHTTPServer(srv, ks)
 	imageapi.RegisterImageHTTPServer(srv, is)
 	roleapi.RegisterRoleHTTPServer(srv, rs)
+	modelapi.RegisterModelHTTPServer(srv, ms)
 
 	// route
 	tracer := tracerProvider.Tracer("khttp-route")
-	root := srv.Route("/", filters.Trace(tracer), filters.Logger())
+	root := srv.Route("/ai", filters.Trace(tracer), filters.Logger())
 	chatRoute := root.Group("/chat", filters.CurrentUser(uc.Client()), filters.LoginRequired())
-	chatRoute.GET("/ai/chat/message/send-stream", cs.StreamChatHandler)
+	chatRoute.POST("/message/stream", cs.StreamChatHandler)
+	chatRoute.PATCH("/message/{id}/stream", cs.PatchMessageHandler)
+	chatRoute.POST("/message/{id}/retry/stream", cs.RetryMessageHandler)
 	return srv, nil
 }
 

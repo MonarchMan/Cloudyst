@@ -1,7 +1,6 @@
 package cos
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/request"
 	"context"
 	"encoding/json"
@@ -110,7 +109,7 @@ type (
 	}
 )
 
-func (handler *Driver) extractStreamMeta(ctx context.Context, path string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) extractStreamMeta(ctx context.Context, path string) ([]driver.MediaMeta, error) {
 	resp, err := handler.extractMediaInfo(ctx, path, &urlOption{CiProcess: videoInfo})
 	if err != nil {
 		return nil, err
@@ -142,7 +141,7 @@ func (handler *Driver) extractStreamMeta(ctx context.Context, path string) ([]pb
 		}
 	})...)
 
-	metas := make([]pbslave.MediaMeta, 0)
+	metas := make([]driver.MediaMeta, 0)
 	metas = append(metas, mediameta.ProbeMetaTransform(&mediameta.FFProbeMeta{
 		Format: &mediameta.Format{
 			FormatName:     info.MediaInfo.Format.FormatName,
@@ -156,7 +155,7 @@ func (handler *Driver) extractStreamMeta(ctx context.Context, path string) ([]pb
 	return nil, nil
 }
 
-func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]driver.MediaMeta, error) {
 	exif := ""
 	resp, err := handler.extractMediaInfo(ctx, path, &urlOption{
 		Exif: &exif,
@@ -170,7 +169,7 @@ func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]pbs
 		return nil, fmt.Errorf("failed to unmarshal media info: %w", err)
 	}
 
-	metas := make([]pbslave.MediaMeta, 0)
+	metas := make([]driver.MediaMeta, 0)
 	exifMap := lo.MapEntries(imageInfo, func(key string, value ImageProp) (string, string) {
 		return key, value.Value
 	})
@@ -207,7 +206,7 @@ func (handler *Driver) extractMediaInfo(ctx context.Context, path string, opt *u
 	return resp, nil
 }
 
-func parseGpsInfo(imageInfo ImageInfo) []pbslave.MediaMeta {
+func parseGpsInfo(imageInfo ImageInfo) []driver.MediaMeta {
 	latitude := imageInfo["GPSLatitude"]   // 31deg 16.26808'
 	longitude := imageInfo["GPSLongitude"] // 120deg 42.91039'
 	latRef := imageInfo["GPSLatitudeRef"]  // North
@@ -222,7 +221,7 @@ func parseGpsInfo(imageInfo ImageInfo) []pbslave.MediaMeta {
 	lon := parseRawGPS(longitude.Value, lonRef.Value)
 	if !math.IsNaN(lat) && !math.IsNaN(lon) {
 		lat, lng := mediameta.NormalizeGPS(lat, lon)
-		return []pbslave.MediaMeta{{
+		return []driver.MediaMeta{{
 			Key:   mediameta.GpsLat,
 			Value: fmt.Sprintf("%f", lat),
 		}, {

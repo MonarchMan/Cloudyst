@@ -8,7 +8,6 @@ import "google/api/annotations.proto";
 
 import "file/common/v1/common.proto";
 import "file/share/v1/share.proto";
-import "common/v1/common.proto";
 
 option go_package = "api/api/file/files/v1;v1";
 
@@ -184,7 +183,7 @@ message ListFileRequest {
   int32 page = 2;
   int32 page_size = 3;
   string order_by = 4;
-  .common.v1.OrderDirection order_direction = 5;
+  string order_direction = 5;
   string next_page_token = 6;
 }
 

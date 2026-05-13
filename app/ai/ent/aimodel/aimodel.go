@@ -25,6 +25,8 @@ const (
 	FieldDeletedAt = "deleted_at"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldModel holds the string denoting the model field in the database.
+	FieldModel = "model"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
 	// FieldPlatform holds the string denoting the platform field in the database.
@@ -37,8 +39,8 @@ const (
 	FieldTemperature = "temperature"
 	// FieldMaxTokens holds the string denoting the max_tokens field in the database.
 	FieldMaxTokens = "max_tokens"
-	// FieldMaxContext holds the string denoting the max_context field in the database.
-	FieldMaxContext = "max_context"
+	// FieldMaxContexts holds the string denoting the max_contexts field in the database.
+	FieldMaxContexts = "max_contexts"
 	// FieldKeyID holds the string denoting the key_id field in the database.
 	FieldKeyID = "key_id"
 	// EdgeAiAPIKey holds the string denoting the ai_api_key edge name in mutations.
@@ -61,13 +63,14 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldDeletedAt,
 	FieldName,
+	FieldModel,
 	FieldType,
 	FieldPlatform,
 	FieldSort,
 	FieldStatus,
 	FieldTemperature,
 	FieldMaxTokens,
-	FieldMaxContext,
+	FieldMaxContexts,
 	FieldKeyID,
 }
 
@@ -97,6 +100,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// ModelValidator is a validator for the "model" field. It is called by the builders before save.
+	ModelValidator func(string) error
 	// TypeValidator is a validator for the "type" field. It is called by the builders before save.
 	TypeValidator func(string) error
 	// PlatformValidator is a validator for the "platform" field. It is called by the builders before save.
@@ -141,6 +146,11 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
+// ByModel orders the results by the model field.
+func ByModel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldModel, opts...).ToFunc()
+}
+
 // ByType orders the results by the type field.
 func ByType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldType, opts...).ToFunc()
@@ -171,9 +181,9 @@ func ByMaxTokens(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMaxTokens, opts...).ToFunc()
 }
 
-// ByMaxContext orders the results by the max_context field.
-func ByMaxContext(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldMaxContext, opts...).ToFunc()
+// ByMaxContexts orders the results by the max_contexts field.
+func ByMaxContexts(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMaxContexts, opts...).ToFunc()
 }
 
 // ByKeyID orders the results by the key_id field.

@@ -81,7 +81,6 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 	dbfsDep := filemanager.NewDBFSDependency(lockSystem, directLinkClient, logger)
 	fileService := service.NewFileService(userClient, managerDep, dbfsDep, fileClient, storagePolicyClient, encoder, provider, driver, auth, logger, bootstrap, mimeManager, eventHub)
 	shareService := service.NewShareService(shareClient, userClient, encoder, managerDep, dbfsDep)
-	sysService := service.NewSysService(queueManager, mimeManager, extractorStateManager)
 	nodeClient := data.NewNodeClient(entClient)
 	nodePool, err := biz.NodePoolWrapper(bootstrap, logger, provider, nodeClient)
 	if err != nil {
@@ -90,6 +89,7 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 		cleanup()
 		return nil, nil, err
 	}
+	sysService := service.NewSysService(queueManager, mimeManager, extractorStateManager, managerDep, dbfsDep, nodePool)
 	adminService := admin.NewAdminService(bootstrap, driver, auth, managerDep, dbfsDep, fileClient, storagePolicyClient, taskClient, nodeClient, shareClient, userClient, encoder, mimeManager, provider, credManager, queueManager, nodePool, logger)
 	slaveService := service.NewSlaveService(managerDep, dbfsDep, credManager, userClient, driver, provider, extractorStateManager, logger)
 	tracerProvider, err := pkg.TracerProvider(bootstrap)
@@ -112,7 +112,7 @@ func wireApp(bootstrap *conf.Bootstrap, client *api.Client) (*kratos.App, func()
 		cleanup()
 		return nil, nil, err
 	}
-	appServer, cleanup4 := app.NewServer(logger, bootstrap, driver, storagePolicyClient, userClient, credManager, queueManager, provider, mimeManager, extractorStateManager, tracerProvider, managerDep, dbfsDep)
+	appServer, cleanup4 := app.NewServer(logger, bootstrap, driver, storagePolicyClient, userClient, credManager, queueManager, provider, mimeManager, extractorStateManager, tracerProvider, managerDep, dbfsDep, nodePool)
 	kratosApp, err := newApp(grpcServer, httpServer, bootstrap, client, logger, appServer)
 	if err != nil {
 		cleanup4()

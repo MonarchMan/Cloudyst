@@ -42,6 +42,7 @@ const (
 	modelNameCondition     = "name"
 	modelPlatformCondition = "platform"
 	modelStatusCondition   = "status"
+	modelModelCondition    = "model"
 
 	roleNameCondition         = "name"
 	roleStatusCondition       = "status"
@@ -49,12 +50,11 @@ const (
 	roleUserIDCondition       = "user_id"
 	roleCategoryCondition     = "category"
 
-	knowledgeNameCondition    = "name"
-	knowledgeModelIDCondition = "model_id"
-	knowledgeStatusCondition  = "status"
+	knowledgeNameCondition = "name"
+	knowledgeIDCondition   = "knowledge_id"
 
-	documentKnowledgeIDCondition = "knowledge_id"
-	documentNameCondition        = "name"
+	documentIDCondition   = "document_id"
+	documentNameCondition = "name"
 
 	imagePlatformCondition = "platform"
 	imageStatusCondition   = "status"
@@ -67,15 +67,14 @@ const (
 	conversationRoleIDCondition  = "role_id"
 	conversationModelIDCondition = "model_id"
 
-	messageConversationIDCondition = "conversation_id"
-	messageUserIDCondition         = "user_id"
-	messageRoleIDCondition         = "role_id"
-	messageModelIDCondition        = "model_id"
-	messageTypeCondition           = "type"
+	conversationIDCondition = "conversation_id"
+	userIDCondition         = "user_id"
+	roleIDCondition         = "role_id"
+	modelIDCondition        = "model_id"
+	messageTypeCondition    = "type"
 
-	toolTypeCondition   = "type"
-	toolStatusCondition = "status"
-	toolNameCondition   = "name"
+	toolTypeCondition = "type"
+	toolNameCondition = "name"
 
 	taskTypeCondition    = "task_type"
 	taskStatusCondition  = "task_status"
@@ -85,20 +84,20 @@ const (
 
 type AdminService struct {
 	pbadmin.UnimplementedAdminServer
-	roleClient data.RoleClient
 	kb         knowledge.KnowledgeBiz
 	ib         image.ImageBiz
 	mb         model.ModelBiz
 	cb         chat.ChatBiz
 	tc         data.ToolClient
-	uc         rpc.UserClient
+	roleClient data.RoleClient
 	taskClient data.TaskClient
+	uc         rpc.UserClient
 	qm         *queue.QueueManager
 	hasher     hashid.Encoder
 }
 
 func NewAdminService(kb knowledge.KnowledgeBiz, ib image.ImageBiz, mb model.ModelBiz, cb chat.ChatBiz, roleClient data.RoleClient,
-	uc rpc.UserClient, hasher hashid.Encoder) *AdminService {
+	taskClient data.TaskClient, tc data.ToolClient, uc rpc.UserClient, qm *queue.QueueManager, hasher hashid.Encoder) *AdminService {
 	return &AdminService{
 		roleClient: roleClient,
 		kb:         kb,
@@ -106,6 +105,9 @@ func NewAdminService(kb knowledge.KnowledgeBiz, ib image.ImageBiz, mb model.Mode
 		mb:         mb,
 		cb:         cb,
 		uc:         uc,
+		tc:         tc,
+		taskClient: taskClient,
+		qm:         qm,
 		hasher:     hasher,
 	}
 }
@@ -137,17 +139,7 @@ func (s *AdminService) GetApikey(ctx context.Context, req *pbadmin.SimpleRequest
 }
 func (s *AdminService) ListApikey(ctx context.Context, req *commonpb.ListRequest) (*pbadmin.ListApikeyResponse, error) {
 	newCtx := context.WithValue(ctx, data.LoadApiKeyModel{}, true)
-	args := &data.ListApiKeyArgs{
-		PaginationArgs: &common.PaginationArgs{
-			Page:     int(req.Page - 1),
-			PageSize: int(req.PageSize),
-			OrderBy:  req.OrderBy,
-			OrderDir: common.OrderDirection(req.OrderDirection),
-		},
-		Name:     req.Conditions[apiKeyNameCondition],
-		Platform: req.Conditions[apiKeyPlatformCondition],
-		Status:   entmodule.Status(req.Conditions[apiKeyStatusCondition]),
-	}
+	args := getListApiKeyArgs(req)
 	res, err := s.mb.ListApiKeys(newCtx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list apikey: %w", err)
@@ -201,17 +193,7 @@ func (s *AdminService) GetModel(ctx context.Context, req *pbadmin.SimpleRequest)
 }
 func (s *AdminService) ListModel(ctx context.Context, req *commonpb.ListRequest) (*pbadmin.ListModelResponse, error) {
 	newCtx := context.WithValue(ctx, data.LoadApiKeyModel{}, true)
-	args := &data.ListAiModelArgs{
-		PaginationArgs: &common.PaginationArgs{
-			Page:     int(req.Page - 1),
-			PageSize: int(req.PageSize),
-			OrderBy:  req.OrderBy,
-			OrderDir: common.OrderDirection(req.OrderDirection),
-		},
-		Name:     req.Conditions[modelNameCondition],
-		Platform: req.Conditions[modelPlatformCondition],
-		Status:   entmodule.Status(req.Conditions[modelStatusCondition]),
-	}
+	args := getListModelArgs(req)
 	res, err := s.mb.ListModels(newCtx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list model: %w", err)
@@ -241,8 +223,10 @@ func (s *AdminService) BatchDeleteModel(ctx context.Context, req *pbadmin.BatchD
 }
 func (s *AdminService) CreateRole(ctx context.Context, req *aipb.AiChatRole) (*pbadmin.Role, error) {
 	u := trans.FromContext(ctx)
-	req.UserId = int64(u.ID)
-	r, err := s.roleClient.Upsert(ctx, utils.ProtoRoleToEnt(req))
+	role := utils.ProtoRoleToEnt(req)
+	role.UserID = u.ID
+	role.Status = entmodule.StatusActive
+	r, err := s.roleClient.Upsert(ctx, role)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to create role: %w", err)
 	}
@@ -271,23 +255,7 @@ func (s *AdminService) GetRole(ctx context.Context, req *pbadmin.SimpleRequest) 
 	}, nil
 }
 func (s *AdminService) ListRole(ctx context.Context, req *commonpb.ListRequest) (*pbadmin.ListRoleResponse, error) {
-	args := &data.ListChatRoleArgs{
-		PaginationArgs: &commonpb.PaginationArgs{
-			Page:           req.Page - 1,
-			PageSize:       req.PageSize,
-			OrderBy:        req.OrderBy,
-			OrderDirection: req.OrderDirection,
-		},
-		Name:         req.Conditions[roleNameCondition],
-		PublicStatus: req.Conditions[rolePublicStatusCondition] == "true",
-		Category:     req.Conditions[roleCategoryCondition],
-		Status:       entmodule.Status(req.Conditions[roleStatusCondition]),
-	}
-	var err error
-	args.UserID, err = strconv.Atoi(req.Conditions[roleUserIDCondition])
-	if err != nil {
-		return nil, commonpb.ErrorParamInvalid("Failed to parse user_id: %w", err)
-	}
+	args := getListRoleArgs(req)
 	res, err := s.roleClient.List(ctx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list role: %w", err)
@@ -313,7 +281,7 @@ func (s *AdminService) ListRole(ctx context.Context, req *commonpb.ListRequest) 
 			}
 			return r
 		}),
-		Pagination: res.PaginationResults,
+		Pagination: common.PaginationResultsToProto(res.PaginationResults),
 	}, nil
 }
 func (s *AdminService) BatchDeleteRole(ctx context.Context, req *pbadmin.BatchDeleteRoleRequest) (*emptypb.Empty, error) {
@@ -375,21 +343,7 @@ func (s *AdminService) GetKnowledge(ctx context.Context, req *pbadmin.SimpleRequ
 	}, nil
 }
 func (s *AdminService) ListKnowledge(ctx context.Context, req *commonpb.ListRequest) (*pbadmin.ListKnowledgeResponse, error) {
-	args := &data.ListKnowledgeArgs{
-		PaginationArgs: &commonpb.PaginationArgs{
-			Page:           req.Page - 1,
-			PageSize:       req.PageSize,
-			OrderBy:        req.OrderBy,
-			OrderDirection: req.OrderDirection,
-		},
-		Name:   req.Conditions[knowledgeNameCondition],
-		Status: entmodule.Status(req.Conditions[knowledgeStatusCondition]),
-	}
-	var err error
-	args.ModelID, err = strconv.Atoi(req.Conditions[knowledgeModelIDCondition])
-	if err != nil {
-		return nil, commonpb.ErrorParamInvalid("Failed to parse model_id: %w", err)
-	}
+	args := getListKnowledgeArgs(req)
 	res, err := s.kb.ListKnowledge(ctx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list knowledge: %w", err)
@@ -414,7 +368,7 @@ func (s *AdminService) ListKnowledge(ctx context.Context, req *commonpb.ListRequ
 			}
 			return k
 		}),
-		Pagination: res.PaginationResults,
+		Pagination: common.PaginationResultsToProto(res.PaginationResults),
 	}, nil
 }
 func (s *AdminService) BatchDeleteKnowledge(ctx context.Context, req *pbadmin.BatchDeleteRequest) (*emptypb.Empty, error) {
@@ -521,24 +475,7 @@ func (s *AdminService) GetKnowledgeDocument(ctx context.Context, req *pbadmin.Si
 	return utils.EntKnowledgeDocumentToProto(doc), nil
 }
 func (s *AdminService) ListKnowledgeDocument(ctx context.Context, req *commonpb.ListRequest) (*pbadmin.ListKnowledgeDocumentResponse, error) {
-	args := &data.ListKnowledgeDocumentArgs{
-		PaginationArgs: &commonpb.PaginationArgs{
-			Page:           req.Page - 1,
-			PageSize:       req.PageSize,
-			OrderBy:        req.OrderBy,
-			OrderDirection: req.OrderDirection,
-		},
-		Name: req.Conditions[documentNameCondition],
-	}
-	status := entmodule.Status(req.Conditions[statusCondition])
-	if status == entmodule.StatusActive || status == entmodule.StatusInactive {
-		args.Status = status
-	}
-	var err error
-	args.KnowledgeID, err = strconv.Atoi(req.Conditions[documentKnowledgeIDCondition])
-	if err != nil {
-		return nil, commonpb.ErrorParamInvalid("Failed to parse knowledge_id: %w", err)
-	}
+	args := getListDocumentArgs(req)
 	res, err := s.kb.ListKnowledgeDocument(ctx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list knowledge document: %w", err)
@@ -547,7 +484,7 @@ func (s *AdminService) ListKnowledgeDocument(ctx context.Context, req *commonpb.
 		Documents: lo.Map(res.Documents, func(item *ent.AiKnowledgeDocument, index int) *aipb.AiKnowledgeDocument {
 			return utils.EntKnowledgeDocumentToProto(item)
 		}),
-		Pagination: res.PaginationResults,
+		Pagination: common.PaginationResultsToProto(res.PaginationResults),
 	}, nil
 }
 func (s *AdminService) UpdateDocumentStatus(ctx context.Context, req *pbadmin.UpdateDocumentStatusRequest) (*aipb.AiKnowledgeDocument, error) {
@@ -571,6 +508,19 @@ func (s *AdminService) GetKnowledgeSegment(ctx context.Context, req *pbadmin.Sim
 	}
 	return utils.EntKnowledgeSegmentToProto(segment), nil
 }
+func (s *AdminService) ListKnowledgeSegments(ctx context.Context, req *commonpb.ListRequest) (*pbadmin.ListKnowledgeSegmentResponse, error) {
+	args := getListSegmentArgs(req)
+	res, err := s.kb.ListKnowledgeSegments(ctx, args)
+	if err != nil {
+		return nil, commonpb.ErrorDb("Failed to list knowledge segments: %w", err)
+	}
+	return &pbadmin.ListKnowledgeSegmentResponse{
+		Segments: lo.Map(res.KnowledgeSegments, func(item *ent.AiKnowledgeSegment, index int) *aipb.AiKnowledgeSegment {
+			return utils.EntKnowledgeSegmentToProto(item)
+		}),
+		Pagination: common.PaginationResultsToProto(res.PaginationResults),
+	}, nil
+}
 func (s *AdminService) GetImage(ctx context.Context, req *pbadmin.SimpleRequest) (*pbadmin.Image, error) {
 	img, err := s.ib.GetImage(ctx, int(req.Id))
 	if err != nil {
@@ -587,21 +537,7 @@ func (s *AdminService) GetImage(ctx context.Context, req *pbadmin.SimpleRequest)
 	}, nil
 }
 func (s *AdminService) ListImage(ctx context.Context, req *commonpb.ListRequest) (*pbadmin.ListImageResponse, error) {
-	args := &data.ListAIImageArgs{
-		PaginationArgs: &commonpb.PaginationArgs{
-			Page:           req.Page - 1,
-			PageSize:       req.PageSize,
-			OrderBy:        req.OrderBy,
-			OrderDirection: req.OrderDirection,
-		},
-		Platform: req.Conditions[imagePlatformCondition],
-		Status:   types.ImageStatus(req.Conditions[imageStatusCondition]),
-	}
-	var err error
-	args.ModelID, err = strconv.Atoi(req.Conditions[imageModelIDCondition])
-	if err != nil {
-		return nil, commonpb.ErrorParamInvalid("Failed to parse model_id: %w", err)
-	}
+	args := getListImageArgs(req)
 	res, err := s.ib.ListImages(ctx, args)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to list image: %w", err)
@@ -627,7 +563,7 @@ func (s *AdminService) ListImage(ctx context.Context, req *commonpb.ListRequest)
 			}
 			return img
 		}),
-		Pagination: res.PaginationResults,
+		Pagination: common.PaginationResultsToProto(res.PaginationResults),
 	}, nil
 }
 func (s *AdminService) UpdateImage(ctx context.Context, req *aipb.AiImage) (*pbadmin.Image, error) {
@@ -983,9 +919,31 @@ func (s *AdminService) DeleteTaskByUserIds(ctx context.Context, req *commonpb.De
 	return &emptypb.Empty{}, nil
 }
 
+func getListApiKeyArgs(req *commonpb.ListRequest) *data.ListApiKeyArgs {
+	return &data.ListApiKeyArgs{
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
+		Name:           req.Conditions[apiKeyNameCondition],
+		Platform:       req.Conditions[apiKeyPlatformCondition],
+		Status:         entmodule.Status(req.Conditions[apiKeyStatusCondition]),
+	}
+}
+
+func getListModelArgs(req *commonpb.ListRequest) *data.ListAiModelArgs {
+	return &data.ListAiModelArgs{
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
+		Name:           req.Conditions[modelNameCondition],
+		Model:          req.Conditions[modelModelCondition],
+		Platform:       req.Conditions[modelPlatformCondition],
+		Status:         entmodule.Status(req.Conditions[modelStatusCondition]),
+	}
+}
+
 func getListChatConversationArgs(req *commonpb.ListRequest) *data.ListChatConversationArgs {
 	args := &data.ListChatConversationArgs{
-		PaginationArgs: common.ConvertListRequestPaginationArgs(req),
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
+	}
+	if req.Conditions[conversationTitleCondition] != "" {
+		args.Title = req.Conditions[conversationTitleCondition]
 	}
 	if req.Conditions[conversationPinnedCondition] == "true" || req.Conditions[conversationPinnedCondition] == "false" {
 		args.Pinned = req.Conditions[conversationPinnedCondition] == "true"
@@ -1010,19 +968,22 @@ func getListChatConversationArgs(req *commonpb.ListRequest) *data.ListChatConver
 
 func getListChatMessageArgs(req *commonpb.ListRequest) *data.ListChatMessageArgs {
 	args := &data.ListChatMessageArgs{
-		PaginationArgs: common.ConvertListRequestPaginationArgs(req),
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
 	}
-	if req.Conditions[messageConversationIDCondition] != "" {
-		args.ConversationID, _ = strconv.Atoi(req.Conditions[messageConversationIDCondition])
+	if req.Conditions[conversationIDCondition] != "" {
+		args.ConversationID, _ = strconv.Atoi(req.Conditions[conversationIDCondition])
 	}
-	if req.Conditions[messageUserIDCondition] != "" {
-		args.UserID, _ = strconv.Atoi(req.Conditions[messageUserIDCondition])
+	if req.Conditions[userIDCondition] != "" {
+		args.UserID, _ = strconv.Atoi(req.Conditions[userIDCondition])
 	}
-	if req.Conditions[messageRoleIDCondition] != "" {
-		args.RoleID, _ = strconv.Atoi(req.Conditions[messageRoleIDCondition])
+	if req.Conditions[roleIDCondition] != "" {
+		args.RoleID, _ = strconv.Atoi(req.Conditions[roleIDCondition])
 	}
-	if req.Conditions[messageModelIDCondition] != "" {
-		args.ModelID, _ = strconv.Atoi(req.Conditions[messageModelIDCondition])
+	if req.Conditions[modelIDCondition] != "" {
+		args.ModelID, _ = strconv.Atoi(req.Conditions[modelIDCondition])
+	}
+	if req.Conditions[messageTypeCondition] != "" {
+		args.Type = req.Conditions[messageTypeCondition]
 	}
 	if req.Conditions[startCondition] != "" {
 		args.Start, _ = time.Parse(time.RFC3339, req.Conditions[startCondition])
@@ -1034,7 +995,7 @@ func getListChatMessageArgs(req *commonpb.ListRequest) *data.ListChatMessageArgs
 }
 func getListToolArgs(req *commonpb.ListRequest) *data.ListToolArgs {
 	args := &data.ListToolArgs{
-		PaginationArgs: common.ConvertListRequestPaginationArgs(req),
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
 	}
 	if req.Conditions[toolTypeCondition] != "" {
 		args.Type = req.Conditions[toolTypeCondition]
@@ -1042,8 +1003,71 @@ func getListToolArgs(req *commonpb.ListRequest) *data.ListToolArgs {
 	if req.Conditions[toolNameCondition] != "" {
 		args.Name = req.Conditions[toolNameCondition]
 	}
-	if req.Conditions[toolStatusCondition] != "" {
-		args.Status = entmodule.Status(req.Conditions[toolStatusCondition])
+	if req.Conditions[statusCondition] != "" {
+		args.Status = entmodule.GetStatus(req.Conditions[statusCondition])
+	}
+	return args
+}
+
+func getListKnowledgeArgs(req *commonpb.ListRequest) *data.ListKnowledgeArgs {
+	args := &data.ListKnowledgeArgs{
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
+		Name:           req.Conditions[knowledgeNameCondition],
+		Status:         entmodule.GetStatus(req.Conditions[statusCondition]),
+	}
+	if req.Conditions[modelIDCondition] != "" {
+		args.ModelID, _ = strconv.Atoi(req.Conditions[modelIDCondition])
+	}
+	return args
+}
+
+func getListDocumentArgs(req *commonpb.ListRequest) *data.ListKnowledgeDocumentArgs {
+	args := &data.ListKnowledgeDocumentArgs{
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
+		Name:           req.Conditions[documentNameCondition],
+		Status:         entmodule.GetStatus(req.Conditions[statusCondition]),
+	}
+	if req.Conditions[knowledgeIDCondition] != "" {
+		args.KnowledgeID, _ = strconv.Atoi(req.Conditions[knowledgeIDCondition])
+	}
+	return args
+}
+
+func getListSegmentArgs(req *commonpb.ListRequest) *data.ListKnowledgeSegmentArgs {
+	args := &data.ListKnowledgeSegmentArgs{
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
+	}
+	if req.Conditions[knowledgeIDCondition] != "" {
+		args.KnowledgeID, _ = strconv.Atoi(req.Conditions[knowledgeIDCondition])
+	}
+	if req.Conditions[documentIDCondition] != "" {
+		args.DocumentID, _ = strconv.Atoi(req.Conditions[documentIDCondition])
+	}
+	return args
+}
+
+func getListImageArgs(req *commonpb.ListRequest) *data.ListAIImageArgs {
+	args := &data.ListAIImageArgs{
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
+		Platform:       req.Conditions[imagePlatformCondition],
+		Status:         types.ImageStatus(req.Conditions[imageStatusCondition]),
+	}
+	if req.Conditions[imageModelIDCondition] != "" {
+		args.ModelID, _ = strconv.Atoi(req.Conditions[imageModelIDCondition])
+	}
+	return args
+}
+
+func getListRoleArgs(req *commonpb.ListRequest) *data.ListChatRoleArgs {
+	args := &data.ListChatRoleArgs{
+		PaginationArgs: common.ListRequestPaginationArgsFromProto(req),
+		Name:           req.Conditions[roleNameCondition],
+		PublicStatus:   req.Conditions[rolePublicStatusCondition] == "true",
+		Category:       req.Conditions[roleCategoryCondition],
+		Status:         entmodule.GetStatus(req.Conditions[roleStatusCondition]),
+	}
+	if req.Conditions[userIDCondition] != "" {
+		args.UserID, _ = strconv.Atoi(req.Conditions[userIDCondition])
 	}
 	return args
 }

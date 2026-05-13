@@ -100,33 +100,33 @@ service Admin {
 
   rpc GetQueueMetrics(google.protobuf.Empty) returns (QueueMetricsResponse) {
     option (google.api.http) = {
-      get: "/admin/file/queue/metrics",
+      get: "/admin/queue/metrics",
     };
   }
 
   rpc ListTasks(file.common.v1.ListRequest) returns (ListTaskResponse) {
     option (google.api.http) = {
-      post: "/admin/file/queue",
+      post: "/admin/queue",
       body: "*",
     };
   }
 
   rpc GetTask(SimpleTaskRequest) returns (GetTaskResponse) {
     option (google.api.http) = {
-      get: "/admin/file/queue/{id}",
+      get: "/admin/queue/{id}",
     };
   }
 
   rpc BatchDeleteTasks(BatchDeleteTasksRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/file/queue/batch/delete",
+      post: "/admin/queue/batch/delete",
       body: "*"
     };
   }
 
   rpc CleanupTask(CleanupTaskRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/file/queue/cleanup",
+      post: "/admin/queue/cleanup",
       body: "*",
     };
   }

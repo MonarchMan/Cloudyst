@@ -243,6 +243,12 @@ func (_u *AiChatMessageUpdate) AppendSegmentIds(v []int) *AiChatMessageUpdate {
 	return _u
 }
 
+// ClearSegmentIds clears the value of the "segment_ids" field.
+func (_u *AiChatMessageUpdate) ClearSegmentIds() *AiChatMessageUpdate {
+	_u.mutation.ClearSegmentIds()
+	return _u
+}
+
 // SetAttachmentUrls sets the "attachment_urls" field.
 func (_u *AiChatMessageUpdate) SetAttachmentUrls(v []string) *AiChatMessageUpdate {
 	_u.mutation.SetAttachmentUrls(v)
@@ -252,6 +258,12 @@ func (_u *AiChatMessageUpdate) SetAttachmentUrls(v []string) *AiChatMessageUpdat
 // AppendAttachmentUrls appends value to the "attachment_urls" field.
 func (_u *AiChatMessageUpdate) AppendAttachmentUrls(v []string) *AiChatMessageUpdate {
 	_u.mutation.AppendAttachmentUrls(v)
+	return _u
+}
+
+// ClearAttachmentUrls clears the value of the "attachment_urls" field.
+func (_u *AiChatMessageUpdate) ClearAttachmentUrls() *AiChatMessageUpdate {
+	_u.mutation.ClearAttachmentUrls()
 	return _u
 }
 
@@ -437,6 +449,9 @@ func (_u *AiChatMessageUpdate) sqlSave(ctx context.Context) (_node int, err erro
 			sqljson.Append(u, aichatmessage.FieldSegmentIds, value)
 		})
 	}
+	if _u.mutation.SegmentIdsCleared() {
+		_spec.ClearField(aichatmessage.FieldSegmentIds, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.AttachmentUrls(); ok {
 		_spec.SetField(aichatmessage.FieldAttachmentUrls, field.TypeJSON, value)
 	}
@@ -444,6 +459,9 @@ func (_u *AiChatMessageUpdate) sqlSave(ctx context.Context) (_node int, err erro
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, aichatmessage.FieldAttachmentUrls, value)
 		})
+	}
+	if _u.mutation.AttachmentUrlsCleared() {
+		_spec.ClearField(aichatmessage.FieldAttachmentUrls, field.TypeJSON)
 	}
 	if _u.mutation.AiWebPageCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -723,6 +741,12 @@ func (_u *AiChatMessageUpdateOne) AppendSegmentIds(v []int) *AiChatMessageUpdate
 	return _u
 }
 
+// ClearSegmentIds clears the value of the "segment_ids" field.
+func (_u *AiChatMessageUpdateOne) ClearSegmentIds() *AiChatMessageUpdateOne {
+	_u.mutation.ClearSegmentIds()
+	return _u
+}
+
 // SetAttachmentUrls sets the "attachment_urls" field.
 func (_u *AiChatMessageUpdateOne) SetAttachmentUrls(v []string) *AiChatMessageUpdateOne {
 	_u.mutation.SetAttachmentUrls(v)
@@ -732,6 +756,12 @@ func (_u *AiChatMessageUpdateOne) SetAttachmentUrls(v []string) *AiChatMessageUp
 // AppendAttachmentUrls appends value to the "attachment_urls" field.
 func (_u *AiChatMessageUpdateOne) AppendAttachmentUrls(v []string) *AiChatMessageUpdateOne {
 	_u.mutation.AppendAttachmentUrls(v)
+	return _u
+}
+
+// ClearAttachmentUrls clears the value of the "attachment_urls" field.
+func (_u *AiChatMessageUpdateOne) ClearAttachmentUrls() *AiChatMessageUpdateOne {
+	_u.mutation.ClearAttachmentUrls()
 	return _u
 }
 
@@ -947,6 +977,9 @@ func (_u *AiChatMessageUpdateOne) sqlSave(ctx context.Context) (_node *AiChatMes
 			sqljson.Append(u, aichatmessage.FieldSegmentIds, value)
 		})
 	}
+	if _u.mutation.SegmentIdsCleared() {
+		_spec.ClearField(aichatmessage.FieldSegmentIds, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.AttachmentUrls(); ok {
 		_spec.SetField(aichatmessage.FieldAttachmentUrls, field.TypeJSON, value)
 	}
@@ -954,6 +987,9 @@ func (_u *AiChatMessageUpdateOne) sqlSave(ctx context.Context) (_node *AiChatMes
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, aichatmessage.FieldAttachmentUrls, value)
 		})
+	}
+	if _u.mutation.AttachmentUrlsCleared() {
+		_spec.ClearField(aichatmessage.FieldAttachmentUrls, field.TypeJSON)
 	}
 	if _u.mutation.AiWebPageCleared() {
 		edge := &sqlgraph.EdgeSpec{

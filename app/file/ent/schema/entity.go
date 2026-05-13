@@ -3,13 +3,10 @@ package schema
 import (
 	"file/internal/data/types"
 
-	"entgo.io/contrib/entproto"
 	"entgo.io/ent"
-	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/gofrs/uuid"
-	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // Entity holds the schema definition for the Entity entity.
@@ -20,27 +17,19 @@ type Entity struct {
 // Fields of the Entity.
 func (Entity) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("type").
-			Annotations(entproto.Field(2)),
-		field.Text("source").
-			Annotations(entproto.Field(3)),
-		field.Int64("size").
-			Annotations(entproto.Field(4)),
+		field.Int("type"),
+		field.Text("source"),
+		field.Int64("size"),
 		field.Int("reference_count").
-			Default(1).
-			Annotations(entproto.Field(5)),
-		field.Int("storage_policy_entities").
-			Annotations(entproto.Field(6)),
+			Default(1),
+		field.Int("storage_policy_entities"),
 		field.Int("created_by").
-			Optional().
-			Annotations(entproto.Field(7)),
+			Optional(),
 		field.UUID("upload_session_id", uuid.Must(uuid.NewV4())).
 			Optional().
-			Nillable().
-			Annotations(entproto.Field(8)),
+			Nillable(),
 		field.JSON("props", &types.EntityProps{}).
-			Optional().
-			Annotations(entproto.Field(9, entproto.Type(descriptorpb.FieldDescriptorProto_TYPE_STRING))),
+			Optional(),
 	}
 }
 
@@ -48,25 +37,17 @@ func (Entity) Fields() []ent.Field {
 func (Entity) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("file", File.Type).
-			Ref("entities").
-			Annotations(entproto.Field(81)),
+			Ref("entities"),
 		edge.From("storage_policy", StoragePolicy.Type).
 			Ref("entities").
 			Field("storage_policy_entities").
 			Unique().
-			Required().
-			Annotations(entproto.Field(82)),
+			Required(),
 	}
 }
 
 func (Entity) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		CommonMixin{},
-	}
-}
-
-func (Entity) Annotations() []schema.Annotation {
-	return []schema.Annotation{
-		entproto.Message(),
 	}
 }

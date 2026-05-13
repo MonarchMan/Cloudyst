@@ -1,12 +1,12 @@
 package mediameta
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common"
 	"common/request"
 	"context"
 	"encoding/gob"
 	"errors"
+	"file/internal/biz/filemanager/driver"
 	"file/internal/biz/filemanager/manager/entitysource"
 	"file/internal/biz/setting"
 	"file/internal/conf"
@@ -22,7 +22,7 @@ var (
 )
 
 func init() {
-	gob.Register([]pbslave.MediaMeta{})
+	gob.Register([]driver.MediaMeta{})
 }
 
 type (
@@ -30,7 +30,7 @@ type (
 		// Exts returns the supported files extensions.
 		Exts() []string
 		// Extract extracts the media meta from the given source.
-		Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]pbslave.MediaMeta, error)
+		Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]driver.MediaMeta, error)
 	}
 
 	ExtractorStateManager interface {
@@ -117,9 +117,9 @@ func (e *extractorManager) Exts() []string {
 	return lo.Keys(e.extMap)
 }
 
-func (e *extractorManager) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]pbslave.MediaMeta, error) {
+func (e *extractorManager) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]driver.MediaMeta, error) {
 	if extractor, ok := e.extMap[ext]; ok {
-		res := []pbslave.MediaMeta{}
+		res := []driver.MediaMeta{}
 		for _, e := range extractor {
 			_, _ = source.Seek(0, io.SeekStart)
 			data, err := e.Extract(ctx, ext, source, append(opts, WithExtracted(res))...)
@@ -137,7 +137,7 @@ func (e *extractorManager) Extract(ctx context.Context, ext string, source entit
 }
 
 type option struct {
-	extracted []pbslave.MediaMeta
+	extracted []driver.MediaMeta
 	language  string
 }
 
@@ -147,7 +147,7 @@ func (f optionFunc) apply(o *option) {
 	f(o)
 }
 
-func WithExtracted(extracted []pbslave.MediaMeta) optionFunc {
+func WithExtracted(extracted []driver.MediaMeta) optionFunc {
 	return optionFunc(func(o *option) {
 		o.extracted = extracted
 	})

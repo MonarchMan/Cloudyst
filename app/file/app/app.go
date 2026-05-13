@@ -5,6 +5,7 @@ import (
 	"common/constants"
 	"common/util"
 	"context"
+	"file/internal/biz/cluster"
 	"file/internal/biz/credmanager"
 	"file/internal/biz/crontab"
 	"file/internal/biz/filemanager"
@@ -17,7 +18,6 @@ import (
 	"file/internal/data"
 	"file/internal/data/rpc"
 	"fmt"
-	mqueue "queue"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"go.opentelemetry.io/otel/trace"
@@ -41,6 +41,7 @@ type (
 		settings setting.Provider
 		dep      filemanager.ManagerDep
 		dbfsDep  filemanager.DbfsDep
+		np       cluster.NodePool
 		mm       mime.MimeManager
 		em       mediameta.ExtractorStateManager
 		tracer   trace.Tracer
@@ -50,7 +51,7 @@ type (
 func NewServer(logger log.Logger, config *conf.Bootstrap, kv cache.Driver, pc data.StoragePolicyClient,
 	uc rpc.UserClient, credM credmanager.CredManager, qm *queue.QueueManager, settings setting.Provider,
 	mm mime.MimeManager, em mediameta.ExtractorStateManager, tracerProvider trace.TracerProvider,
-	dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (Server, func()) {
+	dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, np cluster.NodePool) (Server, func()) {
 	s := &server{
 		logger:   log.NewHelper(logger, log.WithMessageKey("app-server")),
 		config:   config,
@@ -62,6 +63,7 @@ func NewServer(logger log.Logger, config *conf.Bootstrap, kv cache.Driver, pc da
 		settings: settings,
 		dep:      dep,
 		dbfsDep:  dbfsDep,
+		np:       np,
 		mm:       mm,
 		em:       em,
 		tracer:   tracerProvider.Tracer("app-server"),
@@ -83,7 +85,7 @@ func (s *server) Start() error {
 		if err := s.credM.Upsert(ctx, credentials...); err != nil {
 			return fmt.Errorf("failed to upsert OneDrive credentials to CredManager: %w", err)
 		}
-		crontab.Register(setting.CronTypeOauthCredRefresh, func(ctx context.Context, q mqueue.Queue) {
+		crontab.Register(setting.CronTypeOauthCredRefresh, func(ctx context.Context) {
 			s.credM.RefreshAll(ctx)
 		})
 
@@ -94,6 +96,7 @@ func (s *server) Start() error {
 		// Start all queues
 		ctx = context.WithValue(ctx, filemanager.ManagerDepCtx{}, s.dep)
 		ctx = context.WithValue(ctx, filemanager.DbfsDepCtx{}, s.dbfsDep)
+		ctx = context.WithValue(ctx, cluster.NodePoolCtx{}, s.np)
 		s.qm.ReloadMediaMetaQueue(ctx)
 		s.qm.GetMediaMetaQueue().Start()
 		s.qm.ReloadEntityRecycleQueue(ctx)

@@ -66,7 +66,7 @@ func (t *SlaveUploadTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	ctx = prepareSlaveTaskCtx(ctx, t.props)
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
-	np := filemanager.NodePoolFromContext(ctx)
+	np := cluster.NodePoolFromContext(ctx)
 	t.l = dep.Logger()
 
 	if np == nil {

@@ -1,7 +1,6 @@
 package ks3
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/boolset"
 	"common/serializer"
 	"context"
@@ -175,6 +174,9 @@ func (handler *Driver) List(ctx context.Context, base string, onProgress driver.
 
 	// 处理文件
 	for _, object := range objects {
+		if strings.HasSuffix(*object.Key, "/") && *object.Size == 0 {
+			continue
+		}
 		rel, err := filepath.Rel(*opt.Prefix, *object.Key)
 		if err != nil {
 			continue
@@ -506,7 +508,7 @@ func (handler *Driver) Capabilities() *driver.Capabilities {
 }
 
 // MediaMeta 获取媒体元信息
-func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]driver.MediaMeta, error) {
 	return nil, errors.New("not implemented")
 }
 

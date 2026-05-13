@@ -76,6 +76,7 @@ const (
 	SummaryKeySrcMultiple    = "src_multiple"
 	SummaryKeySrcDstPolicyID = "dst_policy_id"
 	SummaryKeyFailed         = "failed"
+	SummaryKeyTotal          = "total"
 )
 
 func init() {
@@ -124,7 +125,7 @@ func NewRemoteDownloadTaskFromModel(task mqueue.TaskRecord) mqueue.Task {
 func (m *RemoteDownloadTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 	dep := filemanager.ManagerDepFromContext(ctx)
 	dbfsDep := filemanager.DBFSDepFromContext(ctx)
-	np := filemanager.NodePoolFromContext(ctx)
+	np := cluster.NodePoolFromContext(ctx)
 	m.l = dep.Logger()
 
 	// unmarshal state
@@ -182,7 +183,7 @@ func (m *RemoteDownloadTask) createDownloadTask(ctx context.Context, dep fileman
 		return mqueue.StatusSuspending, nil
 	}
 
-	user := trans.FromContext(ctx)
+	user := m.Owner()
 	torrentUrl := m.state.SrcUri
 	if m.state.SrcFileUri != "" {
 		// Target is a torrent files
@@ -299,7 +300,6 @@ func (m *RemoteDownloadTask) monitor(ctx context.Context, dep filemanager.Manage
 }
 
 func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.ManagerDep) (mqueue.TaskStatus, error) {
-	user := trans.FromContext(ctx)
 	if m.state.Transferred == nil {
 		m.state.Transferred = make(map[int]interface{})
 	}
@@ -314,7 +314,7 @@ func (m *RemoteDownloadTask) slaveTransfer(ctx context.Context, dep filemanager.
 		payload := &SlaveUploadTaskState{
 			Files:       []SlaveUploadEntity{},
 			MaxParallel: dep.SettingProvider().MaxParallelTransfer(ctx),
-			UserID:      user.ID,
+			UserID:      m.OwnerID(),
 		}
 
 		// Construct files to be transferred
@@ -435,7 +435,7 @@ func (m *RemoteDownloadTask) masterTransfer(ctx context.Context, dep filemanager
 		return mqueue.StatusError, fmt.Errorf("failed to parse dst uri: %s (%w)", err, queue.CriticalErr)
 	}
 
-	user := trans.FromContext(ctx)
+	user := m.Owner()
 	fm := manager.NewFileManager(dep, dbfsDep, user)
 	failed := int64(0)
 	ae := serializer.NewAggregateError()

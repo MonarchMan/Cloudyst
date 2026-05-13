@@ -334,3 +334,17 @@ func IsManagedAccountMinimumOpenId(err error) bool {
 func ErrorManagedAccountMinimumOpenId(format string, args ...interface{}) *errors.Error {
 	return errors.New(400, ErrorReason_MANAGED_ACCOUNT_MINIMUM_OPEN_ID.String(), fmt.Sprintf(format, args...))
 }
+
+// CodeInsufficientScope OAuth token scope insufficient
+func IsCodeInsufficientScope(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_CodeInsufficientScope.String() && e.Code == 400
+}
+
+// CodeInsufficientScope OAuth token scope insufficient
+func ErrorCodeInsufficientScope(format string, args ...interface{}) *errors.Error {
+	return errors.New(400, ErrorReason_CodeInsufficientScope.String(), fmt.Sprintf(format, args...))
+}

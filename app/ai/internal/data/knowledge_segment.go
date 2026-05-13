@@ -4,7 +4,6 @@ import (
 	"ai/ent"
 	"ai/ent/aiknowledgesegment"
 	"ai/internal/biz/types"
-	pb "api/api/common/v1"
 	"api/external/data/common"
 	"context"
 	"entmodule"
@@ -41,13 +40,13 @@ type (
 	}
 
 	ListKnowledgeSegmentArgs struct {
-		*pb.PaginationArgs
+		*common.PaginationArgs
 		KnowledgeID int
 		DocumentID  int
 	}
 
 	ListKnowledgeSegmentResult struct {
-		*pb.PaginationResults
+		*common.PaginationResults
 		KnowledgeSegments []*ent.AiKnowledgeSegment
 	}
 )
@@ -150,8 +149,8 @@ func (c *knowledgeSegmentClient) List(ctx context.Context, args *ListKnowledgeSe
 	}
 
 	return &ListKnowledgeSegmentResult{
-		PaginationResults: &pb.PaginationResults{
-			TotalItems: int32(total),
+		PaginationResults: &common.PaginationResults{
+			TotalItems: total,
 			Page:       args.Page,
 			PageSize:   args.PageSize,
 		},
@@ -257,7 +256,7 @@ func withKnowledgeSegmentEagerLoading(ctx context.Context, q *ent.AiKnowledgeSeg
 }
 
 func getKnowledgeSegmentOrderOption(args *ListKnowledgeSegmentArgs) []aiknowledgesegment.OrderOption {
-	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(args.OrderDir)
 	switch args.OrderBy {
 	case aiknowledgesegment.FieldRetrievalCount:
 		return []aiknowledgesegment.OrderOption{aiknowledgesegment.ByRetrievalCount(orderTerm), aiknowledgesegment.ByID(orderTerm)}

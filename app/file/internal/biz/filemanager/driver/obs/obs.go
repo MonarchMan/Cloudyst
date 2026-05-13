@@ -149,8 +149,8 @@ func (d *Driver) List(ctx context.Context, base string, onProgress driver.ListPr
 
 	// 处理列取结果
 	res := make([]fs.PhysicalObject, 0, len(objects)+len(commons))
-	// 处理目录
 
+	// 处理目录
 	for _, object := range commons {
 		rel, err := filepath.Rel(opt.Prefix, object)
 		if err != nil {
@@ -170,6 +170,9 @@ func (d *Driver) List(ctx context.Context, base string, onProgress driver.ListPr
 	// 处理文件
 
 	for _, object := range objects {
+		if strings.HasSuffix(object.Key, "/") && object.Size == 0 {
+			continue
+		}
 		rel, err := filepath.Rel(opt.Prefix, object.Key)
 		if err != nil {
 			d.l.WithContext(ctx).Warnf("Failed to get relative path: %s", err)

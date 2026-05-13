@@ -62,6 +62,59 @@ var (
 		Columns:    GroupsColumns,
 		PrimaryKey: []*schema.Column{GroupsColumns[0]},
 	}
+	// OauthClientsColumns holds the columns for the "oauth_clients" table.
+	OauthClientsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "guid", Type: field.TypeString, Unique: true, Size: 255},
+		{Name: "secret", Type: field.TypeString, Size: 255},
+		{Name: "name", Type: field.TypeString, Size: 255},
+		{Name: "homepage_url", Type: field.TypeString, Nullable: true, Size: 2048},
+		{Name: "redirect_uris", Type: field.TypeJSON},
+		{Name: "scopes", Type: field.TypeJSON},
+		{Name: "props", Type: field.TypeJSON},
+		{Name: "is_enabled", Type: field.TypeBool, Default: true},
+	}
+	// OauthClientsTable holds the schema information for the "oauth_clients" table.
+	OauthClientsTable = &schema.Table{
+		Name:       "oauth_clients",
+		Columns:    OauthClientsColumns,
+		PrimaryKey: []*schema.Column{OauthClientsColumns[0]},
+	}
+	// OauthGrantsColumns holds the columns for the "oauth_grants" table.
+	OauthGrantsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "user_id", Type: field.TypeInt},
+		{Name: "scopes", Type: field.TypeJSON},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true, SchemaType: map[string]string{"mysql": "datetime"}},
+		{Name: "client_id", Type: field.TypeInt},
+	}
+	// OauthGrantsTable holds the schema information for the "oauth_grants" table.
+	OauthGrantsTable = &schema.Table{
+		Name:       "oauth_grants",
+		Columns:    OauthGrantsColumns,
+		PrimaryKey: []*schema.Column{OauthGrantsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_grants_oauth_clients_grants",
+				Columns:    []*schema.Column{OauthGrantsColumns[7]},
+				RefColumns: []*schema.Column{OauthClientsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthgrant_user_id_client_id",
+				Unique:  true,
+				Columns: []*schema.Column{OauthGrantsColumns[4], OauthGrantsColumns[7]},
+			},
+		},
+	}
 	// PasskeysColumns holds the columns for the "passkeys" table.
 	PasskeysColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -144,6 +197,8 @@ var (
 	Tables = []*schema.Table{
 		DavAccountsTable,
 		GroupsTable,
+		OauthClientsTable,
+		OauthGrantsTable,
 		PasskeysTable,
 		SettingsTable,
 		UsersTable,
@@ -152,6 +207,7 @@ var (
 
 func init() {
 	DavAccountsTable.ForeignKeys[0].RefTable = UsersTable
+	OauthGrantsTable.ForeignKeys[0].RefTable = OauthClientsTable
 	PasskeysTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = GroupsTable
 }

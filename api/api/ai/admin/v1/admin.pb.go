@@ -1386,64 +1386,64 @@ const file_ai_admin_v1_admin_proto_rawDesc = "" +
 	"\x05tools\x18\x01 \x03(\v2\x14.ai.common.v1.AiToolR\x05tools\x12<\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationResultsR\n" +
-	"pagination2\xcb*\n" +
+	"pagination2\xf8)\n" +
 	"\x05Admin\x12\\\n" +
-	"\fCreateApikey\x12\x16.ai.common.v1.AiApiKey\x1a\x16.ai.common.v1.AiApiKey\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/admin/ai/api-key\x12a\n" +
-	"\fUpdateApikey\x12\x16.ai.common.v1.AiApiKey\x1a\x16.ai.common.v1.AiApiKey\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\x1a\x16/admin/ai/api-key/{id}\x12b\n" +
-	"\fDeleteApikey\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1e\x82\xd3\xe4\x93\x02\x18*\x16/admin/ai/api-key/{id}\x12_\n" +
-	"\tGetApikey\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.ai.common.v1.AiApiKey\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/admin/ai/api-key/{id}\x12h\n" +
+	"\fCreateApikey\x12\x16.ai.common.v1.AiApiKey\x1a\x16.ai.common.v1.AiApiKey\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/ai/admin/api-key\x12a\n" +
+	"\fUpdateApikey\x12\x16.ai.common.v1.AiApiKey\x1a\x16.ai.common.v1.AiApiKey\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\x1a\x16/ai/admin/api-key/{id}\x12b\n" +
+	"\fDeleteApikey\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1e\x82\xd3\xe4\x93\x02\x18*\x16/ai/admin/api-key/{id}\x12_\n" +
+	"\tGetApikey\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.ai.common.v1.AiApiKey\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/ai/admin/api-key/{id}\x12h\n" +
 	"\n" +
-	"ListApikey\x12\x16.common.v1.ListRequest\x1a\x1f.ai.admin.v1.ListApikeyResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/admin/ai/api-key/list\x12w\n" +
-	"\x11BatchDeleteApiKey\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\")\x82\xd3\xe4\x93\x02#:\x01*\"\x1e/admin/ai/api-key/batch/delete\x12W\n" +
-	"\vCreateModel\x12\x15.ai.common.v1.AiModel\x1a\x15.ai.common.v1.AiModel\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/admin/ai/model\x12\\\n" +
-	"\vUpdateModel\x12\x15.ai.common.v1.AiModel\x1a\x15.ai.common.v1.AiModel\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\x1a\x14/admin/ai/model/{id}\x12_\n" +
-	"\vDeleteModel\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16*\x14/admin/ai/model/{id}\x12[\n" +
-	"\bGetModel\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x15.ai.common.v1.AiModel\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/model/{id}\x12d\n" +
-	"\tListModel\x12\x16.common.v1.ListRequest\x1a\x1e.ai.admin.v1.ListModelResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/admin/ai/model/list\x12t\n" +
-	"\x10BatchDeleteModel\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/admin/ai/model/batch/delete\x12U\n" +
-	"\aGetRole\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x11.ai.admin.v1.Role\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/admin/ai/role/{id}\x12a\n" +
-	"\bListRole\x12\x16.common.v1.ListRequest\x1a\x1d.ai.admin.v1.ListRoleResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/admin/ai/role/list\x12p\n" +
-	"\x0fBatchDeleteRole\x12#.ai.admin.v1.BatchDeleteRoleRequest\x1a\x16.google.protobuf.Empty\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/admin/ai/role/delete\x12Y\n" +
+	"ListApikey\x12\x16.common.v1.ListRequest\x1a\x1f.ai.admin.v1.ListApikeyResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/ai/admin/api-key/list\x12q\n" +
+	"\x11BatchDeleteApiKey\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\"\x18/ai/admin/api-key/delete\x12W\n" +
+	"\vCreateModel\x12\x15.ai.common.v1.AiModel\x1a\x15.ai.common.v1.AiModel\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/ai/admin/model\x12\\\n" +
+	"\vUpdateModel\x12\x15.ai.common.v1.AiModel\x1a\x15.ai.common.v1.AiModel\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\x1a\x14/ai/admin/model/{id}\x12_\n" +
+	"\vDeleteModel\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1c\x82\xd3\xe4\x93\x02\x16*\x14/ai/admin/model/{id}\x12[\n" +
+	"\bGetModel\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x15.ai.common.v1.AiModel\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/ai/admin/model/{id}\x12d\n" +
+	"\tListModel\x12\x16.common.v1.ListRequest\x1a\x1e.ai.admin.v1.ListModelResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/ai/admin/model/list\x12n\n" +
+	"\x10BatchDeleteModel\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/ai/admin/model/delete\x12U\n" +
+	"\aGetRole\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x11.ai.admin.v1.Role\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/ai/admin/role/{id}\x12a\n" +
+	"\bListRole\x12\x16.common.v1.ListRequest\x1a\x1d.ai.admin.v1.ListRoleResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/ai/admin/role/list\x12p\n" +
+	"\x0fBatchDeleteRole\x12#.ai.admin.v1.BatchDeleteRoleRequest\x1a\x16.google.protobuf.Empty\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/ai/admin/role/delete\x12Y\n" +
 	"\n" +
-	"UpdateRole\x12\x18.ai.common.v1.AiChatRole\x1a\x11.ai.admin.v1.Role\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\x1a\x13/admin/ai/role/{id}\x12T\n" +
+	"UpdateRole\x12\x18.ai.common.v1.AiChatRole\x1a\x11.ai.admin.v1.Role\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\x1a\x13/ai/admin/role/{id}\x12T\n" +
 	"\n" +
-	"CreateRole\x12\x18.ai.common.v1.AiChatRole\x1a\x11.ai.admin.v1.Role\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/admin/ai/role\x12d\n" +
-	"\fGetKnowledge\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.ai.admin.v1.Knowledge\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/admin/ai/knowledge/{id}\x12p\n" +
-	"\rListKnowledge\x12\x16.common.v1.ListRequest\x1a\".ai.admin.v1.ListKnowledgeResponse\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\"\x18/admin/ai/knowledge/list\x12v\n" +
-	"\x14BatchDeleteKnowledge\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\"\x1a/admin/ai/knowledge/delete\x12i\n" +
-	"\x0fUpdateKnowledge\x12\x19.ai.common.v1.AiKnowledge\x1a\x16.ai.admin.v1.Knowledge\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\x1a\x18/admin/ai/knowledge/{id}\x12d\n" +
-	"\x0fCreateKnowledge\x12\x19.ai.common.v1.AiKnowledge\x1a\x16.ai.admin.v1.Knowledge\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/admin/ai/knowledge\x12\x87\x01\n" +
-	"\x1cBatchDeleteKnowledgeDocument\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\".\x82\xd3\xe4\x93\x02(:\x01*\"#/admin/ai/knowledge/document/delete\x12\x80\x01\n" +
-	"\x14GetKnowledgeDocument\x12\x1a.ai.admin.v1.SimpleRequest\x1a!.ai.common.v1.AiKnowledgeDocument\")\x82\xd3\xe4\x93\x02#\x12!/admin/ai/knowledge/document/{id}\x12\x89\x01\n" +
-	"\x15ListKnowledgeDocument\x12\x16.common.v1.ListRequest\x1a*.ai.admin.v1.ListKnowledgeDocumentResponse\",\x82\xd3\xe4\x93\x02&:\x01*\"!/admin/ai/knowledge/document/list\x12\x98\x01\n" +
-	"\x14UpdateDocumentStatus\x12(.ai.admin.v1.UpdateDocumentStatusRequest\x1a!.ai.common.v1.AiKnowledgeDocument\"3\x82\xd3\xe4\x93\x02-:\x01*\x1a(/admin/ai/knowledge/document/{id}/status\x12\x8f\x01\n" +
-	"\x17UpdateKnowledgeDocument\x12!.ai.common.v1.AiKnowledgeDocument\x1a#.ai.admin.v1.UpsertDocumentResponse\",\x82\xd3\xe4\x93\x02&:\x01*\x1a!/admin/ai/knowledge/document/{id}\x12}\n" +
-	"\x13GetKnowledgeSegment\x12\x1a.ai.admin.v1.SimpleRequest\x1a .ai.common.v1.AiKnowledgeSegment\"(\x82\xd3\xe4\x93\x02\"\x12 /admin/ai/knowledge/segment/{id}\x12\x87\x01\n" +
-	"\x15ListKnowledgeSegments\x12\x16.common.v1.ListRequest\x1a).ai.admin.v1.ListKnowledgeSegmentResponse\"+\x82\xd3\xe4\x93\x02%:\x01*\" /admin/ai/knowledge/segment/list\x12a\n" +
-	"\tListImage\x12\x16.common.v1.ListRequest\x1a\x1e.ai.admin.v1.ListImageResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/image/list\x12Y\n" +
-	"\vUpdateImage\x12\x15.ai.common.v1.AiImage\x1a\x12.ai.admin.v1.Image\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\x1a\x14/admin/ai/image/{id}\x12n\n" +
-	"\x10BatchDeleteImage\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/admin/ai/image/delete\x12X\n" +
-	"\bGetImage\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x12.ai.admin.v1.Image\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/image/{id}\x12z\n" +
-	"\x13GetChatConversation\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x1d.ai.admin.v1.ChatConversation\"(\x82\xd3\xe4\x93\x02\"\x12 /admin/ai/chat/conversation/{id}\x12\x86\x01\n" +
-	"\x14ListChatConversation\x12\x16.common.v1.ListRequest\x1a).ai.admin.v1.ListChatConversationResponse\"+\x82\xd3\xe4\x93\x02%:\x01*\" /admin/ai/chat/conversation/list\x12\x85\x01\n" +
-	"\x1bBatchDeleteChatConversation\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/admin/ai/chat/conversation/delete\x12k\n" +
-	"\x0eGetChatMessage\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x18.ai.admin.v1.ChatMessage\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/admin/ai/chat/message/{id}\x12w\n" +
-	"\x0fListChatMessage\x12\x16.common.v1.ListRequest\x1a$.ai.admin.v1.ListChatMessageResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/admin/ai/chat/message/list\x12{\n" +
-	"\x16BatchDeleteChatMessage\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/admin/ai/chat/message/delete\x12X\n" +
-	"\aGetTool\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x14.ai.common.v1.AiTool\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/admin/ai/tool/{id}\x12a\n" +
-	"\bListTool\x12\x16.common.v1.ListRequest\x1a\x1d.ai.admin.v1.ListToolResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/admin/ai/tool/list\x12]\n" +
+	"CreateRole\x12\x18.ai.common.v1.AiChatRole\x1a\x11.ai.admin.v1.Role\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/ai/admin/role\x12d\n" +
+	"\fGetKnowledge\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.ai.admin.v1.Knowledge\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/ai/admin/knowledge/{id}\x12p\n" +
+	"\rListKnowledge\x12\x16.common.v1.ListRequest\x1a\".ai.admin.v1.ListKnowledgeResponse\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\"\x18/ai/admin/knowledge/list\x12v\n" +
+	"\x14BatchDeleteKnowledge\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\"\x1a/ai/admin/knowledge/delete\x12i\n" +
+	"\x0fUpdateKnowledge\x12\x19.ai.common.v1.AiKnowledge\x1a\x16.ai.admin.v1.Knowledge\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\x1a\x18/ai/admin/knowledge/{id}\x12d\n" +
+	"\x0fCreateKnowledge\x12\x19.ai.common.v1.AiKnowledge\x1a\x16.ai.admin.v1.Knowledge\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/ai/admin/knowledge\x12}\n" +
+	"\x1cBatchDeleteKnowledgeDocument\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"$\x82\xd3\xe4\x93\x02\x1e:\x01*\"\x19/ai/admin/document/delete\x12v\n" +
+	"\x14GetKnowledgeDocument\x12\x1a.ai.admin.v1.SimpleRequest\x1a!.ai.common.v1.AiKnowledgeDocument\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/ai/admin/document/{id}\x12\x7f\n" +
+	"\x15ListKnowledgeDocument\x12\x16.common.v1.ListRequest\x1a*.ai.admin.v1.ListKnowledgeDocumentResponse\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/ai/admin/document/list\x12\x8e\x01\n" +
+	"\x14UpdateDocumentStatus\x12(.ai.admin.v1.UpdateDocumentStatusRequest\x1a!.ai.common.v1.AiKnowledgeDocument\")\x82\xd3\xe4\x93\x02#:\x01*\x1a\x1e/ai/admin/document/{id}/status\x12\x85\x01\n" +
+	"\x17UpdateKnowledgeDocument\x12!.ai.common.v1.AiKnowledgeDocument\x1a#.ai.admin.v1.UpsertDocumentResponse\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\x1a\x17/ai/admin/document/{id}\x12s\n" +
+	"\x13GetKnowledgeSegment\x12\x1a.ai.admin.v1.SimpleRequest\x1a .ai.common.v1.AiKnowledgeSegment\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/ai/admin/segment/{id}\x12}\n" +
+	"\x15ListKnowledgeSegments\x12\x16.common.v1.ListRequest\x1a).ai.admin.v1.ListKnowledgeSegmentResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/ai/admin/segment/list\x12d\n" +
+	"\tListImage\x12\x16.common.v1.ListRequest\x1a\x1e.ai.admin.v1.ListImageResponse\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\"\x14/ai/admin/image/list\x12Y\n" +
+	"\vUpdateImage\x12\x15.ai.common.v1.AiImage\x1a\x12.ai.admin.v1.Image\"\x1f\x82\xd3\xe4\x93\x02\x19:\x01*\x1a\x14/ai/admin/image/{id}\x12n\n" +
+	"\x10BatchDeleteImage\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/ai/admin/image/delete\x12X\n" +
+	"\bGetImage\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x12.ai.admin.v1.Image\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/ai/admin/image/{id}\x12z\n" +
+	"\x13GetChatConversation\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x1d.ai.admin.v1.ChatConversation\"(\x82\xd3\xe4\x93\x02\"\x12 /ai/admin/chat/conversation/{id}\x12\x86\x01\n" +
+	"\x14ListChatConversation\x12\x16.common.v1.ListRequest\x1a).ai.admin.v1.ListChatConversationResponse\"+\x82\xd3\xe4\x93\x02%:\x01*\" /ai/admin/chat/conversation/list\x12\x85\x01\n" +
+	"\x1bBatchDeleteChatConversation\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/ai/admin/chat/conversation/delete\x12k\n" +
+	"\x0eGetChatMessage\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x18.ai.admin.v1.ChatMessage\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/ai/admin/chat/message/{id}\x12w\n" +
+	"\x0fListChatMessage\x12\x16.common.v1.ListRequest\x1a$.ai.admin.v1.ListChatMessageResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/ai/admin/chat/message/list\x12{\n" +
+	"\x16BatchDeleteChatMessage\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/ai/admin/chat/message/delete\x12X\n" +
+	"\aGetTool\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x14.ai.common.v1.AiTool\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/ai/admin/tool/{id}\x12a\n" +
+	"\bListTool\x12\x16.common.v1.ListRequest\x1a\x1d.ai.admin.v1.ListToolResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/ai/admin/tool/list\x12]\n" +
 	"\n" +
-	"DeleteTool\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1b\x82\xd3\xe4\x93\x02\x15*\x13/admin/ai/tool/{id}\x12l\n" +
-	"\x0fBatchDeleteTool\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/admin/ai/tool/delete\x12S\n" +
+	"DeleteTool\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x16.google.protobuf.Empty\"\x1b\x82\xd3\xe4\x93\x02\x15*\x13/ai/admin/tool/{id}\x12l\n" +
+	"\x0fBatchDeleteTool\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/ai/admin/tool/delete\x12S\n" +
 	"\n" +
-	"CreateTool\x12\x14.ai.common.v1.AiTool\x1a\x14.ai.common.v1.AiTool\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/admin/ai/tool\x12X\n" +
+	"CreateTool\x12\x14.ai.common.v1.AiTool\x1a\x14.ai.common.v1.AiTool\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/ai/admin/tool\x12X\n" +
 	"\n" +
 	"UpdateTool\x12\x14.ai.common.v1.AiTool\x1a\x14.ai.common.v1.AiTool\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\x1a\x13/ai/admin/tool/{id}\x12k\n" +
-	"\x0fGetQueueMetrics\x12\x16.google.protobuf.Empty\x1a\x1f.common.v1.QueueMetricsResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/admin/ai/queue/metrics\x12\\\n" +
-	"\tListTasks\x12\x16.common.v1.ListRequest\x1a\x1b.common.v1.ListTaskResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/admin/ai/queue\x12_\n" +
-	"\aGetTask\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x1a.common.v1.GetTaskResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/admin/ai/queue/{id}\x12t\n" +
-	"\x10BatchDeleteTasks\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/admin/ai/queue/batch/delete\x12h\n" +
-	"\vCleanupTask\x12\x1d.common.v1.CleanupTaskRequest\x1a\x16.google.protobuf.Empty\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/admin/ai/queue/cleanupB'\n" +
+	"\x0fGetQueueMetrics\x12\x16.google.protobuf.Empty\x1a\x1f.common.v1.QueueMetricsResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/ai/admin/queue/metrics\x12\\\n" +
+	"\tListTasks\x12\x16.common.v1.ListRequest\x1a\x1b.common.v1.ListTaskResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/ai/admin/queue\x12_\n" +
+	"\aGetTask\x12\x1a.ai.admin.v1.SimpleRequest\x1a\x1a.common.v1.GetTaskResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/ai/admin/queue/{id}\x12t\n" +
+	"\x10BatchDeleteTasks\x12\x1f.ai.admin.v1.BatchDeleteRequest\x1a\x16.google.protobuf.Empty\"'\x82\xd3\xe4\x93\x02!:\x01*\"\x1c/ai/admin/queue/batch/delete\x12h\n" +
+	"\vCleanupTask\x12\x1d.common.v1.CleanupTaskRequest\x1a\x16.google.protobuf.Empty\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/ai/admin/queue/cleanupB'\n" +
 	"\vai.admin.v1P\x01Z\x16api/api/ai/admin/v1;v1b\x06proto3"
 
 var (

@@ -176,6 +176,8 @@ func (m *GetChatConversationResponse) validate(all bool) error {
 
 	// no validation rules for Model
 
+	// no validation rules for ModelId
+
 	// no validation rules for Temperature
 
 	// no validation rules for MaxTokens
@@ -1417,6 +1419,8 @@ func (m *MessageRecord) validate(all bool) error {
 	}
 
 	// no validation rules for ConversationId
+
+	// no validation rules for ReplyId
 
 	if len(errors) > 0 {
 		return MessageRecordMultiError(errors)

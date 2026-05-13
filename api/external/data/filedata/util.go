@@ -3,7 +3,6 @@ package filedata
 import (
 	pb "api/api/common/v1"
 	filepb "api/api/file/common/v1"
-	"api/external/data/common"
 
 	"github.com/samber/lo"
 )
@@ -16,7 +15,7 @@ func ExplorerViewFromProto(f *filepb.ExplorerView) *ExplorerView {
 	return &ExplorerView{
 		PageSize:       int(f.PageSize),
 		Order:          f.Order,
-		OrderDirection: common.OrderDirectionFromProto(f.OrderDirection),
+		OrderDirection: f.OrderDirection,
 		View:           ViewTypeFromProto(f.View),
 		Thumbnail:      f.Thumbnail,
 		GalleryWidth:   int(f.GalleryWidth),
@@ -72,7 +71,7 @@ func ExplorerViewToProto(view *ExplorerView) *filepb.ExplorerView {
 	return &filepb.ExplorerView{
 		PageSize:       int32(view.PageSize),
 		Order:          view.Order,
-		OrderDirection: common.OrderDirectionToProto(view.OrderDirection),
+		OrderDirection: view.OrderDirection,
 		View:           ViewTypeToProto(view.View),
 		Thumbnail:      view.Thumbnail,
 		GalleryWidth:   int32(view.GalleryWidth),

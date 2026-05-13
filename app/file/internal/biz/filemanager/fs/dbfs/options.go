@@ -3,6 +3,7 @@ package dbfs
 import (
 	"file/ent"
 	"file/internal/biz/filemanager/fs"
+	"file/internal/data/types"
 )
 
 type dbfsOption struct {
@@ -26,6 +27,7 @@ type dbfsOption struct {
 	streamListResponseCallback func(parent fs.File, file []fs.File)
 	ancestor                   *File
 	notRoot                    bool
+	encryptMetadata            *types.EncryptMetadata
 }
 
 func newDbfsOption() *dbfsOption {
@@ -54,6 +56,13 @@ func (f optionFunc) Apply(o any) {
 func WithFilePublicMetadata() fs.Option {
 	return optionFunc(func(o *dbfsOption) {
 		o.loadFilePublicMetadata = true
+	})
+}
+
+// WithEncryptMetadata sets the encrypt metadata for the upload operation.
+func WithEncryptMetadata(encryptMetadata *types.EncryptMetadata) fs.Option {
+	return optionFunc(func(o *dbfsOption) {
+		o.encryptMetadata = encryptMetadata
 	})
 }
 

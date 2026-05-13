@@ -181,4 +181,6 @@ enum ErrorReason {
   PURCHASE_REQUIRED = 40083;
 
   MANAGED_ACCOUNT_MINIMUM_OPEN_ID = 40084;
+  // CodeInsufficientScope OAuth token scope insufficient
+  CodeInsufficientScope = 40089;
 }

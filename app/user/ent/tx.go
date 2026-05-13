@@ -18,6 +18,10 @@ type Tx struct {
 	DavAccount *DavAccountClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// OAuthClient is the client for interacting with the OAuthClient builders.
+	OAuthClient *OAuthClientClient
+	// OAuthGrant is the client for interacting with the OAuthGrant builders.
+	OAuthGrant *OAuthGrantClient
 	// Passkey is the client for interacting with the Passkey builders.
 	Passkey *PasskeyClient
 	// Setting is the client for interacting with the Setting builders.
@@ -157,6 +161,8 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.DavAccount = NewDavAccountClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
+	tx.OAuthClient = NewOAuthClientClient(tx.config)
+	tx.OAuthGrant = NewOAuthGrantClient(tx.config)
 	tx.Passkey = NewPasskeyClient(tx.config)
 	tx.Setting = NewSettingClient(tx.config)
 	tx.User = NewUserClient(tx.config)

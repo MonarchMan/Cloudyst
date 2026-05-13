@@ -1,7 +1,6 @@
 package oss
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/request"
 	"context"
 	"encoding/json"
@@ -15,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
 	"github.com/samber/lo"
 )
 
@@ -153,7 +152,7 @@ type (
 	}
 )
 
-func (handler *Driver) extractIMMMeta(ctx context.Context, path, category string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) extractIMMMeta(ctx context.Context, path, category string) ([]driver.MediaMeta, error) {
 	resp, err := handler.extractMediaInfo(ctx, path, category, true)
 	if err != nil {
 		return nil, err
@@ -195,7 +194,7 @@ func (handler *Driver) extractIMMMeta(ctx context.Context, path, category string
 		}
 	})...)
 
-	metas := make([]pbslave.MediaMeta, 0)
+	metas := make([]driver.MediaMeta, 0)
 	metas = append(metas, mediameta.ProbeMetaTransform(&mediameta.FFProbeMeta{
 		Format: &mediameta.Format{
 			FormatName:     info.FormatName,
@@ -207,7 +206,7 @@ func (handler *Driver) extractIMMMeta(ctx context.Context, path, category string
 	})...)
 
 	if info.Artist != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   mediameta.MusicArtist,
 			Value: info.Artist,
 			Type:  driver.MediaTypeMusic,
@@ -215,7 +214,7 @@ func (handler *Driver) extractIMMMeta(ctx context.Context, path, category string
 	}
 
 	if info.AlbumArtist != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   mediameta.MusicAlbumArtists,
 			Value: info.AlbumArtist,
 			Type:  driver.MediaTypeMusic,
@@ -223,7 +222,7 @@ func (handler *Driver) extractIMMMeta(ctx context.Context, path, category string
 	}
 
 	if info.Composer != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   mediameta.MusicComposer,
 			Value: info.Composer,
 			Type:  driver.MediaTypeMusic,
@@ -231,7 +230,7 @@ func (handler *Driver) extractIMMMeta(ctx context.Context, path, category string
 	}
 
 	if info.Album != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   mediameta.MusicAlbum,
 			Value: info.Album,
 			Type:  driver.MediaTypeMusic,
@@ -241,7 +240,7 @@ func (handler *Driver) extractIMMMeta(ctx context.Context, path, category string
 	return metas, nil
 }
 
-func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]driver.MediaMeta, error) {
 	resp, err := handler.extractMediaInfo(ctx, path, imageInfoProcess, false)
 	if err != nil {
 		return nil, err
@@ -252,7 +251,7 @@ func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]pbs
 		return nil, fmt.Errorf("failed to unmarshal media info: %w", err)
 	}
 
-	metas := make([]pbslave.MediaMeta, 0)
+	metas := make([]driver.MediaMeta, 0)
 	exifMap := lo.MapEntries(imageInfo, func(key string, value ImageProp) (string, string) {
 		return key, value.Value
 	})
@@ -267,13 +266,14 @@ func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]pbs
 
 // extractMediaInfo Sends API calls to OSS IMM service to extract media info.
 func (handler *Driver) extractMediaInfo(ctx context.Context, path string, category string, forceSign bool) (string, error) {
-	mediaOption := []oss.Option{oss.Process(category)}
 	mediaInfoExpire := time.Now().Add(mediaInfoTTL)
 	thumbURL, err := handler.signSourceURL(
 		ctx,
 		path,
 		&mediaInfoExpire,
-		mediaOption,
+		&oss.GetObjectRequest{
+			Process: oss.Ptr(category),
+		},
 		forceSign,
 	)
 	if err != nil {
@@ -291,7 +291,7 @@ func (handler *Driver) extractMediaInfo(ctx context.Context, path string, catego
 	return resp, nil
 }
 
-func parseGpsInfo(imageInfo ImageInfo) []pbslave.MediaMeta {
+func parseGpsInfo(imageInfo ImageInfo) []driver.MediaMeta {
 	latitude := imageInfo["GPSLatitude"]   // 31deg 16.26808'
 	longitude := imageInfo["GPSLongitude"] // 120deg 42.91039'
 	latRef := imageInfo["GPSLatitudeRef"]  // North
@@ -306,7 +306,7 @@ func parseGpsInfo(imageInfo ImageInfo) []pbslave.MediaMeta {
 	lon := parseRawGPS(longitude.Value, lonRef.Value)
 	if !math.IsNaN(lat) && !math.IsNaN(lon) {
 		lat, lng := mediameta.NormalizeGPS(lat, lon)
-		return []pbslave.MediaMeta{{
+		return []driver.MediaMeta{{
 			Key:   mediameta.GpsLat,
 			Value: fmt.Sprintf("%f", lat),
 		}, {

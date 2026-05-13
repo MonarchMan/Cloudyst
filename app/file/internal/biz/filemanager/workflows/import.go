@@ -1,4 +1,4 @@
-﻿package workflows
+package workflows
 
 import (
 	"api/external/data/userdata"
@@ -18,6 +18,7 @@ import (
 	"file/internal/data/types"
 	"fmt"
 	mqueue "queue"
+	"runtime"
 	"sync/atomic"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -46,6 +47,10 @@ type (
 const (
 	ProgressTypeImported = "imported"
 	ProgressTypeIndexed  = "indexed"
+
+	// ImportBatchSize is the number of files to process in each batch
+	// to control memory usage during large imports.
+	ImportBatchSize = 100
 )
 
 func init() {
@@ -125,19 +130,19 @@ func (t *ImportTask) Do(ctx context.Context) (mqueue.TaskStatus, error) {
 
 func (t *ImportTask) processImport(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) (mqueue.TaskStatus, error) {
 	user := trans.FromContext(ctx)
-	fm := manager.NewFileManager(dep, dbfsDep, user)
-	defer fm.Recycle()
 
-	failed := 0
 	dst, err := fs.NewUriFromString(t.state.Dst)
 	if err != nil {
 		return mqueue.StatusError, fmt.Errorf("failed to parse dst: %s (%w)", err, queue.CriticalErr)
 	}
 
+	// Use a temporary file manager just for listing physical files
+	fm := manager.NewFileManager(dep, dbfsDep, user)
 	physicalFiles, err := fm.ListPhysical(ctx, t.state.Src, t.state.PolicyID, t.state.Recursive,
 		func(i int) {
 			atomic.AddInt64(&t.progress[ProgressTypeIndexed].Current, int64(i))
 		})
+	fm.Recycle()
 	if err != nil {
 		return mqueue.StatusError, fmt.Errorf("failed to list physical files: %w", err)
 	}
@@ -151,7 +156,41 @@ func (t *ImportTask) processImport(ctx context.Context, dep filemanager.ManagerD
 	delete(t.progress, ProgressTypeIndexed)
 	t.Unlock()
 
-	for _, physicalFile := range physicalFiles {
+	failed := 0
+	totalFiles := len(physicalFiles)
+
+	// Process files in batches to control memory usage
+	for batchStart := 0; batchStart < totalFiles; batchStart += ImportBatchSize {
+		batchEnd := min(batchStart+ImportBatchSize, totalFiles)
+
+		batch := physicalFiles[batchStart:batchEnd]
+		batchFailed := t.processBatch(ctx, dep, dbfsDep, user, dst, batch)
+		failed += batchFailed
+
+		// Clear batch elements to allow GC of individual items
+		for i := batchStart; i < batchEnd; i++ {
+			physicalFiles[i] = fs.PhysicalObject{}
+		}
+
+		// Run GC after each batch to free memory
+		runtime.GC()
+	}
+
+	// Clear the entire slice to allow GC
+	physicalFiles = nil
+	runtime.GC()
+
+	t.state.Failed = failed
+	return mqueue.StatusCompleted, nil
+}
+
+// processBatch processes a batch of physical files with a fresh file manager.
+func (t *ImportTask) processBatch(ctx context.Context, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, user *userdata.User, dst *fs.URI, batch []fs.PhysicalObject) int {
+	fm := manager.NewFileManager(dep, dbfsDep, user)
+	defer fm.Recycle()
+
+	failed := 0
+	for _, physicalFile := range batch {
 		if physicalFile.IsDir {
 			t.l.WithContext(ctx).Infof("Creating folder %s", physicalFile.RelativePath)
 			_, err := fm.Create(ctx, dst.Join(physicalFile.RelativePath), types.FileTypeFolder)
@@ -176,7 +215,7 @@ func (t *ImportTask) processImport(ctx context.Context, dep filemanager.ManagerD
 		}
 	}
 
-	return mqueue.StatusCompleted, nil
+	return failed
 }
 
 func (t *ImportTask) Progress(ctx context.Context) mqueue.Progresses {

@@ -2829,10 +2829,24 @@ func (m *AiChatMessageMutation) AppendedSegmentIds() ([]int, bool) {
 	return m.appendsegment_ids, true
 }
 
+// ClearSegmentIds clears the value of the "segment_ids" field.
+func (m *AiChatMessageMutation) ClearSegmentIds() {
+	m.segment_ids = nil
+	m.appendsegment_ids = nil
+	m.clearedFields[aichatmessage.FieldSegmentIds] = struct{}{}
+}
+
+// SegmentIdsCleared returns if the "segment_ids" field was cleared in this mutation.
+func (m *AiChatMessageMutation) SegmentIdsCleared() bool {
+	_, ok := m.clearedFields[aichatmessage.FieldSegmentIds]
+	return ok
+}
+
 // ResetSegmentIds resets all changes to the "segment_ids" field.
 func (m *AiChatMessageMutation) ResetSegmentIds() {
 	m.segment_ids = nil
 	m.appendsegment_ids = nil
+	delete(m.clearedFields, aichatmessage.FieldSegmentIds)
 }
 
 // SetAttachmentUrls sets the "attachment_urls" field.
@@ -2880,10 +2894,24 @@ func (m *AiChatMessageMutation) AppendedAttachmentUrls() ([]string, bool) {
 	return m.appendattachment_urls, true
 }
 
+// ClearAttachmentUrls clears the value of the "attachment_urls" field.
+func (m *AiChatMessageMutation) ClearAttachmentUrls() {
+	m.attachment_urls = nil
+	m.appendattachment_urls = nil
+	m.clearedFields[aichatmessage.FieldAttachmentUrls] = struct{}{}
+}
+
+// AttachmentUrlsCleared returns if the "attachment_urls" field was cleared in this mutation.
+func (m *AiChatMessageMutation) AttachmentUrlsCleared() bool {
+	_, ok := m.clearedFields[aichatmessage.FieldAttachmentUrls]
+	return ok
+}
+
 // ResetAttachmentUrls resets all changes to the "attachment_urls" field.
 func (m *AiChatMessageMutation) ResetAttachmentUrls() {
 	m.attachment_urls = nil
 	m.appendattachment_urls = nil
+	delete(m.clearedFields, aichatmessage.FieldAttachmentUrls)
 }
 
 // AddAiWebPageIDs adds the "ai_web_page" edge to the AiWebPage entity by ids.
@@ -3307,6 +3335,12 @@ func (m *AiChatMessageMutation) ClearedFields() []string {
 	if m.FieldCleared(aichatmessage.FieldDeletedAt) {
 		fields = append(fields, aichatmessage.FieldDeletedAt)
 	}
+	if m.FieldCleared(aichatmessage.FieldSegmentIds) {
+		fields = append(fields, aichatmessage.FieldSegmentIds)
+	}
+	if m.FieldCleared(aichatmessage.FieldAttachmentUrls) {
+		fields = append(fields, aichatmessage.FieldAttachmentUrls)
+	}
 	return fields
 }
 
@@ -3323,6 +3357,12 @@ func (m *AiChatMessageMutation) ClearField(name string) error {
 	switch name {
 	case aichatmessage.FieldDeletedAt:
 		m.ClearDeletedAt()
+		return nil
+	case aichatmessage.FieldSegmentIds:
+		m.ClearSegmentIds()
+		return nil
+	case aichatmessage.FieldAttachmentUrls:
+		m.ClearAttachmentUrls()
 		return nil
 	}
 	return fmt.Errorf("unknown AiChatMessage nullable field %s", name)
@@ -10278,6 +10318,7 @@ type AiModelMutation struct {
 	updated_at        *time.Time
 	deleted_at        *time.Time
 	name              *string
+	model             *string
 	_type             *string
 	platform          *string
 	sort              *int
@@ -10287,8 +10328,8 @@ type AiModelMutation struct {
 	addtemperature    *float64
 	max_tokens        *int
 	addmax_tokens     *int
-	max_context       *int
-	addmax_context    *int
+	max_contexts      *int
+	addmax_contexts   *int
 	clearedFields     map[string]struct{}
 	ai_api_key        *int
 	clearedai_api_key bool
@@ -10550,6 +10591,42 @@ func (m *AiModelMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *AiModelMutation) ResetName() {
 	m.name = nil
+}
+
+// SetModel sets the "model" field.
+func (m *AiModelMutation) SetModel(s string) {
+	m.model = &s
+}
+
+// Model returns the value of the "model" field in the mutation.
+func (m *AiModelMutation) Model() (r string, exists bool) {
+	v := m.model
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldModel returns the old "model" field's value of the AiModel entity.
+// If the AiModel object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AiModelMutation) OldModel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldModel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldModel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldModel: %w", err)
+	}
+	return oldValue.Model, nil
+}
+
+// ResetModel resets all changes to the "model" field.
+func (m *AiModelMutation) ResetModel() {
+	m.model = nil
 }
 
 // SetType sets the "type" field.
@@ -10828,60 +10905,60 @@ func (m *AiModelMutation) ResetMaxTokens() {
 	m.addmax_tokens = nil
 }
 
-// SetMaxContext sets the "max_context" field.
-func (m *AiModelMutation) SetMaxContext(i int) {
-	m.max_context = &i
-	m.addmax_context = nil
+// SetMaxContexts sets the "max_contexts" field.
+func (m *AiModelMutation) SetMaxContexts(i int) {
+	m.max_contexts = &i
+	m.addmax_contexts = nil
 }
 
-// MaxContext returns the value of the "max_context" field in the mutation.
-func (m *AiModelMutation) MaxContext() (r int, exists bool) {
-	v := m.max_context
+// MaxContexts returns the value of the "max_contexts" field in the mutation.
+func (m *AiModelMutation) MaxContexts() (r int, exists bool) {
+	v := m.max_contexts
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldMaxContext returns the old "max_context" field's value of the AiModel entity.
+// OldMaxContexts returns the old "max_contexts" field's value of the AiModel entity.
 // If the AiModel object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AiModelMutation) OldMaxContext(ctx context.Context) (v int, err error) {
+func (m *AiModelMutation) OldMaxContexts(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMaxContext is only allowed on UpdateOne operations")
+		return v, errors.New("OldMaxContexts is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMaxContext requires an ID field in the mutation")
+		return v, errors.New("OldMaxContexts requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMaxContext: %w", err)
+		return v, fmt.Errorf("querying old value for OldMaxContexts: %w", err)
 	}
-	return oldValue.MaxContext, nil
+	return oldValue.MaxContexts, nil
 }
 
-// AddMaxContext adds i to the "max_context" field.
-func (m *AiModelMutation) AddMaxContext(i int) {
-	if m.addmax_context != nil {
-		*m.addmax_context += i
+// AddMaxContexts adds i to the "max_contexts" field.
+func (m *AiModelMutation) AddMaxContexts(i int) {
+	if m.addmax_contexts != nil {
+		*m.addmax_contexts += i
 	} else {
-		m.addmax_context = &i
+		m.addmax_contexts = &i
 	}
 }
 
-// AddedMaxContext returns the value that was added to the "max_context" field in this mutation.
-func (m *AiModelMutation) AddedMaxContext() (r int, exists bool) {
-	v := m.addmax_context
+// AddedMaxContexts returns the value that was added to the "max_contexts" field in this mutation.
+func (m *AiModelMutation) AddedMaxContexts() (r int, exists bool) {
+	v := m.addmax_contexts
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetMaxContext resets all changes to the "max_context" field.
-func (m *AiModelMutation) ResetMaxContext() {
-	m.max_context = nil
-	m.addmax_context = nil
+// ResetMaxContexts resets all changes to the "max_contexts" field.
+func (m *AiModelMutation) ResetMaxContexts() {
+	m.max_contexts = nil
+	m.addmax_contexts = nil
 }
 
 // SetKeyID sets the "key_id" field.
@@ -10994,7 +11071,7 @@ func (m *AiModelMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AiModelMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, aimodel.FieldCreatedAt)
 	}
@@ -11006,6 +11083,9 @@ func (m *AiModelMutation) Fields() []string {
 	}
 	if m.name != nil {
 		fields = append(fields, aimodel.FieldName)
+	}
+	if m.model != nil {
+		fields = append(fields, aimodel.FieldModel)
 	}
 	if m._type != nil {
 		fields = append(fields, aimodel.FieldType)
@@ -11025,8 +11105,8 @@ func (m *AiModelMutation) Fields() []string {
 	if m.max_tokens != nil {
 		fields = append(fields, aimodel.FieldMaxTokens)
 	}
-	if m.max_context != nil {
-		fields = append(fields, aimodel.FieldMaxContext)
+	if m.max_contexts != nil {
+		fields = append(fields, aimodel.FieldMaxContexts)
 	}
 	if m.ai_api_key != nil {
 		fields = append(fields, aimodel.FieldKeyID)
@@ -11047,6 +11127,8 @@ func (m *AiModelMutation) Field(name string) (ent.Value, bool) {
 		return m.DeletedAt()
 	case aimodel.FieldName:
 		return m.Name()
+	case aimodel.FieldModel:
+		return m.Model()
 	case aimodel.FieldType:
 		return m.GetType()
 	case aimodel.FieldPlatform:
@@ -11059,8 +11141,8 @@ func (m *AiModelMutation) Field(name string) (ent.Value, bool) {
 		return m.Temperature()
 	case aimodel.FieldMaxTokens:
 		return m.MaxTokens()
-	case aimodel.FieldMaxContext:
-		return m.MaxContext()
+	case aimodel.FieldMaxContexts:
+		return m.MaxContexts()
 	case aimodel.FieldKeyID:
 		return m.KeyID()
 	}
@@ -11080,6 +11162,8 @@ func (m *AiModelMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldDeletedAt(ctx)
 	case aimodel.FieldName:
 		return m.OldName(ctx)
+	case aimodel.FieldModel:
+		return m.OldModel(ctx)
 	case aimodel.FieldType:
 		return m.OldType(ctx)
 	case aimodel.FieldPlatform:
@@ -11092,8 +11176,8 @@ func (m *AiModelMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldTemperature(ctx)
 	case aimodel.FieldMaxTokens:
 		return m.OldMaxTokens(ctx)
-	case aimodel.FieldMaxContext:
-		return m.OldMaxContext(ctx)
+	case aimodel.FieldMaxContexts:
+		return m.OldMaxContexts(ctx)
 	case aimodel.FieldKeyID:
 		return m.OldKeyID(ctx)
 	}
@@ -11132,6 +11216,13 @@ func (m *AiModelMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case aimodel.FieldModel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetModel(v)
 		return nil
 	case aimodel.FieldType:
 		v, ok := value.(string)
@@ -11175,12 +11266,12 @@ func (m *AiModelMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMaxTokens(v)
 		return nil
-	case aimodel.FieldMaxContext:
+	case aimodel.FieldMaxContexts:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetMaxContext(v)
+		m.SetMaxContexts(v)
 		return nil
 	case aimodel.FieldKeyID:
 		v, ok := value.(int)
@@ -11206,8 +11297,8 @@ func (m *AiModelMutation) AddedFields() []string {
 	if m.addmax_tokens != nil {
 		fields = append(fields, aimodel.FieldMaxTokens)
 	}
-	if m.addmax_context != nil {
-		fields = append(fields, aimodel.FieldMaxContext)
+	if m.addmax_contexts != nil {
+		fields = append(fields, aimodel.FieldMaxContexts)
 	}
 	return fields
 }
@@ -11223,8 +11314,8 @@ func (m *AiModelMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedTemperature()
 	case aimodel.FieldMaxTokens:
 		return m.AddedMaxTokens()
-	case aimodel.FieldMaxContext:
-		return m.AddedMaxContext()
+	case aimodel.FieldMaxContexts:
+		return m.AddedMaxContexts()
 	}
 	return nil, false
 }
@@ -11255,12 +11346,12 @@ func (m *AiModelMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddMaxTokens(v)
 		return nil
-	case aimodel.FieldMaxContext:
+	case aimodel.FieldMaxContexts:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddMaxContext(v)
+		m.AddMaxContexts(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AiModel numeric field %s", name)
@@ -11310,6 +11401,9 @@ func (m *AiModelMutation) ResetField(name string) error {
 	case aimodel.FieldName:
 		m.ResetName()
 		return nil
+	case aimodel.FieldModel:
+		m.ResetModel()
+		return nil
 	case aimodel.FieldType:
 		m.ResetType()
 		return nil
@@ -11328,8 +11422,8 @@ func (m *AiModelMutation) ResetField(name string) error {
 	case aimodel.FieldMaxTokens:
 		m.ResetMaxTokens()
 		return nil
-	case aimodel.FieldMaxContext:
-		m.ResetMaxContext()
+	case aimodel.FieldMaxContexts:
+		m.ResetMaxContexts()
 		return nil
 	case aimodel.FieldKeyID:
 		m.ResetKeyID()

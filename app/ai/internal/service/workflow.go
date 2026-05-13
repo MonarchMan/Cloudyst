@@ -11,6 +11,7 @@ import (
 	"common/hashid"
 	"context"
 
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -19,10 +20,15 @@ type WorkflowService struct {
 	pb.UnimplementedWorkflowServer
 	wb     workflow.WorkflowBiz
 	hasher hashid.Encoder
+	l      *log.Helper
 }
 
-func NewWorkflowService() *WorkflowService {
-	return &WorkflowService{}
+func NewWorkflowService(hasher hashid.Encoder, wb workflow.WorkflowBiz, logger log.Logger) *WorkflowService {
+	return &WorkflowService{
+		wb:     wb,
+		hasher: hasher,
+		l:      log.NewHelper(logger, log.WithMessageKey("service-workflow")),
+	}
 }
 
 func (s *WorkflowService) ListTasks(ctx context.Context, req *commonpb.ListTasksRequest) (*commonpb.ListTasksResponse, error) {

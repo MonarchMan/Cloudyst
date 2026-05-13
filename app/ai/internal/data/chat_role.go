@@ -3,7 +3,6 @@ package data
 import (
 	"ai/ent"
 	"ai/ent/aichatrole"
-	pb "api/api/common/v1"
 	"api/external/data/common"
 	"context"
 	"entmodule"
@@ -29,7 +28,7 @@ type (
 	}
 
 	ListChatRoleArgs struct {
-		*pb.PaginationArgs
+		*common.PaginationArgs
 		Name         string
 		UserID       int
 		PublicStatus bool
@@ -38,7 +37,7 @@ type (
 	}
 
 	ListChatRoleResult struct {
-		PaginationResults *pb.PaginationResults
+		PaginationResults *common.PaginationResults
 		Roles             []*ent.AiChatRole
 	}
 )
@@ -106,14 +105,14 @@ func (c *roleClient) List(ctx context.Context, args *ListChatRoleArgs) (*ListCha
 		return nil, err
 	}
 	q.Order(getChatRoleOrderOption(args)...)
-	roles, err := q.Limit(int(args.PageSize)).Offset(int(args.PageSize * args.Page)).All(ctx)
+	roles, err := q.Limit(args.PageSize).Offset(args.PageSize * args.Page).All(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &ListChatRoleResult{
-		PaginationResults: &pb.PaginationResults{
-			TotalItems: int32(total),
+		PaginationResults: &common.PaginationResults{
+			TotalItems: total,
 			Page:       args.Page,
 			PageSize:   args.PageSize,
 		},
@@ -173,7 +172,7 @@ func (c *roleClient) DeleteByUserID(ctx context.Context, id int) (int, error) {
 }
 
 func getChatRoleOrderOption(args *ListChatRoleArgs) []aichatrole.OrderOption {
-	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(args.OrderDir)
 	switch args.OrderBy {
 	case aichatrole.FieldCreatedAt:
 		return []aichatrole.OrderOption{aichatrole.ByCreatedAt(orderTerm), aichatrole.ByID(orderTerm)}

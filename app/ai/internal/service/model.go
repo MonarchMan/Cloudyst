@@ -21,13 +21,17 @@ type ModelService struct {
 	l      *log.Helper
 }
 
-func NewModelService(mb model.ModelBiz, logger log.Logger) *ModelService {
-	return &ModelService{mb: mb, l: log.NewHelper(logger, log.WithMessageKey("service-model"))}
+func NewModelService(hasher hashid.Encoder, mb model.ModelBiz, logger log.Logger) *ModelService {
+	return &ModelService{
+		mb:     mb,
+		hasher: hasher,
+		l:      log.NewHelper(logger, log.WithMessageKey("service-model")),
+	}
 }
 
 func (s *ModelService) ListModel(ctx context.Context, req *pb.ListModelRequest) (*pb.ListModelResponse, error) {
 	args := &data.ListAiModelArgs{
-		PaginationArgs: common.ConvertPaginationArgs(req.Pagination),
+		PaginationArgs: common.PaginationArgsFromProto(req.Pagination),
 		Name:           req.Name,
 		Platform:       req.Platform,
 		Status:         entmodule.StatusActive,
@@ -48,9 +52,6 @@ func (s *ModelService) GetModel(ctx context.Context, req *pb.SimpleRequest) (*pb
 	m, err := s.mb.GetModel(ctx, id)
 	if err != nil {
 		return nil, commonpb.ErrorDb("Failed to get model: %w", err)
-	}
-	if m.Status != entmodule.StatusActive {
-		return nil, commonpb.ErrorParamInvalid("Model is not available")
 	}
 	return buildGetModelResponse(s.hasher, m), nil
 }

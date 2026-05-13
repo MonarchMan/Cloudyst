@@ -41,8 +41,8 @@ const (
 
 type (
 	ChatBiz interface {
-		CreateConversation(ctx context.Context, roleID int, modelID int, knowledgeID int) (*ent.AiChatConversation, error)
-		UpdateConversation(ctx context.Context, args *UpdateConversationArgs) (*ent.AiChatConversation, error)
+		CreateConversation(ctx context.Context, roleID int, model *ent.AiModel, knowledgeID int) (*ent.AiChatConversation, error)
+		UpdateConversation(ctx context.Context, args *data.UpsertChatConversationParams) (*ent.AiChatConversation, error)
 		ListConversationByUser(ctx context.Context) ([]*ent.AiChatConversation, error)
 		GetConversation(ctx context.Context, id int) (*ent.AiChatConversation, error)
 		DeleteConversation(ctx context.Context, args *DeleteConversationArgs) error
@@ -59,7 +59,7 @@ type (
 		DeleteMessage(ctx context.Context, id int, cascade bool) error
 		SaveMessage(ctx context.Context, args *data.CreateChatMessageArgs) (*ent.AiChatMessage, error)
 		GetRoleInfo(ctx context.Context, roleID int) (*types.RoleInfo, error)
-		BuildTools(retrieve tool.InvokableTool, info *types.RoleInfo, useSearch bool, useRag bool) ([]tool.BaseTool, error)
+		BuildTools(retrieve tool.InvokableTool, info *types.RoleInfo, useSearch bool) ([]tool.BaseTool, error)
 		Generate(ctx context.Context, args *SendMessageArgs, m emodel.ToolCallingChatModel,
 			retrieveTool tool.InvokableTool) (*ChatRecord, error)
 		Stream(ctx context.Context, args *SendMessageArgs, m emodel.ToolCallingChatModel, retrieveTool tool.InvokableTool,
@@ -143,14 +143,13 @@ type invokeFN func(ctx context.Context, graph compose.Runnable[map[string]any, *
 type OnChunkFN func(chunk *schema.Message, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error
 type OnFirstChunkFN func(chunk *schema.Message, userMsg, aiMsg *ent.AiChatMessage, record *types.ChatInnerRecord) error
 
-func NewChatBiz(cc data.ChatConversationClient, rc data.RoleClient, kc data.KnowledgeClient, mc data.ModelClient,
-	cmc data.ChatMessageClient, wc data.WebPageClient, tc data.ToolClient, loader document.Loader, mcm aimcp.MCPClientManager,
-	vs vector.VectorStore, conf *conf.Bootstrap, tr *factory.ToolRegistry, l log.Logger) ChatBiz {
+func NewChatBiz(cc data.ChatConversationClient, rc data.RoleClient, kc data.KnowledgeClient, cmc data.ChatMessageClient,
+	wc data.WebPageClient, tc data.ToolClient, loader document.Loader, mcm aimcp.MCPClientManager, vs vector.VectorStore,
+	conf *conf.Bootstrap, tr *factory.ToolRegistry, l log.Logger) ChatBiz {
 	return &chatBiz{
 		cc:        cc,
 		rc:        rc,
 		kc:        kc,
-		mc:        mc,
 		cmc:       cmc,
 		wc:        wc,
 		tc:        tc,
@@ -214,12 +213,7 @@ func (b *chatBiz) PrepareInput(ctx context.Context, args *SendMessageArgs) (*Inp
 		ConversationID: conversation.ID,
 	})
 	if err != nil {
-		return nil, commonpb.ErrorDb("failed to list messages: %w", err)
-	}
-	// 1.2 校验模型是否存在
-	model, err := b.mc.GetActiveModelByIDType(ctx, conversation.ModelID, types.ModelTypeChat)
-	if err != nil || model == nil {
-		return nil, commonpb.ErrorParamInvalid("invalid model")
+		return nil, fmt.Errorf("failed to list messages: %w", err)
 	}
 
 	return &InputInfo{
@@ -279,19 +273,9 @@ func (b *chatBiz) DeleteMessage(ctx context.Context, id int, cascade bool) error
 	return b.cmc.Delete(ctx, existed.ID, cascade)
 }
 
-func (b *chatBiz) CreateConversation(ctx context.Context, roleID int, modelID int, knowledgeID int) (*ent.AiChatConversation, error) {
+func (b *chatBiz) CreateConversation(ctx context.Context, roleID int, model *ent.AiModel, knowledgeID int) (*ent.AiChatConversation, error) {
 	u := trans.FromContext(ctx)
 	var err error
-	// 获取聊天模型 model
-	var model *ent.AiModel
-	if modelID == 0 {
-		model, err = b.mc.GetDefaultModel(ctx, types.ModelTypeChat)
-	} else {
-		model, err = b.mc.GetActiveModelByIDType(ctx, modelID, types.ModelTypeChat)
-	}
-	if err != nil {
-		return nil, commonpb.ErrorParamInvalid("invalid model id %s", modelID)
-	}
 	// 校验知识库存在性
 	if knowledgeID != 0 {
 		_, err = b.kc.GetActiveByID(ctx, knowledgeID)
@@ -308,7 +292,7 @@ func (b *chatBiz) CreateConversation(ctx context.Context, roleID int, modelID in
 		Model:       model.Name,
 		Temperature: model.Temperature,
 		MaxTokens:   model.MaxTokens,
-		MaxContexts: model.MaxContext,
+		MaxContexts: model.MaxContexts,
 	}
 	if roleID != 0 {
 		// 获取聊天角色 role
@@ -325,34 +309,16 @@ func (b *chatBiz) CreateConversation(ctx context.Context, roleID int, modelID in
 	return b.cc.Upsert(ctx, conversation)
 }
 
-func (b *chatBiz) UpdateConversation(ctx context.Context, args *UpdateConversationArgs) (*ent.AiChatConversation, error) {
+func (b *chatBiz) UpdateConversation(ctx context.Context, args *data.UpsertChatConversationParams) (*ent.AiChatConversation, error) {
 	u := trans.FromContext(ctx)
-	// 1.1 校验对话是否存在
+	// 1 校验对话是否存在
 	existed, err := b.cc.GetByID(ctx, args.ExistedID)
-	if err != nil || existed == nil || existed.UserID != u.ID {
+	if err != nil || existed.UserID != u.ID {
 		return nil, fmt.Errorf("failed to get conversation: %w", err)
-	}
-	params := &data.UpsertChatConversationParams{
-		Existed:     existed,
-		Title:       args.Title,
-		Pinned:      args.Pinned,
-		SysMsg:      args.SysMsg,
-		Temperature: args.Temperature,
-		MaxTokens:   args.MaxTokens,
-		MaxContexts: args.MaxContexts,
-	}
-	// 1.2 校验模型是否存在
-	if args.ModelID != 0 {
-		m, err := b.mc.GetActiveModelByIDType(ctx, args.ModelID, types.ModelTypeChat)
-		if err != nil || m == nil {
-			return nil, fmt.Errorf("failed to get model: %w", err)
-		}
-		params.ModelID = m.ID
-		params.Model = m.Name
 	}
 
 	// 2. 更新对话信息
-	return b.cc.Upsert(ctx, params)
+	return b.cc.Upsert(ctx, args)
 }
 
 func (b *chatBiz) ListConversationByUser(ctx context.Context) ([]*ent.AiChatConversation, error) {
@@ -453,9 +419,9 @@ func (b *chatBiz) filterContextMessages(h []*ent.AiChatMessage, c *ent.AiChatCon
 		return nil
 	}
 	contextMsgs := make([]*schema.Message, 0, c.MaxContexts*2)
-	for i := len(h) - 1; i > 0; i-- {
+	for i := 0; i < len(h); i += 2 {
 		aiMsg := h[i]
-		userMsg := h[i-1]
+		userMsg := h[i+1]
 		// 跳过无效消息对
 		if !b.isValidMessagePair(aiMsg, userMsg) {
 			continue
@@ -463,8 +429,10 @@ func (b *chatBiz) filterContextMessages(h []*ent.AiChatMessage, c *ent.AiChatCon
 		contextMsgs = append(contextMsgs, schema.AssistantMessage(aiMsg.Content, nil))
 		contextMsgs = append(contextMsgs, schema.UserMessage(userMsg.Content))
 		// 解析 附件URL，转成用户消息
-		urls := strings.Split(strings.TrimSpace(aiMsg.Content), ",")
-		contextMsgs = append(contextMsgs, b.buildAttachmentUserMessage(urls))
+		attachmentMsg := b.buildAttachmentUserMessage(userMsg.AttachmentUrls)
+		if attachmentMsg != nil {
+			contextMsgs = append(contextMsgs, attachmentMsg)
+		}
 		// 超过最大上下文，结束
 		if len(contextMsgs) >= c.MaxContexts*2 {
 			break
@@ -487,7 +455,7 @@ func (b *chatBiz) isValidMessagePair(aiMsg, userMsg *ent.AiChatMessage) bool {
 	}
 
 	// 检查消息是否属于同一回复链
-	if aiMsg.ReplyID == 0 || userMsg.ReplyID != aiMsg.ReplyID {
+	if aiMsg.ReplyID == 0 || userMsg.ID != aiMsg.ReplyID {
 		return false
 	}
 
@@ -551,7 +519,7 @@ func (b *chatBiz) PrepareTemplate(ctx context.Context, args *SendMessageArgs) (m
 	u := trans.FromContext(ctx)
 	listArgs := &data.ListChatMessageArgs{
 		PaginationArgs: &common.PaginationArgs{
-			Page:     1,
+			Page:     0,
 			PageSize: 20,
 			OrderBy:  aimodel.FieldUpdatedAt,
 			OrderDir: common.OrderDirectionDesc,
@@ -576,6 +544,7 @@ func (b *chatBiz) PrepareTemplate(ctx context.Context, args *SendMessageArgs) (m
 		return nil, nil, fmt.Errorf("failed to get conversation: %w", err)
 	}
 	listArgs.ConversationID = conversation.ID
+	//listArgs.PageSize = conversation.MaxContexts
 	// 1.3 校验对话模型是否改变，若是，则更新对话
 	if args.ModelID != conversation.ModelID {
 		_, err := b.cc.UpdateModel(ctx, conversation.ID, args.ModelID, args.Model)
@@ -586,12 +555,7 @@ func (b *chatBiz) PrepareTemplate(ctx context.Context, args *SendMessageArgs) (m
 	args.RoleID = conversation.RoleID
 	msgList, err := b.cmc.List(ctx, listArgs)
 	if err != nil {
-		return nil, nil, commonpb.ErrorDb("failed to list messages: %w", err)
-	}
-	// 1.4 校验模型是否存在
-	model, err := b.mc.GetActiveModelByIDType(ctx, conversation.ModelID, types.ModelTypeChat)
-	if err != nil || model == nil {
-		return nil, nil, commonpb.ErrorParamInvalid("invalid model")
+		return nil, nil, fmt.Errorf("failed to list messages: %w", err)
 	}
 	// 2. 获取历史消息
 	history := b.filterContextMessages(msgList.ChatMessages, conversation, args)
@@ -601,12 +565,14 @@ func (b *chatBiz) PrepareTemplate(ctx context.Context, args *SendMessageArgs) (m
 	if args.MsgID == 0 {
 		// 新增消息
 		saveArgs := &data.CreateChatMessageArgs{
-			CID:     conversation.ID,
-			UserID:  u.ID,
-			RoleID:  conversation.RoleID,
-			ModelID: conversation.ModelID,
-			Type:    string(schema.User),
-			Content: args.Content,
+			CID:        conversation.ID,
+			UserID:     u.ID,
+			RoleID:     conversation.RoleID,
+			ModelID:    conversation.ModelID,
+			Model:      conversation.Model,
+			Type:       string(schema.User),
+			UseContext: args.UseContext,
+			Content:    args.Content,
 		}
 		if len(args.AttachmentUrls) > 0 {
 			saveArgs.AttachUrls = args.AttachmentUrls
@@ -645,26 +611,29 @@ func (b *chatBiz) invokeChat(ctx context.Context, args *SendMessageArgs, m emode
 		return nil, fmt.Errorf("failed to prepare template: %w", err)
 	}
 
+	var roleInfo *types.RoleInfo
 	// 2.2 获取角色信息
-	roleInfo, err := b.GetRoleInfo(ctx, args.RoleID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get role info: %w", err)
+	if args.RoleID != 0 {
+		roleInfo, err = b.GetRoleInfo(ctx, args.RoleID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get role info: %w", err)
+		}
 	}
-
 	// 2.3 获取tools
-	useRag := len(roleInfo.KnowLedgeIDs) == 0
-	tools, err := b.BuildTools(retrieveTool, roleInfo, args.UseSearch, useRag)
+	tools, err := b.BuildTools(retrieveTool, roleInfo, args.UseSearch)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build tools: %w", err)
 	}
 	// 2.4 保存助手消息
 	assistMsgArgs := &data.CreateChatMessageArgs{
-		CID:     userMsg.ConversationID,
-		UserID:  userMsg.UserID,
-		RoleID:  userMsg.RoleID,
-		ModelID: userMsg.ModelID,
-		Type:    string(schema.Assistant),
-		ReplyID: userMsg.ID,
+		CID:        userMsg.ConversationID,
+		UserID:     userMsg.UserID,
+		RoleID:     userMsg.RoleID,
+		ModelID:    userMsg.ModelID,
+		Model:      userMsg.Model,
+		UseContext: args.UseContext,
+		Type:       string(schema.Assistant),
+		ReplyID:    userMsg.ID,
 	}
 	aiMsg, err := b.SaveMessage(ctx, assistMsgArgs)
 	if err != nil {
@@ -709,7 +678,7 @@ func (b *chatBiz) Generate(ctx context.Context, args *SendMessageArgs, m emodel.
 			},
 		},
 	}
-	genLocalStateFN := func(ctx context.Context) (state *types.ChatState) {
+	genLocalStateFN := func(ctx context.Context) *types.ChatState {
 		return state
 	}
 	record, err := b.invokeChat(ctx, args, m, retrieveTool, fn, genLocalStateFN, nil, nil)
@@ -731,7 +700,7 @@ func (b *chatBiz) Stream(ctx context.Context, args *SendMessageArgs, m emodel.To
 			},
 		},
 	}
-	genLocalStateFN := func(ctx context.Context) (state *types.ChatState) {
+	genLocalStateFN := func(ctx context.Context) *types.ChatState {
 		return state
 	}
 
@@ -812,8 +781,28 @@ func (b *chatBiz) buildChatGraph(m emodel.ToolCallingChatModel, tools []tool.Bas
 		schema.UserMessage("{query}"),
 		schema.UserMessage("{attachment}"))
 
-	// 2. 定义两个 tool：联网搜索 & 知识库检索
 	ctx := context.Background()
+	g := compose.NewGraph[map[string]any, *schema.Message](opts...)
+	g.AddChatTemplateNode("template", tml,
+		compose.WithStatePreHandler(func(ctx context.Context, in map[string]any, state *types.ChatState) (map[string]any, error) {
+			// 注入ai消息的id
+			state.MsgID = aiMsgID
+			return in, nil
+		}),
+		compose.WithStatePostHandler(func(ctx context.Context, out []*schema.Message, state *types.ChatState) ([]*schema.Message, error) {
+			state.Messages = append(state.Messages, out...)
+			return out, nil
+		}))
+	g.AddChatModelNode("answer_llm", m)
+	g.AddEdge(compose.START, "template")
+
+	if len(tools) == 0 {
+		g.AddEdge("template", "answer_llm")
+		g.AddEdge("answer_llm", compose.END)
+		return g.Compile(ctx)
+	}
+
+	// 2. 转换 tool 为 schema.ToolInfo
 	toolInfos := lo.FilterMap(tools, func(t tool.BaseTool, index int) (*schema.ToolInfo, bool) {
 		info, err := t.Info(ctx)
 		if err != nil {
@@ -831,17 +820,6 @@ func (b *chatBiz) buildChatGraph(m emodel.ToolCallingChatModel, tools []tool.Bas
 		return nil, fmt.Errorf("failed to create tool node: %w", err)
 	}
 
-	g := compose.NewGraph[map[string]any, *schema.Message](opts...)
-	g.AddChatTemplateNode("template", tml,
-		compose.WithStatePreHandler(func(ctx context.Context, in map[string]any, state *types.ChatState) (map[string]any, error) {
-			// 注入ai消息的id
-			state.MsgID = aiMsgID
-			return in, nil
-		}),
-		compose.WithStatePostHandler(func(ctx context.Context, out []*schema.Message, state *types.ChatState) ([]*schema.Message, error) {
-			state.Messages = append(state.Messages, out...)
-			return out, nil
-		}))
 	g.AddChatModelNode("router_llm", routerLLMWithTools,
 		compose.WithStatePostHandler(func(ctx context.Context, out *schema.Message, state *types.ChatState) (*schema.Message, error) {
 			state.Messages = append(state.Messages, out)
@@ -853,8 +831,6 @@ func (b *chatBiz) buildChatGraph(m emodel.ToolCallingChatModel, tools []tool.Bas
 			state.Messages = append(state.Messages, out...)
 			return state.Messages, nil
 		}))
-	g.AddChatModelNode("answer_llm", m)
-	g.AddEdge(compose.START, "template")
 	g.AddEdge("template", "router_llm")
 	g.AddBranch("router_llm", compose.NewGraphBranch(
 		func(ctx context.Context, msg *schema.Message) (string, error) {
@@ -873,8 +849,8 @@ func (b *chatBiz) buildChatGraph(m emodel.ToolCallingChatModel, tools []tool.Bas
 	return g.Compile(ctx)
 }
 
-func (b *chatBiz) BuildTools(retrieve tool.InvokableTool, info *types.RoleInfo, useSearch bool, useRag bool) ([]tool.BaseTool, error) {
-	var bts []tool.BaseTool
+func (b *chatBiz) BuildTools(retrieve tool.InvokableTool, info *types.RoleInfo, useSearch bool) ([]tool.BaseTool, error) {
+	bts := make([]tool.BaseTool, 0)
 	if useSearch {
 		// 联网搜索
 		search, err := NewBochaTool(b.conf.Extensions.Bocha, b.wc)
@@ -883,8 +859,11 @@ func (b *chatBiz) BuildTools(retrieve tool.InvokableTool, info *types.RoleInfo, 
 		}
 		bts = append(bts, search)
 	}
+	if info == nil {
+		return bts, nil
+	}
 
-	if useRag {
+	if len(info.KnowLedgeIDs) > 0 {
 		// 知识库检索
 		bts = append(bts, retrieve)
 	}

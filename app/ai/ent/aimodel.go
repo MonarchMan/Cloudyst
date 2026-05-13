@@ -27,6 +27,8 @@ type AiModel struct {
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	// 模型名称
 	Name string `json:"name,omitempty"`
+	// 模型标识
+	Model string `json:"model,omitempty"`
 	// 模型类型
 	Type string `json:"type,omitempty"`
 	// 平台
@@ -40,7 +42,7 @@ type AiModel struct {
 	// 最大token数
 	MaxTokens int `json:"max_tokens,omitempty"`
 	// 最大上下文数
-	MaxContext int `json:"max_context,omitempty"`
+	MaxContexts int `json:"max_contexts,omitempty"`
 	// API Key ID
 	KeyID int `json:"key_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -76,9 +78,9 @@ func (*AiModel) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case aimodel.FieldTemperature:
 			values[i] = new(sql.NullFloat64)
-		case aimodel.FieldID, aimodel.FieldSort, aimodel.FieldMaxTokens, aimodel.FieldMaxContext, aimodel.FieldKeyID:
+		case aimodel.FieldID, aimodel.FieldSort, aimodel.FieldMaxTokens, aimodel.FieldMaxContexts, aimodel.FieldKeyID:
 			values[i] = new(sql.NullInt64)
-		case aimodel.FieldName, aimodel.FieldType, aimodel.FieldPlatform, aimodel.FieldStatus:
+		case aimodel.FieldName, aimodel.FieldModel, aimodel.FieldType, aimodel.FieldPlatform, aimodel.FieldStatus:
 			values[i] = new(sql.NullString)
 		case aimodel.FieldCreatedAt, aimodel.FieldUpdatedAt, aimodel.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -128,6 +130,12 @@ func (_m *AiModel) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Name = value.String
 			}
+		case aimodel.FieldModel:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field model", values[i])
+			} else if value.Valid {
+				_m.Model = value.String
+			}
 		case aimodel.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
@@ -164,11 +172,11 @@ func (_m *AiModel) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.MaxTokens = int(value.Int64)
 			}
-		case aimodel.FieldMaxContext:
+		case aimodel.FieldMaxContexts:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field max_context", values[i])
+				return fmt.Errorf("unexpected type %T for field max_contexts", values[i])
 			} else if value.Valid {
-				_m.MaxContext = int(value.Int64)
+				_m.MaxContexts = int(value.Int64)
 			}
 		case aimodel.FieldKeyID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -231,6 +239,9 @@ func (_m *AiModel) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
+	builder.WriteString("model=")
+	builder.WriteString(_m.Model)
+	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(_m.Type)
 	builder.WriteString(", ")
@@ -249,8 +260,8 @@ func (_m *AiModel) String() string {
 	builder.WriteString("max_tokens=")
 	builder.WriteString(fmt.Sprintf("%v", _m.MaxTokens))
 	builder.WriteString(", ")
-	builder.WriteString("max_context=")
-	builder.WriteString(fmt.Sprintf("%v", _m.MaxContext))
+	builder.WriteString("max_contexts=")
+	builder.WriteString(fmt.Sprintf("%v", _m.MaxContexts))
 	builder.WriteString(", ")
 	builder.WriteString("key_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.KeyID))

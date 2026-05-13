@@ -1,7 +1,6 @@
 package qiniu
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/boolset"
 	"common/request"
 	"common/util"
@@ -123,6 +122,7 @@ func (handler *Driver) List(ctx context.Context, base string, onProgress driver.
 
 	// 处理列取结果
 	res := make([]fs.PhysicalObject, 0, len(objects)+len(commons))
+
 	// 处理目录
 	for _, object := range commons {
 		rel, err := filepath.Rel(base, object)
@@ -141,6 +141,9 @@ func (handler *Driver) List(ctx context.Context, base string, onProgress driver.
 
 	// 处理文件
 	for _, object := range objects {
+		if strings.HasSuffix(object.Key, "/") && object.Fsize == 0 {
+			continue
+		}
 		rel, err := filepath.Rel(base, object.Key)
 		if err != nil {
 			continue
@@ -434,7 +437,7 @@ func (handler *Driver) Capabilities() *driver.Capabilities {
 	}
 }
 
-func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]driver.MediaMeta, error) {
 	if util.ContainsString(supportedImageExt, ext) {
 		return handler.extractImageMeta(ctx, path)
 	}

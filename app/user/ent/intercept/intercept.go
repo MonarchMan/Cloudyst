@@ -9,6 +9,8 @@ import (
 	"user/ent"
 	"user/ent/davaccount"
 	"user/ent/group"
+	"user/ent/oauthclient"
+	"user/ent/oauthgrant"
 	"user/ent/passkey"
 	"user/ent/predicate"
 	"user/ent/setting"
@@ -127,6 +129,60 @@ func (f TraverseGroup) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.GroupQuery", q)
 }
 
+// The OAuthClientFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OAuthClientFunc func(context.Context, *ent.OAuthClientQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f OAuthClientFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OAuthClientQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OAuthClientQuery", q)
+}
+
+// The TraverseOAuthClient type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOAuthClient func(context.Context, *ent.OAuthClientQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseOAuthClient) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseOAuthClient) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OAuthClientQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.OAuthClientQuery", q)
+}
+
+// The OAuthGrantFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OAuthGrantFunc func(context.Context, *ent.OAuthGrantQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f OAuthGrantFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OAuthGrantQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OAuthGrantQuery", q)
+}
+
+// The TraverseOAuthGrant type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOAuthGrant func(context.Context, *ent.OAuthGrantQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseOAuthGrant) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseOAuthGrant) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OAuthGrantQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.OAuthGrantQuery", q)
+}
+
 // The PasskeyFunc type is an adapter to allow the use of ordinary function as a Querier.
 type PasskeyFunc func(context.Context, *ent.PasskeyQuery) (ent.Value, error)
 
@@ -215,6 +271,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.DavAccountQuery, predicate.DavAccount, davaccount.OrderOption]{typ: ent.TypeDavAccount, tq: q}, nil
 	case *ent.GroupQuery:
 		return &query[*ent.GroupQuery, predicate.Group, group.OrderOption]{typ: ent.TypeGroup, tq: q}, nil
+	case *ent.OAuthClientQuery:
+		return &query[*ent.OAuthClientQuery, predicate.OAuthClient, oauthclient.OrderOption]{typ: ent.TypeOAuthClient, tq: q}, nil
+	case *ent.OAuthGrantQuery:
+		return &query[*ent.OAuthGrantQuery, predicate.OAuthGrant, oauthgrant.OrderOption]{typ: ent.TypeOAuthGrant, tq: q}, nil
 	case *ent.PasskeyQuery:
 		return &query[*ent.PasskeyQuery, predicate.Passkey, passkey.OrderOption]{typ: ent.TypePasskey, tq: q}, nil
 	case *ent.SettingQuery:

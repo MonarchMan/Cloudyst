@@ -12,6 +12,12 @@ type DavAccount func(*sql.Selector)
 // Group is the predicate function for group builders.
 type Group func(*sql.Selector)
 
+// OAuthClient is the predicate function for oauthclient builders.
+type OAuthClient func(*sql.Selector)
+
+// OAuthGrant is the predicate function for oauthgrant builders.
+type OAuthGrant func(*sql.Selector)
+
 // Passkey is the predicate function for passkey builders.
 type Passkey func(*sql.Selector)
 

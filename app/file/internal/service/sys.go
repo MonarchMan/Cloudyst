@@ -3,6 +3,8 @@ package service
 import (
 	"common/cache"
 	"context"
+	"file/internal/biz/cluster"
+	"file/internal/biz/filemanager"
 	"file/internal/biz/filemanager/fs/mime"
 	"file/internal/biz/filemanager/manager"
 	"file/internal/biz/mediameta"
@@ -18,13 +20,19 @@ type SysService struct {
 	em             mediameta.ExtractorStateManager
 	kv             cache.Driver
 	postprocessors map[string]SettingPostProcessor
+	dep            filemanager.ManagerDep
+	dbfsDep        filemanager.DbfsDep
+	np             cluster.NodePool
 }
 
-func NewSysService(qm *queue.QueueManager, d mime.MimeManager, em mediameta.ExtractorStateManager) *SysService {
+func NewSysService(qm *queue.QueueManager, d mime.MimeManager, em mediameta.ExtractorStateManager, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep, np cluster.NodePool) *SysService {
 	return &SysService{
-		qm: qm,
-		d:  d,
-		em: em,
+		qm:      qm,
+		d:       d,
+		em:      em,
+		dep:     dep,
+		dbfsDep: dbfsDep,
+		np:      np,
 		postprocessors: map[string]SettingPostProcessor{
 			"mime_mapping":                               d.Reload,
 			"media_meta_exif":                            em.Reload,
@@ -65,6 +73,9 @@ func NewSysService(qm *queue.QueueManager, d mime.MimeManager, em mediameta.Extr
 }
 
 func (s *SysService) ReloadDependency(ctx context.Context, req *pb.ReloadDependencyRequest) (*pb.ReloadDependencyResponse, error) {
+	ctx = context.WithValue(ctx, filemanager.ManagerDepCtx{}, s.dep)
+	ctx = context.WithValue(ctx, filemanager.DbfsDepCtx{}, s.dbfsDep)
+	ctx = context.WithValue(ctx, cluster.NodePoolCtx{}, s.np)
 	successList := make([]bool, 0, len(req.Keys))
 	for _, key := range req.Keys {
 		if postprocessor, ok := s.postprocessors[key]; ok {

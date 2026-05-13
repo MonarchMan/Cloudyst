@@ -1,7 +1,6 @@
 package driver
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/boolset"
 	"context"
 	"encoding/gob"
@@ -82,7 +81,7 @@ type (
 		Capabilities() *Capabilities
 
 		// MediaMeta extracts media metadata from the given files.
-		MediaMeta(ctx context.Context, path, ext string) ([]pbslave.MediaMeta, error)
+		MediaMeta(ctx context.Context, path, ext string) ([]MediaMeta, error)
 	}
 
 	Capabilities struct {

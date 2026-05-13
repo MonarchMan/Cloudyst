@@ -141,3 +141,14 @@ type (
 		Img       string   `json:"img,omitempty"`
 	}
 )
+
+type OAuthClientProps struct {
+	Description     string `json:"description,omitempty"`
+	Icon            string `json:"icon,omitempty"`
+	RefreshTokenTTL int64  `json:"refresh_token_ttl,omitempty"` // in seconds, 0 means default
+}
+
+const (
+	ScopeDavAccountRead  = "DavAccount.Read"
+	ScopeDavAccountWrite = "DavAccount.Write"
+)

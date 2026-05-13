@@ -62,7 +62,8 @@ func (m *manager) Thumbnail(ctx context.Context, uri *fs.URI) (entitysource.Enti
 	capabilities := handler.Capabilities()
 	// Check if files extension and size is supported by native policy generator.
 	if capabilities.ThumbSupportAllExts || util.IsInExtensionList(capabilities.ThumbSupportedExts, file.DisplayName()) &&
-		(capabilities.ThumbMaxSize == 0 || latest.Size() <= capabilities.ThumbMaxSize) {
+		(capabilities.ThumbMaxSize == 0 || latest.Size() <= capabilities.ThumbMaxSize) &&
+		!latest.Encrypted() {
 		thumbSource, err := m.GetEntitySource(ctx, 0, fs.WithEntity(latest), fs.WithUseThumb(true))
 		if err != nil {
 			return nil, fmt.Errorf("failed to get latest entity source: %w", err)

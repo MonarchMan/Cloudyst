@@ -17,7 +17,7 @@ import (
 )
 
 type (
-	CronTaskFunc     func(ctx context.Context, q queue.Queue)
+	CronTaskFunc     func(ctx context.Context)
 	cornRegistration struct {
 		t      setting.CronType
 		config string
@@ -50,7 +50,7 @@ func NewCron(ctx context.Context, settings setting.Provider, uc rpc.UserClient, 
 
 	for _, r := range registrations {
 		cronConfig := settings.Cron(ctx, r.t)
-		if _, err := c.AddFunc(cronConfig, taskWrapper(string(r.t), cronConfig, anonymous, l, r.fn, q, tracer, dep, dbfsDep)); err != nil {
+		if _, err := c.AddFunc(cronConfig, taskWrapper(string(r.t), cronConfig, anonymous, l, r.fn, tracer, dep, dbfsDep)); err != nil {
 			l.WithContext(ctx).Warnf("Failed to start crontab job %q: %s", cronConfig, err)
 		}
 	}
@@ -58,7 +58,7 @@ func NewCron(ctx context.Context, settings setting.Provider, uc rpc.UserClient, 
 	return c, nil
 }
 
-func taskWrapper(name, config string, user *userdata.User, l *log.Helper, task CronTaskFunc, q queue.Queue,
+func taskWrapper(name, config string, user *userdata.User, l *log.Helper, task CronTaskFunc,
 	tracer trace.Tracer, dep filemanager.ManagerDep, dbfsDep filemanager.DbfsDep) func() {
 	l.Infof("Cron task %s started with config %q", name, config)
 	return func() {
@@ -74,6 +74,6 @@ func taskWrapper(name, config string, user *userdata.User, l *log.Helper, task C
 		ctx = trans.WithValue(ctx, user)
 		ctx = context.WithValue(ctx, filemanager.ManagerDepCtx{}, dep)
 		ctx = context.WithValue(ctx, filemanager.DbfsDepCtx{}, dbfsDep)
-		task(ctx, q)
+		task(ctx)
 	}
 }

@@ -72,6 +72,12 @@ func (_c *AiModelCreate) SetName(v string) *AiModelCreate {
 	return _c
 }
 
+// SetModel sets the "model" field.
+func (_c *AiModelCreate) SetModel(v string) *AiModelCreate {
+	_c.mutation.SetModel(v)
+	return _c
+}
+
 // SetType sets the "type" field.
 func (_c *AiModelCreate) SetType(v string) *AiModelCreate {
 	_c.mutation.SetType(v)
@@ -108,9 +114,9 @@ func (_c *AiModelCreate) SetMaxTokens(v int) *AiModelCreate {
 	return _c
 }
 
-// SetMaxContext sets the "max_context" field.
-func (_c *AiModelCreate) SetMaxContext(v int) *AiModelCreate {
-	_c.mutation.SetMaxContext(v)
+// SetMaxContexts sets the "max_contexts" field.
+func (_c *AiModelCreate) SetMaxContexts(v int) *AiModelCreate {
+	_c.mutation.SetMaxContexts(v)
 	return _c
 }
 
@@ -201,6 +207,14 @@ func (_c *AiModelCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "AiModel.name": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.Model(); !ok {
+		return &ValidationError{Name: "model", err: errors.New(`ent: missing required field "AiModel.model"`)}
+	}
+	if v, ok := _c.mutation.Model(); ok {
+		if err := aimodel.ModelValidator(v); err != nil {
+			return &ValidationError{Name: "model", err: fmt.Errorf(`ent: validator failed for field "AiModel.model": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "AiModel.type"`)}
 	}
@@ -234,8 +248,8 @@ func (_c *AiModelCreate) check() error {
 	if _, ok := _c.mutation.MaxTokens(); !ok {
 		return &ValidationError{Name: "max_tokens", err: errors.New(`ent: missing required field "AiModel.max_tokens"`)}
 	}
-	if _, ok := _c.mutation.MaxContext(); !ok {
-		return &ValidationError{Name: "max_context", err: errors.New(`ent: missing required field "AiModel.max_context"`)}
+	if _, ok := _c.mutation.MaxContexts(); !ok {
+		return &ValidationError{Name: "max_contexts", err: errors.New(`ent: missing required field "AiModel.max_contexts"`)}
 	}
 	if _, ok := _c.mutation.KeyID(); !ok {
 		return &ValidationError{Name: "key_id", err: errors.New(`ent: missing required field "AiModel.key_id"`)}
@@ -293,6 +307,10 @@ func (_c *AiModelCreate) createSpec() (*AiModel, *sqlgraph.CreateSpec) {
 		_spec.SetField(aimodel.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if value, ok := _c.mutation.Model(); ok {
+		_spec.SetField(aimodel.FieldModel, field.TypeString, value)
+		_node.Model = value
+	}
 	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(aimodel.FieldType, field.TypeString, value)
 		_node.Type = value
@@ -317,9 +335,9 @@ func (_c *AiModelCreate) createSpec() (*AiModel, *sqlgraph.CreateSpec) {
 		_spec.SetField(aimodel.FieldMaxTokens, field.TypeInt, value)
 		_node.MaxTokens = value
 	}
-	if value, ok := _c.mutation.MaxContext(); ok {
-		_spec.SetField(aimodel.FieldMaxContext, field.TypeInt, value)
-		_node.MaxContext = value
+	if value, ok := _c.mutation.MaxContexts(); ok {
+		_spec.SetField(aimodel.FieldMaxContexts, field.TypeInt, value)
+		_node.MaxContexts = value
 	}
 	if nodes := _c.mutation.AiAPIKeyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -432,6 +450,18 @@ func (u *AiModelUpsert) UpdateName() *AiModelUpsert {
 	return u
 }
 
+// SetModel sets the "model" field.
+func (u *AiModelUpsert) SetModel(v string) *AiModelUpsert {
+	u.Set(aimodel.FieldModel, v)
+	return u
+}
+
+// UpdateModel sets the "model" field to the value that was provided on create.
+func (u *AiModelUpsert) UpdateModel() *AiModelUpsert {
+	u.SetExcluded(aimodel.FieldModel)
+	return u
+}
+
 // SetType sets the "type" field.
 func (u *AiModelUpsert) SetType(v string) *AiModelUpsert {
 	u.Set(aimodel.FieldType, v)
@@ -522,21 +552,21 @@ func (u *AiModelUpsert) AddMaxTokens(v int) *AiModelUpsert {
 	return u
 }
 
-// SetMaxContext sets the "max_context" field.
-func (u *AiModelUpsert) SetMaxContext(v int) *AiModelUpsert {
-	u.Set(aimodel.FieldMaxContext, v)
+// SetMaxContexts sets the "max_contexts" field.
+func (u *AiModelUpsert) SetMaxContexts(v int) *AiModelUpsert {
+	u.Set(aimodel.FieldMaxContexts, v)
 	return u
 }
 
-// UpdateMaxContext sets the "max_context" field to the value that was provided on create.
-func (u *AiModelUpsert) UpdateMaxContext() *AiModelUpsert {
-	u.SetExcluded(aimodel.FieldMaxContext)
+// UpdateMaxContexts sets the "max_contexts" field to the value that was provided on create.
+func (u *AiModelUpsert) UpdateMaxContexts() *AiModelUpsert {
+	u.SetExcluded(aimodel.FieldMaxContexts)
 	return u
 }
 
-// AddMaxContext adds v to the "max_context" field.
-func (u *AiModelUpsert) AddMaxContext(v int) *AiModelUpsert {
-	u.Add(aimodel.FieldMaxContext, v)
+// AddMaxContexts adds v to the "max_contexts" field.
+func (u *AiModelUpsert) AddMaxContexts(v int) *AiModelUpsert {
+	u.Add(aimodel.FieldMaxContexts, v)
 	return u
 }
 
@@ -646,6 +676,20 @@ func (u *AiModelUpsertOne) UpdateName() *AiModelUpsertOne {
 	})
 }
 
+// SetModel sets the "model" field.
+func (u *AiModelUpsertOne) SetModel(v string) *AiModelUpsertOne {
+	return u.Update(func(s *AiModelUpsert) {
+		s.SetModel(v)
+	})
+}
+
+// UpdateModel sets the "model" field to the value that was provided on create.
+func (u *AiModelUpsertOne) UpdateModel() *AiModelUpsertOne {
+	return u.Update(func(s *AiModelUpsert) {
+		s.UpdateModel()
+	})
+}
+
 // SetType sets the "type" field.
 func (u *AiModelUpsertOne) SetType(v string) *AiModelUpsertOne {
 	return u.Update(func(s *AiModelUpsert) {
@@ -751,24 +795,24 @@ func (u *AiModelUpsertOne) UpdateMaxTokens() *AiModelUpsertOne {
 	})
 }
 
-// SetMaxContext sets the "max_context" field.
-func (u *AiModelUpsertOne) SetMaxContext(v int) *AiModelUpsertOne {
+// SetMaxContexts sets the "max_contexts" field.
+func (u *AiModelUpsertOne) SetMaxContexts(v int) *AiModelUpsertOne {
 	return u.Update(func(s *AiModelUpsert) {
-		s.SetMaxContext(v)
+		s.SetMaxContexts(v)
 	})
 }
 
-// AddMaxContext adds v to the "max_context" field.
-func (u *AiModelUpsertOne) AddMaxContext(v int) *AiModelUpsertOne {
+// AddMaxContexts adds v to the "max_contexts" field.
+func (u *AiModelUpsertOne) AddMaxContexts(v int) *AiModelUpsertOne {
 	return u.Update(func(s *AiModelUpsert) {
-		s.AddMaxContext(v)
+		s.AddMaxContexts(v)
 	})
 }
 
-// UpdateMaxContext sets the "max_context" field to the value that was provided on create.
-func (u *AiModelUpsertOne) UpdateMaxContext() *AiModelUpsertOne {
+// UpdateMaxContexts sets the "max_contexts" field to the value that was provided on create.
+func (u *AiModelUpsertOne) UpdateMaxContexts() *AiModelUpsertOne {
 	return u.Update(func(s *AiModelUpsert) {
-		s.UpdateMaxContext()
+		s.UpdateMaxContexts()
 	})
 }
 
@@ -1051,6 +1095,20 @@ func (u *AiModelUpsertBulk) UpdateName() *AiModelUpsertBulk {
 	})
 }
 
+// SetModel sets the "model" field.
+func (u *AiModelUpsertBulk) SetModel(v string) *AiModelUpsertBulk {
+	return u.Update(func(s *AiModelUpsert) {
+		s.SetModel(v)
+	})
+}
+
+// UpdateModel sets the "model" field to the value that was provided on create.
+func (u *AiModelUpsertBulk) UpdateModel() *AiModelUpsertBulk {
+	return u.Update(func(s *AiModelUpsert) {
+		s.UpdateModel()
+	})
+}
+
 // SetType sets the "type" field.
 func (u *AiModelUpsertBulk) SetType(v string) *AiModelUpsertBulk {
 	return u.Update(func(s *AiModelUpsert) {
@@ -1156,24 +1214,24 @@ func (u *AiModelUpsertBulk) UpdateMaxTokens() *AiModelUpsertBulk {
 	})
 }
 
-// SetMaxContext sets the "max_context" field.
-func (u *AiModelUpsertBulk) SetMaxContext(v int) *AiModelUpsertBulk {
+// SetMaxContexts sets the "max_contexts" field.
+func (u *AiModelUpsertBulk) SetMaxContexts(v int) *AiModelUpsertBulk {
 	return u.Update(func(s *AiModelUpsert) {
-		s.SetMaxContext(v)
+		s.SetMaxContexts(v)
 	})
 }
 
-// AddMaxContext adds v to the "max_context" field.
-func (u *AiModelUpsertBulk) AddMaxContext(v int) *AiModelUpsertBulk {
+// AddMaxContexts adds v to the "max_contexts" field.
+func (u *AiModelUpsertBulk) AddMaxContexts(v int) *AiModelUpsertBulk {
 	return u.Update(func(s *AiModelUpsert) {
-		s.AddMaxContext(v)
+		s.AddMaxContexts(v)
 	})
 }
 
-// UpdateMaxContext sets the "max_context" field to the value that was provided on create.
-func (u *AiModelUpsertBulk) UpdateMaxContext() *AiModelUpsertBulk {
+// UpdateMaxContexts sets the "max_contexts" field to the value that was provided on create.
+func (u *AiModelUpsertBulk) UpdateMaxContexts() *AiModelUpsertBulk {
 	return u.Update(func(s *AiModelUpsert) {
-		s.UpdateMaxContext()
+		s.UpdateMaxContexts()
 	})
 }
 

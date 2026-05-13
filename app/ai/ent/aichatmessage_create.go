@@ -276,12 +276,6 @@ func (_c *AiChatMessageCreate) check() error {
 	if _, ok := _c.mutation.UseContext(); !ok {
 		return &ValidationError{Name: "use_context", err: errors.New(`ent: missing required field "AiChatMessage.use_context"`)}
 	}
-	if _, ok := _c.mutation.SegmentIds(); !ok {
-		return &ValidationError{Name: "segment_ids", err: errors.New(`ent: missing required field "AiChatMessage.segment_ids"`)}
-	}
-	if _, ok := _c.mutation.AttachmentUrls(); !ok {
-		return &ValidationError{Name: "attachment_urls", err: errors.New(`ent: missing required field "AiChatMessage.attachment_urls"`)}
-	}
 	return nil
 }
 
@@ -636,6 +630,12 @@ func (u *AiChatMessageUpsert) UpdateSegmentIds() *AiChatMessageUpsert {
 	return u
 }
 
+// ClearSegmentIds clears the value of the "segment_ids" field.
+func (u *AiChatMessageUpsert) ClearSegmentIds() *AiChatMessageUpsert {
+	u.SetNull(aichatmessage.FieldSegmentIds)
+	return u
+}
+
 // SetAttachmentUrls sets the "attachment_urls" field.
 func (u *AiChatMessageUpsert) SetAttachmentUrls(v []string) *AiChatMessageUpsert {
 	u.Set(aichatmessage.FieldAttachmentUrls, v)
@@ -645,6 +645,12 @@ func (u *AiChatMessageUpsert) SetAttachmentUrls(v []string) *AiChatMessageUpsert
 // UpdateAttachmentUrls sets the "attachment_urls" field to the value that was provided on create.
 func (u *AiChatMessageUpsert) UpdateAttachmentUrls() *AiChatMessageUpsert {
 	u.SetExcluded(aichatmessage.FieldAttachmentUrls)
+	return u
+}
+
+// ClearAttachmentUrls clears the value of the "attachment_urls" field.
+func (u *AiChatMessageUpsert) ClearAttachmentUrls() *AiChatMessageUpsert {
+	u.SetNull(aichatmessage.FieldAttachmentUrls)
 	return u
 }
 
@@ -917,6 +923,13 @@ func (u *AiChatMessageUpsertOne) UpdateSegmentIds() *AiChatMessageUpsertOne {
 	})
 }
 
+// ClearSegmentIds clears the value of the "segment_ids" field.
+func (u *AiChatMessageUpsertOne) ClearSegmentIds() *AiChatMessageUpsertOne {
+	return u.Update(func(s *AiChatMessageUpsert) {
+		s.ClearSegmentIds()
+	})
+}
+
 // SetAttachmentUrls sets the "attachment_urls" field.
 func (u *AiChatMessageUpsertOne) SetAttachmentUrls(v []string) *AiChatMessageUpsertOne {
 	return u.Update(func(s *AiChatMessageUpsert) {
@@ -928,6 +941,13 @@ func (u *AiChatMessageUpsertOne) SetAttachmentUrls(v []string) *AiChatMessageUps
 func (u *AiChatMessageUpsertOne) UpdateAttachmentUrls() *AiChatMessageUpsertOne {
 	return u.Update(func(s *AiChatMessageUpsert) {
 		s.UpdateAttachmentUrls()
+	})
+}
+
+// ClearAttachmentUrls clears the value of the "attachment_urls" field.
+func (u *AiChatMessageUpsertOne) ClearAttachmentUrls() *AiChatMessageUpsertOne {
+	return u.Update(func(s *AiChatMessageUpsert) {
+		s.ClearAttachmentUrls()
 	})
 }
 
@@ -1371,6 +1391,13 @@ func (u *AiChatMessageUpsertBulk) UpdateSegmentIds() *AiChatMessageUpsertBulk {
 	})
 }
 
+// ClearSegmentIds clears the value of the "segment_ids" field.
+func (u *AiChatMessageUpsertBulk) ClearSegmentIds() *AiChatMessageUpsertBulk {
+	return u.Update(func(s *AiChatMessageUpsert) {
+		s.ClearSegmentIds()
+	})
+}
+
 // SetAttachmentUrls sets the "attachment_urls" field.
 func (u *AiChatMessageUpsertBulk) SetAttachmentUrls(v []string) *AiChatMessageUpsertBulk {
 	return u.Update(func(s *AiChatMessageUpsert) {
@@ -1382,6 +1409,13 @@ func (u *AiChatMessageUpsertBulk) SetAttachmentUrls(v []string) *AiChatMessageUp
 func (u *AiChatMessageUpsertBulk) UpdateAttachmentUrls() *AiChatMessageUpsertBulk {
 	return u.Update(func(s *AiChatMessageUpsert) {
 		s.UpdateAttachmentUrls()
+	})
+}
+
+// ClearAttachmentUrls clears the value of the "attachment_urls" field.
+func (u *AiChatMessageUpsertBulk) ClearAttachmentUrls() *AiChatMessageUpsertBulk {
+	return u.Update(func(s *AiChatMessageUpsert) {
+		s.ClearAttachmentUrls()
 	})
 }
 

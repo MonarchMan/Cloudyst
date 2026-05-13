@@ -7,7 +7,6 @@ import (
 	"common/hashid"
 	"common/request"
 	"context"
-	"file/internal/biz/cluster"
 	"file/internal/biz/credmanager"
 	"file/internal/biz/filemanager/encrypt"
 	"file/internal/biz/filemanager/eventhub"
@@ -46,28 +45,30 @@ type (
 		Encoder() hashid.Encoder
 		EncryptorFactory() encrypt.CryptorFactory
 		EventHub() eventhub.EventHub
+		MasterEncryptKeyVault() encrypt.MasterEncryptKeyVault
 	}
 
 	managerDependency struct {
-		l                 *log.Helper
-		settings          setting.Provider
-		kv                cache.Driver
-		config            *conf.Bootstrap
-		auth              auth.Auth
-		hasher            hashid.Encoder
-		policyClient      data.StoragePolicyClient
-		userClient        rpc.UserClient
-		fileClient        data.FileClient
-		shareClient       data.ShareClient
-		requestClient     request.Client
-		taskClient        data.TaskClient
-		mimeManager       mime.MimeManager
-		credManager       credmanager.CredManager
-		extractorManager  mediameta.ExtractorStateManager
-		thumbnailPipeline thumb.Generator
-		queueManager      *queue.QueueManager
-		encryptorFactory  encrypt.CryptorFactory
-		eventHub          eventhub.EventHub
+		l                     *log.Helper
+		settings              setting.Provider
+		kv                    cache.Driver
+		config                *conf.Bootstrap
+		auth                  auth.Auth
+		hasher                hashid.Encoder
+		policyClient          data.StoragePolicyClient
+		userClient            rpc.UserClient
+		fileClient            data.FileClient
+		shareClient           data.ShareClient
+		requestClient         request.Client
+		taskClient            data.TaskClient
+		mimeManager           mime.MimeManager
+		credManager           credmanager.CredManager
+		extractorManager      mediameta.ExtractorStateManager
+		thumbnailPipeline     thumb.Generator
+		queueManager          *queue.QueueManager
+		encryptorFactory      encrypt.CryptorFactory
+		eventHub              eventhub.EventHub
+		masterEncryptKeyVault encrypt.MasterEncryptKeyVault
 	}
 	ManagerDepCtx struct{}
 )
@@ -78,26 +79,28 @@ func NewManagerDependency(logger log.Logger, settings setting.Provider, kv cache
 	credManager credmanager.CredManager, extractorManager mediameta.ExtractorStateManager, queueManager *queue.QueueManager,
 	thumbnailPipeline thumb.Generator, encryptorFactory encrypt.CryptorFactory, eventHub eventhub.EventHub,
 ) ManagerDep {
+	masterEncryptKeyVault := encrypt.NewMasterEncryptKeyVault(context.Background(), settings)
 	return &managerDependency{
-		l:                 log.NewHelper(logger, log.WithMessageKey("biz-fileManager")),
-		settings:          settings,
-		kv:                kv,
-		config:            config,
-		auth:              au,
-		hasher:            hasher,
-		policyClient:      policyClient,
-		userClient:        userClient,
-		fileClient:        fileClient,
-		shareClient:       shareClient,
-		requestClient:     request.NewClient(config.Server.Sys.Mode),
-		taskClient:        taskClient,
-		mimeManager:       mimeManager,
-		credManager:       credManager,
-		extractorManager:  extractorManager,
-		thumbnailPipeline: thumbnailPipeline,
-		queueManager:      queueManager,
-		encryptorFactory:  encryptorFactory,
-		eventHub:          eventHub,
+		l:                     log.NewHelper(logger, log.WithMessageKey("biz-fileManager")),
+		settings:              settings,
+		kv:                    kv,
+		config:                config,
+		auth:                  au,
+		hasher:                hasher,
+		policyClient:          policyClient,
+		userClient:            userClient,
+		fileClient:            fileClient,
+		shareClient:           shareClient,
+		requestClient:         request.NewClient(config.Server.Sys.Mode),
+		taskClient:            taskClient,
+		mimeManager:           mimeManager,
+		credManager:           credManager,
+		extractorManager:      extractorManager,
+		thumbnailPipeline:     thumbnailPipeline,
+		queueManager:          queueManager,
+		encryptorFactory:      encryptorFactory,
+		eventHub:              eventHub,
+		masterEncryptKeyVault: masterEncryptKeyVault,
 	}
 }
 
@@ -175,6 +178,10 @@ func (d *managerDependency) EncryptorFactory() encrypt.CryptorFactory {
 func (d *managerDependency) EventHub() eventhub.EventHub {
 	return d.eventHub
 }
+func (d *managerDependency) MasterEncryptKeyVault() encrypt.MasterEncryptKeyVault {
+	return d.masterEncryptKeyVault
+}
+
 func ManagerDepFromContext(ctx context.Context) ManagerDep {
 	return ctx.Value(ManagerDepCtx{}).(ManagerDep)
 }
@@ -214,12 +221,4 @@ func (d *dbfsDependency) DirectLinkClient() data.DirectLinkClient {
 
 func DBFSDepFromContext(ctx context.Context) DbfsDep {
 	return ctx.Value(DbfsDepCtx{}).(DbfsDep)
-}
-
-type (
-	NodePoolCtx struct{}
-)
-
-func NodePoolFromContext(ctx context.Context) cluster.NodePool {
-	return ctx.Value(NodePoolCtx{}).(cluster.NodePool)
 }

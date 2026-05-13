@@ -1,7 +1,6 @@
 package biz
 
 import (
-	pbsession "api/api/user/session/v1"
 	"bytes"
 	"common/auth"
 	"common/cache"
@@ -10,6 +9,7 @@ import (
 	"common/serializer"
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -22,46 +22,71 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gofrs/uuid"
 	"github.com/golang-jwt/jwt/v5"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type TokenAuth interface {
 	// Issue issues a new pair of credentials for the given users.
-	Issue(ctx context.Context, u *ent.User, rootTokenID *uuid.UUID) (*pbsession.Token, error)
+	Issue(ctx context.Context, args *IssueTokenArgs) (*Token, error)
 	// VerifyAndRetrieveUser verifies the given token and inject the users into current context.
 	// Returns if upper caller should continue process other session provider.
 	VerifyAndRetrieveUser(c *gin.Context) (bool, error)
 	// Refresh refreshes the given refresh token and returns a new pair of credentials.
-	Refresh(ctx context.Context, refreshToken string) (*pbsession.Token, error)
+	Refresh(ctx context.Context, refreshToken string) (*Token, error)
 	// Claims parses the given token string and returns the claims.
 	Claims(ctx context.Context, tokenStr string) (*auth.Claims, error)
+}
+
+type IssueTokenArgs struct {
+	User               *ent.User
+	RootTokenID        *uuid.UUID
+	ClientID           string
+	Scopes             []string
+	RefreshTTLOverride time.Duration
+}
+
+// Token stores token pair for authentication
+type Token struct {
+	AccessToken    string    `json:"access_token"`
+	RefreshToken   string    `json:"refresh_token"`
+	AccessExpires  time.Time `json:"access_expires"`
+	RefreshExpires time.Time `json:"refresh_expires"`
+
+	UID int `json:"-"`
 }
 
 type (
 	TokenType         string
 	TokenIDContextKey struct{}
+	ScopeContextKey   struct{}
+)
+
+var (
+	ErrInvalidRefreshToken = errors.New("invalid refresh token")
+	ErrUserNotFound        = errors.New("user not found")
 )
 
 // NewTokenAuth creates a new token based auth provider.
 func NewTokenAuth(idEncoder hashid.Encoder, s setting.Provider, config *conf.Bootstrap, userClient data.UserClient,
-	l log.Logger, kv cache.Driver) TokenAuth {
+	oAuthClient data.OAuthClientClient, l log.Logger, kv cache.Driver) TokenAuth {
 	return &tokenAuth{
-		idEncoder:  idEncoder,
-		s:          s,
-		secret:     []byte(config.Server.Sys.Secret),
-		userClient: userClient,
-		l:          log.NewHelper(l, log.WithMessageKey("biz-auth")),
-		kv:         kv,
+		idEncoder:   idEncoder,
+		s:           s,
+		secret:      []byte(config.Server.Sys.Secret),
+		userClient:  userClient,
+		l:           log.NewHelper(l, log.WithMessageKey("biz-auth")),
+		kv:          kv,
+		oAuthClient: oAuthClient,
 	}
 }
 
 type tokenAuth struct {
-	l          *log.Helper
-	idEncoder  hashid.Encoder
-	s          setting.Provider
-	secret     []byte
-	userClient data.UserClient
-	kv         cache.Driver
+	l           *log.Helper
+	idEncoder   hashid.Encoder
+	s           setting.Provider
+	secret      []byte
+	userClient  data.UserClient
+	kv          cache.Driver
+	oAuthClient data.OAuthClientClient
 }
 
 func (t *tokenAuth) Claims(ctx context.Context, tokenStr string) (*auth.Claims, error) {
@@ -81,7 +106,7 @@ func (t *tokenAuth) Claims(ctx context.Context, tokenStr string) (*auth.Claims, 
 	return claims, nil
 }
 
-func (t *tokenAuth) Refresh(ctx context.Context, refreshToken string) (*pbsession.Token, error) {
+func (t *tokenAuth) Refresh(ctx context.Context, refreshToken string) (*Token, error) {
 	token, err := jwt.ParseWithClaims(refreshToken, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return t.secret, nil
 	})
@@ -121,7 +146,36 @@ func (t *tokenAuth) Refresh(ctx context.Context, refreshToken string) (*pbsessio
 		return nil, constants.ErrInvalidRefreshToken
 	}
 
-	return t.Issue(ctx, expectedUser, claims.RootTokenID)
+	// If token issued for an OAuth client, check if the client is still valid
+	refreshTTLOverride := time.Duration(0)
+	if claims.ClientID != "" {
+		client, err := t.oAuthClient.GetByGUIDWithGrants(ctx, claims.ClientID, expectedUser.ID)
+		if err != nil || len(client.Edges.Grants) == 0 {
+			return nil, ErrInvalidRefreshToken
+		}
+
+		// Consented scopes must be a subset of the client's scopes
+		if !auth.ValidateScopes(claims.Scopes, client.Edges.Grants[0].Scopes) {
+			return nil, ErrInvalidRefreshToken
+		}
+
+		// Update last used at for the grant
+		if err := t.oAuthClient.UpdateGrantLastUsedAt(ctx, expectedUser.ID, client.ID); err != nil {
+			return nil, ErrInvalidRefreshToken
+		}
+
+		if client.Props != nil {
+			refreshTTLOverride = time.Duration(client.Props.RefreshTokenTTL) * time.Second
+		}
+	}
+
+	return t.Issue(ctx, &IssueTokenArgs{
+		User:               expectedUser,
+		RootTokenID:        claims.RootTokenID,
+		Scopes:             claims.Scopes,
+		ClientID:           claims.ClientID,
+		RefreshTTLOverride: refreshTTLOverride,
+	})
 }
 
 func (t *tokenAuth) VerifyAndRetrieveUser(c *gin.Context) (bool, error) {
@@ -156,15 +210,25 @@ func (t *tokenAuth) VerifyAndRetrieveUser(c *gin.Context) (bool, error) {
 	}
 
 	context.WithValue(c, data.UserIDCtx{}, uid)
+
+	if claims.ClientID != "" {
+		context.WithValue(c, ScopeContextKey{}, claims.Scopes)
+	}
 	return false, nil
 }
 
-func (t *tokenAuth) Issue(ctx context.Context, u *ent.User, rootTokenID *uuid.UUID) (*pbsession.Token, error) {
-	uidEncoded := hashid.EncodeUserID(t.idEncoder, u.ID)
+func (t *tokenAuth) Issue(ctx context.Context, args *IssueTokenArgs) (*Token, error) {
+	u := args.User
+	rootTokenID := args.RootTokenID
+
+	uidEncoded := hashid.EncodeUserID(t.idEncoder, args.User.ID)
 	tokenSettings := t.s.TokenAuth(ctx)
 	issueDate := time.Now()
 	accessTokenExpired := time.Now().Add(tokenSettings.AccessTokenTTL)
 	refreshTokenExpired := time.Now().Add(tokenSettings.RefreshTokenTTL)
+	if args.RefreshTTLOverride > 0 {
+		refreshTokenExpired = time.Now().Add(args.RefreshTTLOverride)
+	}
 	if rootTokenID == nil {
 		newRootTokenID := uuid.Must(uuid.NewV4())
 		rootTokenID = &newRootTokenID
@@ -177,6 +241,7 @@ func (t *tokenAuth) Issue(ctx context.Context, u *ent.User, rootTokenID *uuid.UU
 			NotBefore: jwt.NewNumericDate(issueDate),
 			ExpiresAt: jwt.NewNumericDate(accessTokenExpired),
 		},
+		Scopes: args.Scopes,
 	}).SignedString(t.secret)
 	if err != nil {
 		return nil, fmt.Errorf("faield to sign access token: %w", err)
@@ -191,18 +256,20 @@ func (t *tokenAuth) Issue(ctx context.Context, u *ent.User, rootTokenID *uuid.UU
 			NotBefore: jwt.NewNumericDate(issueDate),
 			ExpiresAt: jwt.NewNumericDate(refreshTokenExpired),
 		},
+		Scopes:    args.Scopes,
+		ClientID:  args.ClientID,
 		StateHash: userHash[:],
 	}).SignedString(t.secret)
 	if err != nil {
 		return nil, fmt.Errorf("faield to sign refresh token: %w", err)
 	}
 
-	return &pbsession.Token{
+	return &Token{
 		AccessToken:    accessToken,
 		RefreshToken:   refreshToken,
-		AccessExpires:  timestamppb.New(accessTokenExpired),
-		RefreshExpires: timestamppb.New(refreshTokenExpired),
-		Uid:            int32(u.ID),
+		AccessExpires:  accessTokenExpired,
+		RefreshExpires: refreshTokenExpired,
+		UID:            u.ID,
 	}, nil
 }
 

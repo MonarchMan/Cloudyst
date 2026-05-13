@@ -4,7 +4,6 @@ import (
 	"ai/ent"
 	"ai/ent/aiimage"
 	"ai/internal/biz/types"
-	pb "api/api/common/v1"
 	"api/external/data/common"
 	"context"
 )
@@ -27,7 +26,7 @@ type (
 	}
 
 	ListAIImageArgs struct {
-		*pb.PaginationArgs
+		*common.PaginationArgs
 		Platform string
 		ModelID  int
 		UserID   int
@@ -35,7 +34,7 @@ type (
 	}
 
 	ListAIImageResult struct {
-		*pb.PaginationResults
+		*common.PaginationResults
 		Images []*ent.AiImage
 	}
 
@@ -107,10 +106,10 @@ func (c *imageClient) List(ctx context.Context, args *ListAIImageArgs) (*ListAII
 	}
 
 	return &ListAIImageResult{
-		PaginationResults: &pb.PaginationResults{
+		PaginationResults: &common.PaginationResults{
 			Page:       args.Page,
-			PageSize:   int32(pageSize),
-			TotalItems: int32(total),
+			PageSize:   pageSize,
+			TotalItems: total,
 		},
 		Images: images,
 	}, nil
@@ -157,7 +156,7 @@ func (c *imageClient) BatchDelete(ctx context.Context, ids []int) (int, error) {
 }
 
 func getImageOrderOption(args *ListAIImageArgs) []aiimage.OrderOption {
-	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDirection))
+	orderTerm := common.GetOrderTerm(common.OrderDirection(args.OrderDir))
 	switch args.OrderBy {
 	case aiimage.FieldUpdatedAt:
 		return []aiimage.OrderOption{aiimage.ByUpdatedAt(orderTerm), aiimage.ByID(orderTerm)}

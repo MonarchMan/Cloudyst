@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"common/serializer"
 	"crypto/hmac"
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -48,8 +50,8 @@ func (auth HMACAuth) Check(body string, sign string) error {
 	}
 
 	// 验证签名
-	if auth.Sign(body, expires) != sign {
-		return fmt.Errorf("invalid sign")
+	if subtle.ConstantTimeCompare([]byte(auth.Sign(body, expires)), []byte(sign)) != 1 {
+		return serializer.NewError(serializer.CodeInvalidSign, "invalid sign", nil)
 	}
 	return nil
 }

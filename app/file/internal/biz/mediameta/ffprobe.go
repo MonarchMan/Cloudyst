@@ -1,7 +1,6 @@
 package mediameta
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"context"
 	"encoding/json"
 	"file/internal/biz/filemanager/driver"
@@ -89,14 +88,19 @@ func (f *ffprobeExtractor) Exts() []string {
 	return ffprobeExts
 }
 
-func (f *ffprobeExtractor) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]pbslave.MediaMeta, error) {
+func (f *ffprobeExtractor) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]driver.MediaMeta, error) {
+	option := &option{}
+	for _, opt := range opts {
+		opt.apply(option)
+	}
+
 	localLimit, remoteLimit := f.settings.MediaMetaFFProbeSizeLimit(ctx)
 	if err := checkFileSize(localLimit, remoteLimit, source); err != nil {
 		return nil, err
 	}
 
 	var input string
-	if source.IsLocal() {
+	if source.IsLocal() && !source.Entity().Encrypted() {
 		input = source.LocalPath(ctx)
 	} else {
 		expire := time.Now().Add(UrlExpire)
@@ -131,32 +135,32 @@ func (f *ffprobeExtractor) Extract(ctx context.Context, ext string, source entit
 	return ProbeMetaTransform(&meta), nil
 }
 
-func ProbeMetaTransform(meta *FFProbeMeta) []pbslave.MediaMeta {
+func ProbeMetaTransform(meta *FFProbeMeta) []driver.MediaMeta {
 	if meta.Format == nil {
 		return nil
 	}
 
-	res := []pbslave.MediaMeta{}
+	res := []driver.MediaMeta{}
 	if meta.Format.FormatName != "" {
-		res = append(res, pbslave.MediaMeta{
+		res = append(res, driver.MediaMeta{
 			Key:   StreamMediaFormat,
 			Value: meta.Format.FormatName,
 		})
 	}
 	if meta.Format.FormatLongName != "" {
-		res = append(res, pbslave.MediaMeta{
+		res = append(res, driver.MediaMeta{
 			Key:   StreamMediaFormatLong,
 			Value: meta.Format.FormatLongName,
 		})
 	}
 	if meta.Format.Duration != "" {
-		res = append(res, pbslave.MediaMeta{
+		res = append(res, driver.MediaMeta{
 			Key:   StreamMediaDuration,
 			Value: meta.Format.Duration,
 		})
 	}
 	if meta.Format.Bitrate != "" {
-		res = append(res, pbslave.MediaMeta{
+		res = append(res, driver.MediaMeta{
 			Key:   StreamMediaBitrate,
 			Value: meta.Format.Bitrate,
 		})
@@ -165,37 +169,37 @@ func ProbeMetaTransform(meta *FFProbeMeta) []pbslave.MediaMeta {
 	for _, stream := range meta.Streams {
 		keyPrefix := fmt.Sprintf("%s%d_%s_", StreamMediaStreamPrefix, stream.Index, stream.CodecType)
 		if stream.CodecName != "" {
-			res = append(res, pbslave.MediaMeta{
+			res = append(res, driver.MediaMeta{
 				Key:   keyPrefix + StreamMediaCodec,
 				Value: stream.CodecName,
 			})
 		}
 		if stream.CodecLongName != "" {
-			res = append(res, pbslave.MediaMeta{
+			res = append(res, driver.MediaMeta{
 				Key:   keyPrefix + StreamMediaCodecLongName,
 				Value: stream.CodecLongName,
 			})
 		}
 		if stream.Width > 0 {
-			res = append(res, pbslave.MediaMeta{
+			res = append(res, driver.MediaMeta{
 				Key:   keyPrefix + StreamMediaWidth,
 				Value: strconv.Itoa(stream.Width),
 			})
 		}
 		if stream.Height > 0 {
-			res = append(res, pbslave.MediaMeta{
+			res = append(res, driver.MediaMeta{
 				Key:   keyPrefix + StreamMediaHeight,
 				Value: strconv.Itoa(stream.Height),
 			})
 		}
 		if stream.Duration != "" {
-			res = append(res, pbslave.MediaMeta{
+			res = append(res, driver.MediaMeta{
 				Key:   keyPrefix + StreamMediaDuration,
 				Value: stream.Duration,
 			})
 		}
 		if stream.Bitrate != "" {
-			res = append(res, pbslave.MediaMeta{
+			res = append(res, driver.MediaMeta{
 				Key:   keyPrefix + StreamMediaBitrate,
 				Value: stream.Bitrate,
 			})
@@ -205,19 +209,19 @@ func ProbeMetaTransform(meta *FFProbeMeta) []pbslave.MediaMeta {
 	for _, chapter := range meta.Chapters {
 		keyPrefix := fmt.Sprintf("%s%d_", StreamMediaChapterPrefix, chapter.Id)
 		if chapter.StartTime != "" {
-			res = append(res, pbslave.MediaMeta{
+			res = append(res, driver.MediaMeta{
 				Key:   keyPrefix + StreamMediaStartTime,
 				Value: chapter.StartTime,
 			})
 		}
 		if chapter.EndTime != "" {
-			res = append(res, pbslave.MediaMeta{
+			res = append(res, driver.MediaMeta{
 				Key:   keyPrefix + StreamMediaEndTime,
 				Value: chapter.EndTime,
 			})
 		}
 		if title, ok := chapter.Tags["title"]; ok {
-			res = append(res, pbslave.MediaMeta{
+			res = append(res, driver.MediaMeta{
 				Key:   keyPrefix + StreamMediaChapterName,
 				Value: title,
 			})
@@ -225,14 +229,14 @@ func ProbeMetaTransform(meta *FFProbeMeta) []pbslave.MediaMeta {
 	}
 
 	if title, ok := meta.Format.Tags["title"]; ok {
-		res = append(res, pbslave.MediaMeta{
+		res = append(res, driver.MediaMeta{
 			Key:   StreamMetaTitle,
 			Value: title,
 		})
 	}
 
 	if description, ok := meta.Format.Tags["description"]; ok {
-		res = append(res, pbslave.MediaMeta{
+		res = append(res, driver.MediaMeta{
 			Key:   StreamMetaDescription,
 			Value: description[0:min(len(description), 255)],
 		})

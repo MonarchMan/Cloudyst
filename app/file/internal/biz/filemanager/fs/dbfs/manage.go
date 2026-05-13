@@ -122,6 +122,7 @@ func (f *DBFS) Create(ctx context.Context, path *fs.URI, fileType int, opts ...f
 			}
 
 			ancestor = newFile(ancestor, newFolder)
+			f.emitFileCreated(ctx, ancestor)
 		} else {
 			// valide files name
 			policy, err := f.getPreferredPolicy(ctx, ancestor)
@@ -149,47 +150,47 @@ func (f *DBFS) Create(ctx context.Context, path *fs.URI, fileType int, opts ...f
 	return ancestor, nil
 }
 
-func (f *DBFS) Rename(ctx context.Context, path *fs.URI, newName string) (fs.File, error) {
+func (f *DBFS) Rename(ctx context.Context, path *fs.URI, newName string) (fs.File, *fs.IndexDiff, error) {
 	// Get navigator
 	navigator, err := f.getNavigator(ctx, path, NavigatorCapabilityRenameFile, NavigatorCapabilityLockFile)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Get target files
 	target, err := f.getFileByPath(ctx, navigator, path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get target files: %w", err)
+		return nil, nil, fmt.Errorf("failed to get target files: %w", err)
 	}
 	oldName := target.Name()
 
 	if _, ok := ctx.Value(ByPassOwnerCheckCtxKey{}).(bool); !ok && target.OwnerID() != f.user.ID {
-		return nil, fs.ErrOwnerOnly
+		return nil, nil, fs.ErrOwnerOnly
 	}
 
 	// Root folder cannot be modified
 	if target.IsRootFolder() {
-		return nil, fs.ErrNotSupportedAction.WithCause(fmt.Errorf("cannot modify root folder"))
+		return nil, nil, fs.ErrNotSupportedAction.WithCause(fmt.Errorf("cannot modify root folder"))
 	}
 
 	// Validate new name
 	if err := validateFileName(newName); err != nil {
-		return nil, fs.ErrIllegalObjectName.WithCause(err)
+		return nil, nil, fs.ErrIllegalObjectName.WithCause(err)
 	}
 
 	// If target is a files, validate files extension
 	policy, err := f.getPreferredPolicy(ctx, target)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if target.Type() == types.FileTypeFile {
 		if err := validateExtension(newName, policy); err != nil {
-			return nil, fs.ErrIllegalObjectName.WithCause(err)
+			return nil, nil, fs.ErrIllegalObjectName.WithCause(err)
 		}
 
 		if err := validateFileNameRegexp(newName, policy); err != nil {
-			return nil, fs.ErrIllegalObjectName.WithCause(err)
+			return nil, nil, fs.ErrIllegalObjectName.WithCause(err)
 		}
 	}
 
@@ -198,37 +199,56 @@ func (f *DBFS) Rename(ctx context.Context, path *fs.URI, newName string) (fs.Fil
 		&LockByPath{target.Uri(true), target, target.Type(), ""})
 	defer func() { _ = f.Release(ctx, ls) }()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Rename target
 	fc, tx, ctx, err := data.WithTx(ctx, f.fileClient)
 	if err != nil {
-		return nil, commonpb.ErrorDb("Failed to start transaction: %w", err)
+		return nil, nil, commonpb.ErrorDb("Failed to start transaction: %w", err)
 	}
 
 	updated, err := fc.Rename(ctx, target.Model, newName)
 	if err != nil {
 		_ = data.Rollback(tx)
 		if ent.IsConstraintError(err) {
-			return nil, fs.ErrFileExisted.WithCause(err)
+			return nil, nil, fs.ErrFileExisted.WithCause(err)
 		}
 
-		return nil, commonpb.ErrorDb("failed to update files: %w", err)
+		return nil, nil, commonpb.ErrorDb("failed to update files: %w", err)
 	}
 
 	if target.Type() == types.FileTypeFile && !strings.EqualFold(filepath.Ext(newName), filepath.Ext(oldName)) {
 		if err := fc.RemoveMetadata(ctx, target.Model, ThumbDisabledKey); err != nil {
 			_ = data.Rollback(tx)
-			return nil, commonpb.ErrorDb("failed to remove disabled thumbnail mark: %w", err)
+			return nil, nil, commonpb.ErrorDb("failed to remove disabled thumbnail mark: %w", err)
 		}
 	}
 
 	if err := data.Commit(tx); err != nil {
-		return nil, commonpb.ErrorDb("Failed to commit rename change: %w", err)
+		return nil, nil, commonpb.ErrorDb("Failed to commit rename change: %w", err)
 	}
 
-	return target.Replace(updated), nil
+	f.emitFileRenamed(ctx, target, newName)
+
+	originalMetadata := target.Metadata()
+	newFile := target.Replace(updated)
+	var diff *fs.IndexDiff
+	if docIDStr, ok := originalMetadata[FullTextIndexKey]; ok {
+		docID, _ := strconv.Atoi(docIDStr)
+		diff = &fs.IndexDiff{
+			IndexToRename: []fs.IndexDiffRenameDetails{
+				{
+					Uri:      *newFile.Uri(false),
+					FileID:   newFile.ID(),
+					EntityID: newFile.PrimaryEntityID(),
+					DocID:    docID,
+				},
+			},
+		}
+	}
+
+	return target.Replace(updated), diff, nil
 }
 
 func (f *DBFS) SoftDelete(ctx context.Context, path ...*fs.URI) error {
@@ -306,6 +326,8 @@ func (f *DBFS) SoftDelete(ctx context.Context, path ...*fs.URI) error {
 	if err := data.Commit(tx); err != nil {
 		return commonpb.ErrorDb("Failed to commit soft-delete change: %w", err)
 	}
+
+	f.emitFileDeleted(ctx, targets...)
 
 	if len(ae) > 0 {
 		return commonpb.ErrorDb("Failed to soft-delete some files").WithMetadata(ae)
@@ -392,6 +414,7 @@ func (f *DBFS) Delete(ctx context.Context, path []*fs.URI, opts ...fs.Option) ([
 	if err := data.CommitWithStorageDiff(ctx, tx, f.l, f.userClient); err != nil {
 		return nil, nil, commonpb.ErrorDb("Failed to commit delete change: %w", err)
 	}
+	f.emitFileDeleted(ctx, targets...)
 
 	return newStaleEntities, &fs.IndexDiff{
 		IndexToDelete: indexToDelete,
@@ -407,6 +430,9 @@ func (f *DBFS) VersionControl(ctx context.Context, path *fs.URI, versionId int, 
 
 	// Get target files
 	ctx = context.WithValue(ctx, data.LoadFileEntity{}, true)
+	if !delete {
+		ctx = context.WithValue(ctx, data.LoadFileMetadata{}, true)
+	}
 	target, err := f.getFileByPath(ctx, navigator, path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get target files: %w", err)
@@ -752,6 +778,8 @@ func (f *DBFS) deleteEntity(ctx context.Context, target *File, entityId int) (ty
 			return nil, commonpb.ErrorDb("Failed to remove upload session metadata: %w", err)
 		}
 	}
+
+	f.emitFileDeleted(ctx, target)
 	return diff, nil
 }
 
@@ -772,13 +800,13 @@ func (f *DBFS) setCurrentVersion(ctx context.Context, target *File, versionId in
 		return commonpb.ErrorDb("Failed to start transaction: %w", err)
 	}
 
-	if err := fc.SetPrimaryEntity(ctx, target.Model, targetVersion.ID()); err != nil {
+	if err := fc.SetPrimaryEntity(ctx, target.Model, targetVersion.Model()); err != nil {
 		_ = data.Rollback(tx)
 		return commonpb.ErrorDb("Failed to set primary entity: %w", err)
 	}
 
 	// Cap thumbnail entities
-	diff, err := fc.CapEntities(ctx, target.Model, int(target.OwnerID()), 0, types.EntityTypeThumbnail)
+	diff, err := fc.CapEntities(ctx, target.Model, target.OwnerID(), 0, types.EntityTypeThumbnail)
 	if err != nil {
 		_ = data.Rollback(tx)
 		return commonpb.ErrorDb("Failed to cap thumbnail entities: %w", err)
@@ -788,6 +816,8 @@ func (f *DBFS) setCurrentVersion(ctx context.Context, target *File, versionId in
 	if err := data.CommitWithStorageDiff(ctx, tx, f.l, f.userClient); err != nil {
 		return commonpb.ErrorDb("Failed to commit set current version: %w", err)
 	}
+
+	f.emitFileModified(ctx, target)
 
 	return nil
 }

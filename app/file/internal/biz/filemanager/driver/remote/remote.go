@@ -1,7 +1,6 @@
 package remote
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/auth"
 	"common/boolset"
 	"common/constants"
@@ -181,6 +180,6 @@ func (handler *Driver) Capabilities() *driver.Capabilities {
 	}
 }
 
-func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) MediaMeta(ctx context.Context, path, ext string) ([]driver.MediaMeta, error) {
 	return handler.uploadClient.MediaMeta(ctx, path, ext)
 }

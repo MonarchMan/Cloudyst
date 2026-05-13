@@ -173,6 +173,8 @@ func (m *GetModelResponse) validate(all bool) error {
 
 	// no validation rules for MaxContexts
 
+	// no validation rules for Model
+
 	if len(errors) > 0 {
 		return GetModelResponseMultiError(errors)
 	}

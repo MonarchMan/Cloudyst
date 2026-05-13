@@ -1,7 +1,6 @@
 package upyun
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"common/request"
 	"context"
 	"encoding/json"
@@ -27,7 +26,7 @@ type (
 	}
 )
 
-func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]pbslave.MediaMeta, error) {
+func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]driver.MediaMeta, error) {
 	resp, err := handler.extractMediaInfo(ctx, path, "!/meta")
 	if err != nil {
 		return nil, err
@@ -40,7 +39,7 @@ func (handler *Driver) extractImageMeta(ctx context.Context, path string) ([]pbs
 		return nil, fmt.Errorf("failed to unmarshal image info: %w", err)
 	}
 
-	metas := make([]pbslave.MediaMeta, 0, len(imageInfo.Exif))
+	metas := make([]driver.MediaMeta, 0, len(imageInfo.Exif))
 	exifMap := lo.MapEntries(imageInfo.Exif, func(key string, value string) (string, string) {
 		switch key {
 		case "0xA434":
@@ -80,7 +79,7 @@ func unmarshalError(resp string, err error) error {
 	return fmt.Errorf("upyun error: %s", err)
 }
 
-func parseGpsInfo(imageInfo map[string]string) []pbslave.MediaMeta {
+func parseGpsInfo(imageInfo map[string]string) []driver.MediaMeta {
 	latitude := imageInfo["GPSLatitude"]   // 31/1, 162680820/10000000, 0/1
 	longitude := imageInfo["GPSLongitude"] // 120/1, 429103939/10000000, 0/1
 	latRef := imageInfo["GPSLatitudeRef"]  // N
@@ -95,7 +94,7 @@ func parseGpsInfo(imageInfo map[string]string) []pbslave.MediaMeta {
 	lon := parseRawGPS(longitude, lonRef)
 	if !math.IsNaN(lat) && !math.IsNaN(lon) {
 		lat, lng := mediameta.NormalizeGPS(lat, lon)
-		return []pbslave.MediaMeta{{
+		return []driver.MediaMeta{{
 			Key:   mediameta.GpsLat,
 			Value: fmt.Sprintf("%f", lat),
 		}, {

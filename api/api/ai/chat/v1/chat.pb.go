@@ -92,14 +92,15 @@ type GetChatConversationResponse struct {
 	Pinned        bool                   `protobuf:"varint,3,opt,name=pinned,proto3" json:"pinned,omitempty"`
 	SystemMessage string                 `protobuf:"bytes,4,opt,name=system_message,json=systemMessage,proto3" json:"system_message,omitempty"`
 	Model         string                 `protobuf:"bytes,5,opt,name=model,proto3" json:"model,omitempty"`
-	Temperature   float64                `protobuf:"fixed64,6,opt,name=temperature,proto3" json:"temperature,omitempty"`
-	MaxTokens     int64                  `protobuf:"varint,7,opt,name=max_tokens,json=maxTokens,proto3" json:"max_tokens,omitempty"`
-	MaxContexts   int64                  `protobuf:"varint,8,opt,name=max_contexts,json=maxContexts,proto3" json:"max_contexts,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ModelId       string                 `protobuf:"bytes,6,opt,name=model_id,json=modelId,proto3" json:"model_id,omitempty"`
+	Temperature   float64                `protobuf:"fixed64,7,opt,name=temperature,proto3" json:"temperature,omitempty"`
+	MaxTokens     int64                  `protobuf:"varint,8,opt,name=max_tokens,json=maxTokens,proto3" json:"max_tokens,omitempty"`
+	MaxContexts   int64                  `protobuf:"varint,9,opt,name=max_contexts,json=maxContexts,proto3" json:"max_contexts,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	// 关联role信息
-	RoleAvatar    string `protobuf:"bytes,10,opt,name=role_avatar,json=roleAvatar,proto3" json:"role_avatar,omitempty"`
-	RoleName      string `protobuf:"bytes,11,opt,name=role_name,json=roleName,proto3" json:"role_name,omitempty"`
-	MessageCount  int32  `protobuf:"varint,12,opt,name=message_count,json=messageCount,proto3" json:"message_count,omitempty"`
+	RoleAvatar    string `protobuf:"bytes,11,opt,name=role_avatar,json=roleAvatar,proto3" json:"role_avatar,omitempty"`
+	RoleName      string `protobuf:"bytes,12,opt,name=role_name,json=roleName,proto3" json:"role_name,omitempty"`
+	MessageCount  int32  `protobuf:"varint,13,opt,name=message_count,json=messageCount,proto3" json:"message_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -165,6 +166,13 @@ func (x *GetChatConversationResponse) GetSystemMessage() string {
 func (x *GetChatConversationResponse) GetModel() string {
 	if x != nil {
 		return x.Model
+	}
+	return ""
+}
+
+func (x *GetChatConversationResponse) GetModelId() string {
+	if x != nil {
+		return x.ModelId
 	}
 	return ""
 }
@@ -680,6 +688,7 @@ type MessageRecord struct {
 	WebPages       []*WebPage             `protobuf:"bytes,6,rep,name=web_pages,json=webPages,proto3" json:"web_pages,omitempty"`
 	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	ConversationId string                 `protobuf:"bytes,8,opt,name=conversation_id,json=conversationId,proto3" json:"conversation_id,omitempty"`
+	ReplyId        string                 `protobuf:"bytes,9,opt,name=reply_id,json=replyId,proto3" json:"reply_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -766,6 +775,13 @@ func (x *MessageRecord) GetCreatedAt() *timestamppb.Timestamp {
 func (x *MessageRecord) GetConversationId() string {
 	if x != nil {
 		return x.ConversationId
+	}
+	return ""
+}
+
+func (x *MessageRecord) GetReplyId() string {
+	if x != nil {
+		return x.ReplyId
 	}
 	return ""
 }
@@ -1231,24 +1247,25 @@ const file_ai_chat_v1_chat_proto_rawDesc = "" +
 	"\x1dCreateChatConversationRequest\x12\x17\n" +
 	"\arole_id\x18\x01 \x01(\tR\x06roleId\x12!\n" +
 	"\fknowledge_id\x18\x02 \x01(\tR\vknowledgeId\x12\x19\n" +
-	"\bmodel_id\x18\x03 \x01(\tR\amodelId\"\x9a\x03\n" +
+	"\bmodel_id\x18\x03 \x01(\tR\amodelId\"\xb5\x03\n" +
 	"\x1bGetChatConversationResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x16\n" +
 	"\x06pinned\x18\x03 \x01(\bR\x06pinned\x12%\n" +
 	"\x0esystem_message\x18\x04 \x01(\tR\rsystemMessage\x12\x14\n" +
-	"\x05model\x18\x05 \x01(\tR\x05model\x12 \n" +
-	"\vtemperature\x18\x06 \x01(\x01R\vtemperature\x12\x1d\n" +
+	"\x05model\x18\x05 \x01(\tR\x05model\x12\x19\n" +
+	"\bmodel_id\x18\x06 \x01(\tR\amodelId\x12 \n" +
+	"\vtemperature\x18\a \x01(\x01R\vtemperature\x12\x1d\n" +
 	"\n" +
-	"max_tokens\x18\a \x01(\x03R\tmaxTokens\x12!\n" +
-	"\fmax_contexts\x18\b \x01(\x03R\vmaxContexts\x129\n" +
+	"max_tokens\x18\b \x01(\x03R\tmaxTokens\x12!\n" +
+	"\fmax_contexts\x18\t \x01(\x03R\vmaxContexts\x129\n" +
 	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1f\n" +
-	"\vrole_avatar\x18\n" +
-	" \x01(\tR\n" +
+	"created_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1f\n" +
+	"\vrole_avatar\x18\v \x01(\tR\n" +
 	"roleAvatar\x12\x1b\n" +
-	"\trole_name\x18\v \x01(\tR\broleName\x12#\n" +
-	"\rmessage_count\x18\f \x01(\x05R\fmessageCount\"\x83\x02\n" +
+	"\trole_name\x18\f \x01(\tR\broleName\x12#\n" +
+	"\rmessage_count\x18\r \x01(\x05R\fmessageCount\"\x83\x02\n" +
 	"\x1dUpdateChatConversationRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x16\n" +
@@ -1287,7 +1304,7 @@ const file_ai_chat_v1_chat_proto_rawDesc = "" +
 	"\x13SendMessageResponse\x12-\n" +
 	"\x04send\x18\x01 \x01(\v2\x19.ai.chat.v1.MessageRecordR\x04send\x123\n" +
 	"\areceive\x18\x02 \x01(\v2\x19.ai.chat.v1.MessageRecordR\areceive\x12\x12\n" +
-	"\x04done\x18\x03 \x01(\bR\x04done\"\xc4\x02\n" +
+	"\x04done\x18\x03 \x01(\bR\x04done\"\xdf\x02\n" +
 	"\rMessageRecord\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x18\n" +
@@ -1297,7 +1314,8 @@ const file_ai_chat_v1_chat_proto_rawDesc = "" +
 	"\tweb_pages\x18\x06 \x03(\v2\x13.ai.chat.v1.WebPageR\bwebPages\x129\n" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12'\n" +
-	"\x0fconversation_id\x18\b \x01(\tR\x0econversationId\"\x82\x01\n" +
+	"\x0fconversation_id\x18\b \x01(\tR\x0econversationId\x12\x19\n" +
+	"\breply_id\x18\t \x01(\tR\areplyId\"\x82\x01\n" +
 	"\x10KnowledgeSegment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1f\n" +
@@ -1338,18 +1356,18 @@ const file_ai_chat_v1_chat_proto_rawDesc = "" +
 	"useContext\x12\x1d\n" +
 	"\n" +
 	"use_search\x18\x04 \x01(\bR\tuseSearch\x12\x19\n" +
-	"\bmodel_id\x18\x05 \x01(\tR\amodelId2\xd6\r\n" +
+	"\bmodel_id\x18\x05 \x01(\tR\amodelId2\xdc\r\n" +
 	"\x04Chat\x12\x8e\x01\n" +
 	"\x16CreateChatConversation\x12).ai.chat.v1.CreateChatConversationRequest\x1a'.ai.chat.v1.GetChatConversationResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/ai/chat/conversation\x12\x93\x01\n" +
 	"\x16UpdateChatConversation\x12).ai.chat.v1.UpdateChatConversationRequest\x1a'.ai.chat.v1.GetChatConversationResponse\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\x1a\x1a/ai/chat/conversation/{id}\x12\x82\x01\n" +
 	"\x16ListChatConversationMe\x12\x16.google.protobuf.Empty\x1a).ai.chat.v1.GetMultiConversationsResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/ai/chat/conversation/list/me\x12\x8d\x01\n" +
 	"\x13GetChatConversation\x12).ai.chat.v1.SimpleChatConversationRequest\x1a'.ai.chat.v1.GetChatConversationResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/ai/chat/conversation/{id}\x12\x7f\n" +
 	"\x16DeleteChatConversation\x12).ai.chat.v1.SimpleChatConversationRequest\x1a\x16.google.protobuf.Empty\"\"\x82\xd3\xe4\x93\x02\x1c*\x1a/ai/chat/conversation/{id}\x12y\n" +
-	"\x1fDeleteUnpinnedChatConversations\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"&\x82\xd3\xe4\x93\x02 *\x1e/ai/chat/conversation/unpinned\x12\x86\x01\n" +
-	"\x15ListChatConversations\x12#.ai.chat.v1.ListConversationRequest\x1a$.ai.chat.v1.ListConversationResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/ai/chat/conversation/list\x12p\n" +
+	"\x1fDeleteUnpinnedChatConversations\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\"&\x82\xd3\xe4\x93\x02 *\x1e/ai/chat/conversation/unpinned\x12\x89\x01\n" +
+	"\x15ListChatConversations\x12#.ai.chat.v1.ListConversationRequest\x1a$.ai.chat.v1.ListConversationResponse\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\"\x1a/ai/chat/conversation/list\x12p\n" +
 	"\vSendMessage\x12\x1e.ai.chat.v1.SendMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/ai/chat/message/send\x12h\n" +
-	"\rDeleteMessage\x12 .ai.chat.v1.DeleteMessageRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/ai/chat/message/{id}\x12\x93\x01\n" +
-	"\x17ListConversationMessage\x12+.ai.chat.v1.ListConversationMessagesRequest\x1a,.ai.chat.v1.ListConversationMessagesResponse\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/ai/chat/message/list\x12u\n" +
+	"\rDeleteMessage\x12 .ai.chat.v1.DeleteMessageRequest\x1a\x16.google.protobuf.Empty\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/ai/chat/message/{id}\x12\x96\x01\n" +
+	"\x17ListConversationMessage\x12+.ai.chat.v1.ListConversationMessagesRequest\x1a,.ai.chat.v1.ListConversationMessagesResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/ai/chat/message/list\x12u\n" +
 	"\fRetryMessage\x12\x1f.ai.chat.v1.RetryMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/ai/chat/message/{id}/retry\x12r\n" +
 	"\fPatchMessage\x12\x1f.ai.chat.v1.PatchMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*2\x15/ai/chat/message/{id}\x12V\n" +
 	"\x11SendMessageStream\x12\x1e.ai.chat.v1.SendMessageRequest\x1a\x1f.ai.chat.v1.SendMessageResponse0\x01\x12X\n" +

@@ -15,35 +15,35 @@ service Admin {
   // Api Key
   rpc CreateApikey (ai.common.v1.AiApiKey) returns (ai.common.v1.AiApiKey) {
     option (google.api.http) = {
-      post: "/admin/ai/api-key"
+      post: "/ai/admin/api-key"
       body: "*"
     };
   }
   rpc UpdateApikey (ai.common.v1.AiApiKey) returns (ai.common.v1.AiApiKey) {
     option (google.api.http) = {
-      put: "/admin/ai/api-key/{id}"
+      put: "/ai/admin/api-key/{id}"
       body: "*"
     };
   };
   rpc DeleteApikey (SimpleRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/admin/ai/api-key/{id}"
+      delete: "/ai/admin/api-key/{id}"
     };
   };
   rpc GetApikey (SimpleRequest) returns (ai.common.v1.AiApiKey) {
     option (google.api.http) = {
-      get: "/admin/ai/api-key/{id}"
+      get: "/ai/admin/api-key/{id}"
     };
   }
   rpc ListApikey (.common.v1.ListRequest) returns (ListApikeyResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/api-key/list"
+      post: "/ai/admin/api-key/list"
       body: "*"
     };
   };
   rpc BatchDeleteApiKey (BatchDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/api-key/batch/delete",
+      post: "/ai/admin/api-key/delete",
       body: "*"
     };
   }
@@ -51,35 +51,35 @@ service Admin {
   // Model
   rpc CreateModel (ai.common.v1.AiModel) returns (ai.common.v1.AiModel) {
     option (google.api.http) = {
-      post: "/admin/ai/model"
+      post: "/ai/admin/model"
       body: "*"
     };
   };
   rpc UpdateModel (ai.common.v1.AiModel) returns (ai.common.v1.AiModel) {
     option (google.api.http) = {
-      put: "/admin/ai/model/{id}"
+      put: "/ai/admin/model/{id}"
       body: "*"
     };
   };
   rpc DeleteModel (SimpleRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/admin/ai/model/{id}"
+      delete: "/ai/admin/model/{id}"
     };
   };
   rpc GetModel (SimpleRequest) returns (ai.common.v1.AiModel) {
     option (google.api.http) = {
-      get: "/admin/ai/model/{id}"
+      get: "/ai/admin/model/{id}"
     };
   };
   rpc ListModel (.common.v1.ListRequest) returns (ListModelResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/model/list"
+      post: "/ai/admin/model/list"
       body: "*"
     };
   };
   rpc BatchDeleteModel (BatchDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/model/batch/delete",
+      post: "/ai/admin/model/delete",
       body: "*"
     };
   }
@@ -87,30 +87,30 @@ service Admin {
   // Role
   rpc GetRole (SimpleRequest) returns (Role) {
     option (google.api.http) = {
-      get: "/admin/ai/role/{id}"
+      get: "/ai/admin/role/{id}"
     };
   };
   rpc ListRole (.common.v1.ListRequest) returns (ListRoleResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/role/list"
+      post: "/ai/admin/role/list"
       body: "*"
     };
   };
   rpc BatchDeleteRole (BatchDeleteRoleRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/role/delete",
+      post: "/ai/admin/role/delete",
       body: "*"
     };
   }
   rpc UpdateRole (ai.common.v1.AiChatRole) returns (Role) {
     option (google.api.http) = {
-      put: "/admin/ai/role/{id}"
+      put: "/ai/admin/role/{id}"
       body: "*"
     };
   };
   rpc CreateRole (ai.common.v1.AiChatRole) returns (Role) {
     option (google.api.http) = {
-      post: "/admin/ai/role"
+      post: "/ai/admin/role"
       body: "*"
     };
   };
@@ -118,30 +118,30 @@ service Admin {
   // Knowledge
   rpc GetKnowledge (SimpleRequest) returns (Knowledge) {
     option (google.api.http) = {
-      get: "/admin/ai/knowledge/{id}"
+      get: "/ai/admin/knowledge/{id}"
     };
   };
   rpc ListKnowledge (.common.v1.ListRequest) returns (ListKnowledgeResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/knowledge/list"
+      post: "/ai/admin/knowledge/list"
       body: "*"
     };
   };
   rpc BatchDeleteKnowledge (BatchDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/knowledge/delete",
+      post: "/ai/admin/knowledge/delete",
       body: "*"
     };
   }
   rpc UpdateKnowledge (ai.common.v1.AiKnowledge) returns (Knowledge) {
     option (google.api.http) = {
-      put: "/admin/ai/knowledge/{id}"
+      put: "/ai/admin/knowledge/{id}"
       body: "*"
     };
   };
   rpc CreateKnowledge (ai.common.v1.AiKnowledge) returns (Knowledge) {
     option (google.api.http) = {
-      post: "/admin/ai/knowledge"
+      post: "/ai/admin/knowledge"
       body: "*"
     };
   };
@@ -149,30 +149,30 @@ service Admin {
   // Knowledge Document
   rpc BatchDeleteKnowledgeDocument (BatchDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/knowledge/document/delete",
+      post: "/ai/admin/document/delete",
       body: "*"
     };
   }
   rpc GetKnowledgeDocument (SimpleRequest) returns (ai.common.v1.AiKnowledgeDocument) {
     option (google.api.http) = {
-      get: "/admin/ai/knowledge/document/{id}"
+      get: "/ai/admin/document/{id}"
     };
   }
   rpc ListKnowledgeDocument (.common.v1.ListRequest) returns (ListKnowledgeDocumentResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/knowledge/document/list"
+      post: "/ai/admin/document/list"
       body: "*"
     };
   }
   rpc UpdateDocumentStatus (UpdateDocumentStatusRequest) returns (ai.common.v1.AiKnowledgeDocument) {
     option (google.api.http) = {
-      put: "/admin/ai/knowledge/document/{id}/status"
+      put: "/ai/admin/document/{id}/status"
       body: "*"
     };
   }
   rpc UpdateKnowledgeDocument (ai.common.v1.AiKnowledgeDocument) returns (UpsertDocumentResponse) {
     option (google.api.http) = {
-      put: "/admin/ai/knowledge/document/{id}"
+      put: "/ai/admin/document/{id}"
       body: "*"
     };
   }
@@ -180,13 +180,13 @@ service Admin {
   // Knowledge Document Segment
   rpc GetKnowledgeSegment (SimpleRequest) returns (ai.common.v1.AiKnowledgeSegment) {
     option (google.api.http) = {
-      get: "/admin/ai/knowledge/segment/{id}"
+      get: "/ai/admin/segment/{id}"
     };
   }
 
   rpc ListKnowledgeSegments (.common.v1.ListRequest) returns (ListKnowledgeSegmentResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/knowledge/segment/list"
+      post: "/ai/admin/segment/list"
       body: "*"
     };
   }
@@ -194,43 +194,44 @@ service Admin {
   // Image
   rpc ListImage (.common.v1.ListRequest) returns (ListImageResponse) {
     option (google.api.http) = {
-      get: "/admin/ai/image/list"
+      post: "/ai/admin/image/list"
+      body: "*"
     };
   };
   rpc UpdateImage (ai.common.v1.AiImage) returns (Image) {
     option (google.api.http) = {
-      put: "/admin/ai/image/{id}"
+      put: "/ai/admin/image/{id}"
       body: "*"
     };
   }
   rpc BatchDeleteImage (BatchDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/image/delete",
+      post: "/ai/admin/image/delete",
       body: "*"
     };
   }
   rpc GetImage(SimpleRequest) returns (Image) {
     option (google.api.http) = {
-      get: "/admin/ai/image/{id}"
+      get: "/ai/admin/image/{id}"
     };
   }
 
   // Conversation
   rpc GetChatConversation (SimpleRequest) returns (ChatConversation) {
     option (google.api.http) = {
-      get: "/admin/ai/chat/conversation/{id}"
+      get: "/ai/admin/chat/conversation/{id}"
     };
   };
 
   rpc ListChatConversation (.common.v1.ListRequest) returns (ListChatConversationResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/chat/conversation/list"
+      post: "/ai/admin/chat/conversation/list"
       body: "*"
     };
   };
   rpc BatchDeleteChatConversation (BatchDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/chat/conversation/delete",
+      post: "/ai/admin/chat/conversation/delete",
       body: "*"
     };
   };
@@ -238,18 +239,18 @@ service Admin {
   // Chat Message
   rpc GetChatMessage (SimpleRequest) returns (ChatMessage) {
     option (google.api.http) = {
-      get: "/admin/ai/chat/message/{id}"
+      get: "/ai/admin/chat/message/{id}"
     };
   };
   rpc ListChatMessage (.common.v1.ListRequest) returns (ListChatMessageResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/chat/message/list"
+      post: "/ai/admin/chat/message/list"
       body: "*"
        };
   };
   rpc BatchDeleteChatMessage (BatchDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/chat/message/delete",
+      post: "/ai/admin/chat/message/delete",
       body: "*"
     };
   };
@@ -257,29 +258,29 @@ service Admin {
   // Tool
   rpc GetTool(SimpleRequest) returns (ai.common.v1.AiTool) {
     option (google.api.http) = {
-      get: "/admin/ai/tool/{id}"
+      get: "/ai/admin/tool/{id}"
     };
   }
   rpc ListTool (.common.v1.ListRequest) returns (ListToolResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/tool/list"
+      post: "/ai/admin/tool/list"
       body: "*"
     };
   }
   rpc DeleteTool (SimpleRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete: "/admin/ai/tool/{id}"
+      delete: "/ai/admin/tool/{id}"
     };
   }
   rpc BatchDeleteTool (BatchDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/tool/delete",
+      post: "/ai/admin/tool/delete",
       body: "*"
     };
   }
   rpc CreateTool (ai.common.v1.AiTool) returns (ai.common.v1.AiTool) {
     option (google.api.http) = {
-      post: "/admin/ai/tool"
+      post: "/ai/admin/tool"
       body: "*"
     };
   }
@@ -293,33 +294,33 @@ service Admin {
   // Task
   rpc GetQueueMetrics(google.protobuf.Empty) returns (.common.v1.QueueMetricsResponse) {
     option (google.api.http) = {
-      get: "/admin/ai/queue/metrics",
+      get: "/ai/admin/queue/metrics",
     };
   }
 
   rpc ListTasks(.common.v1.ListRequest) returns (.common.v1.ListTaskResponse) {
     option (google.api.http) = {
-      post: "/admin/ai/queue",
+      post: "/ai/admin/queue",
       body: "*",
     };
   }
 
   rpc GetTask(SimpleRequest) returns (.common.v1.GetTaskResponse) {
     option (google.api.http) = {
-      get: "/admin/ai/queue/{id}",
+      get: "/ai/admin/queue/{id}",
     };
   }
 
   rpc BatchDeleteTasks(BatchDeleteRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/queue/batch/delete",
+      post: "/ai/admin/queue/batch/delete",
       body: "*"
     };
   }
 
   rpc CleanupTask(.common.v1.CleanupTaskRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/admin/ai/queue/cleanup",
+      post: "/ai/admin/queue/cleanup",
       body: "*",
     };
   }

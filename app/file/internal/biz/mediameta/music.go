@@ -1,7 +1,6 @@
 package mediameta
 
 import (
-	pbslave "api/api/file/slave/v1"
 	"context"
 	"errors"
 	"file/internal/biz/filemanager/driver"
@@ -49,7 +48,12 @@ func (a *musicExtractor) Exts() []string {
 	return audioExts
 }
 
-func (a *musicExtractor) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]pbslave.MediaMeta, error) {
+func (a *musicExtractor) Extract(ctx context.Context, ext string, source entitysource.EntitySource, opts ...optionFunc) ([]driver.MediaMeta, error) {
+	option := &option{}
+	for _, opt := range opts {
+		opt.apply(option)
+	}
+
 	localLimit, remoteLimit := a.settings.MediaMetaMusicSizeLimit(ctx)
 	if err := checkFileSize(localLimit, remoteLimit, source); err != nil {
 		return nil, err
@@ -64,7 +68,7 @@ func (a *musicExtractor) Extract(ctx context.Context, ext string, source entitys
 		return nil, fmt.Errorf("failed to read tags from files: %w", err)
 	}
 
-	metas := []pbslave.MediaMeta{
+	metas := []driver.MediaMeta{
 		{
 			Key:   MusicFormat,
 			Value: string(m.Format()),
@@ -76,63 +80,63 @@ func (a *musicExtractor) Extract(ctx context.Context, ext string, source entitys
 	}
 
 	if title := m.Title(); title != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   MusicTitle,
 			Value: title,
 		})
 	}
 
 	if album := m.Album(); album != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   MusicAlbum,
 			Value: album,
 		})
 	}
 
 	if artist := m.Artist(); artist != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   MusicArtist,
 			Value: artist,
 		})
 	}
 
 	if albumArtists := m.AlbumArtist(); albumArtists != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   MusicAlbumArtists,
 			Value: albumArtists,
 		})
 	}
 
 	if composer := m.Composer(); composer != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   MusicComposer,
 			Value: composer,
 		})
 	}
 
 	if genre := m.Genre(); genre != "" {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   MusicGenre,
 			Value: genre,
 		})
 	}
 
 	if year := m.Year(); year != 0 {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   MusicYear,
 			Value: fmt.Sprintf("%d", year),
 		})
 	}
 
 	if track, total := m.Track(); track != 0 {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   MusicTrack,
 			Value: fmt.Sprintf("%d/%d", track, total),
 		})
 	}
 
 	if disc, total := m.Disc(); disc != 0 {
-		metas = append(metas, pbslave.MediaMeta{
+		metas = append(metas, driver.MediaMeta{
 			Key:   MusicDisc,
 			Value: fmt.Sprintf("%d/%d", disc, total),
 		})
